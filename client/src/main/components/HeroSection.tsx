@@ -42,7 +42,7 @@ const HeroSection = () => {
                         </div>
                     </div>
 
-                    <div className="w-full md:w-1/2 flex justify-center relative mt-8 md:mt-0">
+                    <div className="hidden w-full md:w-1/2 md:flex justify-center relative mt-8 md:mt-0">
                         {/* Illustration elements */}
                         <div className="relative w-64 h-64 sm:w-80 sm:h-80 lg:w-96 lg:h-96">
                             {/* Animated background circles */}
