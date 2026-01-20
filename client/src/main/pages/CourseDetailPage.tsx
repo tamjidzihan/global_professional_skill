@@ -15,6 +15,7 @@ import {
     ChevronRight,
 } from 'lucide-react'
 
+
 // Mock course data
 const courseData: Record<string, any> = {
     '1': {
@@ -36,6 +37,7 @@ const courseData: Record<string, any> = {
         originalPrice: 8000,
         discount: 25, // Percentage discount
         instructor: {
+            id: 1,
             name: 'Rafat Rajib',
             role: 'INSTRUCTOR',
             avatar:
@@ -169,14 +171,14 @@ export function CourseDetailPage() {
                                             <ChevronRight className="w-4 h-4 text-gray-400 mx-1 md:mx-2" />
                                         )}
                                         {item.current ? (
-                                            <span className="text-sm font-medium text-gray-500 truncate max-w-[150px] md:max-w-none">
+                                            <span className="text-sm font-medium text-gray-500 truncate max-w-37.5 md:max-w-none">
                                                 {IconComponent && <IconComponent className="inline-block w-3 h-3 mr-1" />}
                                                 {item.label}
                                             </span>
                                         ) : (
                                             <Link
                                                 to={item.href}
-                                                className="flex items-center text-sm font-medium text-[#0066CC] hover:text-[#004c99] transition-colors truncate max-w-[150px] md:max-w-none"
+                                                className="flex items-center text-sm font-medium text-[#0066CC] hover:text-[#004c99] transition-colors truncate max-w-37.5 md:max-w-none"
                                             >
                                                 {IconComponent && <IconComponent className="inline-block w-3 h-3 mr-1" />}
                                                 {item.label}
@@ -325,7 +327,7 @@ export function CourseDetailPage() {
 
                         {/* Right: Course Banner */}
                         <div className="w-full lg:w-96 shrink-0">
-                            <div className="bg-gradient-to-br from-[#1a237e] to-[#0d47a1] rounded-lg p-8 text-white relative overflow-hidden shadow-xl">
+                            <div className="bg-linear-to-br from-[#1a237e] to-[#0d47a1] rounded-lg p-8 text-white relative overflow-hidden shadow-xl">
                                 <div className="relative z-10">
                                     <div className="flex justify-between items-start mb-6">
                                         <div className="text-sm font-bold bg-white/20 backdrop-blur-sm px-3 py-1 rounded">
@@ -528,7 +530,7 @@ export function CourseDetailPage() {
                                                                     key={index}
                                                                     className="flex items-start group"
                                                                 >
-                                                                    <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-gray-100 rounded-full text-gray-500 text-sm mr-3 group-hover:bg-[#76C043] group-hover:text-white transition-colors">
+                                                                    <span className="shrink-0 w-6 h-6 flex items-center justify-center bg-gray-100 rounded-full text-gray-500 text-sm mr-3 group-hover:bg-[#76C043] group-hover:text-white transition-colors">
                                                                         {index + 1}
                                                                     </span>
                                                                     <span className="text-gray-700 group-hover:text-gray-900 transition-colors">
@@ -574,7 +576,8 @@ export function CourseDetailPage() {
                     </div>
 
                     {/* Right: Sidebar */}
-                    <div className="w-full lg:w-80">
+                    <div className="w-full lg:w-100">
+
                         {/* Instructors */}
                         <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm mb-6">
                             <h3 className="text-xl font-bold text-gray-800 mb-4">
@@ -599,9 +602,9 @@ export function CourseDetailPage() {
                                     </div>
                                 </div>
                             </div>
-                            <button className="w-full mt-4 text-center text-[#0066CC] font-medium hover:text-[#004c99] transition-colors">
+                            <Link to={`/instructor/${course.instructor.id}`} className=" block w-full mt-4 text-center text-[#0066CC] font-medium hover:text-[#004c99] transition-colors">
                                 View Profile →
-                            </button>
+                            </Link>
                         </div>
 
                         {/* Who can Join */}
@@ -621,23 +624,6 @@ export function CourseDetailPage() {
                                     </li>
                                 ))}
                             </ul>
-                        </div>
-
-                        {/* Share Course */}
-                        <div className="bg-gradient-to-r from-[#e8f5e9] to-[#f1f8e9] rounded-lg p-6 border border-gray-200 shadow-sm">
-                            <h3 className="text-lg font-bold text-gray-800 mb-3">
-                                Share this course
-                            </h3>
-                            <div className="flex gap-2">
-                                {['Facebook', 'Twitter', 'LinkedIn', 'WhatsApp'].map((platform) => (
-                                    <button
-                                        key={platform}
-                                        className="flex-1 bg-white border border-gray-300 rounded-lg py-2 text-sm font-medium hover:bg-gray-50 transition-colors"
-                                    >
-                                        {platform}
-                                    </button>
-                                ))}
-                            </div>
                         </div>
                     </div>
                 </div>
