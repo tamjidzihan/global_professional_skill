@@ -26,7 +26,7 @@ export function CourseCard({
     rating = 4.5,
     enrolled = 1250,
     category = 'Professional',
-    instructor = 'BITM',
+    instructor = 'GPISBD',
     level = 'Intermediate',
     badge = 'Admission Going On'
 }: CourseCardProps) {
@@ -49,7 +49,7 @@ export function CourseCard({
                     <div className="w-full h-full flex items-center justify-center p-6">
                         <div className="text-center text-white">
                             <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-90" />
-                            <span className="font-bold text-lg opacity-90">BITM Course</span>
+                            <span className="font-bold text-lg opacity-90">GPISBD Course</span>
                             <p className="text-sm opacity-75 mt-1">{category}</p>
                         </div>
                     </div>

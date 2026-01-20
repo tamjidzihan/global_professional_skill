@@ -41,16 +41,15 @@ const Navbar = () => {
             label: 'Our Courses',
             dropdown: [
                 { label: 'All Courses', path: '/courses' },
-                { label: 'Web Development', path: '/courses/web' },
-                { label: 'Cyber Security', path: '/courses/cyber' },
-                { label: 'Digital Marketing', path: '/courses/marketing' },
-                { label: 'Graphics Design', path: '/courses/graphics' },
+                { label: 'Web Development', path: '#' },
+                { label: 'Cyber Security', path: '#' },
+                { label: 'Digital Marketing', path: '#' },
+                { label: 'Graphics Design', path: '#' },
             ]
         },
-        { path: '/pgd', label: 'PGD' },
-        { path: '/rpl', label: 'RPL' },
-        { path: '/about', label: 'About Us' },
-        { path: '/contact', label: 'Contact' },
+        { path: '#', label: 'PGD' },
+        { path: '#', label: 'RPL' },
+        { path: '/about', label: 'About Us' }
     ]
 
     const userActions = [
