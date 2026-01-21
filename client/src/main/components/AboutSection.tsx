@@ -44,7 +44,7 @@ const AboutSection = () => {
                                 <div className="text-center p-6 relative z-10">
                                     <Globe className="w-16 h-16 mx-auto mb-4 text-white/40" />
                                     <span className="text-white font-bold text-xl sm:text-2xl">
-                                        BITM Campus Tour
+                                        GPIS-BD Campus Tour
                                     </span>
                                 </div>
                             </div>
@@ -101,7 +101,7 @@ const AboutSection = () => {
                                     <div className="absolute left-0 top-1 w-3 h-3 bg-[#0066CC] rounded-full"></div>
                                     <p className="text-gray-700 leading-relaxed">
                                         Established in 2012 with support from the World Bank,
-                                        BITM continues BASIS's training initiatives started in 2007
+                                        GPIS-BD continues BASIS's training initiatives started in 2007
                                         to address industry skill gaps.
                                     </p>
                                 </div>

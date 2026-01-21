@@ -31,14 +31,14 @@ export function AuthLayout({ children, type }: AuthLayoutProps) {
                                         <GraduationCap className="w-6 h-6 text-white" />
                                     </div>
                                     <div>
-                                        <div className="text-white text-sm font-medium">BITM Learning Portal</div>
+                                        <div className="text-white text-sm font-medium">GPIS-BD Learning Portal</div>
                                         <div className="text-white/70 text-xs">Secure Student Access</div>
                                     </div>
                                 </div>
 
                                 <div className="mb-8">
                                     <h1 className="text-2xl font-bold text-white mb-4">
-                                        Welcome to BITM<br />Learning Platform
+                                        Welcome to GPIS-BD<br />Learning Platform
                                     </h1>
                                     <p className="text-blue-100">
                                         {isLogin

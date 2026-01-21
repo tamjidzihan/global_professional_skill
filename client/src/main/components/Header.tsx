@@ -69,7 +69,7 @@ const Navbar = () => {
                         </div>
                         <div className="flex items-center">
                             <Mail className="w-3 h-3 sm:w-4 sm:h-4 text-[#76C043] mr-1 sm:mr-2" />
-                            <span className="text-xs sm:text-sm">info@bitm.org.bd</span>
+                            <span className="text-xs sm:text-sm">info@gpis.org.bd</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-3 sm:gap-4">
@@ -99,7 +99,7 @@ const Navbar = () => {
                         <Link to="/" className="flex items-center space-x-3">
                             <div className="p-1 rounded bg-white/10">
                                 <div className="px-3 py-2 rounded bg-white text-[#0066CC]">
-                                    <span className="font-bold text-lg tracking-tight">GPISBD</span>
+                                    <span className="font-bold text-lg tracking-tight">GPIS-BD</span>
                                 </div>
                             </div>
                         </Link>

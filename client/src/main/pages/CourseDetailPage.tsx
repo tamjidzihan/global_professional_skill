@@ -162,25 +162,42 @@ export function CourseDetailPage() {
             <div className="bg-gray-50 border-b border-gray-200 py-3">
                 <div className="container mx-auto px-4">
                     <nav className="flex" aria-label="Breadcrumb">
-                        <ol className="flex items-center space-x-1 md:space-x-2">
+                        <ol className="flex items-center flex-wrap gap-y-1">
                             {breadcrumbItems.map((item, index) => {
                                 const IconComponent = item.icon
+
+                                // Show only first, last, and one middle item on mobile
+                                const isHiddenOnMobile = index > 0 && index < breadcrumbItems.length - 2
+
                                 return (
-                                    <li key={index} className="flex items-center">
+                                    <li
+                                        key={index}
+                                        className={`flex items-center ${isHiddenOnMobile ? 'hidden sm:flex' : 'flex'}`}
+                                    >
                                         {index > 0 && (
-                                            <ChevronRight className="w-4 h-4 text-gray-400 mx-1 md:mx-2" />
+                                            <ChevronRight className="w-4 h-4 text-gray-400 mx-1 md:mx-2 shrink-0" />
                                         )}
+
                                         {item.current ? (
-                                            <span className="text-sm font-medium text-gray-500 truncate max-w-37.5 md:max-w-none">
-                                                {IconComponent && <IconComponent className="inline-block w-3 h-3 mr-1" />}
+                                            // Current page (last item)
+                                            <span
+                                                className="text-sm font-medium text-gray-500 truncate max-w-30 sm:max-w-50 md:max-w-none"
+                                                title={item.label}
+                                            >
+                                                {IconComponent && <IconComponent className="inline-block w-3 h-3 mr-1 shrink-0" />}
                                                 {item.label}
                                             </span>
+                                        ) : isHiddenOnMobile && index === breadcrumbItems.length - 3 ? (
+                                            // Show ellipsis for hidden items on mobile
+                                            <span className="text-gray-400 text-sm">...</span>
                                         ) : (
+                                            // Clickable breadcrumb items
                                             <Link
                                                 to={item.href}
-                                                className="flex items-center text-sm font-medium text-[#0066CC] hover:text-[#004c99] transition-colors truncate max-w-37.5 md:max-w-none"
+                                                className="flex items-center text-sm font-medium text-[#0066CC] hover:text-[#004c99] transition-colors truncate max-w-25 sm:max-w-37.5 md:max-w-none"
+                                                title={item.label}
                                             >
-                                                {IconComponent && <IconComponent className="inline-block w-3 h-3 mr-1" />}
+                                                {IconComponent && <IconComponent className="inline-block w-3 h-3 mr-1 shrink-0" />}
                                                 {item.label}
                                             </Link>
                                         )}
@@ -188,6 +205,15 @@ export function CourseDetailPage() {
                                 )
                             })}
                         </ol>
+
+                        {/* Mobile-only: Show simplified breadcrumb */}
+                        <div className="sm:hidden flex items-center ml-2">
+                            {breadcrumbItems.length > 3 && (
+                                <span className="text-xs text-gray-500">
+                                    {breadcrumbItems.length - 2} more
+                                </span>
+                            )}
+                        </div>
                     </nav>
                 </div>
             </div>
@@ -404,7 +430,7 @@ export function CourseDetailPage() {
                         </div>
 
                         {/* Tab Content */}
-                        <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+                        <div className="bg-white h-180 overflow-y-scroll rounded-lg px-10 py-6 border border-gray-200 shadow-sm">
                             {activeTab === 'description' && (
                                 <div className="space-y-6 text-gray-700">
                                     <div className="space-y-3">
@@ -602,9 +628,6 @@ export function CourseDetailPage() {
                                     </div>
                                 </div>
                             </div>
-                            <Link to={`/instructor/${course.instructor.id}`} className=" block w-full mt-4 text-center text-[#0066CC] font-medium hover:text-[#004c99] transition-colors">
-                                View Profile →
-                            </Link>
                         </div>
 
                         {/* Who can Join */}
