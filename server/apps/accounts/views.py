@@ -23,7 +23,7 @@ from .serializers import (
     InstructorRequestReviewSerializer, UserRoleUpdateSerializer
 )
 from .permissions import IsAdmin, IsOwnerOrAdmin
-from .tasks import (
+from .utils import (
     send_instructor_request_notification,
     send_instructor_request_decision_email
 )
@@ -125,6 +125,29 @@ class UserLoginView(TokenObtainPairView):
                 }
             }
         }, status=status.HTTP_200_OK)
+
+
+class UserLogoutView(generics.GenericAPIView):
+    """
+    User logout endpoint.
+    Blacklists the refresh token.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data["refresh"]
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+            return Response({
+                'success': True,
+                'message': 'Logout successful.'
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': {'message': 'An error occurred during logout.'}
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
@@ -277,7 +300,7 @@ class InstructorRequestViewSet(viewsets.ModelViewSet):
         instructor_request = serializer.save()
         
         # Send notification to admins
-        send_instructor_request_notification.delay(str(instructor_request.id))
+        send_instructor_request_notification(str(instructor_request.id))
         
         return Response({
             'success': True,
@@ -309,7 +332,7 @@ class InstructorRequestViewSet(viewsets.ModelViewSet):
         serializer.save()
         
         # Send decision email to user
-        send_instructor_request_decision_email.delay(str(instructor_request.id))
+        send_instructor_request_decision_email(str(instructor_request.id))
         
         return Response({
             'success': True,

@@ -50,7 +50,7 @@ A **production-ready** Django REST API backend for a multi-vendor learning platf
 - Input validation and serializer-level security
 - Centralized exception handling
 - Pagination, filtering, and search
-- Celery for async tasks (email notifications)
+
 - Comprehensive logging
 - API documentation (Swagger/ReDoc)
 
@@ -58,7 +58,7 @@ A **production-ready** Django REST API backend for a multi-vendor learning platf
 
 - Python 3.9+
 - PostgreSQL 12+
-- Redis (for Celery)
+
 - Virtual environment
 
 ## 🛠️ Installation
@@ -123,12 +123,7 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-### 8. Start Celery Worker (Optional)
 
-```bash
-# In a separate terminal
-celery -A config worker -l info
-```
 
 ## 📚 API Documentation
 
@@ -205,7 +200,7 @@ learning_platform/
 │   ├── serializers.py    # User serializers
 │   ├── views.py          # Authentication views
 │   ├── permissions.py    # Custom permissions
-│   ├── tasks.py          # Celery tasks (emails)
+
 │   └── admin.py          # Admin configuration
 ├── courses/              # Course management
 │   ├── models.py         # Course, Section, Lesson, Review, Category
@@ -225,7 +220,7 @@ learning_platform/
 │   ├── settings.py       # Django settings
 │   ├── urls.py           # Main URL configuration
 │   ├── wsgi.py           # WSGI configuration
-│   ├── celery.py         # Celery configuration
+
 │   └── exceptions.py     # Custom exception handler
 ├── requirements.txt      # Python dependencies
 ├── .env.example          # Environment variables template
@@ -263,7 +258,7 @@ docker-compose up -d
 4. Use Gunicorn: `gunicorn config.wsgi:application`
 5. Setup Nginx as reverse proxy
 6. Configure SSL certificates
-7. Setup Celery worker and beat
+
 
 ### Environment Variables for Production
 
@@ -272,7 +267,7 @@ DEBUG=False
 SECRET_KEY=strong-random-secret-key
 ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
 DATABASE_URL=postgresql://user:password@db:5432/learning_platform
-REDIS_URL=redis://redis:6379/0
+
 USE_S3=True
 AWS_ACCESS_KEY_ID=your-key
 AWS_SECRET_ACCESS_KEY=your-secret
@@ -340,11 +335,11 @@ python manage.py createsuperuser
 # Run development server
 python manage.py runserver
 
-# Start Celery worker
-celery -A config worker -l info
 
-# Start Celery beat (scheduled tasks)
-celery -A config beat -l info
+
+
+
+
 
 # Django shell
 python manage.py shell
@@ -356,8 +351,8 @@ python manage.py shell
 - Database indexing on frequently queried fields
 - Pagination for large datasets
 - Atomic transactions for data consistency
-- Celery for async tasks
-- Redis caching (configurable)
+
+
 - Connection pooling
 
 ## 🤝 Contributing

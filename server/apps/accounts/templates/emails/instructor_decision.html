@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instructor Request Decision</title>
+</head>
+<body>
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2>Hello {{ user.first_name|default:user.email }},</h2>
+        <p>Your instructor request on the Learning Platform has been reviewed.</p>
+        <p><strong>Status:</strong> <span style="color: {% if status == 'APPROVED' %}green{% elif status == 'REJECTED' %}red{% else %}blue{% endif %}; font-weight: bold;">{{ status }}</span></p>
+        {% if review_notes %}
+            <p><strong>Admin Notes:</strong> {{ review_notes }}</p>
+        {% endif %}
+        
+        {% if status == 'APPROVED' %}
+            <p>Congratulations! Your request has been approved. You can now start creating courses.</p>
+            <p>
+                <a href="{{ frontend_base_url }}/instructor/dashboard" style="display: inline-block; padding: 10px 20px; background-color: #28a745; color: #ffffff; text-decoration: none; border-radius: 5px;">
+                    Go to Instructor Dashboard
+                </a>
+            </p>
+        {% else %}
+            <p>We regret to inform you that your request has been rejected. If you believe this is an error, please contact support.</p>
+        {% endif %}
+        
+        <p>Best regards,</p>
+        <p>The Learning Platform Team</p>
+    </div>
+</body>
+</html>

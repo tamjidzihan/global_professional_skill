@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate
 from django.utils import timezone
 from datetime import timedelta
 from .models import User, InstructorRequest, UserRole
-from .tasks import send_verification_email, send_password_reset_email
+from .utils import send_verification_email, send_password_reset_email
 import secrets
 
 
@@ -69,7 +69,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         )
         
         # Send verification email asynchronously
-        send_verification_email.delay(user.id)
+        send_verification_email(user.id)
         
         return user
 
@@ -189,7 +189,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         """Send password reset email."""
         user = self.context.get('user')
         if user:
-            send_password_reset_email.delay(user.id)
+            send_password_reset_email(user.id)
 
 
 class PasswordResetConfirmSerializer(serializers.Serializer):

@@ -23,18 +23,18 @@
 │  │     App      │  │     App      │  │     App      │      │
 │  └──────────────┘  └──────────────┘  └──────────────┘      │
 │                                                              │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │  Analytics   │  │   Celery     │  │   Storage    │      │
-│  │     App      │  │    Tasks     │  │   (S3/Local) │      │
-│  └──────────────┘  └──────────────┘  └──────────────┘      │
+│  ┌──────────────┐                      ┌──────────────┐      │
+│  │  Analytics   │                      │   Storage    │      │
+│  │     App      │                      │   (S3/Local) │      │
+│  └──────────────┘                      └──────────────┘      │
 │                                                              │
-└────────┬───────────────────┬─────────────────┬──────────────┘
-         │                   │                 │
-         ▼                   ▼                 ▼
-┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-│  PostgreSQL  │    │    Redis     │    │  S3 Storage  │
-│   Database   │    │ (Cache/Queue)│    │ (Media Files)│
-└──────────────┘    └──────────────┘    └──────────────┘
+└────────┬───────────────────────────────────────────────┬───────┘
+         │                                               │
+         ▼                                               ▼
+┌──────────────┐                                ┌──────────────┐
+│  PostgreSQL  │                                │  S3 Storage  │
+│   Database   │                                │ (Media Files)│
+└──────────────┘                                └──────────────┘
 ```
 
 ## Application Layer Architecture
@@ -56,7 +56,7 @@
 │               │                                             │
 │  ┌────────────▼───────────────────────────────────────┐    │
 │  │          BUSINESS LOGIC LAYER                      │    │
-│  │  (Models, Managers, Signals, Tasks)                │    │
+│  │  (Models, Managers, Signals)                │    │
 │  └────────────┬───────────────────────────────────────┘    │
 │               │                                             │
 │  ┌────────────▼───────────────────────────────────────┐    │
@@ -191,7 +191,7 @@ Enrollments             LessonProgress           Certificates
    Client → POST /api/v1/accounts/register/
    ├── Create User (role: STUDENT, email_verified: false)
    ├── Generate email verification token
-   ├── Send verification email (Celery)
+   
    └── Return user data
 
 2. EMAIL VERIFICATION
@@ -301,12 +301,12 @@ HTTP Request
              │                              │
              └──────────────┬───────────────┘
                             │
-              ┌─────────────┴─────────────┐
+              ┌───────────────────────────┐
               │                           │
               ▼                           ▼
     ┌──────────────────┐        ┌──────────────────┐
-    │   PostgreSQL     │        │     Redis        │
-    │   (RDS Master)   │        │  (ElastiCache)   │
+    │   PostgreSQL     │        │  S3 Bucket       │
+    │   (RDS Master)   │        │  (Media Files)   │
     └────────┬─────────┘        └──────────────────┘
              │
              ▼
@@ -314,16 +314,6 @@ HTTP Request
     │  RDS Read Replica│
     │   (Optional)     │
     └──────────────────┘
-
-    ┌──────────────────┐        ┌──────────────────┐
-    │  Celery Workers  │───────►│   Email Service  │
-    │  (Background)    │        │   (SES/SMTP)     │
-    └──────────────────┘        └──────────────────┘
-
-    ┌──────────────────┐        ┌──────────────────┐
-    │  S3 Bucket       │        │  CloudFront CDN  │
-    │  (Media Files)   │◄───────┤  (Static Files)  │
-    └──────────────────┘        └──────────────────┘
 ```
 
 ## Security Layers
