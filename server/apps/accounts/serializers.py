@@ -82,7 +82,7 @@ class UserLoginSerializer(serializers.Serializer):
         write_only=True,
         style={'input_type': 'password'}
     )
-    
+
     def validate(self, attrs):
         """Validate user credentials."""
         email = attrs.get('email')
@@ -127,6 +127,11 @@ class UserLoginSerializer(serializers.Serializer):
             })
         
         return attrs
+
+
+class EmailVerificationSerializer(serializers.Serializer):
+    """Serializer for email verification."""
+    token = serializers.CharField()
 
 
 class PasswordChangeSerializer(serializers.Serializer):

@@ -24,6 +24,7 @@ from .serializers import (
     UserSerializer,
     UserRegistrationSerializer,
     UserLoginSerializer,
+    EmailVerificationSerializer,
     PasswordChangeSerializer,
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer,
@@ -68,16 +69,13 @@ class UserRegistrationView(generics.CreateAPIView):
 class EmailVerificationView(generics.GenericAPIView):
     """Email verification endpoint."""
 
+    serializer_class = EmailVerificationSerializer
     permission_classes = [AllowAny]
 
     def post(self, request):
-        token = request.data.get("token")
-
-        if not token:
-            return Response(
-                {"success": False, "error": {"message": "Token is required."}},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.validated_data["token"]
 
         try:
             verification_token = EmailVerificationToken.objects.select_related(
@@ -298,14 +296,21 @@ class InstructorRequestViewSet(viewsets.ModelViewSet):
     ordering = ["-created_at"]
 
     def get_queryset(self):
-        """
-        Filter queryset based on user role.
-        - Students see only their own requests
-        - Admins see all requests
-        """
+        # Add swagger_fake_view check at the beginning
+        if getattr(self, "swagger_fake_view", False):
+            return InstructorRequest.objects.none()
+
         user = self.request.user
-        if user.is_admin_user:
-            return InstructorRequest.objects.select_related("user", "reviewed_by").all()
+
+        # Check if user is authenticated
+        if not user.is_authenticated:
+            return InstructorRequest.objects.none()
+
+        # Now safely check the attribute
+        if hasattr(user, "is_admin_user") and user.is_admin_user:
+            return InstructorRequest.objects.all()
+
+        # For regular users, return only their requests
         return InstructorRequest.objects.filter(user=user)
 
     def get_serializer_class(self):
