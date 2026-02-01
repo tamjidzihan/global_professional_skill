@@ -1,8 +1,12 @@
 """
 Celery tasks for asynchronous operations.
 """
+
 from celery import shared_task
+from .models import User, EmailVerificationToken
 from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
+from django.utils.html import strip_tags
 from django.conf import settings
 from django.utils import timezone
 from django.template.loader import render_to_string
@@ -13,85 +17,116 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-@shared_task(bind=True, max_retries=3)
-def send_verification_email(self, user_id):
-    """Send email verification link to user."""
-    from .models import User, EmailVerificationToken
-    
-    try:
-        user = User.objects.get(id=user_id)
-        
-        # Generate verification token
-        token = secrets.token_urlsafe(32)
-        expires_at = timezone.now() + timedelta(hours=24)
-        
-        EmailVerificationToken.objects.create(
-            user=user,
-            token=token,
-            expires_at=expires_at
-        )
-        
-        # Create verification URL
-        verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
-        
-        # Email content
-        subject = f"Verify your email - {settings.SITE_NAME}"
-        message = f"""
-        Hello {user.get_full_name()},
-        
-        Thank you for registering with {settings.SITE_NAME}!
-        
-        Please verify your email address by clicking the link below:
-        {verification_url}
-        
-        This link will expire in 24 hours.
-        
-        If you didn't create an account, please ignore this email.
-        
-        Best regards,
-        {settings.SITE_NAME} Team
-        """
-        
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
-        )
-        
-        logger.info(f"Verification email sent to {user.email}")
-        return f"Verification email sent to {user.email}"
-        
-    except User.DoesNotExist:
-        logger.error(f"User with id {user_id} does not exist")
-        return f"User with id {user_id} does not exist"
-    except Exception as exc:
-        logger.error(f"Error sending verification email: {str(exc)}")
-        raise self.retry(exc=exc, countdown=60)
+# @shared_task(bind=True, max_retries=3)
+# def send_verification_email(self, user_id):
+#     """Send email verification link to user."""
+#     from .models import User, EmailVerificationToken
+
+#     try:
+#         user = User.objects.get(id=user_id)
+
+#         # Generate verification token
+#         token = secrets.token_urlsafe(32)
+#         expires_at = timezone.now() + timedelta(hours=24)
+
+#         EmailVerificationToken.objects.create(
+#             user=user, token=token, expires_at=expires_at
+#         )
+
+#         # Create verification URL
+#         verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
+
+#         # Email content
+#         subject = f"Verify your email - {settings.SITE_NAME}"
+#         message = f"""
+#         Hello {user.get_full_name()},
+
+#         Thank you for registering with {settings.SITE_NAME}!
+
+#         Please verify your email address by clicking the link below:
+#         {verification_url}
+
+#         This link will expire in 24 hours.
+
+#         If you didn't create an account, please ignore this email.
+
+#         Best regards,
+#         {settings.SITE_NAME} Team
+#         """
+
+#         send_mail(
+#             subject=subject,
+#             message=message,
+#             from_email=settings.DEFAULT_FROM_EMAIL,
+#             recipient_list=[user.email],
+#             fail_silently=False,
+#         )
+
+#         logger.info(f"Verification email sent to {user.email}")
+#         return f"Verification email sent to {user.email}"
+
+#     except User.DoesNotExist:
+#         logger.error(f"User with id {user_id} does not exist")
+#         return f"User with id {user_id} does not exist"
+#     except Exception as exc:
+#         logger.error(f"Error sending verification email: {str(exc)}")
+#         raise self.retry(exc=exc, countdown=60)
+
+
+def send_verification_email(user_id):
+    """Send verification email using template."""
+    user = User.objects.get(id=user_id)
+    # Generate token
+    token = secrets.token_urlsafe(32)
+    expires_at = timezone.now() + timedelta(hours=24)
+
+    EmailVerificationToken.objects.create(user=user, token=token, expires_at=expires_at)
+
+    # Prepare context
+    verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
+    context = {
+        "user": user,
+        "site_name": settings.SITE_NAME,
+        "site_url": settings.FRONTEND_URL,
+        "verification_url": verification_url,
+        "user_email": user.email,
+    }
+
+    # Render templates
+    html_content = render_to_string(
+        "emails/verification_email.html", context
+    )
+    text_content = strip_tags(html_content)
+
+    # Send email
+    subject = f"Verify your email - {settings.SITE_NAME}"
+    email = EmailMultiAlternatives(
+        subject=subject,
+        body=text_content,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[user.email],
+    )
+    email.attach_alternative(html_content, "text/html")
+    email.send()
 
 
 @shared_task(bind=True, max_retries=3)
 def send_password_reset_email(self, user_id):
     """Send password reset link to user."""
     from .models import User, PasswordResetToken
-    
+
     try:
         user = User.objects.get(id=user_id)
-        
+
         # Generate reset token
         token = secrets.token_urlsafe(32)
         expires_at = timezone.now() + timedelta(hours=1)
-        
-        PasswordResetToken.objects.create(
-            user=user,
-            token=token,
-            expires_at=expires_at
-        )
-        
+
+        PasswordResetToken.objects.create(user=user, token=token, expires_at=expires_at)
+
         # Create reset URL
         reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}"
-        
+
         # Email content
         subject = f"Password Reset - {settings.SITE_NAME}"
         message = f"""
@@ -109,7 +144,7 @@ def send_password_reset_email(self, user_id):
         Best regards,
         {settings.SITE_NAME} Team
         """
-        
+
         send_mail(
             subject=subject,
             message=message,
@@ -117,10 +152,10 @@ def send_password_reset_email(self, user_id):
             recipient_list=[user.email],
             fail_silently=False,
         )
-        
+
         logger.info(f"Password reset email sent to {user.email}")
         return f"Password reset email sent to {user.email}"
-        
+
     except User.DoesNotExist:
         logger.error(f"User with id {user_id} does not exist")
         return f"User with id {user_id} does not exist"
@@ -133,11 +168,11 @@ def send_password_reset_email(self, user_id):
 def send_instructor_request_notification(request_id):
     """Notify admins about new instructor requests."""
     from .models import InstructorRequest, User, UserRole
-    
+
     try:
         request_obj = InstructorRequest.objects.get(id=request_id)
         admins = User.objects.filter(role=UserRole.ADMIN, is_active=True)
-        
+
         for admin in admins:
             subject = f"New Instructor Request - {settings.SITE_NAME}"
             message = f"""
@@ -150,7 +185,7 @@ def send_instructor_request_notification(request_id):
             Best regards,
             {settings.SITE_NAME} System
             """
-            
+
             send_mail(
                 subject=subject,
                 message=message,
@@ -158,10 +193,10 @@ def send_instructor_request_notification(request_id):
                 recipient_list=[admin.email],
                 fail_silently=True,
             )
-        
+
         logger.info(f"Instructor request notification sent for request {request_id}")
         return f"Notifications sent to {admins.count()} admins"
-        
+
     except InstructorRequest.DoesNotExist:
         logger.error(f"Instructor request {request_id} does not exist")
         return f"Request {request_id} does not exist"
@@ -174,12 +209,12 @@ def send_instructor_request_notification(request_id):
 def send_instructor_request_decision_email(request_id):
     """Notify user about instructor request decision."""
     from .models import InstructorRequest
-    
+
     try:
         request_obj = InstructorRequest.objects.get(id=request_id)
         user = request_obj.user
-        
-        if request_obj.status == 'APPROVED':
+
+        if request_obj.status == "APPROVED":
             subject = f"Instructor Request Approved - {settings.SITE_NAME}"
             message = f"""
             Hello {user.get_full_name()},
@@ -207,7 +242,7 @@ def send_instructor_request_decision_email(request_id):
             Best regards,
             {settings.SITE_NAME} Team
             """
-        
+
         send_mail(
             subject=subject,
             message=message,
@@ -215,10 +250,10 @@ def send_instructor_request_decision_email(request_id):
             recipient_list=[user.email],
             fail_silently=False,
         )
-        
+
         logger.info(f"Decision email sent to {user.email} for request {request_id}")
         return f"Decision email sent to {user.email}"
-        
+
     except InstructorRequest.DoesNotExist:
         logger.error(f"Instructor request {request_id} does not exist")
         return f"Request {request_id} does not exist"

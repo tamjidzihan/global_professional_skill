@@ -1,0 +1,51 @@
+<!-- accounts/templates/accounts/emails/instructor_approved.html -->
+{% extends 'accounts/emails/base.html' %}
+
+{% block content %}
+<h2 style="color: #333; margin-top: 0;">🎉 Congratulations, {{ user.get_full_name }}!</h2>
+
+<div style="text-align: center; margin: 20px 0;">
+    <div style="font-size: 72px; color: #4CAF50;">✓</div>
+    <h3 style="color: #333;">Your Instructor Request Has Been Approved!</h3>
+</div>
+
+<p style="font-size: 16px; color: #555;">
+    Welcome to the instructor community at <strong>{{ site_name }}</strong>!
+    We're excited to have you join our team of educators.
+</p>
+
+<p style="font-size: 16px; color: #555;">
+    <strong>What's next?</strong>
+</p>
+
+<div style="background-color: #f0f7ff; padding: 20px; border-radius: 5px; margin: 20px 0;">
+    <h4 style="color: #333; margin-top: 0;">Getting Started:</h4>
+    <ol style="color: #555;">
+        <li>Log in to your account</li>
+        <li>Visit the Instructor Dashboard</li>
+        <li>Create your first course</li>
+        <li>Review our Instructor Guidelines</li>
+    </ol>
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ instructor_dashboard_url }}" class="button">
+        Go to Instructor Dashboard
+    </a>
+</div>
+
+<div class="divider"></div>
+
+<p style="font-size: 14px; color: #777;">
+    <strong>Resources:</strong><br>
+    • <a href="{{ site_url }}/instructor/guide" style="color: #667eea;">Instructor Guide</a><br>
+    • <a href="{{ site_url }}/instructor/faq" style="color: #667eea;">FAQs</a><br>
+    • <a href="{{ site_url }}/contact/instructor-support" style="color: #667eea;">Instructor Support</a>
+</p>
+{% endblock %}
+
+{% block extra_context %}
+{% with email_subtitle="Instructor Request Approved" %}
+{{ block.super }}
+{% endwith %}
+{% endblock %}

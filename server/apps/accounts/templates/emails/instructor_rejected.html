@@ -1,0 +1,61 @@
+<!-- accounts/templates/accounts/emails/instructor_rejected.html -->
+{% extends 'accounts/emails/base.html' %}
+
+{% block content %}
+<h2 style="color: #333; margin-top: 0;">Update on Your Instructor Request</h2>
+
+<p style="font-size: 16px; color: #555;">
+    Hello {{ user.get_full_name }},
+</p>
+
+<p style="font-size: 16px; color: #555;">
+    Thank you for your interest in becoming an instructor on <strong>{{ site_name }}</strong>.
+    We appreciate the time you took to submit your application.
+</p>
+
+<div
+    style="background-color: #fff5f5; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 4px solid #f56565;">
+    <h4 style="color: #c53030; margin-top: 0;">Application Status: Not Approved</h4>
+    <p style="color: #555;">
+        After careful review, we're unable to approve your instructor request at this time.
+    </p>
+
+    {% if review_notes %}
+    <div style="background-color: white; padding: 15px; border-radius: 3px; margin-top: 10px;">
+        <strong>Review Notes:</strong>
+        <p style="color: #555; margin: 5px 0;">{{ review_notes }}</p>
+    </div>
+    {% endif %}
+</div>
+
+<p style="font-size: 16px; color: #555;">
+    <strong>What you can do:</strong>
+</p>
+
+<ul style="color: #555;">
+    <li>Continue learning as a student</li>
+    <li>Submit a new request in 90 days</li>
+    <li>Build your profile and skills</li>
+    <li>Review our instructor requirements</li>
+</ul>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ site_url }}/instructor/requirements" class="button">
+        View Requirements
+    </a>
+</div>
+
+<div class="divider"></div>
+
+<p style="font-size: 14px; color: #777;">
+    <strong>Note:</strong> This decision doesn't reflect on your abilities as an educator.
+    We receive many applications and have specific criteria at this time.
+    We encourage you to apply again in the future.
+</p>
+{% endblock %}
+
+{% block extra_context %}
+{% with email_subtitle="Instructor Request Update" %}
+{{ block.super }}
+{% endwith %}
+{% endblock %}
