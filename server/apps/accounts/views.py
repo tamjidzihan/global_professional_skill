@@ -327,7 +327,7 @@ class InstructorRequestViewSet(viewsets.ModelViewSet):
         instructor_request = serializer.save()
 
         # Send notification to admins
-        send_instructor_request_notification.delay(str(instructor_request.id))
+        send_instructor_request_notification(str(instructor_request.id))
 
         return Response(
             {
@@ -363,7 +363,7 @@ class InstructorRequestViewSet(viewsets.ModelViewSet):
         serializer.save()
 
         # Send decision email to user
-        send_instructor_request_decision_email.delay(str(instructor_request.id))
+        send_instructor_request_decision_email(str(instructor_request.id))
 
         return Response(
             {

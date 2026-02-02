@@ -284,3 +284,15 @@ CELERY_TIMEZONE = TIME_ZONE
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:3000")
 SITE_NAME = config("SITE_NAME", default="Learning Platform")
 ADMIN_EMAIL = config("ADMIN_EMAIL", default="admin@learningplatform.com")
+
+
+# Swagger UI Configuration
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    }
+}
