@@ -44,6 +44,8 @@ urlpatterns = [
     ),
     # API endpoints
     path("api/v1/accounts/", include("apps.accounts.urls")),
+    path("api/v1/courses/", include("courses.urls")),
+    path("api/v1/enrollments/", include("enrollments.urls")),
 ]
 
 
