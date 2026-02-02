@@ -209,7 +209,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         """Send password reset email."""
         user = self.context.get("user")
         if user:
-            send_password_reset_email.delay(user.id)
+            send_password_reset_email(user.id)
 
 
 class PasswordResetConfirmSerializer(serializers.Serializer):

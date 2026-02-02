@@ -17,62 +17,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-# @shared_task(bind=True, max_retries=3)
-# def send_verification_email(self, user_id):
-#     """Send email verification link to user."""
-#     from .models import User, EmailVerificationToken
-
-#     try:
-#         user = User.objects.get(id=user_id)
-
-#         # Generate verification token
-#         token = secrets.token_urlsafe(32)
-#         expires_at = timezone.now() + timedelta(hours=24)
-
-#         EmailVerificationToken.objects.create(
-#             user=user, token=token, expires_at=expires_at
-#         )
-
-#         # Create verification URL
-#         verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
-
-#         # Email content
-#         subject = f"Verify your email - {settings.SITE_NAME}"
-#         message = f"""
-#         Hello {user.get_full_name()},
-
-#         Thank you for registering with {settings.SITE_NAME}!
-
-#         Please verify your email address by clicking the link below:
-#         {verification_url}
-
-#         This link will expire in 24 hours.
-
-#         If you didn't create an account, please ignore this email.
-
-#         Best regards,
-#         {settings.SITE_NAME} Team
-#         """
-
-#         send_mail(
-#             subject=subject,
-#             message=message,
-#             from_email=settings.DEFAULT_FROM_EMAIL,
-#             recipient_list=[user.email],
-#             fail_silently=False,
-#         )
-
-#         logger.info(f"Verification email sent to {user.email}")
-#         return f"Verification email sent to {user.email}"
-
-#     except User.DoesNotExist:
-#         logger.error(f"User with id {user_id} does not exist")
-#         return f"User with id {user_id} does not exist"
-#     except Exception as exc:
-#         logger.error(f"Error sending verification email: {str(exc)}")
-#         raise self.retry(exc=exc, countdown=60)
-
-
 def send_verification_email(user_id):
     """Send verification email using template."""
     user = User.objects.get(id=user_id)
@@ -93,9 +37,7 @@ def send_verification_email(user_id):
     }
 
     # Render templates
-    html_content = render_to_string(
-        "emails/verification_email.html", context
-    )
+    html_content = render_to_string("accounts/emails/verification_email.html", context)
     text_content = strip_tags(html_content)
 
     # Send email
@@ -110,9 +52,8 @@ def send_verification_email(user_id):
     email.send()
 
 
-@shared_task(bind=True, max_retries=3)
-def send_password_reset_email(self, user_id):
-    """Send password reset link to user."""
+def send_password_reset_email(user_id):
+    """Send password reset link to user with HTML template."""
     from .models import User, PasswordResetToken
 
     try:
@@ -122,141 +63,180 @@ def send_password_reset_email(self, user_id):
         token = secrets.token_urlsafe(32)
         expires_at = timezone.now() + timedelta(hours=1)
 
+        # Delete existing tokens for this user
+        PasswordResetToken.objects.filter(user=user).delete()
+
+        # Create new token
         PasswordResetToken.objects.create(user=user, token=token, expires_at=expires_at)
 
         # Create reset URL
         reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}"
 
-        # Email content
-        subject = f"Password Reset - {settings.SITE_NAME}"
-        message = f"""
-        Hello {user.get_full_name()},
-        
-        You requested to reset your password for {settings.SITE_NAME}.
-        
-        Click the link below to reset your password:
-        {reset_url}
-        
-        This link will expire in 1 hour.
-        
-        If you didn't request a password reset, please ignore this email.
-        
-        Best regards,
-        {settings.SITE_NAME} Team
-        """
+        # Prepare context for HTML template
+        context = {
+            "user": user,
+            "site_name": settings.SITE_NAME,
+            "site_url": settings.FRONTEND_URL,
+            "reset_url": reset_url,
+            "user_email": user.email,
+            "email_subtitle": "Password Reset Request",
+            "subject": f"Password Reset - {settings.SITE_NAME}",
+        }
 
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
+        # Render HTML email
+        html_content = render_to_string(
+            "accounts/emails/password_reset_email.html", context
         )
+        text_content = strip_tags(html_content)
+
+        # Send email with HTML alternative
+        subject = f"Password Reset - {settings.SITE_NAME}"
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[user.email],
+        )
+        email.attach_alternative(html_content, "text/html")
+        email.send()
 
         logger.info(f"Password reset email sent to {user.email}")
-        return f"Password reset email sent to {user.email}"
+        return True
 
     except User.DoesNotExist:
         logger.error(f"User with id {user_id} does not exist")
-        return f"User with id {user_id} does not exist"
+        return False
     except Exception as exc:
         logger.error(f"Error sending password reset email: {str(exc)}")
-        raise self.retry(exc=exc, countdown=60)
+        return False
 
 
-@shared_task
 def send_instructor_request_notification(request_id):
-    """Notify admins about new instructor requests."""
+    """Notify admins about new instructor requests with HTML template."""
     from .models import InstructorRequest, User, UserRole
 
     try:
         request_obj = InstructorRequest.objects.get(id=request_id)
         admins = User.objects.filter(role=UserRole.ADMIN, is_active=True)
 
-        for admin in admins:
-            subject = f"New Instructor Request - {settings.SITE_NAME}"
-            message = f"""
-            Hello {admin.get_full_name()},
-            
-            A new instructor role request has been submitted by {request_obj.user.get_full_name()} ({request_obj.user.email}).
-            
-            Please review the request in the admin panel.
-            
-            Best regards,
-            {settings.SITE_NAME} System
-            """
-
-            send_mail(
-                subject=subject,
-                message=message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[admin.email],
-                fail_silently=True,
+        if not admins.exists():
+            logger.warning(
+                f"No active admins found to notify about request {request_id}"
             )
+            return False
 
-        logger.info(f"Instructor request notification sent for request {request_id}")
-        return f"Notifications sent to {admins.count()} admins"
+        # Prepare context
+        context = {
+            "request": request_obj,
+            "site_name": settings.SITE_NAME,
+            "site_url": settings.FRONTEND_URL,
+            "admin_url": f"{settings.FRONTEND_URL}/admin/instructor-requests",
+            "email_subtitle": "New Instructor Request",
+            "subject": f"New Instructor Request - {settings.SITE_NAME}",
+        }
+
+        # Render HTML template once
+        html_content = render_to_string(
+            "accounts/emails/instructor_request_notification.html", context
+        )
+        text_content = strip_tags(html_content)
+
+        # Send to each admin
+        sent_count = 0
+        for admin in admins:
+            try:
+                subject = f"New Instructor Request - {settings.SITE_NAME}"
+                email = EmailMultiAlternatives(
+                    subject=subject,
+                    body=text_content,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[admin.email],
+                )
+                email.attach_alternative(html_content, "text/html")
+                email.send()
+                sent_count += 1
+            except Exception as e:
+                logger.error(
+                    f"Failed to send notification to admin {admin.email}: {str(e)}"
+                )
+
+        logger.info(
+            f"Instructor request notification sent for request {request_id} to {sent_count}/{admins.count()} admins"
+        )
+        return sent_count > 0
 
     except InstructorRequest.DoesNotExist:
         logger.error(f"Instructor request {request_id} does not exist")
-        return f"Request {request_id} does not exist"
+        return False
     except Exception as exc:
         logger.error(f"Error sending instructor request notification: {str(exc)}")
-        return str(exc)
+        return False
 
 
-@shared_task
 def send_instructor_request_decision_email(request_id):
-    """Notify user about instructor request decision."""
+    """Notify user about instructor request decision with HTML template."""
     from .models import InstructorRequest
 
     try:
         request_obj = InstructorRequest.objects.get(id=request_id)
         user = request_obj.user
 
+        # Prepare common context
+        context = {
+            "user": user,
+            "site_name": settings.SITE_NAME,
+            "site_url": settings.FRONTEND_URL,
+            "user_email": user.email,
+        }
+
         if request_obj.status == "APPROVED":
-            subject = f"Instructor Request Approved - {settings.SITE_NAME}"
-            message = f"""
-            Hello {user.get_full_name()},
-            
-            Congratulations! Your instructor role request has been approved.
-            
-            You can now create and manage courses on {settings.SITE_NAME}.
-            
-            Best regards,
-            {settings.SITE_NAME} Team
-            """
-        else:  # REJECTED
-            subject = f"Instructor Request Update - {settings.SITE_NAME}"
-            message = f"""
-            Hello {user.get_full_name()},
-            
-            Thank you for your interest in becoming an instructor on {settings.SITE_NAME}.
-            
-            After careful review, we are unable to approve your request at this time.
-            
-            {f"Review notes: {request_obj.review_notes}" if request_obj.review_notes else ""}
-            
-            You may submit a new request in the future.
-            
-            Best regards,
-            {settings.SITE_NAME} Team
-            """
+            # Approved email context
+            context.update(
+                {
+                    "email_subtitle": "Instructor Request Approved",
+                    "subject": f"Instructor Request Approved - {settings.SITE_NAME}",
+                    "instructor_dashboard_url": f"{settings.FRONTEND_URL}/instructor/dashboard",
+                }
+            )
 
-        send_mail(
+            # Render approved template
+            template_name = "accounts/emails/instructor_approved.html"
+        else:  # REJECTED or any other status
+            # Rejected email context
+            context.update(
+                {
+                    "email_subtitle": "Instructor Request Update",
+                    "subject": f"Instructor Request Update - {settings.SITE_NAME}",
+                    "review_notes": request_obj.review_notes,
+                }
+            )
+
+            # Render rejected template
+            template_name = "accounts/emails/instructor_rejected.html"
+
+        # Render HTML email
+        html_content = render_to_string(template_name, context)
+        text_content = strip_tags(html_content)
+
+        # Send email
+        subject = context["subject"]
+        email = EmailMultiAlternatives(
             subject=subject,
-            message=message,
+            body=text_content,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
+            to=[user.email],
         )
+        email.attach_alternative(html_content, "text/html")
+        email.send()
 
-        logger.info(f"Decision email sent to {user.email} for request {request_id}")
-        return f"Decision email sent to {user.email}"
+        logger.info(
+            f"Decision email sent to {user.email} for request {request_id} (Status: {request_obj.status})"
+        )
+        return True
 
     except InstructorRequest.DoesNotExist:
         logger.error(f"Instructor request {request_id} does not exist")
-        return f"Request {request_id} does not exist"
+        return False
     except Exception as exc:
         logger.error(f"Error sending decision email: {str(exc)}")
-        return str(exc)
+        return False
