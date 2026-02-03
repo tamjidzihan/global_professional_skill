@@ -15,8 +15,11 @@ from apps.courses.models import Course
 class EnrollmentViewSet(viewsets.ModelViewSet):
     serializer_class = EnrollmentSerializer
     permission_classes = [IsAuthenticated]
+    filterset_fields = []
 
     def get_queryset(self):  # type: ignore
+        if not self.request.user.is_authenticated:
+            return Enrollment.objects.none()
         return Enrollment.objects.filter(student=self.request.user).select_related(
             "course", "student"
         )
@@ -53,8 +56,11 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
 class LessonProgressViewSet(viewsets.ModelViewSet):
     serializer_class = LessonProgressSerializer
     permission_classes = [IsAuthenticated]
+    filterset_fields = []
 
     def get_queryset(self):  # type: ignore
+        if not self.request.user.is_authenticated:
+            return LessonProgress.objects.none()
         return LessonProgress.objects.filter(enrollment__student=self.request.user)
 
     @action(detail=True, methods=["post"])
