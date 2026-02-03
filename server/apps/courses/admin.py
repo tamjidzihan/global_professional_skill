@@ -38,6 +38,7 @@ class ReviewInline(admin.TabularInline):
 class CourseAdmin(admin.ModelAdmin):
     list_display = (
         "title",
+        "who_can_join",
         "instructor_name",
         "category",
         "status",
@@ -83,6 +84,7 @@ class CourseAdmin(admin.ModelAdmin):
                     "requirements",
                     "learning_outcomes",
                     "target_audience",
+                    "who_can_join",
                 )
             },
         ),

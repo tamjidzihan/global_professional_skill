@@ -186,6 +186,7 @@ class CourseListSerializer(serializers.ModelSerializer):
             "price",
             "is_free",
             "thumbnail",
+            "who_can_join",
             "duration_hours",
             "status",
             "enrollment_count",
@@ -224,6 +225,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "requirements",
             "learning_outcomes",
             "target_audience",
+            "who_can_join",
             "status",
             "sections",
             "enrollment_count",
@@ -265,6 +267,7 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
             "requirements",
             "learning_outcomes",
             "target_audience",
+            "who_can_join",
             "status",
         )
         read_only_fields = ("id",)

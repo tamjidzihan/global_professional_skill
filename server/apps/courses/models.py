@@ -101,6 +101,7 @@ class Course(models.Model):
     )
     learning_outcomes = models.TextField(help_text="What students will learn")
     target_audience = models.TextField(blank=True, help_text="Who this course is for")
+    who_can_join = models.TextField(blank=True, help_text="Who can join this course")
 
     # Status & Approval
     status = models.CharField(
