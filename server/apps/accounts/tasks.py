@@ -2,17 +2,16 @@
 Celery tasks for asynchronous operations.
 """
 
-from celery import shared_task
-from .models import User, EmailVerificationToken
-from django.core.mail import send_mail
-from django.core.mail import EmailMultiAlternatives
-from django.utils.html import strip_tags
-from django.conf import settings
-from django.utils import timezone
-from django.template.loader import render_to_string
-from datetime import timedelta
-import secrets
 import logging
+import secrets
+from datetime import timedelta
+from django.conf import settings
+from django.core.mail import EmailMultiAlternatives, send_mail
+from django.template.loader import render_to_string
+from django.utils import timezone
+from django.utils.html import strip_tags
+
+from .models import EmailVerificationToken, User
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +53,7 @@ def send_verification_email(user_id):
 
 def send_password_reset_email(user_id):
     """Send password reset link to user with HTML template."""
-    from .models import User, PasswordResetToken
+    from .models import PasswordResetToken, User
 
     try:
         user = User.objects.get(id=user_id)
