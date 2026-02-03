@@ -4,8 +4,8 @@ Enrollment and progress tracking models.
 
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-from accounts.models import User
-from courses.models import Course, Lesson
+from apps.accounts.models import User
+from apps.courses.models import Course, Lesson
 import uuid
 
 

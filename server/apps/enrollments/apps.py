@@ -7,4 +7,4 @@ class EnrollmentsConfig(AppConfig):
     verbose_name = "Enrollments"
 
     def ready(self):
-        import enrollments.signals
+        import apps.enrollments.signals

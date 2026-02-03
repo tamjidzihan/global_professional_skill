@@ -5,7 +5,7 @@ from rest_framework import serializers
 from django.utils.text import slugify
 from django.db import transaction
 from .models import Category, Course, Section, Lesson, Review, CourseStatus
-from accounts.serializers import UserSerializer
+from apps.accounts.serializers import UserSerializer
 
 
 class CategorySerializer(serializers.ModelSerializer):

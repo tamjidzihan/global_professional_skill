@@ -4,7 +4,7 @@ Course models with approval workflow.
 
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-from accounts.models import User
+from apps.accounts.models import User
 import uuid
 
 

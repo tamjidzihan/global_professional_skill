@@ -23,7 +23,7 @@ from .serializers import (
     ReviewSerializer,
     CourseReviewSerializer,
 )
-from accounts.permissions import IsInstructor, IsAdmin, IsInstructorOrAdmin
+from apps.accounts.permissions import IsInstructor, IsAdmin, IsInstructorOrAdmin
 from .permissions import IsCourseInstructorOrAdmin, IsEnrolledOrInstructor
 import logging
 

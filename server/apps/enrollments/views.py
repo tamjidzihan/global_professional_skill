@@ -9,7 +9,7 @@ from .serializers import (
     LessonProgressSerializer,
     CertificateSerializer,
 )
-from courses.models import Course
+from apps.courses.models import Course
 
 
 class EnrollmentViewSet(viewsets.ModelViewSet):
