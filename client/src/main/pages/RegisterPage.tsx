@@ -1,10 +1,14 @@
 import React, { useState } from 'react'
-import { User, Mail, Phone, Lock, Eye, EyeOff, CheckCircle } from 'lucide-react'
+import { User, Mail, Phone, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { AuthLayout } from '../components/AuthLayout'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../hooks/useAuth'
 
 export function RegisterPage() {
+    const { register, loading, error } = useAuth()
+    const navigate = useNavigate()
     const [showPassword, setShowPassword] = useState(false)
+    const [formError, setFormError] = useState<string | null>(null)
     const [formData, setFormData] = useState({
         name: '',
         email: '',
@@ -13,9 +17,29 @@ export function RegisterPage() {
         acceptTerms: false
     })
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        console.log('Registration attempt:', formData)
+        setFormError(null)
+
+        if (!formData.acceptTerms) {
+            setFormError('You must accept the Terms & Conditions and Privacy Policy.')
+            return
+        }
+
+        const success = await register(formData)
+
+        if (success) {
+            // Reset form data on successful registration
+            setFormData({
+                name: '',
+                email: '',
+                phone: '',
+                password: '',
+                acceptTerms: false
+            })
+            // Optionally, navigate to login page or show a success message
+            navigate('/login?registrationSuccess=true')
+        }
     }
 
     const handleChange = (field: string, value: string | boolean) => {
@@ -30,6 +54,17 @@ export function RegisterPage() {
                 <p className="text-gray-600">Enter your credentials to Create new account</p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-6">
+                {(error || formError) && (
+                    <div className="rounded-lg bg-red-50 border border-red-200 p-4">
+                        <div className="flex items-start">
+                            <AlertCircle className="h-5 w-5 text-red-500 mr-3 shrink-0 mt-0.5" />
+                            <div className="text-sm text-red-700">
+                                <p className="font-medium mb-1">Registration Failed</p>
+                                <p>{error || formError}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
                 {/* Name Field */}
                 <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -69,11 +104,6 @@ export function RegisterPage() {
                             placeholder="student@example.com"
                             required
                         />
-                        {formData.email && (
-                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                <CheckCircle className="h-5 w-5 text-green-500" />
-                            </div>
-                        )}
                     </div>
                 </div>
 
@@ -158,36 +188,11 @@ export function RegisterPage() {
                 {/* Submit Button */}
                 <button
                     type="submit"
-                    className="w-full py-3 px-4 bg-[#0066CC] text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                    className="w-full py-3 px-4 bg-[#0066CC] text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={loading}
                 >
-                    Create Account
+                    {loading ? 'Creating Account...' : 'Create Account'}
                 </button>
-
-                {/* Divider */}
-                <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-gray-300"></div>
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                        <span className="px-2 bg-white text-gray-500">Or sign up with</span>
-                    </div>
-                </div>
-
-                {/* Social Sign Up */}
-                <div className="grid grid-cols-2 gap-3">
-                    <button
-                        type="button"
-                        className="py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                        <span className="text-sm font-medium text-gray-700">Google</span>
-                    </button>
-                    <button
-                        type="button"
-                        className="py-2 px-4 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                        <span className="text-sm font-medium text-gray-700">GitHub</span>
-                    </button>
-                </div>
 
                 {/* Login Link */}
                 <p className="text-center text-sm text-gray-600">

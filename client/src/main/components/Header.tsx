@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, ChevronDown, User, Bell, UserPlus, Phone, Mail } from 'lucide-react'
+import { Menu, X, ChevronDown, User, Bell, UserPlus, Phone, Mail, LogOut } from 'lucide-react'
+import { useAuth } from '../../hooks/useAuth'
+import { useAuthContext } from '../../context/AuthContext'
 
 const Navbar = () => {
     const location = useLocation()
+    const { isAuthenticated, user } = useAuthContext()
+    const { logout } = useAuth()
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [dropdownOpen, setDropdownOpen] = useState<string | null>(null)
     const [isClosing, setIsClosing] = useState(false)
@@ -73,20 +77,41 @@ const Navbar = () => {
                         </div>
                     </div>
                     <div className="flex items-center gap-3 sm:gap-4">
-                        <Link
-                            to="/login"
-                            className="flex items-center text-gray-600 hover:text-[#0066CC] transition-colors text-xs sm:text-sm"
-                        >
-                            <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#76C043]" />
-                            Login
-                        </Link>
-                        <Link
-                            to="/register"
-                            className="flex items-center text-gray-600 hover:text-[#0066CC] transition-colors text-xs sm:text-sm"
-                        >
-                            <UserPlus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#76C043]" />
-                            Register
-                        </Link>
+                        {isAuthenticated ? (
+                            <>
+                                <Link
+                                    to={`/dashboard/${user?.role.toLowerCase()}`}
+                                    className="flex items-center text-gray-600 hover:text-[#0066CC] transition-colors text-xs sm:text-sm"
+                                >
+                                    <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#76C043]" />
+                                    Dashboard
+                                </Link>
+                                <button
+                                    onClick={logout}
+                                    className="flex items-center text-gray-600 hover:text-[#0066CC] transition-colors text-xs sm:text-sm"
+                                >
+                                    <LogOut className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#76C043]" />
+                                    Logout
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <Link
+                                    to="/login"
+                                    className="flex items-center text-gray-600 hover:text-[#0066CC] transition-colors text-xs sm:text-sm"
+                                >
+                                    <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#76C043]" />
+                                    Login
+                                </Link>
+                                <Link
+                                    to="/register"
+                                    className="flex items-center text-gray-600 hover:text-[#0066CC] transition-colors text-xs sm:text-sm"
+                                >
+                                    <UserPlus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#76C043]" />
+                                    Register
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
             </div>
@@ -151,24 +176,58 @@ const Navbar = () => {
 
                         {/* Right Side Actions */}
                         <div className="hidden lg:flex items-center space-x-3">
-                            {/* User Actions */}
                             <div className="flex items-center space-x-2">
-                                {userActions.map((action) => {
-                                    const Icon = action.icon
-                                    return (
+                                {isAuthenticated ? (
+                                    <>
+                                        {userActions.map((action) => {
+                                            const Icon = action.icon
+                                            return (
+                                                <Link
+                                                    key={action.path}
+                                                    to={action.path}
+                                                    className="p-2 rounded-lg transition-all duration-300 relative text-white/80 hover:text-white hover:bg-white/10"
+                                                    title={action.label}
+                                                >
+                                                    <Icon className="w-5 h-5" />
+                                                    {action.label === 'Notifications' && (
+                                                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                                                    )}
+                                                </Link>
+                                            )
+                                        })}
                                         <Link
-                                            key={action.path}
-                                            to={action.path}
+                                            to={`/dashboard/${user?.role.toLowerCase()}`}
                                             className="p-2 rounded-lg transition-all duration-300 relative text-white/80 hover:text-white hover:bg-white/10"
-                                            title={action.label}
+                                            title="Dashboard"
                                         >
-                                            <Icon className="w-5 h-5" />
-                                            {action.label === 'Notifications' && (
-                                                <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                                            )}
+                                            <User className="w-5 h-5" />
                                         </Link>
-                                    )
-                                })}
+                                        <button
+                                            onClick={logout}
+                                            className="p-2 rounded-lg transition-all duration-300 relative text-white/80 hover:text-white hover:bg-white/10"
+                                            title="Logout"
+                                        >
+                                            <LogOut className="w-5 h-5" />
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Link
+                                            to="/login"
+                                            className="p-2 rounded-lg transition-all duration-300 relative text-white/80 hover:text-white hover:bg-white/10"
+                                            title="Login"
+                                        >
+                                            <User className="w-5 h-5" />
+                                        </Link>
+                                        <Link
+                                            to="/register"
+                                            className="p-2 rounded-lg transition-all duration-300 relative text-white/80 hover:text-white hover:bg-white/10"
+                                            title="Register"
+                                        >
+                                            <UserPlus className="w-5 h-5" />
+                                        </Link>
+                                    </>
+                                )}
 
                                 {/* Apply Now Button */}
                                 <Link
@@ -264,26 +323,66 @@ const Navbar = () => {
                             ))}
 
                             <div className="border-t border-gray-200 mt-4 pt-4 px-4">
-                                <div className="space-y-2">
-                                    {userActions.map((action) => {
-                                        const Icon = action.icon
-                                        return (
-                                            <Link
-                                                key={action.path}
-                                                to={action.path}
-                                                className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-                                                onClick={closeMobileMenu}
-                                            >
-                                                <Icon className="w-4 h-4 mr-3 text-[#76C043]" />
-                                                {action.label}
-                                                {action.label === 'Notifications' && (
-                                                    <span className="ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
-                                                )}
-                                            </Link>
-                                        )
-                                    })}
-                                </div>
+                                {isAuthenticated ? (
+                                    <div className="space-y-2">
+                                        {userActions.map((action) => {
+                                            const Icon = action.icon
+                                            return (
+                                                <Link
+                                                    key={action.path}
+                                                    to={action.path}
+                                                    className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                                                    onClick={closeMobileMenu}
+                                                >
+                                                    <Icon className="w-4 h-4 mr-3 text-[#76C043]" />
+                                                    {action.label}
+                                                    {action.label === 'Notifications' && (
+                                                        <span className="ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
+                                                    )}
+                                                </Link>
+                                            )
+                                        })}
+                                        <Link
+                                            to={`/dashboard/${user?.role.toLowerCase()}`}
+                                            className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                                            onClick={closeMobileMenu}
+                                        >
+                                            <User className="w-4 h-4 mr-3 text-[#76C043]" />
+                                            Dashboard
+                                        </Link>
+                                        <button
+                                            onClick={() => {
+                                                logout()
+                                                closeMobileMenu()
+                                            }}
+                                            className="flex items-center w-full px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                                        >
+                                            <LogOut className="w-4 h-4 mr-3 text-[#76C043]" />
+                                            Logout
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <Link
+                                            to="/login"
+                                            className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                                            onClick={closeMobileMenu}
+                                        >
+                                            <User className="w-4 h-4 mr-3 text-[#76C043]" />
+                                            Login
+                                        </Link>
+                                        <Link
+                                            to="/register"
+                                            className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                                            onClick={closeMobileMenu}
+                                        >
+                                            <UserPlus className="w-4 h-4 mr-3 text-[#76C043]" />
+                                            Register
+                                        </Link>
+                                    </div>
+                                )}
 
+                                {/* Apply Now Button */}
                                 <Link
                                     to="/apply"
                                     className="mt-4 mx-4 px-4 py-3 bg-linear-to-r from-[#76C043] to-green-500 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-[1.02] flex items-center justify-center"
@@ -303,7 +402,7 @@ const Navbar = () => {
                                 </div>
                                 <div className="flex items-center">
                                     <Mail className="w-4 h-4 text-[#76C043] mr-2 shrink-0" />
-                                    <span className="font-medium">info@bitm.org.bd</span>
+                                    <span className="font-medium">info@gpis.org.bd</span>
                                 </div>
                                 <div className="pt-2 text-xs text-gray-500">
                                     <p>© {new Date().getFullYear()} GPISBD. All rights reserved.</p>
