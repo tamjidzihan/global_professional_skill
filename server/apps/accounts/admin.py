@@ -75,7 +75,7 @@ class UserAdmin(BaseUserAdmin):
     def full_name_display(self, obj):
         return obj.get_full_name()
 
-    full_name_display.short_description = "Full Name"
+    full_name_display.short_description = "Full Name"  # type: ignore
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -87,25 +87,25 @@ class UserAdmin(BaseUserAdmin):
         count = queryset.update(is_active=True)
         self.message_user(request, f"{count} user(s) activated successfully.")
 
-    activate_users.short_description = "Activate selected users"
+    activate_users.short_description = "Activate selected users"  # type: ignore
 
     def deactivate_users(self, request, queryset):
         count = queryset.update(is_active=False)
         self.message_user(request, f"{count} user(s) deactivated successfully.")
 
-    deactivate_users.short_description = "Deactivate selected users"
+    deactivate_users.short_description = "Deactivate selected users"  # type: ignore
 
     def make_instructor(self, request, queryset):
         count = queryset.update(role="INSTRUCTOR")
         self.message_user(request, f"{count} user(s) promoted to Instructor.")
 
-    make_instructor.short_description = "Promote to Instructor"
+    make_instructor.short_description = "Promote to Instructor"  # type: ignore
 
     def make_student(self, request, queryset):
         count = queryset.update(role="STUDENT")
         self.message_user(request, f"{count} user(s) changed to Student.")
 
-    make_student.short_description = "Change to Student"
+    make_student.short_description = "Change to Student"  # type: ignore
 
 
 @admin.register(InstructorRequest)
@@ -123,6 +123,7 @@ class InstructorRequestAdmin(admin.ModelAdmin):
     list_filter = ("status", "created_at", "reviewed_at")
     search_fields = ("user__email", "user__first_name", "user__last_name")
     ordering = ("-created_at",)
+    list_editable = ["status"]
 
     fieldsets = (
         ("User Information", {"fields": ("user",)}),
@@ -140,12 +141,12 @@ class InstructorRequestAdmin(admin.ModelAdmin):
     def user_email(self, obj):
         return obj.user.email
 
-    user_email.short_description = "User Email"
+    user_email.short_description = "User Email"  # type: ignore
 
     def user_name(self, obj):
         return obj.user.get_full_name()
 
-    user_name.short_description = "User Name"
+    user_name.short_description = "User Name"  # type: ignore
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -168,11 +169,11 @@ class InstructorRequestAdmin(admin.ModelAdmin):
             req.user.save()
 
             # Send notification
-            send_instructor_request_decision_email.delay(str(req.id))
+            send_instructor_request_decision_email(str(req.id))
 
         self.message_user(request, f"{queryset.count()} request(s) approved.")
 
-    approve_requests.short_description = "Approve selected requests"
+    approve_requests.short_description = "Approve selected requests"  # type: ignore
 
     def reject_requests(self, request, queryset):
         from django.utils import timezone
@@ -185,11 +186,11 @@ class InstructorRequestAdmin(admin.ModelAdmin):
             req.save()
 
             # Send notification
-            send_instructor_request_decision_email.delay(str(req.id))
+            send_instructor_request_decision_email(str(req.id))
 
         self.message_user(request, f"{queryset.count()} request(s) rejected.")
 
-    reject_requests.short_description = "Reject selected requests"
+    reject_requests.short_description = "Reject selected requests"  # type: ignore
 
 
 @admin.register(EmailVerificationToken)
@@ -207,7 +208,7 @@ class EmailVerificationTokenAdmin(admin.ModelAdmin):
             return format_html('<span style="color: red;">Expired</span>')
         return format_html('<span style="color: green;">Valid</span>')
 
-    is_expired_display.short_description = "Status"
+    is_expired_display.short_description = "Status"  # type: ignore
 
 
 @admin.register(PasswordResetToken)
@@ -225,4 +226,4 @@ class PasswordResetTokenAdmin(admin.ModelAdmin):
             return format_html('<span style="color: red;">Expired/Used</span>')
         return format_html('<span style="color: green;">Valid</span>')
 
-    is_expired_display.short_description = "Status"
+    is_expired_display.short_description = "Status"  # type: ignore

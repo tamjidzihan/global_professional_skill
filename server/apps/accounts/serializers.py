@@ -6,10 +6,8 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
 from django.utils import timezone
-from datetime import timedelta
 from .models import User, InstructorRequest, UserRole
 from .tasks import send_verification_email, send_password_reset_email
-import secrets
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -77,7 +75,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         """Create new user with Student role by default."""
         validated_data.pop("password_confirm")
 
-        user = User.objects.create_user(
+        user = User.objects.create_user(  # type: ignore
             email=validated_data["email"],
             password=validated_data["password"],
             first_name=validated_data.get("first_name", ""),
@@ -182,10 +180,10 @@ class PasswordChangeSerializer(serializers.Serializer):
             )
         return attrs
 
-    def save(self):
+    def save(self):  # type: ignore
         """Update user password."""
         user = self.context["request"].user
-        user.set_password(self.validated_data["new_password"])
+        user.set_password(self.validated_data["new_password"])  # type: ignore
         user.save()
         return user
 
@@ -205,7 +203,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             pass
         return value
 
-    def save(self):
+    def save(self):  # type: ignore
         """Send password reset email."""
         user = self.context.get("user")
         if user:

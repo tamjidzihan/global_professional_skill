@@ -6,11 +6,10 @@ import logging
 import secrets
 from datetime import timedelta
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives, send_mail
+from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.html import strip_tags
-
 from .models import EmailVerificationToken, User
 
 logger = logging.getLogger(__name__)

@@ -273,16 +273,6 @@ LOGGING = {
 # Create logs directory if it doesn't exist
 os.makedirs(BASE_DIR / "logs", exist_ok=True)
 
-
-# Celery Configuration
-CELERY_TASK_ALWAYS_EAGER = config("CELERY_TASK_ALWAYS_EAGER", default=True, cast=bool)
-CELERY_BROKER_URL = "memory://"
-CELERY_RESULT_BACKEND = "rpc://"
-CELERY_ACCEPT_CONTENT = ["json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = TIME_ZONE
-
 # Site Configuration
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:3000")
 SITE_NAME = config("SITE_NAME", default="Learning Platform")

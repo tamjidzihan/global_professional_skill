@@ -2,42 +2,42 @@
 Views for user accounts and authentication.
 """
 
-from rest_framework import status, generics, viewsets
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView
-from django.utils import timezone
+import logging
+
 from django.db import transaction
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework import generics, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import (
-    User,
     EmailVerificationToken,
-    PasswordResetToken,
     InstructorRequest,
+    PasswordResetToken,
+    User,
     UserRole,
 )
-from .serializers import (
-    UserSerializer,
-    UserRegistrationSerializer,
-    UserLoginSerializer,
-    EmailVerificationSerializer,
-    PasswordChangeSerializer,
-    PasswordResetRequestSerializer,
-    PasswordResetConfirmSerializer,
-    InstructorRequestSerializer,
-    InstructorRequestReviewSerializer,
-    UserRoleUpdateSerializer,
-)
 from .permissions import IsAdmin, IsOwnerOrAdmin
-from .tasks import (
-    send_instructor_request_notification,
-    send_instructor_request_decision_email,
+from .serializers import (
+    EmailVerificationSerializer,
+    InstructorRequestReviewSerializer,
+    InstructorRequestSerializer,
+    PasswordChangeSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
+    UserLoginSerializer,
+    UserRegistrationSerializer,
+    UserRoleUpdateSerializer,
+    UserSerializer,
 )
-import logging
+from .tasks import (
+    send_instructor_request_decision_email,
+    send_instructor_request_notification,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -128,7 +128,7 @@ class UserLoginView(TokenObtainPairView):
         serializer = UserLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        user = serializer.validated_data["user"]
+        user = serializer.validated_data["user"]  # type: ignore
 
         # Generate JWT tokens
         refresh = RefreshToken.for_user(user)
@@ -140,7 +140,7 @@ class UserLoginView(TokenObtainPairView):
                 "data": {
                     "user": UserSerializer(user).data,
                     "tokens": {
-                        "access": str(refresh.access_token),
+                        "access": str(refresh.access_token),  # type: ignore
                         "refresh": str(refresh),
                     },
                 },
@@ -157,7 +157,7 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_object(self):
+    def get_object(self):  # type: ignore
         return self.request.user
 
     def retrieve(self, request, *args, **kwargs):
@@ -295,7 +295,7 @@ class InstructorRequestViewSet(viewsets.ModelViewSet):
     ordering_fields = ["created_at", "updated_at"]
     ordering = ["-created_at"]
 
-    def get_queryset(self):
+    def get_queryset(self):  # type: ignore
         # Add swagger_fake_view check at the beginning
         if getattr(self, "swagger_fake_view", False):
             return InstructorRequest.objects.none()
@@ -307,13 +307,13 @@ class InstructorRequestViewSet(viewsets.ModelViewSet):
             return InstructorRequest.objects.none()
 
         # Now safely check the attribute
-        if hasattr(user, "is_admin_user") and user.is_admin_user:
+        if hasattr(user, "is_admin_user") and user.is_admin_user:  # type: ignore
             return InstructorRequest.objects.all()
 
         # For regular users, return only their requests
         return InstructorRequest.objects.filter(user=user)
 
-    def get_serializer_class(self):
+    def get_serializer_class(self):  # type: ignore
         """Use different serializers for different actions."""
         if self.action == "review":
             return InstructorRequestReviewSerializer
