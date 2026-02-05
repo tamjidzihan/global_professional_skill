@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, ChevronDown, User, Bell, UserPlus, Phone, Mail, LogOut } from 'lucide-react'
+import { Menu, X, ChevronDown, User, UserPlus, Phone, Mail, LogOut } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useAuthContext } from '../../context/AuthContext'
 
@@ -56,11 +56,6 @@ const Navbar = () => {
         { path: '/about', label: 'About Us' }
     ]
 
-    const userActions = [
-        { icon: Bell, label: 'Notifications', path: '/notifications' },
-        { icon: User, label: 'Profile', path: '/profile' },
-    ]
-
     return (
         <>
             {/* Top Bar */}
@@ -84,7 +79,7 @@ const Navbar = () => {
                                     className="flex items-center text-gray-600 hover:text-[#0066CC] transition-colors text-xs sm:text-sm"
                                 >
                                     <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#76C043]" />
-                                    Dashboard
+                                    <span className='font-semibold'>{user?.first_name} {user?.last_name}</span>
                                 </Link>
                                 <button
                                     onClick={logout}
@@ -131,9 +126,9 @@ const Navbar = () => {
 
                         {/* Desktop Navigation */}
                         <nav className="hidden lg:flex items-center space-x-1">
-                            {navItems.map((item) => (
+                            {navItems.map((item, index) => (
                                 <div
-                                    key={item.path}
+                                    key={index}
                                     className="relative"
                                     onMouseEnter={() => item.dropdown && setDropdownOpen(item.path)}
                                     onMouseLeave={() => setDropdownOpen(null)}
@@ -177,65 +172,13 @@ const Navbar = () => {
                         {/* Right Side Actions */}
                         <div className="hidden lg:flex items-center space-x-3">
                             <div className="flex items-center space-x-2">
-                                {isAuthenticated ? (
-                                    <>
-                                        {userActions.map((action) => {
-                                            const Icon = action.icon
-                                            return (
-                                                <Link
-                                                    key={action.path}
-                                                    to={action.path}
-                                                    className="p-2 rounded-lg transition-all duration-300 relative text-white/80 hover:text-white hover:bg-white/10"
-                                                    title={action.label}
-                                                >
-                                                    <Icon className="w-5 h-5" />
-                                                    {action.label === 'Notifications' && (
-                                                        <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                                                    )}
-                                                </Link>
-                                            )
-                                        })}
-                                        <Link
-                                            to={`/dashboard/${user?.role.toLowerCase()}`}
-                                            className="p-2 rounded-lg transition-all duration-300 relative text-white/80 hover:text-white hover:bg-white/10"
-                                            title="Dashboard"
-                                        >
-                                            <User className="w-5 h-5" />
-                                        </Link>
-                                        <button
-                                            onClick={logout}
-                                            className="p-2 rounded-lg transition-all duration-300 relative text-white/80 hover:text-white hover:bg-white/10"
-                                            title="Logout"
-                                        >
-                                            <LogOut className="w-5 h-5" />
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Link
-                                            to="/login"
-                                            className="p-2 rounded-lg transition-all duration-300 relative text-white/80 hover:text-white hover:bg-white/10"
-                                            title="Login"
-                                        >
-                                            <User className="w-5 h-5" />
-                                        </Link>
-                                        <Link
-                                            to="/register"
-                                            className="p-2 rounded-lg transition-all duration-300 relative text-white/80 hover:text-white hover:bg-white/10"
-                                            title="Register"
-                                        >
-                                            <UserPlus className="w-5 h-5" />
-                                        </Link>
-                                    </>
-                                )}
-
                                 {/* Apply Now Button */}
-                                <Link
+                                {isAuthenticated && <Link
                                     to="/apply"
                                     className="ml-2 px-5 py-2 bg-linear-to-r from-[#76C043] to-green-500 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105"
                                 >
-                                    Apply Now
-                                </Link>
+                                    Apply to be instructor                                </Link>
+                                }
                             </div>
                         </div>
 
@@ -263,7 +206,6 @@ const Navbar = () => {
                         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
                     </div>
                 )}
-
                 {/* Mobile Menu Sidebar */}
                 <div
                     className={`lg:hidden fixed top-0 left-0 h-full w-64 md:w-80 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-out ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
@@ -283,8 +225,8 @@ const Navbar = () => {
 
                         {/* Mobile Menu Links */}
                         <nav className="flex-1 overflow-y-auto py-4">
-                            {navItems.map((item) => (
-                                <div key={item.path}>
+                            {navItems.map((item, index) => (
+                                <div key={index}>
                                     {item.dropdown ? (
                                         <div className="border-b border-gray-100 last:border-b-0">
                                             <button
@@ -325,30 +267,13 @@ const Navbar = () => {
                             <div className="border-t border-gray-200 mt-4 pt-4 px-4">
                                 {isAuthenticated ? (
                                     <div className="space-y-2">
-                                        {userActions.map((action) => {
-                                            const Icon = action.icon
-                                            return (
-                                                <Link
-                                                    key={action.path}
-                                                    to={action.path}
-                                                    className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-                                                    onClick={closeMobileMenu}
-                                                >
-                                                    <Icon className="w-4 h-4 mr-3 text-[#76C043]" />
-                                                    {action.label}
-                                                    {action.label === 'Notifications' && (
-                                                        <span className="ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
-                                                    )}
-                                                </Link>
-                                            )
-                                        })}
                                         <Link
                                             to={`/dashboard/${user?.role.toLowerCase()}`}
                                             className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
                                             onClick={closeMobileMenu}
                                         >
                                             <User className="w-4 h-4 mr-3 text-[#76C043]" />
-                                            Dashboard
+                                            {user?.first_name} {user?.last_name}
                                         </Link>
                                         <button
                                             onClick={() => {
@@ -381,18 +306,8 @@ const Navbar = () => {
                                         </Link>
                                     </div>
                                 )}
-
-                                {/* Apply Now Button */}
-                                <Link
-                                    to="/apply"
-                                    className="mt-4 mx-4 px-4 py-3 bg-linear-to-r from-[#76C043] to-green-500 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-[1.02] flex items-center justify-center"
-                                    onClick={closeMobileMenu}
-                                >
-                                    Apply Now
-                                </Link>
                             </div>
                         </nav>
-
                         {/* Mobile Menu Footer */}
                         <div className="border-t border-gray-200 p-4 bg-linear-to-b from-gray-50 to-white">
                             <div className="text-sm text-gray-600 space-y-3">

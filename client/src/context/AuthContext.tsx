@@ -1,5 +1,4 @@
 import React, { useEffect, useState, createContext, useContext } from 'react'
-import { api, endpoints } from '../lib/api'
 
 
 interface User {

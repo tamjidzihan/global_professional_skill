@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react'
-import { api, endpoints } from '../lib/api'
 import { useAuthContext } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { api, endpoints } from '../lib/api'
 
 export function useAuth() {
     const { login: contextLogin, logout: contextLogout } = useAuthContext()
