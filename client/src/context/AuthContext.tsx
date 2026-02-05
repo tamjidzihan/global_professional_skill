@@ -33,8 +33,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const storedUser = localStorage.getItem('user')
             if (accessToken && storedUser) {
                 try {
-                    // Verify token is still valid by fetching profile
-                    // This is optional but good practice
                     setUser(JSON.parse(storedUser))
                 } catch (error) {
                     console.error('Failed to parse stored user', error)

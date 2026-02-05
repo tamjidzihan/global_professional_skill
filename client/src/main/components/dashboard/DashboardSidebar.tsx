@@ -8,7 +8,6 @@ import {
     BarChart,
     GraduationCap,
     LogOut,
-    X,
 } from 'lucide-react'
 import { useAuthContext } from '../../../context/AuthContext'
 interface SidebarProps {
@@ -103,18 +102,9 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
 
             {/* Sidebar */}
             <div
-                className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:h-screen ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                className={`fixed top-0 left-0 h-full w-74 bg-white border-r border-gray-200 z-50 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:h-screen ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
             >
                 <div className="flex flex-col h-full">
-                    {/* Header */}
-                    <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
-                        <Link to="/" className="text-2xl font-bold text-[#0066CC]">
-                            BITM
-                        </Link>
-                        <button onClick={onClose} className="lg:hidden text-gray-500">
-                            <X className="w-6 h-6" />
-                        </button>
-                    </div>
 
                     {/* User Info */}
                     <div className="p-6 border-b border-gray-100 bg-gray-50">
@@ -123,7 +113,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                                 {user?.first_name?.[0] || user?.email?.[0]?.toUpperCase()}
                             </div>
                             <div className="overflow-hidden">
-                                <p className="text-sm font-medium text-gray-900 truncate">
+                                <p className="text-xl font-medium text-gray-900 truncate">
                                     {user?.first_name} {user?.last_name}
                                 </p>
                                 <p className="text-xs text-gray-500 truncate">{user?.email}</p>

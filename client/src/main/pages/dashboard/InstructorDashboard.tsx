@@ -1,18 +1,21 @@
 import { useEffect } from 'react'
-
 import { StatsCard } from '../../components/dashboard/StatsCard'
 import { BookOpen, Users, DollarSign, Star } from 'lucide-react'
-import { useAuthContext } from '../../context/AuthContext'
-import { useAnalytics } from '../../hooks/useAnalytics'
-import { DashboardLayout } from '../../../DashboardLayout'
+import { useAnalytics } from '../../../hooks/useAnalytics'
+
 export function InstructorDashboard() {
-    const { user } = useAuthContext()
-    const { data, getInstructorAnalytics } = useAnalytics()
+    const { data, getInstructorAnalytics, loading } = useAnalytics()
+
     useEffect(() => {
         getInstructorAnalytics()
     }, [getInstructorAnalytics])
+
+    if (loading) {
+        return <div className="p-4">Loading dashboard...</div>
+    }
+
     return (
-        <DashboardLayout>
+        <div className="p-4">
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-gray-900">
                     Instructor Dashboard
@@ -45,7 +48,7 @@ export function InstructorDashboard() {
                 <StatsCard
                     title="Total Reviews"
                     value={data?.total_reviews || 0}
-                    icon={DollarSign} // Using DollarSign as placeholder for generic stats if needed
+                    icon={DollarSign}
                     color="blue"
                 />
             </div>
@@ -62,6 +65,6 @@ export function InstructorDashboard() {
                     </button>
                 </div>
             </div>
-        </DashboardLayout>
+        </div>
     )
 }

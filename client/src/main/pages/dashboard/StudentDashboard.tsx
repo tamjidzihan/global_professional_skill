@@ -1,25 +1,27 @@
 import { useEffect } from 'react'
-
 import { StatsCard } from '../../components/dashboard/StatsCard'
 import { BookOpen, CheckCircle, Clock, Award } from 'lucide-react'
-import { useAuthContext } from '../../context/AuthContext'
-import { useEnrollments } from '../../hooks/useEnrollments'
 import { Link } from 'react-router-dom'
-import { DashboardLayout } from '../../../DashboardLayout'
+import { useAuthContext } from '../../../context/AuthContext'
+import { useEnrollments } from '../../../hooks/useEnrollments'
+
 export function StudentDashboard() {
     const { user } = useAuthContext()
     const { enrollments, getMyEnrollments, loading } = useEnrollments()
+
     useEffect(() => {
         getMyEnrollments()
     }, [getMyEnrollments])
-    // Calculate stats
-    const totalEnrolled = enrollments.length
-    const completed = enrollments.filter(
-        (e) => e.progress_percentage === 100,
-    ).length
+
+    // Safely calculate stats
+    const totalEnrolled = enrollments?.length || 0
+    const completed = enrollments?.filter(
+        (e) => e?.progress_percentage === 100,
+    ).length || 0
     const inProgress = totalEnrolled - completed
+
     return (
-        <DashboardLayout>
+        <div className="p-4">
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-gray-900">
                     Welcome back, {user?.first_name || 'Student'}!
@@ -73,11 +75,11 @@ export function StudentDashboard() {
                     <div className="text-center py-12 bg-white rounded-lg border border-gray-100">
                         <p className="text-gray-500">Loading your courses...</p>
                     </div>
-                ) : enrollments.length > 0 ? (
+                ) : enrollments && enrollments.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {enrollments.slice(0, 3).map((enrollment) => (
                             <div
-                                key={enrollment.id}
+                                key={enrollment?.id}
                                 className="bg-white rounded-lg border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                             >
                                 <div className="h-32 bg-gray-200 relative">
@@ -88,17 +90,17 @@ export function StudentDashboard() {
                                 </div>
                                 <div className="p-4">
                                     <h3 className="font-bold text-gray-900 mb-2 line-clamp-1">
-                                        {enrollment.course?.title || 'Course Title'}
+                                        {enrollment?.course?.title || 'Course Title'}
                                     </h3>
                                     <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                                         <span>Progress</span>
-                                        <span>{Math.round(enrollment.progress_percentage)}%</span>
+                                        <span>{Math.round(enrollment?.progress_percentage || 0)}%</span>
                                     </div>
                                     <div className="w-full bg-gray-100 rounded-full h-2 mb-4">
                                         <div
                                             className="bg-[#76C043] h-2 rounded-full transition-all duration-500"
                                             style={{
-                                                width: `${enrollment.progress_percentage}%`,
+                                                width: `${enrollment?.progress_percentage || 0}%`,
                                             }}
                                         />
                                     </div>
@@ -127,6 +129,6 @@ export function StudentDashboard() {
                     </div>
                 )}
             </div>
-        </DashboardLayout>
+        </div>
     )
 }

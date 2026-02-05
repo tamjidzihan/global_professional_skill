@@ -1,15 +1,21 @@
 import { useEffect } from 'react'
-
 import { StatsCard } from '../../components/dashboard/StatsCard'
 import { Users, BookOpen, GraduationCap, AlertCircle } from 'lucide-react'
-import { DashboardLayout } from '../../../DashboardLayout'
+import { useAnalytics } from '../../../hooks/useAnalytics'
+
 export function AdminDashboard() {
-    const { data, getAdminAnalytics } = useAnalytics()
+    const { data, getAdminAnalytics, loading } = useAnalytics()
+
     useEffect(() => {
         getAdminAnalytics()
     }, [getAdminAnalytics])
+
+    if (loading) {
+        return <div className="p-4">Loading admin dashboard...</div>
+    }
+
     return (
-        <DashboardLayout>
+        <div className="p-4">
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-gray-900">Admin Overview</h1>
                 <p className="text-gray-600 mt-1">
@@ -103,6 +109,6 @@ export function AdminDashboard() {
                     )}
                 </div>
             </div>
-        </DashboardLayout>
+        </div>
     )
 }

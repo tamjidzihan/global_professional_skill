@@ -1,8 +1,11 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Menu } from 'lucide-react'
-import { DashboardSidebar } from './main/components/dashboard/DashboardSidebar'
-export function DashboardLayout({ children }: { children: React.ReactNode }) {
+import { Outlet } from 'react-router-dom'
+import { DashboardSidebar } from '../components/dashboard/DashboardSidebar'
+
+export function DashboardLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false)
+
     return (
         <div className="min-h-screen bg-gray-50 flex">
             <DashboardSidebar
@@ -25,7 +28,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
                 {/* Main Content */}
                 <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-                    {children}
+                    <Outlet /> {/* This renders the nested routes */}
                 </main>
             </div>
         </div>
