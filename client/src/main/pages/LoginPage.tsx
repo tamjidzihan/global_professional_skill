@@ -18,10 +18,7 @@ export function LoginPage() {
         await login(email, password)
     }
 
-    const handleDemoLogin = () => {
-        setEmail('student@gpis.org.bd')
-        setPassword('password123')
-    }
+
 
     return (
         <AuthLayout type="login">
@@ -104,7 +101,7 @@ export function LoginPage() {
                     </div>
                 </div>
 
-                {/* Remember Me & Demo Login */}
+                {/* Remember Me*/}
                 <div className="flex items-center justify-between">
                     <label className="flex items-center">
                         <input
@@ -115,14 +112,6 @@ export function LoginPage() {
                         />
                         <span className="ml-2 text-sm text-gray-600">Remember me</span>
                     </label>
-
-                    <button
-                        type="button"
-                        onClick={handleDemoLogin}
-                        className="text-sm text-gray-600 hover:text-[#0066CC] font-medium"
-                    >
-                        Try demo account
-                    </button>
                 </div>
 
                 {/* Submit Button */}
@@ -140,6 +129,14 @@ export function LoginPage() {
                         <span>Sign In</span>
                     )}
                 </button>
+
+                {/* Login Link */}
+                <p className="text-center text-sm text-gray-600">
+                    Don't have an account?{' '}
+                    <Link to="/register" className="text-[#0066CC] font-medium hover:underline">
+                        Sign up
+                    </Link>
+                </p>
 
                 {/* Help Text */}
                 <div className="rounded-lg bg-blue-50 border border-blue-100 p-4">

@@ -72,11 +72,11 @@ const Breadcrumb = ({ name, subtitle, icon: Icon }: BreadcrumbProps) => {
             {/* Animated Gradient */}
             <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/5 to-transparent animate-shimmer" />
 
-            <div className="relative container mx-auto px-4 py-16 md:py-20">
+            <div className="relative container mx-auto px-4 py-10">
                 <div className="max-w-4xl">
 
                     {/* Main Title */}
-                    <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold text-white mb-3 leading-tight">
+                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 leading-tight">
                         {name}
                     </h1>
 
@@ -127,9 +127,6 @@ const Breadcrumb = ({ name, subtitle, icon: Icon }: BreadcrumbProps) => {
             {/* Decorative background elements */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full transform translate-x-1/2 -translate-y-1/2"></div>
             <div className="absolute bottom-0 left-10 w-32 h-32 bg-white/10 rounded-full transform translate-y-1/2"></div>
-
-            {/* Bottom Gradient Fade */}
-            <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-gray-900 to-transparent pointer-events-none" />
         </div>
     )
 }

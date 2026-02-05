@@ -1,21 +1,21 @@
 import { createBrowserRouter } from "react-router-dom";
-import HomePage from "./main/pages/HomePage";
-import CoursesPage from "./main/pages/CoursesPage";
-import AboutPage from "./main/pages/AboutPage";
-import { LoginPage } from "./main/pages/LoginPage";
-import { RegisterPage } from "./main/pages/RegisterPage";
-import { CourseDetailPage } from "./main/pages/CourseDetailPage";
-import NotificationsPage from "./main/pages/NotificationsPage";
-import ProfilePage from "./main/pages/ProfilePage";
-import ForgotPasswordPage from "./main/pages/ForgotPasswordPage";
-import TermsPage from "./main/pages/TermsPage";
-import PrivacyPage from "./main/pages/PrivacyPage";
-import ProtectedRoute from "./ProtectedRoute";
-import { StudentDashboard } from "./main/pages/dashboard/StudentDashboard";
-import { InstructorDashboard } from "./main/pages/dashboard/InstructorDashboard";
-import { AdminDashboard } from "./main/pages/dashboard/AdminDashboard";
 import { DashboardLayout } from "./main/layouts/DashboardLayout";
 import Layout from "./main/layouts/Layout";
+import AboutPage from "./main/pages/AboutPage";
+import { CourseDetailPage } from "./main/pages/CourseDetailPage";
+import CoursesPage from "./main/pages/CoursesPage";
+import { AdminDashboard } from "./main/pages/dashboard/AdminDashboard";
+import { InstructorDashboard } from "./main/pages/dashboard/InstructorDashboard";
+import { StudentDashboard } from "./main/pages/dashboard/StudentDashboard";
+import ForgotPasswordPage from "./main/pages/ForgotPasswordPage";
+import HomePage from "./main/pages/HomePage";
+import { LoginPage } from "./main/pages/LoginPage";
+import NotificationsPage from "./main/pages/NotificationsPage";
+import PrivacyPage from "./main/pages/PrivacyPage";
+import ProfilePage from "./main/pages/ProfilePage";
+import { RegisterPage } from "./main/pages/RegisterPage";
+import TermsPage from "./main/pages/TermsPage";
+import ProtectedRoute from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
 
 

@@ -1,19 +1,29 @@
 import React, { useState } from 'react'
-import { User, Mail, Phone, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { User, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { AuthLayout } from '../components/AuthLayout'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+
+interface RegisterFormData {
+    email: string;
+    password: string;
+    password_confirm: string;
+    first_name: string;
+    last_name: string;
+    acceptTerms: boolean;
+}
 
 export function RegisterPage() {
     const { register, loading, error } = useAuth()
     const navigate = useNavigate()
     const [showPassword, setShowPassword] = useState(false)
     const [formError, setFormError] = useState<string | null>(null)
-    const [formData, setFormData] = useState({
-        name: '',
+    const [formData, setFormData] = useState<RegisterFormData>({
         email: '',
-        phone: '',
         password: '',
+        password_confirm: '',
+        first_name: '',
+        last_name: '',
         acceptTerms: false
     })
 
@@ -21,28 +31,49 @@ export function RegisterPage() {
         e.preventDefault()
         setFormError(null)
 
+        // Validate form
         if (!formData.acceptTerms) {
             setFormError('You must accept the Terms & Conditions and Privacy Policy.')
             return
         }
 
-        const success = await register(formData)
+        if (formData.password !== formData.password_confirm) {
+            setFormError('Passwords do not match.')
+            return
+        }
+
+        if (formData.password.length < 8) {
+            setFormError('Password must be at least 8 characters long.')
+            return
+        }
+
+        // Prepare API payload
+        const payload = {
+            email: formData.email,
+            password: formData.password,
+            password_confirm: formData.password_confirm,
+            first_name: formData.first_name,
+            last_name: formData.last_name
+        }
+
+        const success = await register(payload)
 
         if (success) {
             // Reset form data on successful registration
             setFormData({
-                name: '',
                 email: '',
-                phone: '',
                 password: '',
+                password_confirm: '',
+                first_name: '',
+                last_name: '',
                 acceptTerms: false
             })
-            // Optionally, navigate to login page or show a success message
+            // Navigate to login with success message
             navigate('/login?registrationSuccess=true')
         }
     }
 
-    const handleChange = (field: string, value: string | boolean) => {
+    const handleChange = (field: keyof RegisterFormData, value: string | boolean) => {
         setFormData(prev => ({ ...prev, [field]: value }))
     }
 
@@ -65,23 +96,47 @@ export function RegisterPage() {
                         </div>
                     </div>
                 )}
-                {/* Name Field */}
+
+                {/* First Name Field */}
                 <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                        Full Name
+                    <label htmlFor="first_name" className="block text-sm font-medium text-gray-700 mb-2">
+                        First Name
                     </label>
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <User className="h-5 w-5 text-gray-400" />
                         </div>
                         <input
-                            id="name"
+                            id="first_name"
                             type="text"
-                            value={formData.name}
-                            onChange={(e) => handleChange('name', e.target.value)}
+                            value={formData.first_name}
+                            onChange={(e) => handleChange('first_name', e.target.value)}
                             className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent"
-                            placeholder="Enter your full name"
+                            placeholder="Enter your first name"
                             required
+                            minLength={2}
+                        />
+                    </div>
+                </div>
+
+                {/* Last Name Field */}
+                <div>
+                    <label htmlFor="last_name" className="block text-sm font-medium text-gray-700 mb-2">
+                        Last Name
+                    </label>
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <User className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                            id="last_name"
+                            type="text"
+                            value={formData.last_name}
+                            onChange={(e) => handleChange('last_name', e.target.value)}
+                            className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent"
+                            placeholder="Enter your last name"
+                            required
+                            minLength={2}
                         />
                     </div>
                 </div>
@@ -103,27 +158,7 @@ export function RegisterPage() {
                             className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent"
                             placeholder="student@example.com"
                             required
-                        />
-                    </div>
-                </div>
-
-                {/* Phone Field */}
-                <div>
-                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                        Mobile Number
-                    </label>
-                    <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <Phone className="h-5 w-5 text-gray-400" />
-                        </div>
-                        <input
-                            id="phone"
-                            type="tel"
-                            value={formData.phone}
-                            onChange={(e) => handleChange('phone', e.target.value)}
-                            className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent"
-                            placeholder="01XXXXXXXXX"
-                            required
+                            pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
                         />
                     </div>
                 </div>
@@ -145,6 +180,7 @@ export function RegisterPage() {
                             className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent"
                             placeholder="Create a strong password"
                             required
+                            minLength={8}
                         />
                         <button
                             type="button"
@@ -161,6 +197,39 @@ export function RegisterPage() {
                     <p className="text-xs text-gray-500 mt-2">
                         Use at least 8 characters with a mix of letters, numbers, and symbols
                     </p>
+                </div>
+
+                {/* Confirm Password Field */}
+                <div>
+                    <label htmlFor="password_confirm" className="block text-sm font-medium text-gray-700 mb-2">
+                        Confirm Password
+                    </label>
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Lock className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                            id="password_confirm"
+                            type={showPassword ? 'text' : 'password'}
+                            value={formData.password_confirm}
+                            onChange={(e) => handleChange('password_confirm', e.target.value)}
+                            className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent"
+                            placeholder="Confirm your password"
+                            required
+                            minLength={8}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                        >
+                            {showPassword ? (
+                                <EyeOff className="h-5 w-5 text-gray-400" />
+                            ) : (
+                                <Eye className="h-5 w-5 text-gray-400" />
+                            )}
+                        </button>
+                    </div>
                 </div>
 
                 {/* Terms & Conditions */}
