@@ -17,6 +17,8 @@ import { RegisterPage } from "./main/pages/RegisterPage";
 import TermsPage from "./main/pages/TermsPage";
 import ProtectedRoute from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
+import EmailVerificationPage from "./main/pages/EmailVerificationPage";
+import VerifyEmailPromptPage from "./main/pages/VerifyEmailPromptPage";
 
 
 export const router = createBrowserRouter([
@@ -33,6 +35,8 @@ export const router = createBrowserRouter([
             { path: '/forgot-password', element: <ForgotPasswordPage /> },
             { path: '/terms', element: <TermsPage /> },
             { path: '/privacy', element: <PrivacyPage /> },
+            { path: '/verify-email', element: <EmailVerificationPage /> }, // New route for email verification
+            { path: '/verify-email-prompt', element: <VerifyEmailPromptPage /> }, // New route for email verification prompt
 
             {
                 path: '/login',

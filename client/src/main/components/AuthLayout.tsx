@@ -3,11 +3,13 @@ import { GraduationCap, BookOpen, Shield, Award, Users, ChevronRight } from 'luc
 
 interface AuthLayoutProps {
     children: React.ReactNode
-    type: 'login' | 'register'
+    type: 'login' | 'register' | 'info'
 }
 
 export function AuthLayout({ children, type }: AuthLayoutProps) {
     const isLogin = type === 'login'
+    const isRegister = type === 'register'
+    const isInfo = type === 'info'
 
     const features = [
         { icon: Shield, text: 'Secure & Private' },
@@ -43,7 +45,9 @@ export function AuthLayout({ children, type }: AuthLayoutProps) {
                                     <p className="text-blue-100">
                                         {isLogin
                                             ? 'Sign in to access your courses and learning materials.'
-                                            : 'Create an account to start your IT career journey.'
+                                            : isRegister
+                                                ? 'Create an account to start your IT career journey.'
+                                                : 'Your secure pathway to knowledge and growth.' // Generic message for 'info'
                                         }
                                     </p>
                                 </div>
@@ -98,29 +102,33 @@ export function AuthLayout({ children, type }: AuthLayoutProps) {
                                     </div>
                                     <div>
                                         <h1 className="text-2xl font-bold text-gray-900">
-                                            {isLogin ? 'Welcome Back' : 'Join BITM'}
+                                            {isLogin ? 'Welcome Back' : isRegister ? 'Join BITM' : 'Information'}
                                         </h1>
                                         <p className="text-gray-600 text-sm">
                                             {isLogin
                                                 ? 'Sign in to continue your learning journey'
-                                                : 'Create your account to get started'
+                                                : isRegister
+                                                    ? 'Create your account to get started'
+                                                    : 'Important information regarding your account' // Generic message for 'info'
                                             }
                                         </p>
                                     </div>
                                 </div>
 
                                 {/* Mobile Switch */}
-                                <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
-                                    <span>
-                                        {isLogin ? "Don't have an account?" : "Already have an account?"}
-                                    </span>
-                                    <Link
-                                        to={isLogin ? '/register' : '/login'}
-                                        className="text-[#0066CC] font-medium hover:underline"
-                                    >
-                                        {isLogin ? 'Sign up' : 'Sign in'}
-                                    </Link>
-                                </div>
+                                {!isInfo && ( // Only show switch if not 'info' type
+                                    <div className="flex items-center justify-center space-x-2 text-sm text-gray-600">
+                                        <span>
+                                            {isLogin ? "Don't have an account?" : "Already have an account?"}
+                                        </span>
+                                        <Link
+                                            to={isLogin ? '/register' : '/login'}
+                                            className="text-[#0066CC] font-medium hover:underline"
+                                        >
+                                            {isLogin ? 'Sign up' : 'Sign in'}
+                                        </Link>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Form Container */}

@@ -1,3 +1,4 @@
+import { toast } from 'react-hot-toast' // Import toast
 import React, { useState } from 'react'
 import { User, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { AuthLayout } from '../components/AuthLayout'
@@ -69,6 +70,7 @@ export function RegisterPage() {
                 acceptTerms: false
             })
             // Navigate to login with success message
+            toast.success('Registration successful! Please check your email to verify your account.'); // Notify user
             navigate('/login?registrationSuccess=true')
         }
     }

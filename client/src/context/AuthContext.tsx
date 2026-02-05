@@ -1,4 +1,4 @@
-import React, { useEffect, useState, createContext, useContext } from 'react'
+import React, { useEffect, useState, createContext, useContext, useCallback } from 'react'
 
 
 interface User {
@@ -27,6 +27,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null)
     const [isLoading, setIsLoading] = useState(true)
+
+    const logout = useCallback(() => {
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        localStorage.removeItem('user')
+        setUser(null)
+    }, [])
+
     useEffect(() => {
         const initAuth = async () => {
             const accessToken = localStorage.getItem('access_token')
@@ -42,7 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setIsLoading(false)
         }
         initAuth()
-    }, [])
+    }, [logout])
     const login = (
         tokens: {
             access: string
@@ -54,12 +62,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('refresh_token', tokens.refresh)
         localStorage.setItem('user', JSON.stringify(userData))
         setUser(userData)
-    }
-    const logout = () => {
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
-        localStorage.removeItem('user')
-        setUser(null)
     }
     const updateUser = (userData: Partial<User>) => {
         if (user) {

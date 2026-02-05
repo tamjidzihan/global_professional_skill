@@ -1,9 +1,10 @@
 // LoginPage.tsx
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom' // Added useLocation, useNavigate
 import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { AuthLayout } from '../components/AuthLayout'
 import { useAuth } from '../../hooks/useAuth'
+import { toast } from 'react-hot-toast' // Added toast
 
 export function LoginPage() {
     const { login, loading, error } = useAuth()
@@ -11,6 +12,18 @@ export function LoginPage() {
     const [rememberMe, setRememberMe] = useState(false)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const location = useLocation() // Initialize useLocation
+    const navigate = useNavigate() // Initialize useNavigate
+
+    useEffect(() => {
+        const queryParams = new URLSearchParams(location.search);
+        if (queryParams.get('registrationSuccess') === 'true') {
+            toast.success('Registration successful! Please check your email to verify your account.');
+            // Remove the query parameter from the URL
+            queryParams.delete('registrationSuccess');
+            navigate('?' + queryParams.toString(), { replace: true });
+        }
+    }, [location.search, navigate]); // Dependencies for useEffect
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
