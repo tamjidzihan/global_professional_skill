@@ -57,7 +57,7 @@ const Navbar = () => {
     ]
 
     return (
-        <>
+        <header className=' z-40'>
             {/* Top Bar */}
             <div className="py-2 text-sm bg-white/70 backdrop-blur border-b border-gray-200">
                 <div className="container mx-auto px-4 flex justify-between items-center">
@@ -115,7 +115,7 @@ const Navbar = () => {
             </div>
 
             {/* Main Navigation */}
-            <header>
+            <div>
                 <div className="bg-white/80 backdrop-blur-xl shadow-[0_6px_30px_rgba(0,0,0,0.06)] border-b border-gray-200">
                     <div className="container mx-auto px-4">
                         <div className="flex items-center justify-between h-16">
@@ -153,7 +153,7 @@ const Navbar = () => {
 
                                         {/* Dropdown Menu */}
                                         {item.dropdown && dropdownOpen === item.path && (
-                                            <div className="absolute top-full left-0 mt-2 w-48 bg-white/90 backdrop-blur-xl rounded-xl shadow-xl border border-gray-100 py-2 z-50">
+                                            <div className="absolute top-full left-0 w-48 bg-white/90 backdrop-blur-xl rounded-xl shadow-xl border border-gray-100 py-2 z-50">
                                                 {item.dropdown.map((subItem) => (
                                                     <Link
                                                         key={subItem.path}
@@ -177,7 +177,7 @@ const Navbar = () => {
                                         to="/apply-as-instructor"
                                         className="ml-2 px-5 py-2 rounded-xl bg-linear-to-r from-[#76C043] to-green-500 text-white font-semibold shadow hover:shadow-lg transition-all duration-300 hover:scale-105"
                                     >
-                                        Apply to be instructor
+                                        Join as Instructor
                                     </Link>
                                 )}
                             </div>
@@ -327,8 +327,8 @@ const Navbar = () => {
                         </div>
                     </div>
                 </div>
-            </header>
-        </>
+            </div>
+        </header>
     )
 }
 
