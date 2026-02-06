@@ -176,10 +176,11 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                             </div>
 
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-lg font-semibold text-gray-900 truncate">
-                                        {user?.first_name} {user?.last_name}
-                                    </p>
+                                <p className="text-lg font-semibold text-gray-900 truncate">
+                                    {user?.first_name} {user?.last_name}
+                                </p>
+                                <p className="text-sm text-gray-500 truncate mt-1">{user?.email}</p>
+                                <div className="flex items-center gap-2 mt-2">
                                     {/* Role Badge with Modern Design */}
                                     <span className={cn(
                                         "inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full",
@@ -189,11 +190,6 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                                     )}>
                                         {user?.role?.toLowerCase()}
                                     </span>
-                                </div>
-                                <p className="text-sm text-gray-500 truncate mt-1">{user?.email}</p>
-                                <div className="flex items-center gap-2 mt-2">
-                                    <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                                    <span className="text-xs text-gray-400">Online</span>
                                 </div>
                             </div>
                         </div>
