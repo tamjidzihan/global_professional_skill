@@ -12,12 +12,14 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
     "axios": "^1.13.4",
+    "date-fns": "^4.1.0",
     "lucide-react": "^0.562.0",
     "react": "^19.2.0",
     "react-calendar": "^6.0.0",
     "react-dom": "^19.2.0",
     "react-hot-toast": "^2.6.0",
     "react-router-dom": "^7.12.0",
+    "react-toastify": "^11.0.5",
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
@@ -26,6 +28,7 @@
     "@types/react": "^19.2.5",
     "@types/react-calendar": "^3.9.0",
     "@types/react-dom": "^19.2.3",
+    "@types/react-toastify": "^4.0.2",
     "@vitejs/plugin-react": "^5.1.1",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",

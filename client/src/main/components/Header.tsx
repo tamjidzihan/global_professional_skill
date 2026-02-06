@@ -174,10 +174,11 @@ const Navbar = () => {
                             <div className="flex items-center space-x-2">
                                 {/* Apply Now Button */}
                                 {isAuthenticated && <Link
-                                    to="/apply"
+                                    to="/apply-as-instructor"
                                     className="ml-2 px-5 py-2 bg-linear-to-r from-[#76C043] to-green-500 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105"
                                 >
-                                    Apply to be instructor                                </Link>
+                                    Apply to be instructor
+                                </Link>
                                 }
                             </div>
                         </div>

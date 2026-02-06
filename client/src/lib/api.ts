@@ -1,4 +1,6 @@
-import axios from 'axios'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import axios, { type AxiosResponse } from 'axios'
+import type { CreateInstructorRequest } from '../types'
 
 const API_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -78,6 +80,11 @@ export const endpoints = {
         create: '/accounts/instructor-requests/',
         list: '/accounts/instructor-requests/',
         review: (id: string) => `/accounts/instructor-requests/${id}/review/`,
+        detail: (id: string) => `/accounts/instructor-requests/${id}/`,
+    },
+    users: {
+        detail: (id: string) => `/accounts/users/${id}/`,
+        updateRole: (id: string) => `/accounts/users/${id}/update_role/`,
     },
     courses: {
         list: '/courses/courses/',
@@ -107,3 +114,36 @@ export const endpoints = {
         admin: '/analytics/admin/',
     },
 }
+
+// Instructor Request API Calls
+export const createInstructorRequest = (data: CreateInstructorRequest) =>
+    api.post(endpoints.instructorRequests.create, data)
+
+
+export const getInstructorRequests = <T = any>(
+    params?: Record<string, string>,
+    pageUrl?: string | null
+): Promise<AxiosResponse<T>> => {
+    if (pageUrl) {
+        return api.get<T>(pageUrl)
+    }
+    return api.get<T>(endpoints.instructorRequests.list, { params })
+}
+
+export const getInstructorRequestDetail = <T = any>(id: string): Promise<AxiosResponse<T>> =>
+    api.get<T>(endpoints.instructorRequests.detail(id))
+
+export const reviewInstructorRequest = (
+    id: string,
+    data: { status: 'APPROVED' | 'REJECTED'; feedback?: string }
+): Promise<AxiosResponse> =>
+    api.post(endpoints.instructorRequests.review(id), data)
+
+
+// User Management API Calls
+export const updateUserRole = (userId: string, role: string) =>
+    api.patch(endpoints.users.updateRole(userId), { role })
+
+export const getUserDetail = (userId: string) =>
+    api.get(endpoints.users.detail(userId))
+

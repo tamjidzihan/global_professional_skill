@@ -1,14 +1,7 @@
 import React, { useEffect, useState, createContext, useContext, useCallback } from 'react'
+import type { User } from '../types'
 
 
-interface User {
-    id: string
-    email: string
-    first_name?: string
-    last_name?: string
-    role: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN'
-    email_verified: boolean
-}
 interface AuthContextType {
     user: User | null
     isAuthenticated: boolean
@@ -23,6 +16,7 @@ interface AuthContextType {
     logout: () => void
     updateUser: (userData: Partial<User>) => void
 }
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null)

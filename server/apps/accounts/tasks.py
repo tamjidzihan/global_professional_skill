@@ -193,7 +193,7 @@ def send_instructor_request_decision_email(request_id):
                 {
                     "email_subtitle": "Instructor Request Approved",
                     "subject": f"Instructor Request Approved - {settings.SITE_NAME}",
-                    "instructor_dashboard_url": f"{settings.FRONTEND_URL}/instructor/dashboard",
+                    "instructor_dashboard_url": f"{settings.FRONTEND_URL}/dashboard/instructor",
                 }
             )
 

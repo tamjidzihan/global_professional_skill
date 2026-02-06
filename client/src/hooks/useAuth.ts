@@ -6,7 +6,7 @@ import { api, endpoints } from '../lib/api'
 import { toast } from 'react-hot-toast'
 
 export function useAuth() {
-    const { login: contextLogin, logout: contextLogout } = useAuthContext()
+    const { login: contextLogin, logout: contextLogout, user, isAuthenticated } = useAuthContext()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const navigate = useNavigate()
@@ -83,5 +83,7 @@ export function useAuth() {
         logout,
         loading,
         error,
+        user,
+        isAuthenticated,
     }
 }
