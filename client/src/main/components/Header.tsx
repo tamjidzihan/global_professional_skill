@@ -59,33 +59,36 @@ const Navbar = () => {
     return (
         <>
             {/* Top Bar */}
-            <div className="py-2 text-sm">
+            <div className="py-2 text-sm bg-white/70 backdrop-blur border-b border-gray-200">
                 <div className="container mx-auto px-4 flex justify-between items-center">
-                    <div className="hidden lg:flex items-center space-x-6">
+                    <div className="hidden lg:flex items-center space-x-6 text-gray-600">
                         <div className="flex items-center">
-                            <Phone className="w-3 h-3 sm:w-4 sm:h-4 text-[#76C043] mr-1 sm:mr-2" />
-                            <span className="text-xs sm:text-sm">+88 09638-016499</span>
+                            <Phone className="w-4 h-4 text-[#76C043] mr-2" />
+                            <span>+88 09638-016499</span>
                         </div>
                         <div className="flex items-center">
-                            <Mail className="w-3 h-3 sm:w-4 sm:h-4 text-[#76C043] mr-1 sm:mr-2" />
-                            <span className="text-xs sm:text-sm">info@gpis.org.bd</span>
+                            <Mail className="w-4 h-4 text-[#76C043] mr-2" />
+                            <span>info@gpis.org.bd</span>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3 sm:gap-4">
+
+                    <div className="flex items-center gap-4">
                         {isAuthenticated ? (
                             <>
                                 <Link
                                     to={`/dashboard/${user?.role.toLowerCase()}`}
-                                    className="flex items-center text-gray-600 hover:text-[#0066CC] transition-colors text-xs sm:text-sm"
+                                    className="flex items-center gap-2 text-gray-700 hover:text-[#0066CC] transition"
                                 >
-                                    <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#76C043]" />
-                                    <span className='font-semibold'>{user?.first_name} {user?.last_name}</span>
+                                    <User className="w-4 h-4 text-[#76C043]" />
+                                    <span className="font-semibold">
+                                        {user?.first_name} {user?.last_name}
+                                    </span>
                                 </Link>
                                 <button
                                     onClick={logout}
-                                    className="flex items-center text-gray-600 hover:text-[#0066CC] transition-colors text-xs sm:text-sm"
+                                    className="flex items-center gap-2 text-gray-700 hover:text-red-500 transition"
                                 >
-                                    <LogOut className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#76C043]" />
+                                    <LogOut className="w-4 h-4 text-[#76C043]" />
                                     Logout
                                 </button>
                             </>
@@ -93,16 +96,16 @@ const Navbar = () => {
                             <>
                                 <Link
                                     to="/login"
-                                    className="flex items-center text-gray-600 hover:text-[#0066CC] transition-colors text-xs sm:text-sm"
+                                    className="flex items-center gap-2 text-gray-700 hover:text-[#0066CC] transition"
                                 >
-                                    <User className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#76C043]" />
+                                    <User className="w-4 h-4 text-[#76C043]" />
                                     Login
                                 </Link>
                                 <Link
                                     to="/register"
-                                    className="flex items-center text-gray-600 hover:text-[#0066CC] transition-colors text-xs sm:text-sm"
+                                    className="flex items-center gap-2 text-gray-700 hover:text-[#0066CC] transition"
                                 >
-                                    <UserPlus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 text-[#76C043]" />
+                                    <UserPlus className="w-4 h-4 text-[#76C043]" />
                                     Register
                                 </Link>
                             </>
@@ -112,89 +115,86 @@ const Navbar = () => {
             </div>
 
             {/* Main Navigation */}
-            <header className="bg-[#0066CC]">
-                <div className="container mx-auto px-4">
-                    <div className="flex items-center justify-between h-16">
-                        {/* Logo */}
-                        <Link to="/" className="flex items-center space-x-3">
-                            <div className="p-1 rounded bg-white/10">
-                                <div className="px-3 py-2 rounded bg-white text-[#0066CC]">
-                                    <span className="font-bold text-lg tracking-tight">GPIS-BD</span>
+            <header>
+                <div className="bg-white/80 backdrop-blur-xl shadow-[0_6px_30px_rgba(0,0,0,0.06)] border-b border-gray-200">
+                    <div className="container mx-auto px-4">
+                        <div className="flex items-center justify-between h-16">
+                            {/* Logo */}
+                            <Link to="/" className="flex items-center space-x-3">
+                                <div className="px-4 py-2 rounded-xl bg-linear-to-br from-blue-600 to-indigo-600 text-white font-bold text-lg shadow">
+                                    GPIS-BD
                                 </div>
-                            </div>
-                        </Link>
+                            </Link>
 
-                        {/* Desktop Navigation */}
-                        <nav className="hidden lg:flex items-center space-x-1">
-                            {navItems.map((item, index) => (
-                                <div
-                                    key={index}
-                                    className="relative"
-                                    onMouseEnter={() => item.dropdown && setDropdownOpen(item.path)}
-                                    onMouseLeave={() => setDropdownOpen(null)}
-                                >
-                                    <Link
-                                        to={item.path}
-                                        className={`
-                                            flex items-center space-x-1 px-4 py-2 rounded-lg transition-all duration-300
-                                            ${isActive(item.path).includes('font-semibold')
-                                                ? 'text-white bg-white/10'
-                                                : 'text-white/90 hover:text-white hover:bg-white/10'
-                                            }
-                                        `}
+                            {/* Desktop Navigation */}
+                            <nav className="hidden lg:flex items-center space-x-1">
+                                {navItems.map((item, index) => (
+                                    <div
+                                        key={index}
+                                        className="relative"
+                                        onMouseEnter={() => item.dropdown && setDropdownOpen(item.path)}
+                                        onMouseLeave={() => setDropdownOpen(null)}
                                     >
-                                        <span className="font-medium">{item.label}</span>
-                                        {item.dropdown && (
-                                            <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${dropdownOpen === item.path ? 'rotate-180' : ''}`} />
+                                        <Link
+                                            to={item.path}
+                                            className={`
+                                    flex items-center space-x-1 px-4 py-2 rounded-lg transition-all duration-200
+                                    ${isActive(item.path).includes('font-semibold')
+                                                    ? 'text-[#0066CC] bg-blue-50 font-semibold'
+                                                    : 'text-gray-700 hover:text-[#0066CC] hover:bg-blue-50'
+                                                }
+                                `}
+                                        >
+                                            <span>{item.label}</span>
+                                            {item.dropdown && (
+                                                <ChevronDown className={`w-4 h-4 transition-transform ${dropdownOpen === item.path ? 'rotate-180' : ''}`} />
+                                            )}
+                                        </Link>
+
+                                        {/* Dropdown Menu */}
+                                        {item.dropdown && dropdownOpen === item.path && (
+                                            <div className="absolute top-full left-0 mt-2 w-48 bg-white/90 backdrop-blur-xl rounded-xl shadow-xl border border-gray-100 py-2 z-50">
+                                                {item.dropdown.map((subItem) => (
+                                                    <Link
+                                                        key={subItem.path}
+                                                        to={subItem.path}
+                                                        className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-[#0066CC] transition"
+                                                        onClick={() => setDropdownOpen(null)}
+                                                    >
+                                                        <span className="font-medium">{subItem.label}</span>
+                                                    </Link>
+                                                ))}
+                                            </div>
                                         )}
+                                    </div>
+                                ))}
+                            </nav>
+
+                            {/* Right Side Actions */}
+                            <div className="hidden lg:flex items-center space-x-3">
+                                {isAuthenticated && (
+                                    <Link
+                                        to="/apply-as-instructor"
+                                        className="ml-2 px-5 py-2 rounded-xl bg-linear-to-r from-[#76C043] to-green-500 text-white font-semibold shadow hover:shadow-lg transition-all duration-300 hover:scale-105"
+                                    >
+                                        Apply to be instructor
                                     </Link>
-
-                                    {/* Dropdown Menu */}
-                                    {item.dropdown && dropdownOpen === item.path && (
-                                        <div className="absolute top-full left-0 w-48 bg-white rounded-lg shadow-xl border border-gray-100 py-2 z-50">
-                                            {item.dropdown.map((subItem) => (
-                                                <Link
-                                                    key={subItem.path}
-                                                    to={subItem.path}
-                                                    className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-[#0066CC] transition-colors group"
-                                                    onClick={() => setDropdownOpen(null)}
-                                                >
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-200 mr-3 group-hover:bg-[#0066CC] transition-colors"></div>
-                                                    <span className="font-medium">{subItem.label}</span>
-                                                </Link>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </nav>
-
-                        {/* Right Side Actions */}
-                        <div className="hidden lg:flex items-center space-x-3">
-                            <div className="flex items-center space-x-2">
-                                {/* Apply Now Button */}
-                                {isAuthenticated && <Link
-                                    to="/apply-as-instructor"
-                                    className="ml-2 px-5 py-2 bg-linear-to-r from-[#76C043] to-green-500 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-300 hover:scale-105"
-                                >
-                                    Apply to be instructor
-                                </Link>
-                                }
+                                )}
                             </div>
-                        </div>
 
-                        {/* Mobile Menu Button */}
-                        <button
-                            className="lg:hidden p-2 rounded-lg transition-colors"
-                            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            aria-label="Toggle menu"
-                        >
-                            {mobileMenuOpen ? (
-                                <X className="w-6 h-6 text-white" />
-                            ) : (
-                                <Menu className="w-6 h-6 text-white" />
-                            )}
-                        </button>
+                            {/* Mobile Menu Button (UNCHANGED) */}
+                            <button
+                                className="lg:hidden p-2 rounded-lg transition-colors"
+                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                aria-label="Toggle menu"
+                            >
+                                {mobileMenuOpen ? (
+                                    <X className="w-6 h-6 text-gray-700" />
+                                ) : (
+                                    <Menu className="w-6 h-6 text-gray-700" />
+                                )}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
