@@ -6,6 +6,7 @@ import { CourseDetailPage } from "./main/pages/CourseDetailPage";
 import CoursesPage from "./main/pages/CoursesPage";
 import { AdminDashboard } from "./main/pages/dashboard/AdminDashboard";
 import { InstructorDashboard } from "./main/pages/dashboard/InstructorDashboard";
+import { MyProfilePage } from "./main/pages/dashboard/MyProfilePage";
 import { StudentDashboard } from "./main/pages/dashboard/StudentDashboard";
 import EmailVerificationPage from "./main/pages/EmailVerificationPage";
 import ForgotPasswordPage from "./main/pages/ForgotPasswordPage";
@@ -21,7 +22,6 @@ import TermsPage from "./main/pages/TermsPage";
 import VerifyEmailPromptPage from "./main/pages/VerifyEmailPromptPage";
 import ProtectedRoute from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
-import { MyProfilePage } from "./main/pages/MyProfilePage";
 
 
 export const router = createBrowserRouter([

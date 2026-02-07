@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useMyProfile } from '../../hooks/useMyProfile'
-import { useAuth } from '../../hooks/useAuth'
 import { toast } from 'react-toastify'
 import {
     Mail,
@@ -16,6 +14,8 @@ import {
     Save,
     Camera,
 } from 'lucide-react'
+import { useMyProfile } from '../../../hooks/useMyProfile'
+import { useAuth } from '../../../hooks/useAuth'
 
 export function MyProfilePage() {
     const navigate = useNavigate()
