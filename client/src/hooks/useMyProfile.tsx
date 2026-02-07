@@ -31,7 +31,7 @@ export const useMyProfile = () => {
         }
     }, [isAuthenticated]);
 
-    const updateProfile = useCallback(async (profileData: Partial<User>) => {
+    const updateProfile = useCallback(async (profileData: Partial<User> | FormData) => {
         setIsUpdating(true);
         setUpdateError(null);
         setUpdateSuccess(false);

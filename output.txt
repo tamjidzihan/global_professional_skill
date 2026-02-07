@@ -1,16 +1,22 @@
-- **`client/src/hooks/useInstructorRequests.tsx`**: This hook was significantly enhanced.
-    - It now imports `useAuth` to automatically fetch instructor requests pertaining to the currently logged-in user.
-    - The `fetchInstructorRequests` function was updated to accept an optional `specificUserId` for filtering, defaulting to the authenticated user's ID if not provided.
-    - Functionality to `submitInstructorRequest` was added, which wraps the `createInstructorRequest` API call and manages its own submission state (`isSubmitting`, `submitError`, `submitSuccess`).
-    - An `useEffect` was included to trigger an initial fetch of requests when the component mounts and the user is authenticated.
-- **`client/src/main/pages/dashboard/StudentDashboard.tsx`**:
-    - The enhanced `useInstructorRequests` hook was imported and utilized.
-    - New icons (`Briefcase`, `Sparkles`, `AlertCircle`) were imported from `lucide-react`.
-    - A dedicated "Instructor Application Status" section was integrated into the student dashboard. This section intelligently displays:
-        - Loading and error states during data fetching.
-        - The status of the student's most recent instructor request (e.g., "Pending Review", "Approved!", "Rejected").
-        - For rejected requests, it shows the `review_notes` and provides a link to re-apply.
-        - If no instructor request is found, it presents a clear "Become an Instructor" call to action with a link to the `/apply-as-instructor` page.
-    - The complex conditional rendering logic within this section was carefully wrapped in an Immediately Invoked Function Expression (IIFE) to ensure it is syntactically valid JSX and compiles correctly.
-
-All changes have been successfully implemented and the project compiles without errors. The student dashboard now effectively displays relevant instructor application information and provides a pathway for students to apply to become instructors.
+- **Error Analysis**: The backend error message `"{'profile_picture': [ErrorDetail(string='The submitted data was not a file. Check the encoding type on the form.', code='invalid')]"` indicated that the Django REST Framework was not receiving the uploaded file correctly. This typically happens when the `Content-Type` header for a request sending `FormData` is incorrectly set or overridden.
+- **Root Cause Identification**: The `client/src/lib/api.ts` file had a default `Content-Type: 'application/json'` explicitly set in its `axios.create` configuration:
+    ```typescript
+    export const api = axios.create({
+        baseURL: API_URL,
+        headers: {
+            'Content-Type': 'application/json', // This was the culprit
+        },
+    });
+    ```
+    This explicit setting prevented `axios` from automatically detecting and setting the correct `Content-Type` header (`multipart/form-data`) when a `FormData` object was passed as the request body for file uploads.
+- **Fix Implemented**: The explicit `Content-Type: 'application/json'` header was removed from the `axios.create` configuration in `client/src/lib/api.ts`.
+    ```typescript
+    export const api = axios.create({
+        baseURL: API_URL,
+        headers: {
+            // 'Content-Type': 'application/json', // Removed to allow Axios to manage for FormData
+        },
+    });
+    ```
+    By removing this explicit header, `axios` is now able to correctly determine and set the appropriate `Content-Type` header, `multipart/form-data`, when a `FormData` object is passed as the request data. This allows the backend to correctly parse the incoming file data.
+- **Verification**: After applying the fix, the TypeScript compiler ran successfully with no errors, confirming the change was syntactically correct. The backend error related to file submission should now be resolved.

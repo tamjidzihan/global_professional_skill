@@ -6,9 +6,6 @@ const API_URL = import.meta.env.VITE_API_BASE_URL
 
 export const api = axios.create({
     baseURL: API_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
 })
 
 // Request interceptor to add token
@@ -150,6 +147,6 @@ export const getUserDetail = (userId: string) =>
 export const getMyProfile = () =>
     api.get(endpoints.profile.get)
 
-export const updateMyProfile = (data: Partial<User>) =>
+export const updateMyProfile = (data: Partial<User> | FormData) =>
     api.put(endpoints.profile.update, data)
 

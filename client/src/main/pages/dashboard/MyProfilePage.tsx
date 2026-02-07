@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import {
@@ -13,9 +13,11 @@ import {
     X,
     Save,
     Camera,
+    Image, // Added Image icon
 } from 'lucide-react'
 import { useMyProfile } from '../../../hooks/useMyProfile'
 import { useAuth } from '../../../hooks/useAuth'
+import type { User } from '../../../types'
 
 export function MyProfilePage() {
     const navigate = useNavigate()
@@ -38,6 +40,10 @@ export function MyProfilePage() {
         phone_number: profile?.phone_number || '',
         bio: profile?.bio || '',
     }))
+
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null); // Ref for hidden file input
 
     // Redirect unauthenticated users
     useEffect(() => {
@@ -69,6 +75,26 @@ export function MyProfilePage() {
         }
     }, [updateSuccess, updateError, fetchProfile])
 
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setSelectedFile(file);
+            setPreviewUrl(URL.createObjectURL(file));
+        } else {
+            setSelectedFile(null);
+            setPreviewUrl(null);
+        }
+    };
+
+    const handleRemovePhoto = () => {
+        setSelectedFile(null);
+        setPreviewUrl(null);
+        // If there's an actual file input element, clear its value
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
     const handleChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
     ) => {
@@ -79,9 +105,30 @@ export function MyProfilePage() {
     }
 
     const handleSave = async () => {
-        await updateProfile(form)
-        setIsEditing(false)
-    }
+        if (!profile) return; // Should not happen if profile is loaded
+
+        // Create FormData if a file is selected, otherwise use plain object
+        let dataToUpdate: Partial<User> | FormData = form;
+        if (selectedFile) {
+            const formData = new FormData();
+            formData.append('profile_picture', selectedFile);
+            // Append other text fields only if they have changed or are part of the form
+            // Note: DRF expects non-file fields for multipart/form-data as text, not JSON
+            Object.keys(form).forEach(key => {
+                const formValue = form[key as keyof typeof form];
+                // Only append if value is not null/undefined and potentially different from profile
+                if (formValue !== undefined && formValue !== null && formValue !== profile[key as keyof typeof profile]) {
+                     formData.append(key, formValue.toString());
+                }
+            });
+            dataToUpdate = formData;
+        }
+
+        await updateProfile(dataToUpdate);
+        setIsEditing(false);
+        setSelectedFile(null); // Clear selected file after save attempt
+        setPreviewUrl(null);
+    };
 
     const handleCancel = () => {
         if (profile) {
@@ -90,10 +137,12 @@ export function MyProfilePage() {
                 last_name: profile.last_name || '',
                 phone_number: profile.phone_number || '',
                 bio: profile.bio || '',
-            })
+            });
         }
-        setIsEditing(false)
-    }
+        setSelectedFile(null); // Clear selected file on cancel
+        setPreviewUrl(null);
+        setIsEditing(false);
+    };
 
     const roleBadgeColor: Record<string, string> = {
         STUDENT: 'bg-blue-100 text-[#0066CC]',
@@ -157,25 +206,51 @@ export function MyProfilePage() {
                 <div className="px-6 pb-6">
                     <div className="flex flex-col sm:flex-row sm:items-end gap-4 -mt-12">
                         {/* Avatar */}
-                        <div className="relative">
-                            {displayData?.profile_picture ? (
+                        <div className="relative group">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                className="hidden"
+                                disabled={isUpdating}
+                            />
+                            {(previewUrl || displayData?.profile_picture) ? (
                                 <img
-                                    src={displayData.profile_picture}
+                                    src={previewUrl || displayData?.profile_picture || ''}
                                     alt="Profile"
                                     className="w-24 h-24 rounded-full border-4 border-white object-cover shadow-md"
                                 />
                             ) : (
                                 <div className="w-24 h-24 rounded-full border-4 border-white bg-[#0066CC] text-white flex items-center justify-center text-2xl font-bold shadow-md">
-                                    {initials}
+                                    {isEditing ? (
+                                        <Image className="w-12 h-12 text-white" /> // Show Image icon when editing
+                                    ) : (
+                                        initials // Show initials when not editing
+                                    )}
                                 </div>
                             )}
-                            <button
-                                className="absolute bottom-0 right-0 w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 transition-colors"
-                                title="Change photo"
-                                onClick={() => toast.info('Profile picture update coming soon!')}
-                            >
-                                <Camera className="w-4 h-4 text-gray-500" />
-                            </button>
+
+                            {isEditing && (
+                                <div className="absolute inset-0 rounded-full bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 transition-colors text-gray-500 mr-1"
+                                        title="Change photo"
+                                    >
+                                        <Camera className="w-4 h-4" />
+                                    </button>
+                                    {(selectedFile || displayData?.profile_picture) && (
+                                        <button
+                                            onClick={handleRemovePhoto}
+                                            className="w-8 h-8 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 transition-colors text-red-500 ml-1"
+                                            title="Remove photo"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {/* Name & Role */}
@@ -204,8 +279,12 @@ export function MyProfilePage() {
                             )}
                             {!isEditing && (
                                 <button
-                                    onClick={() => setIsEditing(true)}
-                                    className="flex items-center gap-1.5 px-4 py-2 bg-[#0066CC] text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                                    onClick={() => {
+                                        setIsEditing(true);
+                                        setSelectedFile(null); // Clear any previously selected file when entering edit mode
+                                        setPreviewUrl(null);
+                                    }}
+                                    className="flex items-center gap-1.5 px-4 py-2 bg-[#0066CC] text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
                                 >
                                     <Pencil className="w-3.5 h-3.5" />
                                     Edit Profile
