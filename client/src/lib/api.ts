@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios, { type AxiosResponse } from 'axios'
-import type { CreateInstructorRequest } from '../types'
+import type { CreateInstructorRequest, User } from '../types'
 
 const API_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -139,11 +139,17 @@ export const reviewInstructorRequest = (
 ): Promise<AxiosResponse> =>
     api.post(endpoints.instructorRequests.review(id), data)
 
-
 // User Management API Calls
 export const updateUserRole = (userId: string, role: string) =>
     api.patch(endpoints.users.updateRole(userId), { role })
 
 export const getUserDetail = (userId: string) =>
     api.get(endpoints.users.detail(userId))
+
+// My Profile API Calls
+export const getMyProfile = () =>
+    api.get(endpoints.profile.get)
+
+export const updateMyProfile = (data: Partial<User>) =>
+    api.put(endpoints.profile.update, data)
 

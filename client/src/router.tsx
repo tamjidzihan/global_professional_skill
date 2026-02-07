@@ -21,6 +21,7 @@ import TermsPage from "./main/pages/TermsPage";
 import VerifyEmailPromptPage from "./main/pages/VerifyEmailPromptPage";
 import ProtectedRoute from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
+import { MyProfilePage } from "./main/pages/MyProfilePage";
 
 
 export const router = createBrowserRouter([
@@ -94,6 +95,15 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['ADMIN']}>
                                 <AdminDashboard />
+                            </ProtectedRoute>
+                        )
+                    },
+                    // User Profile Route
+                    {
+                        path: 'my-profile',
+                        element: (
+                            <ProtectedRoute allowedRoles={['STUDENT', 'INSTRUCTOR', 'ADMIN']}>
+                                <MyProfilePage />
                             </ProtectedRoute>
                         )
                     },

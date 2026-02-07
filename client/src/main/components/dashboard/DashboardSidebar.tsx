@@ -156,8 +156,14 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
             >
                 <div className="flex flex-col h-full">
                     {/* User Info with Modern Design */}
-                    <div className="p-6 border-b border-gray-100/50 bg-linear-to-r from-white to-gray-50/30">
-                        <div className="flex items-center space-x-4 bg-linear-to-r from-blue-50 to-cyan-50/50 text-blue-600 border border-blue-100/50 shadow-sm p-2 rounded-xl">
+                    <div
+
+                        className="p-6 border-b border-gray-100/50 bg-linear-to-r from-white to-gray-50/30"
+                    >
+                        <Link
+                            to={'/dashboard/my-profile'}
+                            className="flex items-center space-x-4 bg-linear-to-r from-blue-50 to-cyan-50/50 text-blue-600 border border-blue-100/50 shadow-sm p-2 rounded-xl hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
+                        >
                             {/* Colorful Avatar with Gradient */}
                             <div className="relative">
                                 <div
@@ -192,7 +198,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                                     </span>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
                     </div>
 
                     {/* Navigation with Modern Design */}

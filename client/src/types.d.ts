@@ -1,10 +1,17 @@
 export interface User {
-    id: string;
-    email: string;
+    id: string; // $uuid, readOnly
+    email: string; // $email, readOnly
     first_name: string;
     last_name: string;
-    role: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN';
-    email_verified: boolean;
+    full_name?: string; // readOnly, can be derived or provided by backend
+    role: 'STUDENT' | 'INSTRUCTOR' | 'ADMIN'; // readOnly
+    bio?: string; // maxLength: 500
+    profile_picture?: string; // $uri, readOnly, x-nullable true
+    phone_number?: string; // maxLength: 20
+    email_verified: boolean; // readOnly
+    is_active?: boolean; // readOnly
+    date_joined?: string; // $date-time, readOnly
+    last_login?: string | null; // $date-time, readOnly, x-nullable true
 }
 
 export interface CreateInstructorRequest {
