@@ -116,7 +116,7 @@ const Navbar = () => {
 
             {/* Main Navigation */}
             <div>
-                <div className="bg-white/80 backdrop-blur-xl shadow-[0_6px_30px_rgba(0,0,0,0.06)] border-b border-gray-200">
+                <div className="bg-[#FCF8F1]">
                     <div className="container mx-auto px-4">
                         <div className="flex items-center justify-between h-16">
                             {/* Logo */}

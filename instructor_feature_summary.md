@@ -1,62 +1,13 @@
+- The initial issue was a TypeScript error in `HeroSection.tsx` related to `framer-motion`'s `Variants` type, specifically concerning the `transition` property within the `visible` variant: `Type '{ type: string; stiffness: number; damping: number; }' is not assignable to type 'Variants'`.
+- The first fix involved removing `type: 'spring'` from `itemVariants.visible.transition`, as `framer-motion` infers spring animations from `stiffness` and `damping`. This resolved the initial error.
+- Subsequent compilation attempts revealed new type errors for `ease` properties in `floatAnimation` and `floatAnimationDelayed`: `Type 'string' is not assignable to type 'Easing | Easing[] | undefined'`.
+- Investigation showed that the project uses `react@19.2.0` and `framer-motion@12.33.0`. A web search indicated `framer-motion`'s stable versions were incompatible with React 19.
+- An attempt was made to upgrade `framer-motion` to `^11.0.0`, but it failed due to peer dependency conflicts with `react@19.2.3`, as `framer-motion@11.0.0` prefers `react@^18.0.0`.
+- Further investigation of `framer-motion`'s compatibility with React 19 through web search suggested using `framer-motion@canary` for React 19 support.
+- `framer-motion@canary` was installed (`12.34.0-alpha.0`), forcefully bypassing peer dependency warnings.
+- However, the `ease` type errors persisted, explicitly referencing type definitions from `node_modules/motion-dom/dist/index.d.ts`. This indicated a conflict or problematic type definitions originating from `motion-dom`, a direct dependency of `framer-motion@12.34.0-alpha.0`.
+- Attempts to use cubic-bezier arrays (`[0.42, 0, 0.58, 1]`) and predefined string easing functions (`"linear"`) for `ease` also failed due to the same type incompatibility.
+- As a pragmatic workaround to resolve the compilation issue and allow further development, the `ease` properties in both `floatAnimation` and `floatAnimationDelayed` were explicitly cast to `any`.
+- After applying the `as any` cast, the TypeScript compiler (`npx tsc -b`) ran successfully with no errors.
 
-## Instructor Feature Implementation
-
-### Frontend (`client` project)
-
-#### 1. Pages Created
-
--   **InstructorApplicationPage.tsx**: Located at `client/src/main/pages/InstructorApplicationPage.tsx`. This page provides a form for authenticated users (specifically `STUDENT` role, enforced by `ProtectedRoute`) to submit an application to become an instructor. It collects `bio` and `experience` details.
--   **AdminInstructorRequestsPage.tsx**: Located at `client/src/main/pages/dashboard/AdminInstructorRequestsPage.tsx`. This page is accessible only by `ADMIN` users (enforced by `ProtectedRoute`). It displays a list of instructor requests, allowing admins to filter by status (PENDING, APPROVED, REJECTED), view request details, and take action (approve or reject).
--   **InstructorProfilePage.tsx**: Located at `client/src/main/pages/InstructorProfilePage.tsx`. This page displays the profile details of a specific instructor, fetched using their user ID from the URL parameter. It currently shows basic user information like name, email, and role.
-
-#### 2. Router Updates (`client/src/router.tsx`)
-
-The following routes were added:
-
--   `/apply-as-instructor`: Direct route for instructor application, protected for students.
-    ```typescript
-    { path: '/apply-as-instructor', element: <ProtectedRoute allowedRoles={['STUDENT']}><InstructorApplicationPage /></ProtectedRoute> },
-    ```
--   `/instructors/:id`: Route to view an instructor's profile.
-    ```typescript
-    { path: '/instructors/:id', element: <InstructorProfilePage /> },
-    ```
--   `/dashboard/admin/instructor-requests`: Nested route within the admin dashboard for managing instructor requests, protected for admins.
-    ```typescript
-    // Inside the admin dashboard children array
-    { path: 'instructor-requests', element: <AdminInstructorRequestsPage /> },
-    ```
-
-#### 3. API Service Updates (`client/src/lib/api.ts`)
-
-The `endpoints` object was extended, and new API functions were added to handle instructor request and user management operations:
-
--   **New Endpoints**:
-    ```typescript
-    instructorRequests: {
-        // ... existing
-        detail: (id: string) => `/accounts/instructor-requests/${id}/`,
-    },
-    users: {
-        detail: (id: string) => `/accounts/users/${id}/`,
-        updateRole: (id: string) => `/accounts/users/${id}/update_role/`,
-    },
-    ```
--   **New API Functions**:
-    -   `createInstructorRequest(data: { bio: string; experience: string })`: `POST` request to `/accounts/instructor-requests/` to submit an application.
-    -   `getInstructorRequests(status?: string)`: `GET` request to `/accounts/instructor-requests/` to fetch a list of requests, optionally filtered by status.
-    -   `getInstructorRequestDetail(id: string)`: `GET` request to `/accounts/instructor-requests/${id}/` to fetch a single instructor request's details.
-    -   `reviewInstructorRequest(id: string, data: { status: 'APPROVED' | 'REJECTED'; feedback?: string })`: `POST` request to `/accounts/instructor-requests/${id}/review/` to approve or reject a request.
-    -   `updateUserRole(userId: string, role: string)`: `PATCH` request to `/accounts/users/${userId}/update_role/` to change a user's role (used when approving an instructor request).
-    -   `getUserDetail(userId: string)`: `GET` request to `/accounts/users/${userId}/` to fetch a user's profile details.
-
-#### 4. API Integration and State Management
-
--   All new pages leverage `@tanstack/react-query` for efficient data fetching, caching, and mutation management.
--   `react-router-dom`'s `useNavigate` and `useParams` hooks are used for navigation and extracting route parameters.
--   `react-toastify` is used to provide user feedback for successful operations and errors.
--   The `useAuth` hook is utilized for user authentication checks and role-based access control where necessary.
-
-### Backend (`server` project)
-
-The backend API (`server/apps/accounts/views.py`) already provided the necessary endpoints for `InstructorRequestViewSet` (create, list, retrieve, and the custom `review` action) and `UserManagementViewSet` (specifically the `update_role` action), which were utilized by the frontend implementation. No modifications were required in the backend for this task.
+The solution allows the project to compile, but it's important to note that the `as any` cast is a temporary workaround for a type conflict stemming from the `framer-motion@alpha` and `motion-dom` interaction in the current setup with React 19. A more permanent solution would involve waiting for a stable `framer-motion` release fully compatible with React 19 that resolves these internal type conflicts, or a thorough refactor of the animation library if `framer-motion` continues to be problematic.
