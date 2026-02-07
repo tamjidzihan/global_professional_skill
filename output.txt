@@ -1,0 +1,16 @@
+- **`client/src/hooks/useInstructorRequests.tsx`**: This hook was significantly enhanced.
+    - It now imports `useAuth` to automatically fetch instructor requests pertaining to the currently logged-in user.
+    - The `fetchInstructorRequests` function was updated to accept an optional `specificUserId` for filtering, defaulting to the authenticated user's ID if not provided.
+    - Functionality to `submitInstructorRequest` was added, which wraps the `createInstructorRequest` API call and manages its own submission state (`isSubmitting`, `submitError`, `submitSuccess`).
+    - An `useEffect` was included to trigger an initial fetch of requests when the component mounts and the user is authenticated.
+- **`client/src/main/pages/dashboard/StudentDashboard.tsx`**:
+    - The enhanced `useInstructorRequests` hook was imported and utilized.
+    - New icons (`Briefcase`, `Sparkles`, `AlertCircle`) were imported from `lucide-react`.
+    - A dedicated "Instructor Application Status" section was integrated into the student dashboard. This section intelligently displays:
+        - Loading and error states during data fetching.
+        - The status of the student's most recent instructor request (e.g., "Pending Review", "Approved!", "Rejected").
+        - For rejected requests, it shows the `review_notes` and provides a link to re-apply.
+        - If no instructor request is found, it presents a clear "Become an Instructor" call to action with a link to the `/apply-as-instructor` page.
+    - The complex conditional rendering logic within this section was carefully wrapped in an Immediately Invoked Function Expression (IIFE) to ensure it is syntactically valid JSX and compiles correctly.
+
+All changes have been successfully implemented and the project compiles without errors. The student dashboard now effectively displays relevant instructor application information and provides a pathway for students to apply to become instructors.

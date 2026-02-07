@@ -15,9 +15,7 @@ const CalendarCard: React.FC = () => {
             className="
                 group relative overflow-hidden rounded-xl border border-gray-100
                 bg-linear-to-br from-blue-50/50 to-indigo-50/30
-                p-6 shadow-sm transition-all duration-300 
-                hover:shadow-lg hover:-translate-y-1
-            "
+                p-6 shadow-sm hover:shadow-lg"
         >
             <div className="flex items-center gap-2 mb-4">
                 <div className="p-2 rounded-lg bg-blue-100 text-blue-600">

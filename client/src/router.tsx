@@ -12,7 +12,6 @@ import EmailVerificationPage from "./main/pages/EmailVerificationPage";
 import ForgotPasswordPage from "./main/pages/ForgotPasswordPage";
 import HomePage from "./main/pages/HomePage";
 import InstructorApplicationPage from "./main/pages/InstructorApplicationPage";
-import InstructorProfilePage from "./main/pages/InstructorProfilePage";
 import { LoginPage } from "./main/pages/LoginPage";
 import NotificationsPage from "./main/pages/NotificationsPage";
 import PrivacyPage from "./main/pages/PrivacyPage";
@@ -65,7 +64,6 @@ export const router = createBrowserRouter([
                         <InstructorApplicationPage />
                     </ProtectedRoute>
             },
-            { path: '/instructors/:id', element: <InstructorProfilePage /> },
 
             // Dashboard routes
             {
