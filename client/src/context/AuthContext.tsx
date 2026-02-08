@@ -46,6 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         initAuth()
     }, [logout])
+
     const login = (
         tokens: {
             access: string
