@@ -7,8 +7,8 @@ interface CourseCardProps {
     image?: string
     price: string
     originalPrice?: string
-    duration?: string
-    rating?: number
+    duration?: number
+    rating?: string
     enrolled?: number
     category?: string
     instructor?: string
@@ -22,8 +22,8 @@ export function CourseCard({
     image,
     price,
     originalPrice,
-    duration = '3 Months',
-    rating = 4.5,
+    duration,
+    rating,
     enrolled = 1250,
     category = 'Professional',
     instructor = 'GPISBD',
@@ -113,7 +113,7 @@ export function CourseCard({
                 <div className="space-y-3 mb-4">
                     <div className="flex items-center text-sm text-gray-500">
                         <Clock className="w-4 h-4 mr-2 text-gray-400" />
-                        <span className="font-medium">{duration} Program</span>
+                        <span className="font-medium">{duration} hr Program</span>
                     </div>
 
                     {/* Rating */}
@@ -122,11 +122,11 @@ export function CourseCard({
                             {[...Array(5)].map((_, i) => (
                                 <Star
                                     key={i}
-                                    className={`w-4 h-4 ${i < Math.floor(rating) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                                    className={`w-4 h-4 ${i < Math.floor(parseInt(rating || '0')) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
                                 />
                             ))}
                         </div>
-                        <span className="text-sm font-bold text-gray-700">{rating.toFixed(1)}</span>
+                        <span className="text-sm font-bold text-gray-700">{rating}</span>
                         <span className="text-xs text-gray-500 ml-1">({enrolled}+)</span>
                     </div>
                 </div>
