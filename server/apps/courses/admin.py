@@ -49,8 +49,10 @@ class CourseAdmin(admin.ModelAdmin):
     )
     list_filter = ("status", "difficulty_level", "is_free", "category", "created_at")
     search_fields = ("title", "description", "instructor__email")
+    prepopulated_fields = {
+        "slug": ["title"]
+        }
     readonly_fields = (
-        "slug",
         "enrollment_count",
         "average_rating",
         "total_reviews",

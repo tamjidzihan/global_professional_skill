@@ -3,7 +3,6 @@ import {
     LayoutDashboard,
     BookOpen,
     Users,
-    Settings,
     FileText,
     BarChart,
     GraduationCap,
@@ -274,21 +273,9 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
 
                     {/* Footer with Modern Design */}
                     <div className="p-5 border-t border-gray-100/50 bg-white/50 backdrop-blur-sm">
-                        <Link
-                            to="/settings"
-                            className="group flex items-center justify-between px-4 py-3.5 text-sm font-medium text-gray-600 rounded-xl hover:bg-gray-50/80 hover:text-gray-900 transition-all duration-300"
-                        >
-                            <div className="flex items-center">
-                                <div className="p-2 rounded-lg mr-3 bg-gray-100 text-gray-400 group-hover:bg-gray-200 group-hover:text-gray-600 transition-colors">
-                                    <Settings className="w-4.5 h-4.5" />
-                                </div>
-                                Settings
-                            </div>
-                            <ChevronRight className="w-4 h-4 text-gray-300 group-hover:text-gray-400" />
-                        </Link>
                         <button
                             onClick={logout}
-                            className="group w-full flex items-center justify-between px-4 py-3.5 text-sm font-medium text-red-600 rounded-xl hover:bg-linear-to-r hover:from-red-50/80 hover:to-rose-50/80 transition-all duration-300 mt-1.5"
+                            className="group w-full flex items-center justify-between px-4 py-3.5 text-sm font-medium text-red-600 rounded-xl hover:bg-linear-to-r hover:from-red-50/80 hover:to-rose-50/80 transition-all duration-300 mt-1.5 cursor-pointer"
                         >
                             <div className="flex items-center">
                                 <div className="p-2 rounded-lg mr-3 bg-red-100 text-red-400 group-hover:bg-red-200 group-hover:text-red-500 transition-colors">
