@@ -12,6 +12,7 @@ import {
     Sparkles,
 } from 'lucide-react'
 import { useAuthContext } from '../../../context/AuthContext'
+import { useMyProfile } from '../../../hooks/useMyProfile'
 import { cn } from '../../../lib/utils'
 
 interface SidebarProps {
@@ -48,10 +49,16 @@ const getAvatarGradient = (role?: string, firstName?: string) => {
 }
 
 export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
-    const { user, logout } = useAuthContext()
+    const { logout } = useAuthContext()
+    const { profile } = useMyProfile()
     const location = useLocation()
 
     const isActive = (path: string) => location.pathname.startsWith(path)
+    const initials =
+        (profile?.first_name?.[0] || '') +
+        (profile?.last_name?.[0] || '') ||
+        profile?.email?.[0]?.toUpperCase() ||
+        '?'
 
     const studentLinks = [
         {
@@ -128,9 +135,9 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
     ]
 
     const links =
-        user?.role === 'ADMIN'
+        profile?.role === 'ADMIN'
             ? adminLinks
-            : user?.role === 'INSTRUCTOR'
+            : profile?.role === 'INSTRUCTOR'
                 ? instructorLinks
                 : studentLinks
 
@@ -166,35 +173,43 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                         >
                             {/* Colorful Avatar with Gradient */}
                             <div className="relative">
-                                <div
-                                    className={cn(
-                                        "w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-white shadow-lg",
-                                        "bg-linear-to-br",
-                                        getAvatarGradient(user?.role, user?.first_name)
-                                    )}
-                                >
-                                    <span className="text-xl">
-                                        {user?.first_name?.[0] || user?.email?.[0]?.toUpperCase()}
-                                    </span>
-                                </div>
+                                {profile?.profile_picture ?
+                                    <img
+                                        src={profile?.profile_picture || ''}
+                                        alt="Profile"
+                                        className="w-14 h-14 rounded-2xl object-cover shadow-lg"
+                                    />
+                                    :
+                                    <div
+                                        className={cn(
+                                            "w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-white shadow-lg",
+                                            "bg-linear-to-br",
+                                            getAvatarGradient(profile?.role, profile?.first_name)
+                                        )}
+                                    >
+                                        <span className="text-xl">
+                                            {initials}
+                                        </span>
+                                    </div>
+                                }
                                 {/* Online Status Indicator */}
                                 <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full shadow-sm"></div>
                             </div>
 
                             <div className="flex-1 min-w-0">
                                 <p className="text-lg font-semibold text-gray-900 truncate">
-                                    {user?.first_name} {user?.last_name}
+                                    {profile?.first_name} {profile?.last_name}
                                 </p>
-                                <p className="text-sm text-gray-500 truncate mt-1">{user?.email}</p>
+                                <p className="text-sm text-gray-500 truncate mt-1">{profile?.email}</p>
                                 <div className="flex items-center gap-2 mt-2">
                                     {/* Role Badge with Modern Design */}
                                     <span className={cn(
                                         "inline-flex px-2.5 py-0.5 text-xs font-semibold rounded-full",
-                                        user?.role === 'ADMIN' && "bg-linear-to-r from-purple-100 to-pink-100 text-purple-700",
-                                        user?.role === 'INSTRUCTOR' && "bg-linear-to-r from-blue-100 to-cyan-100 text-blue-700",
-                                        user?.role === 'STUDENT' && "bg-linear-to-r from-green-100 to-emerald-100 text-emerald-700"
+                                        profile?.role === 'ADMIN' && "bg-linear-to-r from-purple-100 to-pink-100 text-purple-700",
+                                        profile?.role === 'INSTRUCTOR' && "bg-linear-to-r from-blue-100 to-cyan-100 text-blue-700",
+                                        profile?.role === 'STUDENT' && "bg-linear-to-r from-green-100 to-emerald-100 text-emerald-700"
                                     )}>
-                                        {user?.role?.toLowerCase()}
+                                        {profile?.role?.toLowerCase()}
                                     </span>
                                 </div>
                             </div>

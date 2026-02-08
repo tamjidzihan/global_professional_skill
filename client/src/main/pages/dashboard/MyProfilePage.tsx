@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
@@ -105,20 +106,15 @@ export function MyProfilePage() {
     }
 
     const handleSave = async () => {
-        if (!profile) return; // Should not happen if profile is loaded
-
-        // Create FormData if a file is selected, otherwise use plain object
+        if (!profile) return;
         let dataToUpdate: Partial<User> | FormData = form;
         if (selectedFile) {
             const formData = new FormData();
             formData.append('profile_picture', selectedFile);
-            // Append other text fields only if they have changed or are part of the form
-            // Note: DRF expects non-file fields for multipart/form-data as text, not JSON
             Object.keys(form).forEach(key => {
                 const formValue = form[key as keyof typeof form];
-                // Only append if value is not null/undefined and potentially different from profile
                 if (formValue !== undefined && formValue !== null && formValue !== profile[key as keyof typeof profile]) {
-                     formData.append(key, formValue.toString());
+                    formData.append(key, formValue.toString());
                 }
             });
             dataToUpdate = formData;
@@ -126,7 +122,7 @@ export function MyProfilePage() {
 
         await updateProfile(dataToUpdate);
         setIsEditing(false);
-        setSelectedFile(null); // Clear selected file after save attempt
+        setSelectedFile(null);
         setPreviewUrl(null);
     };
 
@@ -139,7 +135,7 @@ export function MyProfilePage() {
                 bio: profile.bio || '',
             });
         }
-        setSelectedFile(null); // Clear selected file on cancel
+        setSelectedFile(null);
         setPreviewUrl(null);
         setIsEditing(false);
     };
