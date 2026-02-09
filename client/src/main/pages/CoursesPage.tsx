@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Filter, Search } from "lucide-react"
 import { useEffect, useState, useCallback } from "react"
@@ -6,23 +5,27 @@ import { CourseCard } from "../components/CourseCard"
 import Breadcrumb from "../components/Breadcrumb"
 import { useCourses } from "../../hooks/useCourses"
 import LoadingSpinner from "../components/LoadingSpinner"
-import { debounce } from "lodash"
+import { useCategories } from "../../hooks/useCategoties"
 
 const CoursesPage = () => {
     const {
-        categories,
         courses,
-        fetchCategories,
         fetchCourses,
         loading,
         error,
         pagination
     } = useCourses()
 
+    const {
+        categories,
+        fetchCategories,
+        loading: categoryLoading,
+        error: categoryError
+    } = useCategories()
+
     const [activeCategory, setActiveCategory] = useState<string>('All Courses')
-    const [selectingCategory, setSelectingCategory] = useState(false);
+    const [selectingCategory, setSelectingCategory] = useState(false)
     const [searchQuery, setSearchQuery] = useState('')
-    const [searchInput, setSearchInput] = useState('')
     const [appliedFilters, setAppliedFilters] = useState<Record<string, any>>({})
 
     // Fetch categories on component mount
@@ -34,63 +37,42 @@ const CoursesPage = () => {
     useEffect(() => {
         const filters: Record<string, any> = {}
 
-        // Apply category filter if not "All Courses"
         if (activeCategory !== 'All Courses') {
-            // First, find the category ID from the categories list
             const selectedCategory = categories.find(cat => cat.name === activeCategory)
             if (selectedCategory) {
                 filters.category = selectedCategory.id
             }
         }
 
-        // Apply search filter
         if (searchQuery) {
             filters.search = searchQuery
         }
-
-        // Apply other filters if you have them
-        // filters.difficulty_level = 'beginner'
-        // filters.is_free = false
-        // etc.
 
         setAppliedFilters(filters)
         fetchCourses(filters)
     }, [activeCategory, searchQuery, categories, fetchCourses])
 
-
     const handleCategorySelect = useCallback(async (categoryName: string) => {
-        if (selectingCategory) return; // Prevent multiple clicks
+        if (selectingCategory) return
 
-        setSelectingCategory(true);
+        setSelectingCategory(true)
         try {
-            // Wait for categories to be loaded if empty
             if (categories.length === 0) {
-                await fetchCategories();
+                await fetchCategories()
             }
-            setActiveCategory(categoryName);
+            setActiveCategory(categoryName)
         } finally {
-            setSelectingCategory(false);
+            setSelectingCategory(false)
         }
-    }, [categories.length, fetchCategories]);
+    }, [categories.length, fetchCategories, selectingCategory])
 
-
-    // Debounced search to avoid too many API calls
-    const debouncedSetSearchQuery = useCallback(
-        debounce((query: string) => {
-            setSearchQuery(query)
-        }, 500),
-        []
-    )
-
+    // Direct search (NO debounce)
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value
-        setSearchInput(value)
-        debouncedSetSearchQuery(value)
+        setSearchQuery(e.target.value)
     }
 
     const clearAllFilters = () => {
         setActiveCategory('All Courses')
-        setSearchInput('')
         setSearchQuery('')
     }
 
@@ -110,7 +92,7 @@ const CoursesPage = () => {
                                 <input
                                     type="text"
                                     placeholder="Type to search..."
-                                    value={searchInput}
+                                    value={searchQuery}
                                     onChange={handleSearchChange}
                                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] text-sm"
                                 />
@@ -121,24 +103,21 @@ const CoursesPage = () => {
                                     <Filter className="w-4 h-4 mr-2 text-[#0066CC]" />
                                     Categories
                                 </h3>
-                                {/* Loading state for categories */}
-                                {loading && categories.length === 0 && (
+
+                                {categoryLoading && categories.length === 0 && (
                                     <div className="text-sm text-gray-500 py-2">
                                         <LoadingSpinner />
                                     </div>
                                 )}
 
-                                {/* Error state */}
-                                {error && (
+                                {categoryError && (
                                     <div className="text-sm text-red-500 py-2">
-                                        Error: {error}
+                                        Error: {categoryError}
                                     </div>
                                 )}
 
-                                {/* Categories list */}
                                 {!loading && !error && (
                                     <div className="space-y-2">
-                                        {/* "All Courses" button */}
                                         <button
                                             onClick={() => setActiveCategory('All Courses')}
                                             className={`w-full text-left px-3 py-2 rounded text-sm transition-colors cursor-pointer ${activeCategory === 'All Courses' ? 'bg-[#0066CC] text-white font-medium' : 'text-gray-600 hover:bg-gray-100 hover:text-[#0066CC]'}`}
@@ -146,7 +125,6 @@ const CoursesPage = () => {
                                             All Courses
                                         </button>
 
-                                        {/* Dynamic categories from API */}
                                         {categories.map((category) => (
                                             <button
                                                 key={category.id}
@@ -160,24 +138,6 @@ const CoursesPage = () => {
                                     </div>
                                 )}
                             </div>
-
-                            {/* Add more filter options if needed */}
-                            {/* <div className="mt-6">
-                                <h3 className="font-bold text-gray-800 mb-4">
-                                    Difficulty Level
-                                </h3>
-                                <select 
-                                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
-                                    onChange={(e) => {
-                                        // Add to filters
-                                    }}
-                                >
-                                    <option value="">All Levels</option>
-                                    <option value="beginner">Beginner</option>
-                                    <option value="intermediate">Intermediate</option>
-                                    <option value="advanced">Advanced</option>
-                                </select>
-                            </div> */}
                         </div>
                     </div>
 
@@ -191,7 +151,6 @@ const CoursesPage = () => {
                                 </span>
                             </h2>
 
-                            {/* Active filters display */}
                             {(activeCategory !== 'All Courses' || searchQuery) && (
                                 <button
                                     onClick={clearAllFilters}
@@ -202,7 +161,6 @@ const CoursesPage = () => {
                             )}
                         </div>
 
-                        {/* Loading state for courses */}
                         {loading && courses.length === 0 ? (
                             <div className="flex justify-center items-center h-64">
                                 <LoadingSpinner />
@@ -235,12 +193,10 @@ const CoursesPage = () => {
                                             enrolled={course.enrollment_count}
                                             category={course.category_name}
                                             instructor={course.instructor_name}
-                                        // thumbnail={course.thumbnail}
                                         />
                                     ))}
                                 </div>
 
-                                {/* Pagination */}
                                 {(pagination.next || pagination.previous) && (
                                     <div className="flex justify-center mt-8 space-x-4">
                                         <button

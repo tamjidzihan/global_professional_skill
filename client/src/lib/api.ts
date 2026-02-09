@@ -17,17 +17,9 @@ import type {
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
 
-// Rate limiting configuration
-const RATE_LIMIT_DELAY = 1000; // 1 second delay between retries
-const THROTTLE_WINDOW = 60000; // 60 seconds window
-
-// Store for tracking rate limits
-let requestCount = 0;
-let resetTime = 0;
-
 export const api = axios.create({
     baseURL: API_URL,
-    timeout: 30000, // 30 second timeout
+    timeout: 30000,
 });
 
 let isRefreshing = false;
@@ -38,93 +30,30 @@ let failedQueue: Array<{
 
 const processQueue = (error: any | null, token: string | null = null) => {
     failedQueue.forEach(prom => {
-        if (error) {
-            prom.reject(error);
-        } else if (token) {
-            prom.resolve(token);
-        }
+        if (error) prom.reject(error);
+        else if (token) prom.resolve(token);
     });
     failedQueue = [];
 };
 
-// Rate limiting helper functions
-const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-const calculateDelay = () => {
-    const now = Date.now();
-
-    // If we're within the rate limit window and have made too many requests
-    if (requestCount >= 10 && now < resetTime) { // Assuming 10 requests per minute
-        return Math.max(RATE_LIMIT_DELAY, resetTime - now);
-    }
-
-    // Reset counters if we're past the window
-    if (now >= resetTime) {
-        requestCount = 0;
-        resetTime = now + THROTTLE_WINDOW;
-    }
-
-    return 0;
-};
-
-// Request interceptor for rate limiting and adding token
+// Request interceptor — attach token only
 api.interceptors.request.use(
-    async (config) => {
-        // Apply rate limiting
-        const delay = calculateDelay();
-        if (delay > 0) {
-            await wait(delay);
-        }
-
+    (config) => {
         const token = localStorage.getItem('access_token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
-
-        // Update rate limit tracking
-        requestCount++;
-
         return config;
     },
     (error) => Promise.reject(error),
 );
 
-// Response interceptor to handle token refresh and rate limiting
+// Response interceptor — handle token refresh only
 api.interceptors.response.use(
-    (response) => {
-        // Check for rate limit headers in response
-        const remaining = response.headers['x-ratelimit-remaining'];
-        const reset = response.headers['x-ratelimit-reset'];
-
-        if (remaining !== undefined) {
-            requestCount = 10 - parseInt(remaining, 10); // Assuming max 10 requests
-        }
-
-        if (reset !== undefined) {
-            resetTime = parseInt(reset, 10) * 1000; // Convert from seconds to milliseconds
-        }
-
-        return response;
-    },
+    (response) => response,
     async (error) => {
         const originalRequest = error.config;
 
-        // Handle rate limiting/throttling errors
-        if (error.response?.status === 429) {
-            const retryAfter = error.response.headers['retry-after'] ||
-                error.response.data?.details?.detail?.match(/available in (\d+) seconds/)?.[1] ||
-                60; // Default 60 seconds
-
-            console.warn(`Rate limited. Retrying after ${retryAfter} seconds...`);
-
-            // Wait for the specified retry time
-            await wait(parseInt(retryAfter) * 1000);
-
-            // Retry the request
-            return api(originalRequest);
-        }
-
-        // Handle 401 errors for token refresh
         if (error.response?.status === 401 && !originalRequest._retry) {
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
@@ -132,8 +61,6 @@ api.interceptors.response.use(
                 }).then(token => {
                     originalRequest.headers.Authorization = `Bearer ${token}`;
                     return api(originalRequest);
-                }).catch(err => {
-                    return Promise.reject(err);
                 });
             }
 
@@ -142,38 +69,33 @@ api.interceptors.response.use(
 
             return new Promise((resolve, reject) => {
                 const refreshToken = localStorage.getItem('refresh_token');
+
                 if (!refreshToken) {
                     processQueue(new Error('No refresh token'));
                     isRefreshing = false;
-                    localStorage.removeItem('access_token');
-                    localStorage.removeItem('refresh_token');
-                    localStorage.removeItem('user');
+                    localStorage.clear();
                     window.location.href = '/login';
                     return reject(new Error('No refresh token'));
                 }
 
                 api.post(endpoints.auth.refresh, { refresh: refreshToken })
                     .then(response => {
-                        const responseData = response.data;
-                        const access = responseData.data?.tokens?.access ||
-                            responseData.tokens?.access ||
-                            responseData.access ||
-                            responseData.data?.access;
+                        const access =
+                            response.data?.data?.tokens?.access ||
+                            response.data?.tokens?.access ||
+                            response.data?.access ||
+                            response.data?.data?.access;
 
-                        if (access) {
-                            localStorage.setItem('access_token', access);
-                            processQueue(null, access);
-                            originalRequest.headers.Authorization = `Bearer ${access}`;
-                            resolve(api(originalRequest));
-                        } else {
-                            throw new Error('No access token in response');
-                        }
+                        if (!access) throw new Error('No access token');
+
+                        localStorage.setItem('access_token', access);
+                        processQueue(null, access);
+                        originalRequest.headers.Authorization = `Bearer ${access}`;
+                        resolve(api(originalRequest));
                     })
                     .catch(err => {
                         processQueue(err, null);
-                        localStorage.removeItem('access_token');
-                        localStorage.removeItem('refresh_token');
-                        localStorage.removeItem('user');
+                        localStorage.clear();
                         window.location.href = '/login';
                         reject(err);
                     })
@@ -186,6 +108,7 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
 
 export const endpoints = {
     auth: {

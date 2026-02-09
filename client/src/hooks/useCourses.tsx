@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react';
 import {
     // Categories API Endpoints
-    getCategories,
+
     // getCategoryDetail,
     // createCategory,
     // updateCategory,
@@ -46,7 +46,6 @@ import {
 import type {
     CoursesSummary,
     // CourseDetail,
-    Category,
     // Section,
     // Lesson,
     // Review,
@@ -58,7 +57,7 @@ import type {
 export function useCourses() {
     const [courses, setCourses] = useState<CoursesSummary[]>([]);
     // const [course, setCourse] = useState<CourseDetail | null>(null);
-    const [categories, setCategories] = useState<Category[]>([]);
+
     // const [category, setCategory] = useState<Category | null>(null);
     // const [sections, setSections] = useState<Section[]>([]);
     // const [section, setSection] = useState<Section | null>(null);
@@ -244,19 +243,7 @@ export function useCourses() {
     //     [],
     // );
 
-    // Category Actions
-    const fetchCategories = useCallback(
-        async (filters?: Record<string, any>, pageUrl?: string | null) =>
-            fetchData<Category[]>(
-                getCategories,
-                setCategories,
-                setPagination,
-                ['results'],
-                filters,
-                pageUrl
-            ),
-        [fetchData],
-    );
+
 
     // const fetchCategoryDetail = useCallback(
     //     async (id: string) => fetchData<Category | null>(getCategoryDetail, setCategory, ['data', 'data'], id),
@@ -604,7 +591,7 @@ export function useCourses() {
         // States
         courses,
         // course,
-        categories,
+
         // category,
         // sections,
         // section,
@@ -625,7 +612,7 @@ export function useCourses() {
         // adminReviewCourse,
 
         // Category Actions
-        fetchCategories,
+
         // fetchCategoryDetail,
         // addCategory,
         // editCategory,
