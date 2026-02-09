@@ -187,12 +187,12 @@ const CoursesPage = () => {
                                             id={course.id}
                                             title={course.title}
                                             price={course.price}
-                                            originalPrice={course.price}
                                             duration={course.duration_hours}
                                             rating={course.average_rating}
                                             enrolled={course.enrollment_count}
                                             category={course.category_name}
                                             instructor={course.instructor_name}
+                                            thumbnail={course.thumbnail}
                                         />
                                     ))}
                                 </div>

@@ -4,9 +4,7 @@ import { Clock, Star, Users, TrendingUp, BookOpen, Award } from 'lucide-react'
 interface CourseCardProps {
     id?: string
     title: string
-    image?: string
     price: string
-    originalPrice?: string
     duration?: number
     rating?: string
     enrolled?: number
@@ -14,34 +12,30 @@ interface CourseCardProps {
     instructor?: string
     level?: 'Beginner' | 'Intermediate' | 'Advanced'
     badge?: string
+    thumbnail?: string
 }
 
 export function CourseCard({
     id = '1',
     title,
-    image,
     price,
-    originalPrice,
     duration,
     rating,
     enrolled = 1250,
     category = 'Professional',
     instructor = 'GPISBD',
     level = 'Intermediate',
-    badge = 'Admission Going On'
+    badge = 'Admission Going On',
+    thumbnail = ''
 }: CourseCardProps) {
-    // Calculate discount percentage
-    const discountPercentage = originalPrice
-        ? Math.round(((parseFloat(originalPrice) - parseFloat(price)) / parseFloat(originalPrice)) * 100)
-        : 0
 
     return (
         <div className="group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col h-full hover:-translate-y-1">
             {/* Thumbnail Container */}
             <div className="relative h-48 overflow-hidden bg-linear-to-br from-blue-900 via-blue-800 to-indigo-900">
-                {image ? (
+                {thumbnail ? (
                     <img
-                        src={image}
+                        src={thumbnail}
                         alt={title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
@@ -64,13 +58,7 @@ export function CourseCard({
                     )}
                 </div>
 
-                <div className="absolute top-3 right-3">
-                    {discountPercentage > 0 && (
-                        <div className="bg-linear-to-r from-red-500 to-pink-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                            -{discountPercentage}%
-                        </div>
-                    )}
-                </div>
+
 
                 {/* Level Indicator */}
                 <div className="absolute bottom-3 left-3">
@@ -99,9 +87,9 @@ export function CourseCard({
                 </div>
 
                 {/* Title */}
-                <h3 className="font-bold text-gray-900 text-base mb-3 line-clamp-2 min-h-14 group-hover:text-blue-600 transition-colors">
+                <Link to={`/course/${id}`} className="font-bold text-gray-900 text-base mb-3 line-clamp-2 min-h-14 group-hover:text-blue-600 transition-colors">
                     {title}
-                </h3>
+                </Link>
 
                 {/* Instructor */}
                 <div className="flex items-center text-sm text-gray-600 mb-4">
@@ -136,12 +124,9 @@ export function CourseCard({
                     <div className="flex items-center justify-between">
                         <div>
                             <div className="flex items-baseline">
-                                <span className="text-2xl font-bold text-gray-900">Tk. {price}</span>
-                                {originalPrice && (
-                                    <span className="text-gray-400 text-sm line-through ml-2">
-                                        Tk. {originalPrice}
-                                    </span>
-                                )}
+                                <span className="text-2xl font-bold text-gray-900">
+                                    Tk. {price}
+                                </span>
                             </div>
                             <p className="text-xs text-gray-500 mt-1">Flexible payment options available</p>
                         </div>
