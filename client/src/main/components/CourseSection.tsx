@@ -126,7 +126,6 @@ const CourseSection = () => {
                             id={course.id}
                             title={course.title}
                             price={course.price}
-                            originalPrice={course.originalPrice}
                         />
                     ))}
                 </div>
