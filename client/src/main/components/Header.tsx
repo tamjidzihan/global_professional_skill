@@ -3,8 +3,9 @@ import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, ChevronDown, User, UserPlus, Phone, Mail, LogOut } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useAuthContext } from '../../context/AuthContext'
+import { useCategories } from '../../hooks/useCategories' 
 
-const Navbar = () => {
+const Header = () => {
     const location = useLocation()
     const { isAuthenticated, user } = useAuthContext()
     const { logout } = useAuth()
@@ -12,6 +13,12 @@ const Navbar = () => {
     const [dropdownOpen, setDropdownOpen] = useState<string | null>(null)
     const [isClosing, setIsClosing] = useState(false)
     const [mobileCoursesOpen, setMobileCoursesOpen] = useState(false)
+
+    const { categories, fetchCategories } = useCategories() 
+
+    useEffect(() => {
+        fetchCategories() 
+    }, [fetchCategories])
 
     const isActive = (path: string) => {
         return location.pathname === path
@@ -38,6 +45,11 @@ const Navbar = () => {
         }
     }, [mobileMenuOpen])
 
+    const categoryDropdownItems = categories.map(cat => ({
+        label: cat.name,
+        path: `/courses?category=${cat.id}` 
+    }));
+
     const navItems = [
         { path: '/', label: 'Home' },
         {
@@ -45,10 +57,7 @@ const Navbar = () => {
             label: 'Our Courses',
             dropdown: [
                 { label: 'All Courses', path: '/courses' },
-                { label: 'Web Development', path: '#' },
-                { label: 'Cyber Security', path: '#' },
-                { label: 'Digital Marketing', path: '#' },
-                { label: 'Graphics Design', path: '#' },
+                ...categoryDropdownItems 
             ]
         },
         { path: '#', label: 'PGD' },
@@ -332,4 +341,4 @@ const Navbar = () => {
     )
 }
 
-export default Navbar
+export default Header
