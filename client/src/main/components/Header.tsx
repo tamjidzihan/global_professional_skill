@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, ChevronDown, User, UserPlus, Phone, Mail, LogOut } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useAuthContext } from '../../context/AuthContext'
-import { useCategories } from '../../hooks/useCategories' 
+import { useCategories } from '../../hooks/useCategories'
 
 const Header = () => {
     const location = useLocation()
@@ -14,10 +14,10 @@ const Header = () => {
     const [isClosing, setIsClosing] = useState(false)
     const [mobileCoursesOpen, setMobileCoursesOpen] = useState(false)
 
-    const { categories, fetchCategories } = useCategories() 
+    const { categories, fetchCategories } = useCategories()
 
     useEffect(() => {
-        fetchCategories() 
+        fetchCategories()
     }, [fetchCategories])
 
     const isActive = (path: string) => {
@@ -47,7 +47,7 @@ const Header = () => {
 
     const categoryDropdownItems = categories.map(cat => ({
         label: cat.name,
-        path: `/courses?category=${cat.id}` 
+        path: `/courses?category=${cat.id}`
     }));
 
     const navItems = [
@@ -57,7 +57,7 @@ const Header = () => {
             label: 'Our Courses',
             dropdown: [
                 { label: 'All Courses', path: '/courses' },
-                ...categoryDropdownItems 
+                ...categoryDropdownItems
             ]
         },
         { path: '#', label: 'PGD' },
@@ -180,8 +180,9 @@ const Header = () => {
                             </nav>
 
                             {/* Right Side Actions */}
+
                             <div className="hidden lg:flex items-center space-x-3">
-                                {isAuthenticated && (
+                                {isAuthenticated && user?.role === 'STUDENT' && (
                                     <Link
                                         to="/apply-as-instructor"
                                         className="ml-2 px-5 py-2 rounded-xl bg-linear-to-r from-[#76C043] to-green-500 text-white font-semibold shadow hover:shadow-lg transition-all duration-300 hover:scale-105"
@@ -290,7 +291,7 @@ const Header = () => {
                                                 logout()
                                                 closeMobileMenu()
                                             }}
-                                            className="flex items-center w-full px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                                            className="flex items-center w-full px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200 "
                                         >
                                             <LogOut className="w-4 h-4 mr-3 text-[#76C043]" />
                                             Logout
@@ -300,7 +301,7 @@ const Header = () => {
                                     <div className="space-y-2">
                                         <Link
                                             to="/login"
-                                            className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                                            className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200 cursor-pointer"
                                             onClick={closeMobileMenu}
                                         >
                                             <User className="w-4 h-4 mr-3 text-[#76C043]" />
@@ -308,7 +309,7 @@ const Header = () => {
                                         </Link>
                                         <Link
                                             to="/register"
-                                            className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                                            className="flex items-center px-4 py-3 text-gray-800 hover:bg-gray-100 rounded-lg transition-colors duration-200 cursor-pointer"
                                             onClick={closeMobileMenu}
                                         >
                                             <UserPlus className="w-4 h-4 mr-3 text-[#76C043]" />

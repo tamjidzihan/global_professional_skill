@@ -21,6 +21,7 @@ import CalendarCard from '../../components/dashboard/CalendarCard'
 import { format } from 'date-fns'
 import type { InstructorRequest } from '../../../types'
 import { getInstructorRequestDetail, reviewInstructorRequest } from '../../../lib/api'
+import LoadingSpinner from '../../components/LoadingSpinner'
 
 type FilterStatus = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'
 
@@ -198,11 +199,7 @@ export function AdminDashboard(): JSX.Element {
     })
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-        )
+        return <LoadingSpinner />
     }
 
     return (

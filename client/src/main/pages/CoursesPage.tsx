@@ -142,13 +142,13 @@ const CoursesPage = () => {
             <Breadcrumb name="Courses" />
 
             {/* Top Search Bar */}
-            <div className="container mx-auto px-4 pt-2 pb-2">
+            <div className="container mx-auto px-4 py-2">
                 <div className="relative rounded-2xl bg-white/70 backdrop-blur-xl border border-white/60 shadow-xl">
 
                     {/* Gradient Glow Border */}
                     <div className="absolute -inset-px rounded-2xl bg-linear-to-r from-[#0066CC]/20 via-[#FCF8F1] to-[#0066CC]/10 blur-sm"></div>
 
-                    <div className="relative p-5 md:p-7">
+                    <div className="relative px-6 py-2">
                         <div className="flex flex-col lg:flex-row lg:items-center gap-5">
 
                             {/* Left Heading */}

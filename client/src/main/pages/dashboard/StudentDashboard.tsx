@@ -4,13 +4,13 @@ import { BookOpen, CheckCircle, Clock, Award, Briefcase, Sparkles, AlertCircle }
 import { Link } from 'react-router-dom'
 import { useAuthContext } from '../../../context/AuthContext'
 import { useEnrollments } from '../../../hooks/useEnrollments'
-import { useInstructorRequests } from '../../../hooks/useInstructorRequests' // Import the hook
-import CalendarCard from '../../components/dashboard/CalendarCard' // Import CalendarCard
+import { useInstructorRequests } from '../../../hooks/useInstructorRequests'
+import CalendarCard from '../../components/dashboard/CalendarCard'
 
 export function StudentDashboard() {
     const { user } = useAuthContext()
     const { enrollments, getMyEnrollments, loading } = useEnrollments()
-    const { requests, loading: requestsLoading, error: requestsError } = useInstructorRequests() // Use the hook
+    const { requests, loading: requestsLoading, error: requestsError } = useInstructorRequests()
 
     useEffect(() => {
         getMyEnrollments()

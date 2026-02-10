@@ -3,6 +3,7 @@ import { StatsCard } from '../../components/dashboard/StatsCard'
 import { BookOpen, Users, DollarSign, Star } from 'lucide-react'
 import { useAnalytics } from '../../../hooks/useAnalytics'
 import CalendarCard from '../../components/dashboard/CalendarCard'
+import LoadingSpinner from '../../components/LoadingSpinner'
 
 export function InstructorDashboard() {
     const { data, getInstructorAnalytics, loading } = useAnalytics()
@@ -12,7 +13,7 @@ export function InstructorDashboard() {
     }, [getInstructorAnalytics])
 
     if (loading) {
-        return <div className="p-4">Loading dashboard...</div>
+        return <LoadingSpinner />
     }
 
     return (

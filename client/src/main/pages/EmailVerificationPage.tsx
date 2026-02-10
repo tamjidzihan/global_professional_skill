@@ -15,7 +15,6 @@ const EmailVerificationPage: React.FC = () => {
     useEffect(() => {
         const verifyEmail = async () => {
             const token = searchParams.get('token');
-            const email = searchParams.get('email');
 
             if (!token) {
                 setMessage('Verification link is invalid or missing token.');
@@ -29,7 +28,7 @@ const EmailVerificationPage: React.FC = () => {
                 // Use your configured axios instance
                 const response = await api.post(
                     endpoints.auth.verifyEmail,
-                    { token, email }
+                    { token }
                 );
 
                 const successMessage = response.data.detail ||
