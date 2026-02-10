@@ -146,7 +146,7 @@ const CoursesPage = () => {
                 <div className="relative rounded-2xl bg-white/70 backdrop-blur-xl border border-white/60 shadow-xl">
 
                     {/* Gradient Glow Border */}
-                    <div className="absolute -inset-px rounded-2xl bg-linear-to-r from-[#0066CC]/20 via-[#FCF8F1] to-[#0066CC]/10 blur-sm"></div>
+                    <div className="absolute -inset-px rounded-2xl bg-linear-to-t from-[#FCF8F1] via-[#0066CC]/20 to-[#FCF8F1]"></div>
 
                     <div className="relative px-6 py-2">
                         <div className="flex flex-col lg:flex-row lg:items-center gap-5">
