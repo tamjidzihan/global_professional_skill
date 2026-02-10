@@ -11,7 +11,7 @@ import {
 
     // // Courses API Endpoints
     getCourses,
-    // getCourseDetail,
+    getCourseDetail,
     // createCourse,
     // updateCourse,
     // deleteCourse,
@@ -45,7 +45,7 @@ import {
 
 import type {
     CoursesSummary,
-    // CourseDetail,
+    CourseDetail,
     // Section,
     // Lesson,
     // Review,
@@ -56,7 +56,7 @@ import type {
 
 export function useCourses() {
     const [courses, setCourses] = useState<CoursesSummary[]>([]);
-    // const [course, setCourse] = useState<CourseDetail | null>(null);
+    const [course, setCourse] = useState<CourseDetail | null>(null);
 
     // const [category, setCategory] = useState<Category | null>(null);
     // const [sections, setSections] = useState<Section[]>([]);
@@ -124,10 +124,11 @@ export function useCourses() {
         [fetchData],
     );
 
-    // const fetchCourseDetail = useCallback(
-    //     async (id: string) => fetchData<CourseDetail | null>(getCourseDetail, setCourse, ['data', 'data'], id),
-    //     [fetchData],
-    // );
+    const fetchCourseDetail = useCallback(
+        async (id: string) => fetchData<CourseDetail | null>(
+            getCourseDetail, setCourse, undefined, ['data', 'data'], id),
+        [fetchData],
+    );
 
     // const addCourse = useCallback(
     //     async (data: Partial<CourseDetail>) => {
@@ -588,9 +589,10 @@ export function useCourses() {
 
     return {
         pagination,
+
         // States
         courses,
-        // course,
+        course,
 
         // category,
         // sections,
@@ -604,7 +606,7 @@ export function useCourses() {
 
         // Course Actions
         fetchCourses,
-        // fetchCourseDetail,
+        fetchCourseDetail,
         // addCourse,
         // editCourse,
         // removeCourse,

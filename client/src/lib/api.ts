@@ -73,7 +73,8 @@ api.interceptors.response.use(
                 if (!refreshToken) {
                     processQueue(new Error('No refresh token'));
                     isRefreshing = false;
-                    localStorage.clear();
+                    localStorage.removeItem("access_token");
+                    localStorage.removeItem("refresh_token");
                     window.location.href = '/login';
                     return reject(new Error('No refresh token'));
                 }
@@ -95,7 +96,8 @@ api.interceptors.response.use(
                     })
                     .catch(err => {
                         processQueue(err, null);
-                        localStorage.clear();
+                        localStorage.removeItem("access_token");
+                        localStorage.removeItem("refresh_token");
                         window.location.href = '/login';
                         reject(err);
                     })
