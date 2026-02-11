@@ -4,18 +4,18 @@ import {
     // Categories API Endpoints
     getCategories,
     getCategoryDetail,
-    createCategory,
-    updateCategory,
+    // createCategory,
+    // updateCategory,
     deleteCategory,
 
     // Courses API Endpoints
     getCourses,
     getCourseDetail,
-    createCourse,
-    updateCourse,
+    // createCourse,
+    // updateCourse,
     deleteCourse,
     submitCourseForReview,
-    reviewCourse,
+    // reviewCourse,
 
     // Sections API Endpoints
     getSections,
@@ -27,15 +27,15 @@ import {
     // Lessons API Endpoints
     getLessons,
     getLessonDetail,
-    createLesson,
-    updateLesson,
+    // createLesson,
+    // updateLesson,
     deleteLesson,
 
     // Reviews API Endpoints
     getReviews,
     getReviewDetail,
     createReview,
-    updateReview,
+    // updateReview,
     deleteReview,
 } from '../lib/api';
 
@@ -48,9 +48,9 @@ import type {
     Lesson,
     Review,
     CourseFilters,
-    CourseCreateUpdateData,
-    CourseReviewData,
-    LessonCreateUpdateData,
+    // CourseCreateUpdateData,
+    // CourseReviewData,
+    // LessonCreateUpdateData,
     ReviewCreateUpdateData,
     CourseStatus,
 } from '../types';
@@ -147,52 +147,52 @@ export function useCourses() {
         [fetchData],
     );
 
-    const addCourse = useCallback(
-        async (data: CourseCreateUpdateData) => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await createCourse(data);
-                const newCourse = response.data.data;
-                setCourses((prev) => [newCourse, ...prev]);
-                return newCourse;
-            } catch (err: any) {
-                const errorMsg = err.response?.data?.error?.message ||
-                    err.response?.data?.message ||
-                    'Failed to create course';
-                setError(errorMsg);
-                throw err;
-            } finally {
-                setLoading(false);
-            }
-        },
-        [],
-    );
+    // const addCourse = useCallback(
+    //     async (data: CourseCreateUpdateData) => {
+    //         setLoading(true);
+    //         setError(null);
+    //         try {
+    //             const response = await createCourse(data);
+    //             const newCourse = response.data.data;
+    //             setCourses((prev) => [newCourse, ...prev]);
+    //             return newCourse;
+    //         } catch (err: any) {
+    //             const errorMsg = err.response?.data?.error?.message ||
+    //                 err.response?.data?.message ||
+    //                 'Failed to create course';
+    //             setError(errorMsg);
+    //             throw err;
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     },
+    //     [],
+    // );
 
-    const editCourse = useCallback(
-        async (id: string, data: Partial<CourseCreateUpdateData>) => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await updateCourse(id, data);
-                const updatedCourse = response.data.data;
-                setCourses((prev) =>
-                    prev.map((c) => (c.id === id ? updatedCourse : c)),
-                );
-                if (course?.id === id) setCourse(updatedCourse);
-                return updatedCourse;
-            } catch (err: any) {
-                const errorMsg = err.response?.data?.error?.message ||
-                    err.response?.data?.message ||
-                    'Failed to update course';
-                setError(errorMsg);
-                throw err;
-            } finally {
-                setLoading(false);
-            }
-        },
-        [course],
-    );
+    // const editCourse = useCallback(
+    //     async (id: string, data: Partial<CourseCreateUpdateData>) => {
+    //         setLoading(true);
+    //         setError(null);
+    //         try {
+    //             const response = await updateCourse(id, data);
+    //             const updatedCourse = response.data.data;
+    //             setCourses((prev) =>
+    //                 prev.map((c) => (c.id === id ? updatedCourse : c)),
+    //             );
+    //             if (course?.id === id) setCourse(updatedCourse);
+    //             return updatedCourse;
+    //         } catch (err: any) {
+    //             const errorMsg = err.response?.data?.error?.message ||
+    //                 err.response?.data?.message ||
+    //                 'Failed to update course';
+    //             setError(errorMsg);
+    //             throw err;
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     },
+    //     [course],
+    // );
 
     const removeCourse = useCallback(
         async (id: string) => {
@@ -240,30 +240,30 @@ export function useCourses() {
         [],
     );
 
-    const adminReviewCourse = useCallback(
-        async (id: string, data: CourseReviewData) => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await reviewCourse(id, data);
-                const reviewedCourse = response.data.data;
-                setCourse(reviewedCourse);
-                setCourses((prev) =>
-                    prev.map((c) => (c.id === id ? reviewedCourse : c)),
-                );
-                return reviewedCourse;
-            } catch (err: any) {
-                const errorMsg = err.response?.data?.error?.message ||
-                    err.response?.data?.message ||
-                    'Failed to review course';
-                setError(errorMsg);
-                throw err;
-            } finally {
-                setLoading(false);
-            }
-        },
-        [],
-    );
+    // const adminReviewCourse = useCallback(
+    //     async (id: string, data: CourseReviewData) => {
+    //         setLoading(true);
+    //         setError(null);
+    //         try {
+    //             const response = await reviewCourse(id, data);
+    //             const reviewedCourse = response.data.data;
+    //             setCourse(reviewedCourse);
+    //             setCourses((prev) =>
+    //                 prev.map((c) => (c.id === id ? reviewedCourse : c)),
+    //             );
+    //             return reviewedCourse;
+    //         } catch (err: any) {
+    //             const errorMsg = err.response?.data?.error?.message ||
+    //                 err.response?.data?.message ||
+    //                 'Failed to review course';
+    //             setError(errorMsg);
+    //             throw err;
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     },
+    //     [],
+    // );
 
     // ==================== Category Actions ====================
 
@@ -292,52 +292,52 @@ export function useCourses() {
         [fetchData],
     );
 
-    const addCategory = useCallback(
-        async (data: Partial<Category>) => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await createCategory(data);
-                const newCategory = response.data;
-                setCategories((prev) => [...prev, newCategory]);
-                return newCategory;
-            } catch (err: any) {
-                const errorMsg = err.response?.data?.error?.message ||
-                    err.response?.data?.message ||
-                    'Failed to create category';
-                setError(errorMsg);
-                throw err;
-            } finally {
-                setLoading(false);
-            }
-        },
-        [],
-    );
+    // const addCategory = useCallback(
+    //     async (data: Partial<Category>) => {
+    //         setLoading(true);
+    //         setError(null);
+    //         try {
+    //             const response = await createCategory(data);
+    //             const newCategory = response.data;
+    //             setCategories((prev) => [...prev, newCategory]);
+    //             return newCategory;
+    //         } catch (err: any) {
+    //             const errorMsg = err.response?.data?.error?.message ||
+    //                 err.response?.data?.message ||
+    //                 'Failed to create category';
+    //             setError(errorMsg);
+    //             throw err;
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     },
+    //     [],
+    // );
 
-    const editCategory = useCallback(
-        async (id: string, data: Partial<Category>) => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await updateCategory(id, data);
-                const updatedCategory = response.data;
-                setCategories((prev) =>
-                    prev.map((c) => (c.id === id ? updatedCategory : c)),
-                );
-                if (category?.id === id) setCategory(updatedCategory);
-                return updatedCategory;
-            } catch (err: any) {
-                const errorMsg = err.response?.data?.error?.message ||
-                    err.response?.data?.message ||
-                    'Failed to update category';
-                setError(errorMsg);
-                throw err;
-            } finally {
-                setLoading(false);
-            }
-        },
-        [category],
-    );
+    // const editCategory = useCallback(
+    //     async (id: string, data: Partial<Category>) => {
+    //         setLoading(true);
+    //         setError(null);
+    //         try {
+    //             const response = await updateCategory(id, data);
+    //             const updatedCategory = response.data;
+    //             setCategories((prev) =>
+    //                 prev.map((c) => (c.id === id ? updatedCategory : c)),
+    //             );
+    //             if (category?.id === id) setCategory(updatedCategory);
+    //             return updatedCategory;
+    //         } catch (err: any) {
+    //             const errorMsg = err.response?.data?.error?.message ||
+    //                 err.response?.data?.message ||
+    //                 'Failed to update category';
+    //             setError(errorMsg);
+    //             throw err;
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     },
+    //     [category],
+    // );
 
     const removeCategory = useCallback(
         async (id: string) => {
@@ -519,83 +519,83 @@ export function useCourses() {
         [fetchData],
     );
 
-    const addLesson = useCallback(
-        async (courseId: string, sectionId: string, data: LessonCreateUpdateData) => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await createLesson(courseId, sectionId, data);
-                const newLesson = response.data.data;
-                setLessons((prev) => [...prev, newLesson]);
+    // const addLesson = useCallback(
+    //     async (courseId: string, sectionId: string, data: LessonCreateUpdateData) => {
+    //         setLoading(true);
+    //         setError(null);
+    //         try {
+    //             const response = await createLesson(courseId, sectionId, data);
+    //             const newLesson = response.data.data;
+    //             setLessons((prev) => [...prev, newLesson]);
 
-                // Update section lessons in course detail
-                if (course?.id === courseId) {
-                    setCourse(prev => prev ? {
-                        ...prev,
-                        sections: prev.sections.map(s =>
-                            s.id === sectionId
-                                ? { ...s, lessons: [...(s.lessons || []), newLesson], lesson_count: (s.lesson_count || 0) + 1 }
-                                : s
-                        )
-                    } : prev);
-                }
+    //             // Update section lessons in course detail
+    //             if (course?.id === courseId) {
+    //                 setCourse(prev => prev ? {
+    //                     ...prev,
+    //                     sections: prev.sections.map(s =>
+    //                         s.id === sectionId
+    //                             ? { ...s, lessons: [...(s.lessons || []), newLesson], lesson_count: (s.lesson_count || 0) + 1 }
+    //                             : s
+    //                     )
+    //                 } : prev);
+    //             }
 
-                return newLesson;
-            } catch (err: any) {
-                const errorMsg = err.response?.data?.error?.message ||
-                    err.response?.data?.message ||
-                    'Failed to create lesson';
-                setError(errorMsg);
-                throw err;
-            } finally {
-                setLoading(false);
-            }
-        },
-        [course],
-    );
+    //             return newLesson;
+    //         } catch (err: any) {
+    //             const errorMsg = err.response?.data?.error?.message ||
+    //                 err.response?.data?.message ||
+    //                 'Failed to create lesson';
+    //             setError(errorMsg);
+    //             throw err;
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     },
+    //     [course],
+    // );
 
-    const editLesson = useCallback(
-        async (courseId: string, sectionId: string, lessonId: string, data: Partial<LessonCreateUpdateData>) => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await updateLesson(courseId, sectionId, lessonId, data);
-                const updatedLesson = response.data.data;
-                setLessons((prev) =>
-                    prev.map((l) => (l.id === lessonId ? updatedLesson : l)),
-                );
+    // const editLesson = useCallback(
+    //     async (courseId: string, sectionId: string, lessonId: string, data: Partial<LessonCreateUpdateData>) => {
+    //         setLoading(true);
+    //         setError(null);
+    //         try {
+    //             const response = await updateLesson(courseId, sectionId, lessonId, data);
+    //             const updatedLesson = response.data.data;
+    //             setLessons((prev) =>
+    //                 prev.map((l) => (l.id === lessonId ? updatedLesson : l)),
+    //             );
 
-                // Update section lessons in course detail
-                if (course?.id === courseId) {
-                    setCourse(prev => prev ? {
-                        ...prev,
-                        sections: prev.sections.map(s =>
-                            s.id === sectionId
-                                ? {
-                                    ...s,
-                                    lessons: s.lessons.map(l =>
-                                        l.id === lessonId ? updatedLesson : l
-                                    )
-                                }
-                                : s
-                        )
-                    } : prev);
-                }
+    //             // Update section lessons in course detail
+    //             if (course?.id === courseId) {
+    //                 setCourse(prev => prev ? {
+    //                     ...prev,
+    //                     sections: prev.sections.map(s =>
+    //                         s.id === sectionId
+    //                             ? {
+    //                                 ...s,
+    //                                 lessons: s.lessons.map(l =>
+    //                                     l.id === lessonId ? updatedLesson : l
+    //                                 )
+    //                             }
+    //                             : s
+    //                     )
+    //                 } : prev);
+    //             }
 
-                if (lesson?.id === lessonId) setLesson(updatedLesson);
-                return updatedLesson;
-            } catch (err: any) {
-                const errorMsg = err.response?.data?.error?.message ||
-                    err.response?.data?.message ||
-                    'Failed to update lesson';
-                setError(errorMsg);
-                throw err;
-            } finally {
-                setLoading(false);
-            }
-        },
-        [lesson, course],
-    );
+    //             if (lesson?.id === lessonId) setLesson(updatedLesson);
+    //             return updatedLesson;
+    //         } catch (err: any) {
+    //             const errorMsg = err.response?.data?.error?.message ||
+    //                 err.response?.data?.message ||
+    //                 'Failed to update lesson';
+    //             setError(errorMsg);
+    //             throw err;
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     },
+    //     [lesson, course],
+    // );
 
     const removeLesson = useCallback(
         async (courseId: string, sectionId: string, lessonId: string) => {
@@ -697,42 +697,42 @@ export function useCourses() {
         [course],
     );
 
-    const editReview = useCallback(
-        async (courseId: string, reviewId: string, data: Partial<ReviewCreateUpdateData>) => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await updateReview(courseId, reviewId, data);
-                const updatedReview = response.data.data;
-                setReviews((prev) =>
-                    prev.map((r) => (r.id === reviewId ? updatedReview : r)),
-                );
+    // const editReview = useCallback(
+    //     async (courseId: string, reviewId: string, data: Partial<ReviewCreateUpdateData>) => {
+    //         setLoading(true);
+    //         setError(null);
+    //         try {
+    //             const response = await updateReview(courseId, reviewId, data);
+    //             const updatedReview = response.data.data;
+    //             setReviews((prev) =>
+    //                 prev.map((r) => (r.id === reviewId ? updatedReview : r)),
+    //             );
 
-                // Update course reviews in detail view
-                if (course?.id === courseId) {
-                    setCourse(prev => prev ? {
-                        ...prev,
-                        reviews: prev.reviews.map(r =>
-                            r.id === reviewId ? updatedReview : r
-                        ),
-                        average_rating: response.data.data.average_rating || prev.average_rating,
-                    } : prev);
-                }
+    //             // Update course reviews in detail view
+    //             if (course?.id === courseId) {
+    //                 setCourse(prev => prev ? {
+    //                     ...prev,
+    //                     reviews: prev.reviews.map(r =>
+    //                         r.id === reviewId ? updatedReview : r
+    //                     ),
+    //                     average_rating: response.data.data.average_rating || prev.average_rating,
+    //                 } : prev);
+    //             }
 
-                if (review?.id === reviewId) setReview(updatedReview);
-                return updatedReview;
-            } catch (err: any) {
-                const errorMsg = err.response?.data?.error?.message ||
-                    err.response?.data?.message ||
-                    'Failed to update review';
-                setError(errorMsg);
-                throw err;
-            } finally {
-                setLoading(false);
-            }
-        },
-        [review, course],
-    );
+    //             if (review?.id === reviewId) setReview(updatedReview);
+    //             return updatedReview;
+    //         } catch (err: any) {
+    //             const errorMsg = err.response?.data?.error?.message ||
+    //                 err.response?.data?.message ||
+    //                 'Failed to update review';
+    //             setError(errorMsg);
+    //             throw err;
+    //         } finally {
+    //             setLoading(false);
+    //         }
+    //     },
+    //     [review, course],
+    // );
 
     const removeReview = useCallback(
         async (courseId: string, reviewId: string) => {
@@ -806,17 +806,17 @@ export function useCourses() {
         // Course Actions
         fetchCourses,
         fetchCourseDetail,
-        addCourse,
-        editCourse,
+        // addCourse,
+        // editCourse,
         removeCourse,
         submitForReview,
-        adminReviewCourse,
+        // adminReviewCourse,
 
         // Category Actions
         fetchCategories,
         fetchCategoryDetail,
-        addCategory,
-        editCategory,
+        // addCategory,
+        // editCategory,
         removeCategory,
 
         // Section Actions
@@ -829,15 +829,15 @@ export function useCourses() {
         // Lesson Actions
         fetchLessons,
         fetchLessonDetail,
-        addLesson,
-        editLesson,
+        // addLesson,
+        // editLesson,
         removeLesson,
 
         // Review Actions
         fetchReviews,
         fetchReviewDetail,
         addReview,
-        editReview,
+        // editReview,
         removeReview,
 
         // Utility

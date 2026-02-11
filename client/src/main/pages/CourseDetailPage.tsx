@@ -17,8 +17,8 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useCourses } from '../../hooks/useCourses'
-import LoadingSpinner from '../components/LoadingSpinner'
 import Breadcrumb from '../components/Breadcrumb'
+import CourseDetailSkeleton from '../components/loadingSkeleton/CourseDetailSkeleton'
 
 export function CourseDetailPage() {
     const { id } = useParams<{ id: string }>()
@@ -30,7 +30,7 @@ export function CourseDetailPage() {
         error,
         fetchCourseDetail,
         submitForReview,
-        adminReviewCourse,
+        // adminReviewCourse,
         addReview,
         fetchReviews,
         reviews,
@@ -113,20 +113,20 @@ export function CourseDetailPage() {
         }
     }
 
-    const handleAdminReview = async () => {
-        if (!id) return
-        try {
-            await adminReviewCourse(id, {
-                status: adminReviewStatus,
-                review_notes: adminReviewNotes,
-            })
-            setShowAdminReviewModal(false)
-            alert(`Course ${adminReviewStatus.toLowerCase()} successfully!`)
-        } catch (error) {
-            console.error('Failed to review course:', error)
-            alert('Failed to review course. Please try again.')
-        }
-    }
+    // const handleAdminReview = async () => {
+    //     if (!id) return
+    //     try {
+    //         await adminReviewCourse(id, {
+    //             status: adminReviewStatus,
+    //             review_notes: adminReviewNotes,
+    //         })
+    //         setShowAdminReviewModal(false)
+    //         alert(`Course ${adminReviewStatus.toLowerCase()} successfully!`)
+    //     } catch (error) {
+    //         console.error('Failed to review course:', error)
+    //         alert('Failed to review course. Please try again.')
+    //     }
+    // }
 
     const handleAddReview = async () => {
         if (!id || !user) return
@@ -170,7 +170,7 @@ export function CourseDetailPage() {
     }
 
     if (loading) {
-        return <LoadingSpinner />
+        return <CourseDetailSkeleton />
     }
 
     if (error || !course) {
@@ -871,12 +871,12 @@ export function CourseDetailPage() {
                             >
                                 Cancel
                             </button>
-                            <button
+                            {/* <button
                                 onClick={handleAdminReview}
                                 className="px-4 py-2 bg-[#0066CC] text-white rounded-lg hover:bg-[#004c99] transition-colors"
                             >
                                 Submit Review
-                            </button>
+                            </button> */}
                         </div>
                     </div>
                 </div>
