@@ -4,6 +4,7 @@ Course models with approval workflow.
 
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.utils import timezone
 from apps.accounts.models import User
 import uuid
 
@@ -103,6 +104,34 @@ class Course(models.Model):
     target_audience = models.TextField(blank=True, help_text="Who this course is for")
     who_can_join = models.TextField(blank=True, help_text="Who can join this course")
 
+    # Class Schedule Information
+    class_starts = models.DateField(
+        null=True, blank=True, help_text="Date when classes start"
+    )
+    admission_deadline = models.DateField(
+        null=True, blank=True, help_text="Last date for admission"
+    )
+    schedule = models.TextField(
+        blank=True, 
+        help_text="e.g., Saturday, Monday, Wednesday - 6:30PM to 9:00PM"
+    )
+    venue = models.CharField(
+        max_length=255, 
+        blank=True, 
+        help_text="Class venue/location"
+    )
+    
+    # Capacity Information
+    total_seats = models.PositiveIntegerField(
+        default=30,
+        validators=[MinValueValidator(1)],
+        help_text="Maximum number of students allowed"
+    )
+    available_seats = models.PositiveIntegerField(
+        default=30,
+        help_text="Number of seats currently available"
+    )
+
     # Status & Approval
     status = models.CharField(
         max_length=20,
@@ -149,14 +178,25 @@ class Course(models.Model):
             models.Index(fields=["category", "status"]),
             models.Index(fields=["-enrollment_count"]),
             models.Index(fields=["-average_rating"]),
+            models.Index(fields=["class_starts"]),
+            models.Index(fields=["admission_deadline"]),
         ]
 
     def __str__(self):
         return self.title
 
     def save(self, *args, **kwargs):
-        """Auto-set is_free based on price."""
+        """Auto-set is_free based on price and ensure available_seats doesn't exceed total_seats."""
         self.is_free = self.price == 0
+        
+        # Ensure available_seats doesn't exceed total_seats
+        if self.available_seats > self.total_seats:
+            self.available_seats = self.total_seats
+            
+        # Ensure enrollment_count doesn't exceed total_seats
+        if self.enrollment_count > self.total_seats:
+            self.enrollment_count = self.total_seats
+            
         super().save(*args, **kwargs)
 
     @property
@@ -168,6 +208,36 @@ class Course(models.Model):
     def lesson_count(self):
         """Get total number of lessons."""
         return self.sections.aggregate(total=models.Sum("lessons__id"))["total"] or 0  # type: ignore
+
+    @property
+    def total_classes(self):
+        """Count total number of sections (classes)."""
+        return self.sections.count() # type: ignore
+
+    @property
+    def is_admission_open(self):
+        """Check if admission is still open."""
+        if not self.admission_deadline:
+            return True
+        return self.admission_deadline >= timezone.now().date()
+
+    @property
+    def is_full(self):
+        """Check if course is full."""
+        return self.available_seats <= 0
+
+    def decrease_available_seats(self, count=1):
+        """Decrease available seats when a student enrolls."""
+        if self.available_seats >= count:
+            self.available_seats -= count
+            self.save(update_fields=["available_seats"])
+            return True
+        return False
+
+    def increase_available_seats(self, count=1):
+        """Increase available seats when a student unenrolls."""
+        self.available_seats = min(self.available_seats + count, self.total_seats)
+        self.save(update_fields=["available_seats"])
 
 
 class Section(models.Model):

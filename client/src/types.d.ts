@@ -76,6 +76,10 @@ export type CategoryDetailResponse = Category;
 
 // Course Management Types
 
+export type DifficultyLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+export type CourseStatus = 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'PUBLISHED';
+export type LessonType = 'VIDEO' | 'ARTICLE' | 'QUIZ' | 'ASSIGNMENT' | 'RESOURCE';
+
 export interface CoursesSummary {
     id: string;
     title: string;
@@ -83,20 +87,28 @@ export interface CoursesSummary {
     short_description: string;
     instructor_name: string;
     category_name: string;
-    difficulty_level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+    difficulty_level: DifficultyLevel;
     price: string;
     is_free: boolean;
     thumbnail?: string;
     who_can_join: string;
     duration_hours: number;
-    status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'PUBLISHED';
+    status: CourseStatus;
     enrollment_count: number;
     average_rating: string;
     total_reviews: number;
+    total_classes: number;
+    available_seats: number;
+    total_seats: number;
+    is_admission_open: boolean;
+    is_full: boolean;
+    class_starts: string | null;
+    admission_deadline: string | null;
+    schedule: string;
+    venue: string;
     created_at: string;
     published_at: string | null;
 }
-
 
 export interface CourseListResponse {
     count: number;
@@ -108,11 +120,10 @@ export interface CourseListResponse {
     };
 }
 
-
 export interface LessonSummary {
     id: string;
     title: string;
-    lesson_type: 'VIDEO' | 'ARTICLE' | 'QUIZ';
+    lesson_type: LessonType;
     video_duration: number;
     is_preview: boolean;
     order: number;
@@ -129,7 +140,6 @@ export interface Section {
     created_at: string;
 }
 
-
 export interface CourseDetail {
     id: string;
     title: string;
@@ -138,7 +148,7 @@ export interface CourseDetail {
     short_description: string;
     instructor: User;
     category: Category;
-    difficulty_level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+    difficulty_level: DifficultyLevel;
     price: string;
     is_free: boolean;
     thumbnail?: string;
@@ -148,25 +158,64 @@ export interface CourseDetail {
     learning_outcomes: string;
     target_audience: string;
     who_can_join: string;
-    status: 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'PUBLISHED';
+    status: CourseStatus;
     sections: Section[];
     enrollment_count: number;
     average_rating: string;
     total_reviews: number;
     reviews: Review[];
     is_enrolled: boolean;
+    total_classes: number;
+    available_seats: number;
+    total_seats: number;
+    class_starts: string | null;
+    admission_deadline: string | null;
+    schedule: string;
+    venue: string;
+    is_admission_open: boolean;
+    is_full: boolean;
     created_at: string;
     updated_at: string;
     published_at: string | null;
 }
-
-
 
 export interface CourseDetailResponse {
     success: boolean;
     data: CourseDetail;
 }
 
+// Course Create/Update Types
+export interface CourseCreateUpdateData {
+    title: string;
+    description: string;
+    short_description: string;
+    category: string;
+    difficulty_level: DifficultyLevel;
+    price: string | number;
+    thumbnail?: File | string | null;
+    preview_video?: string;
+    duration_hours: number;
+    requirements: string;
+    learning_outcomes: string;
+    target_audience: string;
+    who_can_join: string;
+    class_starts: string | null;
+    admission_deadline: string | null;
+    schedule: string;
+    venue: string;
+    total_seats: number;
+    available_seats?: number;
+    status?: CourseStatus;
+}
+
+// Course Capacity Management
+export interface CourseCapacity {
+    total_seats: number;
+    available_seats: number;
+    enrollment_count: number;
+    is_full: boolean;
+    occupancy_rate: number;
+}
 
 // Lesson Management Types
 export interface Lesson {
@@ -175,10 +224,11 @@ export interface Lesson {
     section_id: string;
     title: string;
     description?: string;
-    lesson_type: 'VIDEO' | 'ARTICLE' | 'QUIZ';
+    lesson_type: LessonType;
     video_url?: string;
     video_duration?: number;
     content?: string;
+    resources?: string;
     quiz_data?: any;
     is_preview: boolean;
     order: number;
@@ -186,6 +236,17 @@ export interface Lesson {
     updated_at: string;
 }
 
+export interface LessonCreateUpdateData {
+    section: string;
+    title: string;
+    lesson_type: LessonType;
+    content?: string;
+    video_url?: string;
+    video_duration?: number;
+    resources?: File | string | null;
+    is_preview: boolean;
+    order: number;
+}
 
 // Review Management Types
 export interface Review {
@@ -200,6 +261,59 @@ export interface Review {
     updated_at: string;
 }
 
+export interface ReviewCreateUpdateData {
+    course: string;
+    rating: number;
+    review_text?: string;
+}
+
+// Schedule and Venue Types
+export interface CourseSchedule {
+    class_starts: string | null;
+    admission_deadline: string | null;
+    schedule: string;
+    venue: string;
+}
+
+// Filter and Query Types
+export interface CourseFilters {
+    category?: string;
+    difficulty_level?: DifficultyLevel;
+    is_free?: boolean;
+    status?: CourseStatus;
+    venue?: string;
+    search?: string;
+    ordering?: string;
+    page?: number;
+    page_size?: number;
+}
+
+// Dashboard/Statistics Types
+export interface CourseStatistics {
+    total_enrollments: number;
+    average_rating: number;
+    total_reviews: number;
+    total_classes: number;
+    available_seats: number;
+    total_seats: number;
+    occupancy_percentage: number;
+    days_until_deadline?: number;
+    days_until_start?: number;
+}
+
+// Admin Course Review Types
+export interface CourseReviewData {
+    status: 'APPROVED' | 'PUBLISHED' | 'REJECTED';
+    review_notes: string;
+}
+
+// Enrollment Status
+export interface EnrollmentStatus {
+    is_enrolled: boolean;
+    enrollment_date?: string;
+    completion_percentage?: number;
+}
+
 export interface PaginatedResponse<T> {
     count: number;
     next: string | null;
@@ -210,4 +324,13 @@ export interface PaginatedResponse<T> {
 export interface ApiResponse<T> {
     success: boolean;
     data: T;
+}
+
+export interface ErrorResponse {
+    success: boolean;
+    error: {
+        code: string;
+        message: string;
+        details?: Record<string, any>;
+    };
 }

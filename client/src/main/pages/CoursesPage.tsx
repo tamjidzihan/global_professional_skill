@@ -1,5 +1,5 @@
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { Filter, Search, ChevronRight, X, CircleX } from "lucide-react"
+import { Filter, Search, ChevronRight, X, CircleX, Folder } from "lucide-react"
 import { useEffect, useState, useMemo } from "react"
 import { CourseCard } from "../components/CourseCard"
 import Breadcrumb from "../components/Breadcrumb"
@@ -31,8 +31,8 @@ const CoursesPage = () => {
 
     const [searchQuery, setSearchQuery] = useState(urlSearchQuery)
     const [appliedFilters, setAppliedFilters] = useState<Record<string, string | number>>({})
-    const [showFilters, setShowFilters] = useState(false) // Mobile filter toggle state
-    const [isClosing, setIsClosing] = useState(false) // For animation
+    const [showFilters, setShowFilters] = useState(false)
+    const [isClosing, setIsClosing] = useState(false)
 
     // Memoized active category name based on URL
     const activeCategoryName = useMemo(() => {
@@ -86,7 +86,7 @@ const CoursesPage = () => {
 
             // Use navigate with replace to avoid adding to history
             navigate(`/courses?${newParams.toString()}`, { replace: true });
-        }, 500); // 500ms debounce
+        }, 500);
 
         return () => clearTimeout(timeoutId);
     }, [searchQuery, urlCategoryId, navigate]);
@@ -139,7 +139,10 @@ const CoursesPage = () => {
 
     return (
         <>
-            <Breadcrumb name="Courses" />
+            <Breadcrumb
+                name="Courses"
+                icon={Folder}
+            />
 
             {/* Top Search Bar */}
             <div className="container mx-auto px-4 py-2">

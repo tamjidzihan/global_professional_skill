@@ -87,7 +87,7 @@ export function CourseCard({
                 </div>
 
                 {/* Title */}
-                <Link to={`/course/${id}`} className="font-bold text-gray-900 text-base mb-3 line-clamp-2 min-h-14 group-hover:text-blue-600 transition-colors">
+                <Link to={`/courses/${id}`} className="font-bold text-gray-900 text-base mb-3 line-clamp-2 min-h-14 group-hover:text-blue-600 transition-colors">
                     {title}
                 </Link>
 
@@ -132,7 +132,7 @@ export function CourseCard({
                         </div>
 
                         <Link
-                            to={`/course/${id}`}
+                            to={`/courses/${id}`}
                             className="group/btn relative overflow-hidden bg-linear-to-r from-[#0066CC] to-blue-600 text-white font-semibold text-sm px-4 py-2.5 rounded-lg hover:shadow-lg transition-all duration-300 hover:from-blue-700 hover:to-blue-800 transform hover:-translate-y-0.5"
                         >
                             <span className="relative z-10">View Details</span>

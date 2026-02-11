@@ -10,6 +10,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db import transaction
 from django.db.models import Q
+from django.utils import timezone
 
 from .models import Category, Course, Section, Lesson, Review, CourseStatus
 from .serializers import (
@@ -57,6 +58,8 @@ class CourseViewSet(viewsets.ModelViewSet):
         "description",
         "instructor__first_name",
         "instructor__last_name",
+        "venue",
+        "schedule",
     ]
     ordering_fields = [
         "created_at",
@@ -64,6 +67,8 @@ class CourseViewSet(viewsets.ModelViewSet):
         "enrollment_count",
         "average_rating",
         "price",
+        "class_starts",
+        "admission_deadline",
     ]
     ordering = ["-created_at"]
 
@@ -87,14 +92,14 @@ class CourseViewSet(viewsets.ModelViewSet):
         """
         user = self.request.user
 
-        if not user.is_authenticated or user.is_student:
+        if not user.is_authenticated or user.is_student: # type: ignore
             return (
                 Course.objects.filter(status=CourseStatus.PUBLISHED)
                 .select_related("instructor", "category")
                 .prefetch_related("sections__lessons")
             )
 
-        if user.is_instructor:
+        if user.is_instructor: # type: ignore
             return (
                 Course.objects.filter(
                     Q(instructor=user) | Q(status=CourseStatus.PUBLISHED)
@@ -103,7 +108,7 @@ class CourseViewSet(viewsets.ModelViewSet):
                 .prefetch_related("sections__lessons")
             )
 
-        if user.is_admin_user:
+        if user.is_admin_user: # type: ignore
             return Course.objects.select_related(
                 "instructor", "category", "reviewed_by"
             ).prefetch_related("sections__lessons")
@@ -337,10 +342,18 @@ class ReviewViewSet(viewsets.ModelViewSet):
     """ViewSet for course reviews."""
 
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthenticated]
     filter_backends = [OrderingFilter]
     ordering_fields = ["created_at", "rating"]
     ordering = ["-created_at"]
+
+    def get_permissions(self):
+        """
+        - Allow anyone to view reviews (list, retrieve)
+        - Require authentication for creating, updating, deleting reviews
+        """
+        if self.action in ['list', 'retrieve']:
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
     def get_queryset(self):  # type: ignore
         """Filter reviews by course."""
@@ -391,4 +404,28 @@ class ReviewViewSet(viewsets.ModelViewSet):
                 "message": "Review updated successfully.",
                 "data": serializer.data,
             }
+        )
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        """Delete review."""
+        instance = self.get_object()
+        
+        # Only review owner or admin can delete
+        if instance.student != request.user and not request.user.is_admin_user:
+            return Response(
+                {
+                    "success": False,
+                    "error": {"message": "You can only delete your own reviews."},
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+            
+        self.perform_destroy(instance)
+        return Response(
+            {
+                "success": True,
+                "message": "Review deleted successfully.",
+            },
+            status=status.HTTP_204_NO_CONTENT,
         )

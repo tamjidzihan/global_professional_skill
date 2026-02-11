@@ -4,7 +4,7 @@ Serializers for courses app.
 
 from rest_framework import serializers
 from django.utils.text import slugify
-from django.db import transaction
+from django.utils import timezone
 from .models import Category, Course, Section, Lesson, Review, CourseStatus
 from apps.accounts.serializers import UserSerializer
 
@@ -172,6 +172,9 @@ class CourseListSerializer(serializers.ModelSerializer):
         source="instructor.get_full_name", read_only=True
     )
     category_name = serializers.CharField(source="category.name", read_only=True)
+    total_classes = serializers.SerializerMethodField()
+    is_admission_open = serializers.SerializerMethodField()
+    is_full = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
@@ -192,9 +195,27 @@ class CourseListSerializer(serializers.ModelSerializer):
             "enrollment_count",
             "average_rating",
             "total_reviews",
+            "total_classes",
+            "available_seats",
+            "total_seats",
+            "is_admission_open",
+            "is_full",
+            "class_starts",
+            "admission_deadline",
+            "schedule",
+            "venue",
             "created_at",
             "published_at",
         )
+
+    def get_total_classes(self, obj):
+        return obj.total_classes
+
+    def get_is_admission_open(self, obj):
+        return obj.is_admission_open
+
+    def get_is_full(self, obj):
+        return obj.is_full
 
 
 class CourseDetailSerializer(serializers.ModelSerializer):
@@ -205,6 +226,9 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     sections = SectionSerializer(many=True, read_only=True)
     reviews = ReviewSerializer(many=True, read_only=True)
     is_enrolled = serializers.SerializerMethodField()
+    total_classes = serializers.SerializerMethodField()
+    is_admission_open = serializers.SerializerMethodField()
+    is_full = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
@@ -233,6 +257,15 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "total_reviews",
             "reviews",
             "is_enrolled",
+            "total_classes",
+            "available_seats",
+            "total_seats",
+            "class_starts",
+            "admission_deadline",
+            "schedule",
+            "venue",
+            "is_admission_open",
+            "is_full",
             "created_at",
             "updated_at",
             "published_at",
@@ -246,6 +279,15 @@ class CourseDetailSerializer(serializers.ModelSerializer):
 
             return Enrollment.objects.filter(student=request.user, course=obj).exists()
         return False
+
+    def get_total_classes(self, obj):
+        return obj.total_classes
+
+    def get_is_admission_open(self, obj):
+        return obj.is_admission_open
+
+    def get_is_full(self, obj):
+        return obj.is_full
 
 
 class CourseCreateUpdateSerializer(serializers.ModelSerializer):
@@ -268,6 +310,12 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
             "learning_outcomes",
             "target_audience",
             "who_can_join",
+            "class_starts",
+            "admission_deadline",
+            "schedule",
+            "venue",
+            "total_seats",
+            "available_seats",
             "status",
         )
         read_only_fields = ("id",)
@@ -285,6 +333,34 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     "Course with this title already exists."
                 )
+        return value
+
+    def validate_total_seats(self, value):
+        """Validate total seats."""
+        if value < 1:
+            raise serializers.ValidationError("Total seats must be at least 1.")
+        return value
+
+    def validate_available_seats(self, value):
+        """Validate available seats."""
+        if value > self.initial_data.get('total_seats', 30): # type: ignore
+            raise serializers.ValidationError(
+                "Available seats cannot exceed total seats."
+            )
+        return value
+
+    def validate_admission_deadline(self, value):
+        """Validate admission deadline."""
+        if value and value < timezone.now().date():
+            raise serializers.ValidationError(
+                "Admission deadline cannot be in the past."
+            )
+        return value
+
+    def validate_class_starts(self, value):
+        """Validate class start date."""
+        if value and value < timezone.now().date():
+            raise serializers.ValidationError("Class start date cannot be in the past.")
         return value
 
     def validate_status(self, value):

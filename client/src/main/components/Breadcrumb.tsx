@@ -60,7 +60,7 @@ const Breadcrumb = ({ name, subtitle, icon: Icon }: BreadcrumbProps) => {
     const breadcrumbItems = getBreadcrumbItems()
 
     return (
-        <nav className="flex bg-gray-50 border-b border-blue-200 py-3 px-5 rounded-lg mb-4" aria-label="Breadcrumb">
+        <nav className="flex bg-gray-50 border border-blue-200 py-3 px-5 rounded-lg" aria-label="Breadcrumb">
             <div className="container mx-auto px-4" >
                 <ol className="inline-flex max-w-4xl items-center space-x-1 md:space-x-3">
                     {breadcrumbItems.map((item, index) => {
@@ -81,12 +81,12 @@ const Breadcrumb = ({ name, subtitle, icon: Icon }: BreadcrumbProps) => {
                                         </Link>
                                     ) : isLast ? (
                                         <>
-                                            <span className="text-blue-700 ml-1 md:ml-2 text-sm font-medium inline-flex items-center">
-                                                <ItemIcon className="w-4 h-4 mr-1.5" />
+                                            <span className="text-gray-600 hover:text-gray-800 ml-1 md:ml-2 text-sm font-medium inline-flex items-center">
+                                                <ItemIcon className="w-5 h-5 mr-1.5" />
                                                 {item.name}
                                             </span>
                                             {subtitle && (
-                                                <span className="text-blue-500 text-sm ml-2">| {subtitle}</span>
+                                                <span className="text-gray-600 hover:text-gray-800 text-sm ml-2">| {subtitle}</span>
                                             )}
                                         </>
                                     ) : (
