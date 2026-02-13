@@ -11,7 +11,7 @@ import {
     // Courses API Endpoints
     getCourses,
     getCourseDetail,
-    // createCourse,
+    createCourse,
     // updateCourse,
     deleteCourse,
     submitCourseForReview,
@@ -48,7 +48,7 @@ import type {
     Lesson,
     Review,
     CourseFilters,
-    // CourseCreateUpdateData,
+    CourseCreateUpdateData,
     // CourseReviewData,
     // LessonCreateUpdateData,
     ReviewCreateUpdateData,
@@ -147,27 +147,44 @@ export function useCourses() {
         [fetchData],
     );
 
-    // const addCourse = useCallback(
-    //     async (data: CourseCreateUpdateData) => {
-    //         setLoading(true);
-    //         setError(null);
-    //         try {
-    //             const response = await createCourse(data);
-    //             const newCourse = response.data.data;
-    //             setCourses((prev) => [newCourse, ...prev]);
-    //             return newCourse;
-    //         } catch (err: any) {
-    //             const errorMsg = err.response?.data?.error?.message ||
-    //                 err.response?.data?.message ||
-    //                 'Failed to create course';
-    //             setError(errorMsg);
-    //             throw err;
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     },
-    //     [],
-    // );
+    const addCourse = useCallback(
+        async (data: CourseCreateUpdateData) => {
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await createCourse(data);
+                const newCourse = response.data.data;
+
+                const newCourseSummary: CoursesSummary = {
+                    id: newCourse.id,
+                    title: newCourse.title,
+                    duration_hours: newCourse.duration_hours,
+                    thumbnail: newCourse.thumbnail,
+                    price: newCourse.price,
+                    difficulty_level: newCourse.difficulty_level,
+                    average_rating: newCourse.average_rating,
+                    status: newCourse.status,
+                    instructor_name: `${newCourse.instructor.first_name} ${newCourse.instructor.last_name}`,
+                    category_name: newCourse.category.name,
+                };
+
+                setCourses((prev) => [newCourseSummary, ...prev]);
+
+                return newCourse;
+            } catch (err: any) {
+                const errorMsg =
+                    err.response?.data?.error?.message ||
+                    err.response?.data?.message ||
+                    "Failed to create course";
+                setError(errorMsg);
+                throw err;
+            } finally {
+                setLoading(false);
+            }
+        },
+        []
+    );
+
 
     // const editCourse = useCallback(
     //     async (id: string, data: Partial<CourseCreateUpdateData>) => {
@@ -806,7 +823,7 @@ export function useCourses() {
         // Course Actions
         fetchCourses,
         fetchCourseDetail,
-        // addCourse,
+        addCourse,
         // editCourse,
         removeCourse,
         submitForReview,

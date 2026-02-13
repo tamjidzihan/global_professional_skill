@@ -13,6 +13,7 @@ import type {
     Lesson,
     Review,
     ApiResponse,
+    CourseCreateUpdateData,
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
@@ -216,6 +217,7 @@ export const reviewInstructorRequest = (
 ): Promise<AxiosResponse> =>
     api.post(endpoints.instructorRequests.review(id), data);
 
+
 // User Management API Calls
 export const updateUserRole = (userId: string, role: string) =>
     api.patch(endpoints.users.updateRole(userId), { role });
@@ -236,7 +238,6 @@ export const getCategories = <T = CategoryListResponse>(
     return api.get<T>(endpoints.categories.list, { params });
 };
 
-
 export const getCategoryDetail = (id: string): Promise<AxiosResponse<CategoryDetailResponse>> =>
     api.get<CategoryDetailResponse>(endpoints.categories.detail(id));
 
@@ -248,6 +249,7 @@ export const updateCategory = (id: string, data: Partial<Category>): Promise<Axi
 
 export const deleteCategory = (id: string): Promise<AxiosResponse<void>> =>
     api.delete<void>(endpoints.categories.delete(id));
+
 
 // Course API Calls
 export const getCourses = <T = CourseListResponse>(
@@ -263,7 +265,9 @@ export const getCourses = <T = CourseListResponse>(
 export const getCourseDetail = (id: string): Promise<AxiosResponse<CourseDetailResponse>> =>
     api.get<CourseDetailResponse>(endpoints.courses.detail(id));
 
-export const createCourse = (data: Partial<CourseDetail>): Promise<AxiosResponse<ApiResponse<CourseDetail>>> =>
+export const createCourse = (
+    data: CourseCreateUpdateData
+): Promise<AxiosResponse<ApiResponse<CourseDetail>>> =>
     api.post<ApiResponse<CourseDetail>>(endpoints.courses.create, data);
 
 export const updateCourse = (id: string, data: Partial<CourseDetail>): Promise<AxiosResponse<ApiResponse<CourseDetail>>> =>
@@ -277,6 +281,7 @@ export const submitCourseForReview = (id: string): Promise<AxiosResponse<void>> 
 
 export const reviewCourse = (id: string, data: { status: 'APPROVED' | 'REJECTED' | 'PUBLISHED'; feedback?: string }): Promise<AxiosResponse<ApiResponse<CourseDetail>>> =>
     api.post<ApiResponse<CourseDetail>>(endpoints.courses.review(id), data);
+
 
 // Section API Calls
 export const getSections = <T = ApiResponse<Section[]>>(
@@ -301,6 +306,7 @@ export const updateSection = (courseId: string, sectionId: string, data: Partial
 
 export const deleteSection = (courseId: string, sectionId: string): Promise<AxiosResponse<void>> =>
     api.delete<void>(endpoints.sections.delete(courseId, sectionId));
+
 
 // Lesson API Calls
 export const getLessons = <T = ApiResponse<Lesson[]>>(
@@ -327,6 +333,7 @@ export const updateLesson = (courseId: string, sectionId: string, lessonId: stri
 export const deleteLesson = (courseId: string, sectionId: string, lessonId: string): Promise<AxiosResponse<void>> =>
     api.delete<void>(endpoints.lessons.delete(courseId, sectionId, lessonId));
 
+
 // Review API Calls
 export const getReviews = <T = ApiResponse<Review[]>>(
     courseId: string,
@@ -350,6 +357,7 @@ export const updateReview = (courseId: string, reviewId: string, data: Partial<R
 
 export const deleteReview = (courseId: string, reviewId: string): Promise<AxiosResponse<void>> =>
     api.delete<void>(endpoints.reviews.delete(courseId, reviewId));
+
 
 // My Profile API Calls
 export const getMyProfile = (): Promise<AxiosResponse<ApiResponse<User>>> =>

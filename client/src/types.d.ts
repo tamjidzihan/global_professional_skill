@@ -80,35 +80,52 @@ export type DifficultyLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
 export type CourseStatus = 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'PUBLISHED';
 export type LessonType = 'VIDEO' | 'ARTICLE' | 'QUIZ' | 'ASSIGNMENT' | 'RESOURCE';
 
+// export interface CoursesSummary {
+//     id: string;
+//     title: string;
+//     slug: string;
+//     short_description: string;
+//     instructor_name: string;
+//     category_name: string;
+//     difficulty_level: DifficultyLevel;
+//     price: string;
+//     is_free: boolean;
+//     thumbnail?: string;
+//     who_can_join: string;
+//     duration_hours: number;
+//     status: CourseStatus;
+//     enrollment_count: number;
+//     average_rating: string;
+//     total_reviews: number;
+//     total_classes: number;
+//     available_seats: number;
+//     total_seats: number;
+//     is_admission_open: boolean;
+//     is_full: boolean;
+//     class_starts: string | null;
+//     admission_deadline: string | null;
+//     schedule: string;
+//     venue: string;
+//     created_at: string;
+//     published_at: string | null;
+// }
+
 export interface CoursesSummary {
     id: string;
     title: string;
-    slug: string;
-    short_description: string;
-    instructor_name: string;
-    category_name: string;
-    difficulty_level: DifficultyLevel;
     price: string;
-    is_free: boolean;
-    thumbnail?: string;
-    who_can_join: string;
     duration_hours: number;
+    average_rating?: string;
+    enrollment_count?: number;
+    thumbnail?: string;
+    instructor_name: string;
+    difficulty_level: DifficultyLevel;
     status: CourseStatus;
-    enrollment_count: number;
-    average_rating: string;
-    total_reviews: number;
-    total_classes: number;
-    available_seats: number;
-    total_seats: number;
-    is_admission_open: boolean;
-    is_full: boolean;
-    class_starts: string | null;
-    admission_deadline: string | null;
-    schedule: string;
-    venue: string;
-    created_at: string;
-    published_at: string | null;
+    category_name: string;
+
 }
+
+
 
 export interface CourseListResponse {
     count: number;
