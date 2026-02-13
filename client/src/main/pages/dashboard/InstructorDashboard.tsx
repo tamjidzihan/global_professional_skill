@@ -4,6 +4,7 @@ import { BookOpen, Users, DollarSign, Star } from 'lucide-react'
 import { useAnalytics } from '../../../hooks/useAnalytics'
 import CalendarCard from '../../components/dashboard/CalendarCard'
 import LoadingSpinner from '../../components/LoadingSpinner'
+import { Link } from 'react-router-dom'
 
 export function InstructorDashboard() {
     const { data, getInstructorAnalytics, loading } = useAnalytics()
@@ -60,9 +61,11 @@ export function InstructorDashboard() {
                 <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm mb-8">
                     <h2 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h2>
                     <div className="flex gap-4">
-                        <button className="px-4 py-2 bg-[#0066CC] text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                            Create New Course
-                        </button>
+                        <Link to="/dashboard/instructor/create-course">
+                            <button className="px-4 py-2 bg-[#0066CC] text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                                Create New Course
+                            </button>
+                        </Link>
                         <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
                             View Analytics
                         </button>

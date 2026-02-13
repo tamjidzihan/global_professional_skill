@@ -58,7 +58,7 @@ export function StudentDashboard() {
                     />
                     <StatsCard
                         title="Certificates"
-                        value={completed} // Assuming 1 cert per completed course
+                        value={completed}
                         icon={Award}
                         color="blue"
                     />

@@ -13,7 +13,7 @@ import type {
     Lesson,
     Review,
     ApiResponse,
-    CourseCreateUpdateData,
+    // CourseCreateUpdateData,
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
@@ -266,7 +266,7 @@ export const getCourseDetail = (id: string): Promise<AxiosResponse<CourseDetailR
     api.get<CourseDetailResponse>(endpoints.courses.detail(id));
 
 export const createCourse = (
-    data: CourseCreateUpdateData
+    data: FormData
 ): Promise<AxiosResponse<ApiResponse<CourseDetail>>> =>
     api.post<ApiResponse<CourseDetail>>(endpoints.courses.create, data);
 

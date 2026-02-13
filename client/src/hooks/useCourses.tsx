@@ -48,7 +48,7 @@ import type {
     Lesson,
     Review,
     CourseFilters,
-    CourseCreateUpdateData,
+    // CourseCreateUpdateData,
     // CourseReviewData,
     // LessonCreateUpdateData,
     ReviewCreateUpdateData,
@@ -148,7 +148,7 @@ export function useCourses() {
     );
 
     const addCourse = useCallback(
-        async (data: CourseCreateUpdateData) => {
+        async (data: FormData) => {
             setLoading(true);
             setError(null);
             try {

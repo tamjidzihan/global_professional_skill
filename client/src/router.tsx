@@ -20,6 +20,7 @@ import { RegisterPage } from "./main/pages/RegisterPage";
 import TermsPage from "./main/pages/TermsPage";
 import VerifyEmailPromptPage from "./main/pages/VerifyEmailPromptPage";
 import ProtectedRoute from "./ProtectedRoute";
+import CreateCoursePage from "./main/pages/CreateCoursePage";
 import { PublicRoute } from "./PublicRoute";
 
 
@@ -80,10 +81,18 @@ export const router = createBrowserRouter([
                     },
                     // Instructor dashboard routes
                     {
-                        path: 'instructor/*',
+                        path: 'instructor',
                         element: (
                             <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
                                 <InstructorDashboard />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/create-course',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+                                <CreateCoursePage />
                             </ProtectedRoute>
                         )
                     },
