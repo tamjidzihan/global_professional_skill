@@ -19,6 +19,7 @@ import ProfilePage from "./main/pages/ProfilePage";
 import { RegisterPage } from "./main/pages/RegisterPage";
 import TermsPage from "./main/pages/TermsPage";
 import VerifyEmailPromptPage from "./main/pages/VerifyEmailPromptPage";
+import MyCoursesPage from "./main/pages/dashboard/instructor/MyCoursesPage";
 import ProtectedRoute from "./ProtectedRoute";
 import CreateCoursePage from "./main/pages/CreateCoursePage";
 import { PublicRoute } from "./PublicRoute";
@@ -93,6 +94,14 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
                                 <CreateCoursePage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/my-courses',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+                                <MyCoursesPage />
                             </ProtectedRoute>
                         )
                     },

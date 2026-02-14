@@ -137,6 +137,7 @@ export const endpoints = {
     courses: {
         list: '/courses/courses/',
         create: '/courses/courses/',
+        myCourses: '/courses/my-courses/',
         detail: (id: string) => `/courses/courses/${id}/`,
         update: (id: string) => `/courses/courses/${id}/`,
         delete: (id: string) => `/courses/courses/${id}/`,
@@ -281,6 +282,17 @@ export const submitCourseForReview = (id: string): Promise<AxiosResponse<void>> 
 
 export const reviewCourse = (id: string, data: { status: 'APPROVED' | 'REJECTED' | 'PUBLISHED'; feedback?: string }): Promise<AxiosResponse<ApiResponse<CourseDetail>>> =>
     api.post<ApiResponse<CourseDetail>>(endpoints.courses.review(id), data);
+
+
+export const getMyCourses = <T = CourseListResponse>(
+    params?: Record<string, any>,
+    pageUrl?: string | null,
+): Promise<AxiosResponse<T>> => {
+    if (pageUrl) {
+        return api.get<T>(pageUrl);
+    }
+    return api.get<T>(endpoints.courses.myCourses, { params });
+};
 
 
 // Section API Calls

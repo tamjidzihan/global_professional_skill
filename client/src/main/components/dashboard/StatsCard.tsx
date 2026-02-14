@@ -48,7 +48,7 @@ export function StatsCard({
                 group relative overflow-hidden rounded-xl border border-gray-100 
                 bg-linear-to-br ${colors[color].bg}
                 p-6 shadow-sm transition-all duration-300 
-                hover:shadow-lg hover:-translate-y-1
+                hover:shadow-lg
             `}
         >
             {/* Glow effect */}

@@ -5,12 +5,13 @@ from django.urls import path, include
 from rest_framework_nested import routers
 from .views import (
     CategoryViewSet, CourseViewSet, SectionViewSet,
-    LessonViewSet, ReviewViewSet
+    LessonViewSet, ReviewViewSet, MyCoursesViewSet
 )
 
 router = routers.DefaultRouter()
 router.register(r'categories', CategoryViewSet, basename='category')
 router.register(r'courses', CourseViewSet, basename='course')
+router.register(r'my-courses', MyCoursesViewSet, basename='my-course')
 
 # Nested routes for course sections
 courses_router = routers.NestedDefaultRouter(router, r'courses', lookup='course')

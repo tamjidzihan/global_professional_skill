@@ -269,6 +269,100 @@ class CourseViewSet(viewsets.ModelViewSet):
         )
 
 
+class MyCoursesViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for instructors to manage their own courses.
+    Provides list, retrieve, update, and delete functionalities for courses
+    owned by the currently authenticated instructor.
+    """
+
+    permission_classes = [IsInstructor]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["category", "difficulty_level", "is_free", "status"]
+    search_fields = [
+        "title",
+        "description",
+    ]
+    ordering_fields = [
+        "created_at",
+        "published_at",
+        "enrollment_count",
+        "average_rating",
+        "price",
+        "status",
+    ]
+    ordering = ["-created_at"]
+
+    def get_queryset(self): # type: ignore
+        """
+        This view should only return courses for the currently authenticated
+        instructor.
+        """
+        return (
+            Course.objects.filter(instructor=self.request.user)
+            .select_related("instructor", "category", "reviewed_by")
+            .prefetch_related("sections__lessons")
+        )
+
+    def get_serializer_class(self): # type: ignore
+        """Return appropriate serializer based on action."""
+        if self.action == "list":
+            return CourseListSerializer
+        elif self.action in ["create", "update", "partial_update"]:
+            return CourseCreateUpdateSerializer
+        return CourseDetailSerializer
+
+    def list(self, request, *args, **kwargs):
+        """List instructor's courses."""
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(
+                {"success": True, "data": serializer.data}
+            )
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"success": True, "data": serializer.data})
+
+    def retrieve(self, request, *args, **kwargs):
+        """Retrieve course details."""
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        return Response({"success": True, "data": serializer.data})
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        """Update course."""
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        course = serializer.save()
+
+        return Response(
+            {
+                "success": True,
+                "message": "Course updated successfully.",
+                "data": CourseDetailSerializer(
+                    course, context={"request": request}
+                ).data,
+            }
+        )
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        """Delete course."""
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(
+            {"success": True, "message": "Course deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
+
 class SectionViewSet(viewsets.ModelViewSet):
     """ViewSet for course sections."""
 
