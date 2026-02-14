@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { StatsCard } from '../../components/dashboard/StatsCard'
-import { BookOpen, Users, DollarSign, Star } from 'lucide-react'
+import { BookOpen, Users, Star, DollarSign, PlusCircle, TrendingUp, FileText } from 'lucide-react'
 import { useAnalytics } from '../../../hooks/useAnalytics'
 import CalendarCard from '../../components/dashboard/CalendarCard'
 import LoadingSpinner from '../../components/LoadingSpinner'
@@ -18,8 +18,8 @@ export function InstructorDashboard() {
     }
 
     return (
-        <div className="p-4 grid grid-cols-1 lg:grid-cols-4 gap-6"> {/* Added grid layout */}
-            <div className="lg:col-span-3">  {/* Main content takes 3/4 width on large screens */}
+        <div className="p-4 grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-3">
                 <div className="mb-8">
                     <h1 className="text-2xl font-bold text-gray-900">
                         Instructor Dashboard
@@ -53,26 +53,73 @@ export function InstructorDashboard() {
                         title="Total Reviews"
                         value={data?.total_reviews || 0}
                         icon={DollarSign}
-                        color="blue"
+                        color="red"
                     />
                 </div>
 
-                {/* Quick Actions */}
-                <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm mb-8">
-                    <h2 className="text-lg font-bold text-gray-900 mb-4">Quick Actions</h2>
-                    <div className="flex gap-4">
+                {/* Quick Actions - Enhanced Design */}
+                <div className="bg-linear-to-br from-white to-blue-50/30 p-6 rounded-xl border border-blue-100/50 shadow-sm hover:shadow-md transition-all duration-300 mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                        <div>
+                            <h2 className="text-lg font-bold text-gray-900">Quick Actions</h2>
+                            <p className="text-sm text-gray-500 mt-0.5">Frequently used tasks and shortcuts</p>
+                        </div>
+                        <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                            {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
+                        </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <Link to="/dashboard/instructor/create-course">
-                            <button className="px-4 py-2 bg-[#0066CC] text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                                Create New Course
+                            <button className="group w-full flex items-center gap-3 p-4 bg-linear-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+                                <div className="p-2 bg-white/20 rounded-lg group-hover:scale-110 transition-transform duration-200">
+                                    <PlusCircle className="w-5 h-5" />
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <div className="font-semibold">Create New Course</div>
+                                    <div className="text-xs text-blue-100 mt-0.5">Share your knowledge</div>
+                                </div>
+                                <span className="text-blue-200 group-hover:translate-x-1 transition-transform duration-200">→</span>
                             </button>
                         </Link>
-                        <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors">
-                            View Analytics
-                        </button>
+
+                        <Link to="/dashboard/instructor/analytics">
+                            <button className="group w-full flex items-center gap-3 p-4 bg-white border-2 border-gray-100 text-gray-700 rounded-xl hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+                                <div className="p-2 bg-purple-100 rounded-lg group-hover:scale-110 transition-transform duration-200">
+                                    <TrendingUp className="w-5 h-5 text-purple-600" />
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <div className="font-semibold">View Analytics</div>
+                                    <div className="text-xs text-gray-500 mt-0.5">Track performance</div>
+                                </div>
+                                <span className="text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-200">→</span>
+                            </button>
+                        </Link>
+
+                        <Link to="/dashboard/instructor/announcements">
+                            <button className="group w-full flex items-center gap-3 p-4 bg-white border-2 border-gray-100 text-gray-700 rounded-xl hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+                                <div className="p-2 bg-green-100 rounded-lg group-hover:scale-110 transition-transform duration-200">
+                                    <FileText className="w-5 h-5 text-green-600" />
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <div className="font-semibold">Make Announcement</div>
+                                    <div className="text-xs text-gray-500 mt-0.5">Notify your students</div>
+                                </div>
+                                <span className="text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all duration-200">→</span>
+                            </button>
+                        </Link>
+                    </div>
+
+                    {/* Quick Tips */}
+                    <div className="mt-3 pt-3 border-t border-blue-100/50">
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                            <span>You have {data?.total_courses || 0} active courses</span>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div className="lg:col-span-1"> {/* Calendar takes 1/4 width on large screens */}
+            <div className="lg:col-span-1">
                 <CalendarCard />
             </div>
         </div>

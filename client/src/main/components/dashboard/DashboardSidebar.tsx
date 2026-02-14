@@ -113,14 +113,16 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
         },
         {
             name: 'Analytics',
-            path: '/dashboard/instructor/analytics',
+            // path: '/dashboard/instructor/analytics',
+            path: '#',
             icon: BarChart,
             gradient: 'from-emerald-500 to-teal-500',
             badge: '📈'
         },
         {
             name: 'Reviews',
-            path: '/dashboard/instructor/reviews',
+            // path: '/dashboard/instructor/reviews',
+            path: '#',
             icon: Users,
             gradient: 'from-orange-500 to-amber-500',
         },
@@ -148,11 +150,18 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
             gradient: 'from-emerald-500 to-teal-500',
         },
         {
+            name: 'Course Reviews',
+            path: '/dashboard/admin/course-reviews',
+            icon: FileText,
+            gradient: 'from-red-500 to-rose-500',
+        },
+        {
             name: 'Platform Analytics',
             path: '/dashboard/admin/analytics',
             icon: BarChart,
             gradient: 'from-orange-500 to-amber-500',
         },
+
     ]
 
     const links =

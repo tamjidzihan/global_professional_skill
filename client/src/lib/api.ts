@@ -13,6 +13,8 @@ import type {
     Lesson,
     Review,
     ApiResponse,
+    // PaginatedResponse,
+    ReviewCreateUpdateData,
     // CourseCreateUpdateData,
 } from '../types';
 
@@ -361,10 +363,10 @@ export const getReviews = <T = ApiResponse<Review[]>>(
 export const getReviewDetail = (courseId: string, reviewId: string): Promise<AxiosResponse<ApiResponse<Review>>> =>
     api.get<ApiResponse<Review>>(endpoints.reviews.detail(courseId, reviewId));
 
-export const createReview = (courseId: string, data: Partial<Review>): Promise<AxiosResponse<ApiResponse<Review>>> =>
+export const createReview = (courseId: string, data: ReviewCreateUpdateData): Promise<AxiosResponse<ApiResponse<Review>>> =>
     api.post<ApiResponse<Review>>(endpoints.reviews.create(courseId), data);
 
-export const updateReview = (courseId: string, reviewId: string, data: Partial<Review>): Promise<AxiosResponse<ApiResponse<Review>>> =>
+export const updateReview = (courseId: string, reviewId: string, data: ReviewCreateUpdateData): Promise<AxiosResponse<ApiResponse<Review>>> =>
     api.put<ApiResponse<Review>>(endpoints.reviews.update(courseId, reviewId), data);
 
 export const deleteReview = (courseId: string, reviewId: string): Promise<AxiosResponse<void>> =>

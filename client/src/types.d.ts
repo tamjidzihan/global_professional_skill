@@ -268,7 +268,7 @@ export interface LessonCreateUpdateData {
 // Review Management Types
 export interface Review {
     id: string;
-    course: string;
+    course: CoursesSummary; // Changed from string to CoursesSummary
     student: string;
     student_name: string;
     student_email: string;
@@ -351,6 +351,11 @@ export interface PaginatedResponse<T> {
 export interface ApiResponse<T> {
     success: boolean;
     data: T;
+    error?: {
+        code: string;
+        message: string;
+        details?: Record<string, any>;
+    };
 }
 
 export interface ErrorResponse {
