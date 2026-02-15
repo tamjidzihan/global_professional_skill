@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useMyCourses } from '../../../../hooks/useMyCourses';
 import LoadingSpinner from '../../../components/LoadingSpinner';
-import { Trash2, Edit } from 'lucide-react';
+import { Trash2, Edit, PlusCircle } from 'lucide-react';
 
 const MyCoursesPage = () => {
     const { courses, loading, error, fetchMyCourses, removeCourse } = useMyCourses();
@@ -29,8 +29,16 @@ const MyCoursesPage = () => {
         <div>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">My Courses</h1>
-                <Link to="/dashboard/instructor/create-course" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-                    Create New Course
+                <Link to="/dashboard/instructor/create-course">
+                    <button className="group w-full flex items-center gap-3 px-4 py-2 bg-linear-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 cursor-pointer">
+                        <div className="p-2 bg-white/20 rounded-lg group-hover:scale-110 transition-transform duration-200">
+                            <PlusCircle className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1 text-left">
+                            <div className="font-semibold">Create New Course</div>
+                        </div>
+                        <span className="text-blue-200 group-hover:translate-x-1 transition-transform duration-200">→</span>
+                    </button>
                 </Link>
             </div>
 

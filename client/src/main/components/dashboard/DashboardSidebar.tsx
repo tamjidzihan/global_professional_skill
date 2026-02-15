@@ -15,6 +15,7 @@ import { useAuthContext } from '../../../context/AuthContext'
 import { useMyProfile } from '../../../hooks/useMyProfile'
 import { cn } from '../../../lib/utils'
 import { useState } from 'react'
+import ProfileSkeleton from '../loadingSkeleton/ProfileSkeleton'
 
 interface SidebarProps {
     isOpen: boolean
@@ -50,7 +51,7 @@ const getAvatarGradient = (role?: string, firstName?: string) => {
 
 export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
     const { logout } = useAuthContext()
-    const { profile } = useMyProfile()
+    const { profile, isLoading } = useMyProfile()
     const location = useLocation()
     const [isCollapsed, setIsCollapsed] = useState(false)
 
@@ -133,7 +134,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
             name: 'Dashboard',
             path: '/dashboard/admin',
             icon: LayoutDashboard,
-            gradient: 'from-blue-500 to-cyan-500',
+            gradient: 'blue-500 to-cyan-500',
             badge: <Sparkles className="w-3 h-3" />,
             exact: true
         },
@@ -224,61 +225,67 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                                 isCollapsed && "flex-col gap-2 p-2"
                             )}
                         >
-                            {/* Enhanced Avatar with Glow */}
-                            <div className="relative group">
-                                {profile?.profile_picture ? (
-                                    <img
-                                        src={profile?.profile_picture || ''}
-                                        alt="Profile"
-                                        className={cn(
-                                            "rounded-2xl object-cover shadow-xl ring-2 ring-white/50",
-                                            isCollapsed ? "w-12 h-12" : "w-16 h-16"
+                            {isLoading ? (
+                                <ProfileSkeleton isCollapsed={isCollapsed} />
+                            ) : (
+                                <>
+                                    {/* Enhanced Avatar with Glow */}
+                                    <div className="relative group">
+                                        {profile?.profile_picture ? (
+                                            <img
+                                                src={profile?.profile_picture || ''}
+                                                alt={profile?.first_name || profile?.email || "Profile Picture"}
+                                                className={cn(
+                                                    "rounded-2xl object-cover shadow-xl ring-2 ring-white/50",
+                                                    isCollapsed ? "w-12 h-12" : "w-16 h-16"
+                                                )}
+                                            />
+                                        ) : (
+                                            <div
+                                                className={cn(
+                                                    "rounded-2xl flex items-center justify-center font-bold text-white shadow-xl",
+                                                    "bg-linear-to-br ring-2 ring-white/50",
+                                                    getAvatarGradient(profile?.role, profile?.first_name),
+                                                    "relative overflow-hidden",
+                                                    isCollapsed ? "w-12 h-12" : "w-16 h-16"
+                                                )}
+                                            >
+                                                {/* Animated shine effect */}
+                                                <div className="absolute inset-0 bg-linear-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                                                <span className={cn("text-xl relative z-10", isCollapsed && "text-lg")}>
+                                                    {initials}
+                                                </span>
+                                            </div>
                                         )}
-                                    />
-                                ) : (
-                                    <div
-                                        className={cn(
-                                            "rounded-2xl flex items-center justify-center font-bold text-white shadow-xl",
-                                            "bg-linear-to-br ring-2 ring-white/50",
-                                            getAvatarGradient(profile?.role, profile?.first_name),
-                                            "relative overflow-hidden",
-                                            isCollapsed ? "w-12 h-12" : "w-16 h-16"
-                                        )}
-                                    >
-                                        {/* Animated shine effect */}
-                                        <div className="absolute inset-0 bg-linear-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                                        <span className={cn("text-xl relative z-10", isCollapsed && "text-lg")}>
-                                            {initials}
-                                        </span>
+                                        {/* Enhanced Online Status with Pulse */}
+                                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-linear-to-br from-green-400 to-emerald-500 border-3 border-white rounded-full shadow-lg">
+                                            <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></div>
+                                        </div>
                                     </div>
-                                )}
-                                {/* Enhanced Online Status with Pulse */}
-                                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-linear-to-br from-green-400 to-emerald-500 border-3 border-white rounded-full shadow-lg">
-                                    <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></div>
-                                </div>
-                            </div>
 
-                            {!isCollapsed && (
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-base font-bold truncate bg-linear-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                                        {profile?.first_name} {profile?.last_name}
-                                    </p>
-                                    <p className="text-xs text-gray-600 truncate mt-0.5">
-                                        {profile?.email}
-                                    </p>
-                                    {/* Enhanced Role Badge with Gradient */}
-                                    <div className="flex items-center gap-2 mt-2">
-                                        <span className={cn(
-                                            "inline-flex px-3 py-1 text-xs font-bold rounded-full shadow-md",
-                                            "bg-linear-to-r backdrop-blur-xl border border-white/40",
-                                            profile?.role === 'ADMIN' && "from-violet-500 to-fuchsia-500 text-white",
-                                            profile?.role === 'INSTRUCTOR' && "from-blue-500 to-cyan-500 text-white",
-                                            profile?.role === 'STUDENT' && "from-emerald-500 to-teal-500 text-white"
-                                        )}>
-                                            {profile?.role?.toLowerCase()}
-                                        </span>
-                                    </div>
-                                </div>
+                                    {!isCollapsed && (
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-base font-bold truncate bg-linear-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                                                {profile?.first_name} {profile?.last_name}
+                                            </p>
+                                            <p className="text-xs text-gray-600 truncate mt-0.5">
+                                                {profile?.email}
+                                            </p>
+                                            {/* Enhanced Role Badge with Gradient */}
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <span className={cn(
+                                                    "inline-flex px-3 py-1 text-xs font-bold rounded-full shadow-md",
+                                                    "bg-linear-to-r backdrop-blur-xl border border-white/40",
+                                                    profile?.role === 'ADMIN' && "from-violet-500 to-fuchsia-500 text-white",
+                                                    profile?.role === 'INSTRUCTOR' && "from-blue-500 to-cyan-500 text-white",
+                                                    profile?.role === 'STUDENT' && "from-emerald-500 to-teal-500 text-white"
+                                                )}>
+                                                    {profile?.role?.toLowerCase()}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </Link>
                     </div>

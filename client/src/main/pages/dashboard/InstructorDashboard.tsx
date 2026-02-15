@@ -71,20 +71,33 @@ export function InstructorDashboard() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <Link to="/dashboard/instructor/create-course">
-                            <button className="group w-full flex items-center gap-3 p-4 bg-linear-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+                            <button className="group w-full flex items-center gap-3 p-4 bg-linear-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 cursor-pointer">
                                 <div className="p-2 bg-white/20 rounded-lg group-hover:scale-110 transition-transform duration-200">
                                     <PlusCircle className="w-5 h-5" />
                                 </div>
                                 <div className="flex-1 text-left">
                                     <div className="font-semibold">Create New Course</div>
-                                    <div className="text-xs text-blue-100 mt-0.5">Share your knowledge</div>
+                                    <div className="text-xs text-blue-100 mt-0.5">Organize your knowledge</div>
                                 </div>
                                 <span className="text-blue-200 group-hover:translate-x-1 transition-transform duration-200">→</span>
                             </button>
                         </Link>
 
-                        <Link to="/dashboard/instructor/analytics">
-                            <button className="group w-full flex items-center gap-3 p-4 bg-white border-2 border-gray-100 text-gray-700 rounded-xl hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+                        <Link to="/dashboard/instructor/my-courses">
+                            <button className="group w-full flex items-center gap-3 p-4 bg-white border-2 border-gray-100 text-gray-700 rounded-xl hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 cursor-pointer">
+                                <div className="p-2 bg-yellow-100 rounded-lg group-hover:scale-110 transition-transform duration-200">
+                                    <BookOpen className="w-5 h-5 text-yellow-600" />
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <div className="font-semibold">View All Course</div>
+                                    <div className="text-xs text-gray-500 mt-0.5">Track performance</div>
+                                </div>
+                                <span className="text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-200">→</span>
+                            </button>
+                        </Link>
+
+                        <Link to="#">
+                            <button className="group w-full flex items-center gap-3 p-4 bg-white border-2 border-gray-100 text-gray-700 rounded-xl hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 cursor-pointer">
                                 <div className="p-2 bg-purple-100 rounded-lg group-hover:scale-110 transition-transform duration-200">
                                     <TrendingUp className="w-5 h-5 text-purple-600" />
                                 </div>
@@ -96,8 +109,8 @@ export function InstructorDashboard() {
                             </button>
                         </Link>
 
-                        <Link to="/dashboard/instructor/announcements">
-                            <button className="group w-full flex items-center gap-3 p-4 bg-white border-2 border-gray-100 text-gray-700 rounded-xl hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5">
+                        <Link to="#">
+                            <button className="group w-full flex items-center gap-3 p-4 bg-white border-2 border-gray-100 text-gray-700 rounded-xl hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 cursor-pointer">
                                 <div className="p-2 bg-green-100 rounded-lg group-hover:scale-110 transition-transform duration-200">
                                     <FileText className="w-5 h-5 text-green-600" />
                                 </div>
