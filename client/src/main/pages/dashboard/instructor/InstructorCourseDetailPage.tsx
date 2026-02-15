@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
@@ -16,8 +17,6 @@ import {
     CheckCircle,
     XCircle,
     AlertTriangle,
-    GraduationCap,
-    Star,
 } from 'lucide-react'
 import { useAuth } from '../../../../hooks/useAuth'
 import { useCourses } from '../../../../hooks/useCourses'
@@ -35,7 +34,7 @@ export function InstructorCourseDetailPage() {
         fetchCourseDetail,
         submitForReview,
         fetchReviews,
-        reviews,
+        // reviews,
         clearStates,
     } = useCourses()
 
@@ -434,61 +433,138 @@ export function InstructorCourseDetailPage() {
                 </div>
 
                 {/* Tab Content */}
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
                     {activeTab === 'overview' && (
-                        <div className="space-y-6">
+                        <div className="space-y-8">
                             {/* Full Description */}
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-3">Course Description</h3>
-                                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                                    {course.description}
-                                </p>
+                            <div className="group">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                    <span className="w-1 h-6 bg-purple-500 rounded-full"></span>
+                                    Course Description
+                                </h3>
+                                <div className="bg-linear-to-br from-purple-50 to-white rounded-xl p-6 border border-purple-100 shadow-sm hover:shadow-md transition-all duration-300">
+                                    <div
+                                        className="
+                                                prose prose-sm max-w-none
+                                                text-gray-700 leading-relaxed
+                                                [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1
+                                                [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1
+                                                [&_li]:mb-1 [&_li]:text-gray-600
+                                                [&_p]:mb-3 [&_p]:text-gray-600
+                                                [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-gray-900
+                                                [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-gray-800
+                                                [&_h3]:text-lg [&_h3]:font-medium [&_h3]:text-gray-800
+                                                [&_a]:text-purple-600 [&_a]:hover:text-purple-700 [&_a]:underline [&_a]:underline-offset-2
+                                                "
+                                        dangerouslySetInnerHTML={{ __html: course.description }}
+                                    />
+                                </div>
                             </div>
 
                             {/* Learning Outcomes */}
                             {course.learning_outcomes && (
-                                <div>
-                                    <h3 className="text-lg font-bold text-gray-900 mb-3">Learning Outcomes</h3>
-                                    <div className="bg-blue-50 rounded-lg p-4">
-                                        <p className="text-gray-700 whitespace-pre-line">
-                                            {course.learning_outcomes}
-                                        </p>
+                                <div className="group">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                        <span className="w-1 h-6 bg-blue-500 rounded-full"></span>
+                                        Learning Outcomes
+                                    </h3>
+                                    <div className="bg-linear-to-br from-blue-50 to-white rounded-xl p-6 border border-blue-100 shadow-sm hover:shadow-md transition-all duration-300">
+                                        <div
+                                            className="
+                prose prose-sm max-w-none
+                text-gray-700 leading-relaxed
+                [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1
+                [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1
+                [&_li]:mb-1 [&_li]:text-gray-600
+                [&_p]:mb-3 [&_p]:text-gray-600
+                [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-gray-900
+                [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-gray-800
+                [&_h3]:text-lg [&_h3]:font-medium [&_h3]:text-gray-800
+                [&_a]:text-blue-600 [&_a]:hover:text-blue-700 [&_a]:underline [&_a]:underline-offset-2
+              "
+                                            dangerouslySetInnerHTML={{ __html: course.learning_outcomes }}
+                                        />
                                     </div>
                                 </div>
                             )}
 
                             {/* Requirements */}
                             {course.requirements && (
-                                <div>
-                                    <h3 className="text-lg font-bold text-gray-900 mb-3">Requirements</h3>
-                                    <div className="bg-gray-50 rounded-lg p-4">
-                                        <p className="text-gray-700 whitespace-pre-line">
-                                            {course.requirements}
-                                        </p>
+                                <div className="group">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                        <span className="w-1 h-6 bg-amber-500 rounded-full"></span>
+                                        Requirements
+                                    </h3>
+                                    <div className="bg-linear-to-br from-amber-50 to-white rounded-xl p-6 border border-amber-100 shadow-sm hover:shadow-md transition-all duration-300">
+                                        <div
+                                            className="
+                prose prose-sm max-w-none
+                text-gray-700 leading-relaxed
+                [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1
+                [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1
+                [&_li]:mb-1 [&_li]:text-gray-600
+                [&_p]:mb-3 [&_p]:text-gray-600
+                [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-gray-900
+                [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-gray-800
+                [&_h3]:text-lg [&_h3]:font-medium [&_h3]:text-gray-800
+                [&_a]:text-amber-600 [&_a]:hover:text-amber-700 [&_a]:underline [&_a]:underline-offset-2
+              "
+                                            dangerouslySetInnerHTML={{ __html: course.requirements }}
+                                        />
                                     </div>
                                 </div>
                             )}
 
                             {/* Target Audience */}
                             {course.target_audience && (
-                                <div>
-                                    <h3 className="text-lg font-bold text-gray-900 mb-3">Target Audience</h3>
-                                    <div className="bg-gray-50 rounded-lg p-4">
-                                        <p className="text-gray-700 whitespace-pre-line">
-                                            {course.target_audience}
-                                        </p>
+                                <div className="group">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                        <span className="w-1 h-6 bg-cyan-500 rounded-full"></span>
+                                        Target Audience
+                                    </h3>
+                                    <div className="bg-linear-to-br from-cyan-50 to-white rounded-xl p-6 border border-cyan-100 shadow-sm hover:shadow-md transition-all duration-300">
+                                        <div
+                                            className="
+                prose prose-sm max-w-none
+                text-gray-700 leading-relaxed
+                [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1
+                [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1
+                [&_li]:mb-1 [&_li]:text-gray-600
+                [&_p]:mb-3 [&_p]:text-gray-600
+                [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-gray-900
+                [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-gray-800
+                [&_h3]:text-lg [&_h3]:font-medium [&_h3]:text-gray-800
+                [&_a]:text-cyan-600 [&_a]:hover:text-cyan-700 [&_a]:underline [&_a]:underline-offset-2
+              "
+                                            dangerouslySetInnerHTML={{ __html: course.target_audience }}
+                                        />
                                     </div>
                                 </div>
                             )}
 
                             {/* Who Can Join */}
                             {course.who_can_join && (
-                                <div>
-                                    <h3 className="text-lg font-bold text-gray-900 mb-3">Eligibility</h3>
-                                    <div className="bg-gray-50 rounded-lg p-4">
-                                        <p className="text-gray-700 whitespace-pre-line">
-                                            {course.who_can_join}
-                                        </p>
+                                <div className="group">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                        <span className="w-1 h-6 bg-emerald-500 rounded-full"></span>
+                                        Eligibility
+                                    </h3>
+                                    <div className="bg-linear-to-br from-emerald-50 to-white rounded-xl p-6 border border-emerald-100 shadow-sm hover:shadow-md transition-all duration-300">
+                                        <div
+                                            className="
+                prose prose-sm max-w-none
+                text-gray-700 leading-relaxed
+                [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1
+                [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1
+                [&_li]:mb-1 [&_li]:text-gray-600
+                [&_p]:mb-3 [&_p]:text-gray-600
+                [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-gray-900
+                [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:text-gray-800
+                [&_h3]:text-lg [&_h3]:font-medium [&_h3]:text-gray-800
+                [&_a]:text-emerald-600 [&_a]:hover:text-emerald-700 [&_a]:underline [&_a]:underline-offset-2
+              "
+                                            dangerouslySetInnerHTML={{ __html: course.who_can_join }}
+                                        />
                                     </div>
                                 </div>
                             )}
@@ -496,14 +572,19 @@ export function InstructorCourseDetailPage() {
                     )}
 
                     {activeTab === 'curriculum' && (
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg font-bold text-gray-900">
-                                    Course Structure ({course.sections?.length || 0} Modules)
-                                </h3>
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <div>
+                                    <h3 className="text-2xl font-bold text-gray-900">
+                                        Course Structure
+                                    </h3>
+                                    <p className="text-sm text-gray-500 mt-1">
+                                        {course.sections?.length || 0} modules • {course.sections?.reduce((acc, section) => acc + (section.lesson_count || 0), 0) || 0} lessons
+                                    </p>
+                                </div>
                                 <button
                                     onClick={handleManageCurriculum}
-                                    className="flex items-center gap-2 px-4 py-2 bg-[#0066CC] text-white rounded-lg hover:bg-[#004c99] transition-colors text-sm"
+                                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-linear-to-r from-[#0066CC] to-[#0052a3] text-white rounded-xl hover:from-[#0052a3] hover:to-[#004080] transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm font-medium"
                                 >
                                     <Edit className="w-4 h-4" />
                                     Manage Curriculum
@@ -511,80 +592,94 @@ export function InstructorCourseDetailPage() {
                             </div>
 
                             {course.sections && course.sections.length > 0 ? (
-                                course.sections.map((section) => (
-                                    <div
-                                        key={section.id}
-                                        className="border border-gray-200 rounded-lg overflow-hidden"
-                                    >
-                                        {/* Module Header */}
-                                        <button
-                                            onClick={() => toggleModule(section.id)}
-                                            className={`w-full flex items-center justify-between p-4 transition-all ${expandedModules.includes(section.id)
-                                                ? 'bg-[#e8f5e9] border-b border-gray-200'
-                                                : 'bg-gray-50 hover:bg-gray-100'
-                                                }`}
+                                <div className="space-y-4">
+                                    {course.sections.map((section) => (
+                                        <div
+                                            key={section.id}
+                                            className="border border-gray-200 rounded-xl overflow-hidden bg-white hover:shadow-md transition-all duration-300"
                                         >
-                                            <div className="flex items-center gap-4">
-                                                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#0066CC] text-white font-bold">
-                                                    {section.order}
+                                            {/* Module Header */}
+                                            <button
+                                                onClick={() => toggleModule(section.id)}
+                                                className={`w-full flex items-center justify-between p-5 transition-all duration-300 ${expandedModules.includes(section.id)
+                                                    ? 'bg-linear-to-r from-[#e8f5e9] to-white border-b border-gray-200'
+                                                    : 'bg-gray-50/50 hover:bg-gray-100/80'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-linear-to-br from-[#0066CC] to-[#0052a3] text-white font-bold shadow-md">
+                                                        {section.order}
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <h4 className="font-semibold text-gray-900 text-lg">{section.title}</h4>
+                                                    </div>
                                                 </div>
-                                                <div className="text-left">
-                                                    <h4 className="font-semibold text-gray-900">{section.title}</h4>
-                                                    <p className="text-sm text-gray-500">
-                                                        {section.lesson_count || 0} lessons
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            {expandedModules.includes(section.id) ? (
-                                                <ChevronUp className="w-5 h-5 text-gray-600" />
-                                            ) : (
-                                                <ChevronDown className="w-5 h-5 text-gray-600" />
-                                            )}
-                                        </button>
-
-                                        {/* Module Content */}
-                                        {expandedModules.includes(section.id) && (
-                                            <div className="p-4 bg-white">
-                                                {section.description && (
-                                                    <p className="text-gray-600 text-sm mb-4">{section.description}</p>
-                                                )}
-                                                <ul className="space-y-2">
-                                                    {section.lessons && section.lessons.length > 0 ? (
-                                                        section.lessons.map((lesson, index) => (
-                                                            <li
-                                                                key={lesson.id}
-                                                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                                                            >
-                                                                <div className="flex items-center gap-3">
-                                                                    <span className="text-sm font-medium text-gray-500">
-                                                                        {String(index + 1).padStart(2, '0')}
-                                                                    </span>
-                                                                    <span className="text-gray-700">{lesson.title}</span>
-                                                                </div>
-                                                                {lesson.is_preview && (
-                                                                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                                                        Preview Available
-                                                                    </span>
-                                                                )}
-                                                            </li>
-                                                        ))
+                                                <div className={`p-2 rounded-full transition-all duration-300 ${expandedModules.includes(section.id) ? 'bg-[#0066CC] text-white' : 'bg-gray-200 text-gray-600'
+                                                    }`}>
+                                                    {expandedModules.includes(section.id) ? (
+                                                        <ChevronUp className="w-5 h-5" />
                                                     ) : (
-                                                        <li className="text-center py-8 text-gray-500">
-                                                            No lessons added yet. Click "Manage Curriculum" to add lessons.
-                                                        </li>
+                                                        <ChevronDown className="w-5 h-5" />
                                                     )}
-                                                </ul>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))
+                                                </div>
+                                            </button>
+
+                                            {/* Module Content */}
+                                            {expandedModules.includes(section.id) && (
+                                                <div className="p-6 bg-white animate-slideDown">
+                                                    {section.description && (
+                                                        <div className="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                                                            <p className="text-gray-600 text-sm italic">📝 {section.description}</p>
+                                                        </div>
+                                                    )}
+                                                    <ul className="space-y-3">
+                                                        {section.lessons && section.lessons.length > 0 ? (
+                                                            section.lessons.map((lesson, index) => (
+                                                                <li
+                                                                    key={lesson.id}
+                                                                    className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group border border-transparent hover:border-gray-200"
+                                                                >
+                                                                    <div className="flex items-center gap-4">
+                                                                        <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-white text-gray-500 font-medium text-sm shadow-sm group-hover:shadow">
+                                                                            {String(index + 1).padStart(2, '0')}
+                                                                        </span>
+                                                                        <span className="text-gray-700 font-medium">{lesson.title}</span>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-3">
+                                                                        {lesson.is_preview && (
+                                                                            <span className="text-xs bg-blue-100 text-blue-800 px-3 py-1.5 rounded-full font-medium">
+                                                                                Preview Available
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </li>
+                                                            ))
+                                                        ) : (
+                                                            <li className="text-center py-12 text-gray-500 bg-gray-50 rounded-xl">
+                                                                <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                                                                <p className="mb-4">No lessons added yet.</p>
+                                                                <button
+                                                                    onClick={handleManageCurriculum}
+                                                                    className="text-[#0066CC] hover:text-[#0052a3] font-medium underline underline-offset-4"
+                                                                >
+                                                                    Add your first lesson →
+                                                                </button>
+                                                            </li>
+                                                        )}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
                             ) : (
-                                <div className="text-center py-12 bg-gray-50 rounded-lg">
-                                    <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                                    <p className="text-gray-600 mb-4">No curriculum has been added to this course yet.</p>
+                                <div className="text-center py-16 bg-linear-to-br from-gray-50 to-white rounded-xl border-2 border-dashed border-gray-200">
+                                    <BookOpen className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+                                    <p className="text-gray-600 text-lg mb-4">No curriculum has been added yet.</p>
+                                    <p className="text-sm text-gray-500 mb-6">Start building your course by adding modules and lessons.</p>
                                     <button
                                         onClick={handleManageCurriculum}
-                                        className="inline-flex items-center gap-2 px-6 py-3 bg-[#0066CC] text-white rounded-lg hover:bg-[#004c99] transition-colors"
+                                        className="inline-flex items-center gap-2 px-6 py-3 bg-linear-to-r from-[#0066CC] to-[#0052a3] text-white rounded-xl hover:from-[#0052a3] hover:to-[#004080] transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 font-medium"
                                     >
                                         <Edit className="w-4 h-4" />
                                         Add Curriculum
@@ -594,117 +689,6 @@ export function InstructorCourseDetailPage() {
                         </div>
                     )}
 
-                    {activeTab === 'students' && (
-                        <div>
-
-                            {course.enrollment_count > 0 ? (
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Student
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Enrolled Date
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Progress
-                                                </th>
-                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Status
-                                                </th>
-                                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Actions
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {/* This would be populated with actual student data */}
-                                            <tr>
-                                                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                                                    <Users className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                                                    <p>Student list will appear here once students enroll.</p>
-                                                    <button
-                                                        onClick={handleViewEnrollments}
-                                                        className="mt-3 text-[#0066CC] hover:text-[#004c99] font-medium"
-                                                    >
-                                                        View detailed enrollments →
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            ) : (
-                                <div className="text-center py-12">
-                                    <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                                    <p className="text-gray-600 mb-2">No students enrolled yet</p>
-                                    <p className="text-sm text-gray-500">
-                                        Once your course is published, students can enroll and you'll see them here.
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {activeTab === 'reviews' && (
-                        <div>
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-lg font-bold text-gray-900">Student Reviews</h3>
-                                <div className="flex items-center gap-2 bg-gray-50 px-4 py-2 rounded-lg">
-                                    <GraduationCap className="w-5 h-5 text-gray-500" />
-                                    <span className="font-semibold">{parseFloat(course.average_rating || '0').toFixed(1)}</span>
-                                    <span className="text-gray-500">/ 5.0</span>
-                                    <span className="text-gray-400 mx-2">•</span>
-                                    <span className="text-gray-600">{course.total_reviews || 0} reviews</span>
-                                </div>
-                            </div>
-
-                            {reviews && reviews.length > 0 ? (
-                                <div className="space-y-4">
-                                    {reviews.map((review) => (
-                                        <div key={review.id} className="border-b border-gray-100 last:border-0 pb-4 last:pb-0">
-                                            <div className="flex items-start justify-between mb-2">
-                                                <div className="flex items-center">
-                                                    <img
-                                                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(review.student_name)}&background=0066CC&color=fff`}
-                                                        alt={review.student_name}
-                                                        className="w-10 h-10 rounded-full mr-3"
-                                                    />
-                                                    <div>
-                                                        <p className="font-medium text-gray-900">{review.student_name}</p>
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="flex">
-                                                                {[...Array(5)].map((_, i) => (
-                                                                    <Star
-                                                                        key={i}
-                                                                        className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-                                                                    />
-                                                                ))}
-                                                            </div>
-                                                            <span className="text-xs text-gray-500">
-                                                                {new Date(review.created_at).toLocaleDateString()}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <p className="text-gray-700 ml-13">{review.review_text}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-center py-12">
-                                    <Star className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                                    <p className="text-gray-600">No reviews yet</p>
-                                    <p className="text-sm text-gray-500 mt-2">
-                                        Reviews will appear here once students start reviewing your course.
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    )}
                 </div>
             </div>
 

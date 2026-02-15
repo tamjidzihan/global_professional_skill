@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/incompatible-library */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
-import { useForm, type SubmitHandler } from 'react-hook-form';
+import { Controller, useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useCourses } from '../../../../hooks/useCourses';
@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth } from '../../../../hooks/useAuth';
+import RichTextEditor from '../../../components/RichTextEditor';
 
 // Schemas for form validation and data parsing
 const courseFormInputSchema = z.object({
@@ -66,6 +67,7 @@ const CourseEditDetailPage: React.FC = () => {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
     watch,
     reset,
@@ -238,7 +240,6 @@ const CourseEditDetailPage: React.FC = () => {
         )}
 
         {/* Header Card */}
-        {/* Simple Header Card */}
         <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6 mb-6">
           <div className="flex items-center justify-between">
             <div>
@@ -406,12 +407,16 @@ const CourseEditDetailPage: React.FC = () => {
                   <label htmlFor="description" className={labelClassName}>
                     Full Description <span className="text-red-500">*</span>
                   </label>
-                  <textarea
-                    id="description"
-                    rows={5}
-                    {...register('description')}
-                    className={inputClassName}
-                    placeholder="Provide a comprehensive description of your course, including what students will learn and why they should enroll..."
+                  <Controller
+                    name="description"
+                    control={control}
+                    render={({ field }) => (
+                      <RichTextEditor
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        placeholder="Provide a comprehensive description of your course, including what students will learn and why they should enroll..."
+                      />
+                    )}
                   />
                   {errors.description && (
                     <p className={errorClassName}>

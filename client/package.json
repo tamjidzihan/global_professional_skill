@@ -16,6 +16,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.34.0-alpha.0",
+    "jodit-react": "^5.3.21",
     "lodash": "^4.17.23",
     "lucide-react": "^0.562.0",
     "react": "^19.2.0",

@@ -134,7 +134,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
             name: 'Dashboard',
             path: '/dashboard/admin',
             icon: LayoutDashboard,
-            gradient: 'blue-500 to-cyan-500',
+            gradient: 'from-blue-500 to-cyan-500',
             badge: <Sparkles className="w-3 h-3" />,
             exact: true
         },

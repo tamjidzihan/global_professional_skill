@@ -1,13 +1,14 @@
 /* eslint-disable react-hooks/incompatible-library */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
-import { useForm, type SubmitHandler } from 'react-hook-form';
+import { useForm, type SubmitHandler, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useCourses } from '../../hooks/useCourses';
 import { useCategories } from '../../hooks/useCategories';
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from '../components/LoadingSpinner';
+import RichTextEditor from '../components/RichTextEditor';
 import {
   Info,
   FileText,
@@ -67,6 +68,7 @@ const CreateCoursePage: React.FC = () => {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
     watch,
   } = useForm<CourseFormInputs>({
@@ -143,7 +145,7 @@ const CreateCoursePage: React.FC = () => {
     try {
       const success = await addCourse(formData);
       if (success) {
-        navigate('/dashboard/instructor');
+        navigate('/dashboard/instructor/my-courses');
       } else {
         setServerError(error || 'Failed to create course. Please try again.');
       }
@@ -168,40 +170,119 @@ const CreateCoursePage: React.FC = () => {
         )}
 
         {/* Header Card */}
-        <div className="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden mb-6">
-          <div className="h-20 bg-linear-to-r from-[#0066CC] to-[#004a99]" />
-          <div className="px-6 pb-6">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-12">
-              <div className="flex items-end gap-4">
-                {/* Icon */}
-                <div className="w-24 h-24 rounded-lg border-4 border-white bg-white flex items-center justify-center shadow-md">
-                  <BookOpen className="w-12 h-12 text-[#0066CC]" />
-                </div>
-                {/* Title */}
-                <div className="pt-1">
-                  <h1 className="text-2xl font-bold text-gray-900">Create New Course</h1>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Fill in the details below to create a new course offering
-                  </p>
-                </div>
-              </div>
-              {/* Cancel Button */}
-              <button
-                type="button"
-                onClick={() => navigate(-1)}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-red-600 hover:text-gray-100  transition-colors sm:mb-1 cursor-pointer"
-                disabled={loading}
-              >
-                <X className="w-4 h-4" />
-                Cancel
-              </button>
+        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6 mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Create New Course: </h1>
+              <p className="text-sm text-gray-500 mt-1">Fill in the details below to create a new course offering</p>
             </div>
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-red-500 hover:text-gray-100  transition-colors sm:mb-1 cursor-pointer"
+              disabled={loading}
+            >
+              <X className="w-4 h-4" />
+              Cancel
+            </button>
           </div>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="space-y-6">
+            {/* Media Section */}
+            <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6 mb-6">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <ImageIcon className="w-5 h-5 text-[#0066CC]" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">Course Media</h2>
+                  <p className="text-sm text-gray-500">Add thumbnail image and preview video</p>
+                </div>
+              </div>
+
+              {/* Thumbnail Section */}
+              <div className="mb-8 pb-6 border-b border-gray-100">
+                <h3 className="text-md font-medium text-gray-800 mb-4">Course Thumbnail</h3>
+                <div className="flex flex-col md:flex-row gap-6 items-start">
+                  {/* Preview Area */}
+                  <div className="w-full md:w-48 h-48 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+                    {(thumbnailPreview) ? (
+                      <img
+                        src={thumbnailPreview || ''}
+                        alt="Course thumbnail"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="text-center p-4">
+                        <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-xs text-gray-500">No thumbnail</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Upload Controls */}
+                  <div className="flex-1">
+                    <label htmlFor="thumbnail" className="block text-sm font-medium text-gray-700 mb-2">
+                      Upload New Thumbnail
+                    </label>
+                    <input
+                      id="thumbnail"
+                      type="file"
+                      accept="image/*"
+                      {...register('thumbnail')}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-[#0066CC] hover:file:bg-blue-100 file:cursor-pointer cursor-pointer border border-gray-300 rounded-lg p-1"
+                    />
+                    <p className="mt-2 text-xs text-gray-500">
+                      PNG, JPG, GIF up to 10MB. Recommended size: 1280x720px
+                    </p>
+                    {errors.thumbnail && (
+                      <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.thumbnail.message}
+                      </p>
+                    )}
+
+                    {/* Current thumbnail indicator */}
+                    {!thumbnailPreview && (
+                      <p className="mt-2 text-xs text-green-600 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
+                        Current thumbnail will be kept if no new file is selected
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Preview Video Section */}
+              <div>
+                <h3 className="text-md font-medium text-gray-800 mb-4">Preview Video</h3>
+                <div>
+                  <label htmlFor="preview_video" className="block text-sm font-medium text-gray-700 mb-2">
+                    Video URL
+                  </label>
+                  <input
+                    id="preview_video"
+                    type="url"
+                    {...register('preview_video')}
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent transition-shadow"
+                  />
+                  <p className="mt-1.5 text-xs text-gray-500">
+                    YouTube, Vimeo, or other video hosting platform. This video will be shown as a preview to potential students.
+                  </p>
+                  {errors.preview_video && (
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.preview_video.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
             {/* Basic Information Section */}
             <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
               <div className="flex items-center gap-3 mb-5">
@@ -257,12 +338,16 @@ const CreateCoursePage: React.FC = () => {
                   <label htmlFor="description" className={labelClassName}>
                     Full Description <span className="text-red-500">*</span>
                   </label>
-                  <textarea
-                    id="description"
-                    rows={5}
-                    {...register('description')}
-                    className={inputClassName}
-                    placeholder="Provide a comprehensive description of your course, including what students will learn and why they should enroll..."
+                  <Controller
+                    name="description"
+                    control={control}
+                    render={({ field }) => (
+                      <RichTextEditor
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        placeholder="Provide a detailed description of your course, including what students can expect to learn, the structure of the course, and any other relevant information."
+                      />
+                    )}
                   />
                   {errors.description && (
                     <p className={errorClassName}>
@@ -395,12 +480,17 @@ const CreateCoursePage: React.FC = () => {
                   <label htmlFor="learning_outcomes" className={labelClassName}>
                     Learning Outcomes <span className="text-red-500">*</span>
                   </label>
-                  <textarea
-                    id="learning_outcomes"
-                    rows={4}
-                    {...register('learning_outcomes')}
-                    className={inputClassName}
-                    placeholder="• Build full-stack web applications&#10;• Master React hooks and state management&#10;• Deploy applications to production"
+
+                  <Controller
+                    name="learning_outcomes"
+                    control={control}
+                    render={({ field }) => (
+                      <RichTextEditor
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        placeholder="&bull; Build full-stack web applications<br/>&bull; Master React hooks and state management<br/>&bull; Deploy applications to production"
+                      />
+                    )}
                   />
                   <p className="mt-1.5 text-xs text-gray-500">List what students will learn (one per line)</p>
                   {errors.learning_outcomes && (
@@ -415,12 +505,16 @@ const CreateCoursePage: React.FC = () => {
                   <label htmlFor="requirements" className={labelClassName}>
                     Prerequisites & Requirements <span className="text-red-500">*</span>
                   </label>
-                  <textarea
-                    id="requirements"
-                    rows={3}
-                    {...register('requirements')}
-                    className={inputClassName}
-                    placeholder="• Basic understanding of HTML and CSS&#10;• Familiarity with JavaScript fundamentals&#10;• A computer with internet connection"
+                  <Controller
+                    name="requirements"
+                    control={control}
+                    render={({ field }) => (
+                      <RichTextEditor
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        placeholder="&bull; Basic understanding of HTML and CSS<br/>&bull; Familiarity with JavaScript fundamentals<br/>&bull; A computer with internet connection"
+                      />
+                    )}
                   />
                   <p className="mt-1.5 text-xs text-gray-500">List any prerequisites (one per line)</p>
                   {errors.requirements && (
@@ -576,74 +670,6 @@ const CreateCoursePage: React.FC = () => {
                     <p className={errorClassName}>
                       <AlertCircle className="w-4 h-4" />
                       {errors.total_seats.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Media Section */}
-            <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
-                  <ImageIcon className="w-4 h-4 text-[#0066CC]" />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-gray-900">Media</h2>
-                  <p className="text-xs text-gray-500">Course thumbnail and preview materials</p>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <label htmlFor="thumbnail" className={labelClassName}>
-                    Course Thumbnail
-                  </label>
-                  <div className="mt-1 flex items-center gap-4">
-                    <div className="flex-1">
-                      <input
-                        id="thumbnail"
-                        type="file"
-                        accept="image/*"
-                        {...register('thumbnail')}
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-[#0066CC] hover:file:bg-blue-100 file:cursor-pointer cursor-pointer border border-gray-200 rounded-lg"
-                      />
-                      <p className="mt-1.5 text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                    </div>
-                    {thumbnailPreview && (
-                      <div className="shrink-0">
-                        <img
-                          src={thumbnailPreview}
-                          alt="Thumbnail preview"
-                          className="h-24 w-24 object-cover rounded-lg border-2 border-gray-200"
-                        />
-                      </div>
-                    )}
-                  </div>
-                  {errors.thumbnail && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.thumbnail.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="preview_video" className={labelClassName}>
-                    Preview Video URL (Optional)
-                  </label>
-                  <input
-                    id="preview_video"
-                    type="url"
-                    {...register('preview_video')}
-                    placeholder="https://www.youtube.com/watch?v=..."
-                    className={inputClassName}
-                  />
-                  <p className="mt-1.5 text-xs text-gray-500">YouTube, Vimeo, or other video hosting platform</p>
-                  {errors.preview_video && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.preview_video.message}
                     </p>
                   )}
                 </div>

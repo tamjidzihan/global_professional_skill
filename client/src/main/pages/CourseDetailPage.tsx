@@ -444,11 +444,20 @@ export function CourseDetailPage() {
                         <div className="bg-white h-180 overflow-y-scroll rounded-lg px-10 py-6 border border-gray-200 shadow-sm">
                             {activeTab === 'description' && (
                                 <div className="space-y-6 text-gray-700">
-                                    <div className="space-y-3">
+                                    <div className="space-y-3 w-full">
                                         <h3 className="text-lg font-bold text-gray-800">Course Overview</h3>
-                                        <p className="text-justify leading-relaxed whitespace-pre-line">
-                                            {course.description}
-                                        </p>
+                                        <div
+                                            className="
+                                                        prose prose-sm max-w-none
+                                                        text-justify leading-relaxed
+                                                        wrap-break-word
+                                                        [&_ul]:list-disc [&_ul]:pl-5
+                                                        [&_ol]:list-decimal [&_ol]:pl-5
+                                                        [&_li]:mb-1
+                                                        [&_p]:mb-2
+                                                    "
+                                            dangerouslySetInnerHTML={{ __html: course.description }}
+                                        />
                                     </div>
 
                                     <div className="space-y-3">
