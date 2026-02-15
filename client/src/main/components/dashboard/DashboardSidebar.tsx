@@ -173,7 +173,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                 : studentLinks
 
     return (
-        <>
+        <div className="h-full min-h-screen bg-gray-50 flex">
             {/* Enhanced Mobile Overlay with stronger blur */}
             {isOpen && (
                 <div
@@ -198,7 +198,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                     <button
                         onClick={() => setIsCollapsed(!isCollapsed)}
                         className={cn(
-                            "hidden lg:flex absolute -right-3 top-8 w-6 h-6 items-center justify-center rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-50 hover:scale-110",
+                            "hidden cursor-pointer lg:flex absolute -right-3 top-8 w-6 h-6 items-center justify-center rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-50 hover:scale-110",
                             "bg-linear-to-br from-blue-500 to-purple-600 text-white"
                         )}
                     >
@@ -442,6 +442,6 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                     </div>
                 </div>
             </aside>
-        </>
+        </div>
     )
 }

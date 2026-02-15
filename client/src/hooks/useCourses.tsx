@@ -12,7 +12,7 @@ import {
     getCourses,
     getCourseDetail,
     createCourse,
-    // updateCourse,
+    updateCourse,
     deleteCourse,
     submitCourseForReview,
     // reviewCourse,
@@ -186,30 +186,44 @@ export function useCourses() {
     );
 
 
-    // const editCourse = useCallback(
-    //     async (id: string, data: Partial<CourseCreateUpdateData>) => {
-    //         setLoading(true);
-    //         setError(null);
-    //         try {
-    //             const response = await updateCourse(id, data);
-    //             const updatedCourse = response.data.data;
-    //             setCourses((prev) =>
-    //                 prev.map((c) => (c.id === id ? updatedCourse : c)),
-    //             );
-    //             if (course?.id === id) setCourse(updatedCourse);
-    //             return updatedCourse;
-    //         } catch (err: any) {
-    //             const errorMsg = err.response?.data?.error?.message ||
-    //                 err.response?.data?.message ||
-    //                 'Failed to update course';
-    //             setError(errorMsg);
-    //             throw err;
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     },
-    //     [course],
-    // );
+    const editCourse = useCallback(
+        async (id: string, data: FormData) => {
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await updateCourse(id, data);
+                const updatedCourse = response.data.data;
+
+                const updatedCourseSummary: CoursesSummary = {
+                    id: updatedCourse.id,
+                    title: updatedCourse.title,
+                    duration_hours: updatedCourse.duration_hours,
+                    thumbnail: updatedCourse.thumbnail,
+                    price: updatedCourse.price,
+                    difficulty_level: updatedCourse.difficulty_level,
+                    average_rating: updatedCourse.average_rating,
+                    status: updatedCourse.status,
+                    instructor_name: `${updatedCourse.instructor.first_name} ${updatedCourse.instructor.last_name}`,
+                    category_name: updatedCourse.category.name,
+                };
+
+                setCourses((prev) =>
+                    prev.map((c) => (c.id === id ? updatedCourseSummary : c)),
+                );
+                if (course?.id === id) setCourse(updatedCourse);
+                return updatedCourse;
+            } catch (err: any) {
+                const errorMsg = err.response?.data?.error?.message ||
+                    err.response?.data?.message ||
+                    'Failed to update course';
+                setError(errorMsg);
+                throw err;
+            } finally {
+                setLoading(false);
+            }
+        },
+        [course],
+    );
 
     const removeCourse = useCallback(
         async (id: string) => {
@@ -824,7 +838,7 @@ export function useCourses() {
         fetchCourses,
         fetchCourseDetail,
         addCourse,
-        // editCourse,
+        editCourse,
         removeCourse,
         submitForReview,
         // adminReviewCourse,

@@ -7,7 +7,7 @@ export function DashboardLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false)
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="min-h-screen  bg-gray-50 flex">
             <DashboardSidebar
                 isOpen={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}

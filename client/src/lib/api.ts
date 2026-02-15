@@ -273,7 +273,7 @@ export const createCourse = (
 ): Promise<AxiosResponse<ApiResponse<CourseDetail>>> =>
     api.post<ApiResponse<CourseDetail>>(endpoints.courses.create, data);
 
-export const updateCourse = (id: string, data: Partial<CourseDetail>): Promise<AxiosResponse<ApiResponse<CourseDetail>>> =>
+export const updateCourse = (id: string, data: FormData): Promise<AxiosResponse<ApiResponse<CourseDetail>>> =>
     api.put<ApiResponse<CourseDetail>>(endpoints.courses.update(id), data);
 
 export const deleteCourse = (id: string): Promise<AxiosResponse<void>> =>

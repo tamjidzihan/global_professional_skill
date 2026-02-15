@@ -23,6 +23,8 @@ import MyCoursesPage from "./main/pages/dashboard/instructor/MyCoursesPage";
 import ProtectedRoute from "./ProtectedRoute";
 import CreateCoursePage from "./main/pages/CreateCoursePage";
 import { PublicRoute } from "./PublicRoute";
+import CourseEditDetailPage from "./main/pages/dashboard/instructor/CourseEditDetailPage";
+import { InstructorCourseDetailPage } from "./main/pages/dashboard/instructor/InstructorCourseDetailPage";
 
 
 export const router = createBrowserRouter([
@@ -102,6 +104,22 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
                                 <MyCoursesPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/edit-course/:id',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+                                <CourseEditDetailPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/my-courses/:id',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+                                <InstructorCourseDetailPage />
                             </ProtectedRoute>
                         )
                     },
