@@ -1,4 +1,4 @@
-import { toast } from 'react-hot-toast' // Import toast
+import { toast } from 'react-hot-toast'
 import React, { useState } from 'react'
 import { User, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { AuthLayout } from '../components/AuthLayout'

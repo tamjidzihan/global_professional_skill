@@ -22,6 +22,8 @@ import { useAuth } from '../../../../hooks/useAuth'
 import { useCourses } from '../../../../hooks/useCourses'
 import CourseDetailSkeleton from '../../../components/loadingSkeleton/CourseDetailSkeleton'
 import DashboardBreadcrumb from '../../../components/dashboard/DashboardBreadcrumb'
+import { toast } from 'react-hot-toast'
+import { extractErrorMessage } from '../../../../lib/errorUtils'
 
 export function InstructorCourseDetailPage() {
     const { id } = useParams<{ id: string }>()
@@ -84,10 +86,11 @@ export function InstructorCourseDetailPage() {
             await submitForReview(id)
             setShowSubmitModal(false)
             // Show success message
-            alert('Course submitted for review successfully!')
+            toast.success('Course submitted for review successfully!')
         } catch (error) {
-            console.error('Failed to submit for review:', error)
-            alert('Failed to submit course for review. Please try again.')
+            console.error('Failed to submit for review:', error);
+            const errorMessage = extractErrorMessage(error);
+            toast.error(errorMessage);
         }
     }
 
@@ -168,8 +171,8 @@ export function InstructorCourseDetailPage() {
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Course Not Found</h2>
-                    <p className="text-gray-600 mb-4">{error || 'The course you are looking for does not exist.'}</p>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Error</h2>
+                    <p className=" text-red-600 mb-4">{error || 'The course you are looking for does not exist.'}</p>
                     <Link
                         to="/dashboard/instructor/my-courses"
                         className="inline-block bg-[#0066CC] text-white px-6 py-3 rounded-lg hover:bg-[#004c99] transition-colors"

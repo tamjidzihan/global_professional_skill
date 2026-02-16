@@ -110,6 +110,16 @@ api.interceptors.response.use(
             });
         }
 
+        if (error.response?.data) {
+            // Check if it matches your ErrorResponse structure
+            const errorData = error.response.data;
+            if (errorData.success === false && errorData.error?.message) {
+                // Already in correct format, just pass through
+                return Promise.reject(error);
+            }
+        }
+
+
         return Promise.reject(error);
     }
 );

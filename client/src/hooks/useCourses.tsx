@@ -54,6 +54,7 @@ import type {
     ReviewCreateUpdateData,
     CourseStatus,
 } from '../types';
+import { extractErrorMessage } from '../lib/errorUtils';
 
 export function useCourses() {
     // States
@@ -172,10 +173,7 @@ export function useCourses() {
 
                 return newCourse;
             } catch (err: any) {
-                const errorMsg =
-                    err.response?.data?.error?.message ||
-                    err.response?.data?.message ||
-                    "Failed to create course";
+                const errorMsg = extractErrorMessage(err);
                 setError(errorMsg);
                 throw err;
             } finally {
@@ -213,9 +211,7 @@ export function useCourses() {
                 if (course?.id === id) setCourse(updatedCourse);
                 return updatedCourse;
             } catch (err: any) {
-                const errorMsg = err.response?.data?.error?.message ||
-                    err.response?.data?.message ||
-                    'Failed to update course';
+                const errorMsg = extractErrorMessage(err);
                 setError(errorMsg);
                 throw err;
             } finally {
@@ -259,9 +255,7 @@ export function useCourses() {
                     )
                 );
             } catch (err: any) {
-                const errorMsg = err.response?.data?.error?.message ||
-                    err.response?.data?.message ||
-                    'Failed to submit course for review';
+                const errorMsg = extractErrorMessage(err);
                 setError(errorMsg);
                 throw err;
             } finally {
