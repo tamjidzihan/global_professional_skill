@@ -25,6 +25,7 @@ import TermsPage from "./main/pages/TermsPage";
 import VerifyEmailPromptPage from "./main/pages/VerifyEmailPromptPage";
 import ProtectedRoute from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
+import CurriculumPage from "./main/pages/dashboard/instructor/CurriculumPage";
 import ErrorPage from "./main/pages/ErrorPage";
 
 
@@ -122,6 +123,14 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
                                 <InstructorCourseDetailPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/my-courses/:courseId/curriculum',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+                                <CurriculumPage />
                             </ProtectedRoute>
                         )
                     },

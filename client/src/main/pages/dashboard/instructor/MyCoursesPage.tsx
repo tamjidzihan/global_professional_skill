@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/purity */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useMyCourses } from '../../../../hooks/useMyCourses';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { Trash2, Edit, PlusCircle, Search, Filter, Eye, Users, Clock, BookOpen } from 'lucide-react';
@@ -10,10 +10,19 @@ const MyCoursesPage = () => {
     const { courses, loading, error, fetchMyCourses, removeCourse } = useMyCourses();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('ALL');
+    const location = useLocation();
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchMyCourses();
     }, [fetchMyCourses]);
+
+    useEffect(() => {
+        if (location.state?.refresh) {
+            fetchMyCourses();
+            navigate(location.pathname, { replace: true });
+        }
+    }, [location, navigate, fetchMyCourses]);
 
     const handleDelete = (id: string) => {
         if (window.confirm('Are you sure you want to delete this course?')) {
@@ -254,6 +263,13 @@ const MyCoursesPage = () => {
                                                     <Eye size={18} />
                                                 </Link>
                                                 <Link
+                                                    to={`/dashboard/instructor/my-courses/${course.id}/curriculum`}
+                                                    className="p-2 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                                                    title="Manage Curriculum"
+                                                >
+                                                    <BookOpen size={18} />
+                                                </Link>
+                                                <Link
                                                     to={`/dashboard/instructor/edit-course/${course.id}`}
                                                     className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                                                     title="Edit Course"
@@ -322,6 +338,13 @@ const MyCoursesPage = () => {
                                     >
                                         <Eye size={14} />
                                         View
+                                    </Link>
+                                    <Link
+                                        to={`/dashboard/instructor/my-courses/${course.id}/curriculum`}
+                                        className="flex-1 flex items-center justify-center gap-1 px-3 py-2 text-xs font-medium text-purple-700 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+                                    >
+                                        <BookOpen size={14} />
+                                        Curriculum
                                     </Link>
                                     <Link
                                         to={`/dashboard/instructor/edit-course/${course.id}`}

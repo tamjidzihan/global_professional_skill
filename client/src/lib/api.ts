@@ -348,10 +348,10 @@ export const getLessons = <T = ApiResponse<Lesson[]>>(
 export const getLessonDetail = (courseId: string, sectionId: string, lessonId: string): Promise<AxiosResponse<ApiResponse<Lesson>>> =>
     api.get<ApiResponse<Lesson>>(endpoints.lessons.detail(courseId, sectionId, lessonId));
 
-export const createLesson = (courseId: string, sectionId: string, data: Partial<Lesson>): Promise<AxiosResponse<ApiResponse<Lesson>>> =>
+export const createLesson = (courseId: string, sectionId: string, data: FormData): Promise<AxiosResponse<ApiResponse<Lesson>>> =>
     api.post<ApiResponse<Lesson>>(endpoints.lessons.create(courseId, sectionId), data);
 
-export const updateLesson = (courseId: string, sectionId: string, lessonId: string, data: Partial<Lesson>): Promise<AxiosResponse<ApiResponse<Lesson>>> =>
+export const updateLesson = (courseId: string, sectionId: string, lessonId: string, data: FormData): Promise<AxiosResponse<ApiResponse<Lesson>>> =>
     api.put<ApiResponse<Lesson>>(endpoints.lessons.update(courseId, sectionId, lessonId), data);
 
 export const deleteLesson = (courseId: string, sectionId: string, lessonId: string): Promise<AxiosResponse<void>> =>

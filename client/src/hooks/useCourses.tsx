@@ -27,8 +27,8 @@ import {
     // Lessons API Endpoints
     getLessons,
     getLessonDetail,
-    // createLesson,
-    // updateLesson,
+    createLesson,
+    updateLesson,
     deleteLesson,
 
     // Reviews API Endpoints
@@ -53,6 +53,7 @@ import type {
     // LessonCreateUpdateData,
     ReviewCreateUpdateData,
     CourseStatus,
+    LessonCreateUpdateData,
 } from '../types';
 import { extractErrorMessage } from '../lib/errorUtils';
 
@@ -515,6 +516,37 @@ export function useCourses() {
 
     // ==================== Lesson Actions ====================
 
+    const fetchAndReturnData = useCallback(
+        async <T,>(
+            apiCall: (...args: any[]) => Promise<any>,
+            dataPath: string[] = ['data'],
+            ...args: any[]
+        ): Promise<T | null> => {
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await apiCall(...args);
+                let data = response.data;
+
+                for (const path of dataPath) {
+                    if (data && typeof data === 'object' && path in data) {
+                        data = data[path];
+                    } else {
+                        return null; // Return null if path not found
+                    }
+                }
+                return data as T;
+            } catch (err: any) {
+                setError(err.response?.data?.error?.message || err.response?.data?.message || 'An error occurred');
+                console.error('API call failed:', err);
+                return null;
+            } finally {
+                setLoading(false);
+            }
+        },
+        [],
+    );
+
     const fetchLessons = useCallback(
         async (courseId: string, sectionId: string, filters?: Record<string, any>, pageUrl?: string | null) =>
             fetchData<Lesson[]>(
@@ -531,96 +563,257 @@ export function useCourses() {
     );
 
     const fetchLessonDetail = useCallback(
-        async (courseId: string, sectionId: string, lessonId: string) =>
-            fetchData<Lesson | null>(
+        async (courseId: string, sectionId: string, lessonId: string): Promise<Lesson | null> => {
+            const result = await fetchAndReturnData<Lesson>(
                 getLessonDetail,
-                setLesson,
-                undefined,
                 ['data'],
                 courseId,
                 sectionId,
                 lessonId,
-            ),
-        [fetchData],
+            );
+            if (result) {
+                setLesson(result); // Also update the state for consistency
+            }
+            return result;
+        },
+        [fetchAndReturnData],
     );
 
-    // const addLesson = useCallback(
-    //     async (courseId: string, sectionId: string, data: LessonCreateUpdateData) => {
-    //         setLoading(true);
-    //         setError(null);
-    //         try {
-    //             const response = await createLesson(courseId, sectionId, data);
-    //             const newLesson = response.data.data;
-    //             setLessons((prev) => [...prev, newLesson]);
+    const addLesson = useCallback(
 
-    //             // Update section lessons in course detail
-    //             if (course?.id === courseId) {
-    //                 setCourse(prev => prev ? {
-    //                     ...prev,
-    //                     sections: prev.sections.map(s =>
-    //                         s.id === sectionId
-    //                             ? { ...s, lessons: [...(s.lessons || []), newLesson], lesson_count: (s.lesson_count || 0) + 1 }
-    //                             : s
-    //                     )
-    //                 } : prev);
-    //             }
+        async (courseId: string, sectionId: string, data: LessonCreateUpdateData) => {
 
-    //             return newLesson;
-    //         } catch (err: any) {
-    //             const errorMsg = err.response?.data?.error?.message ||
-    //                 err.response?.data?.message ||
-    //                 'Failed to create lesson';
-    //             setError(errorMsg);
-    //             throw err;
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     },
-    //     [course],
-    // );
+            setLoading(true);
 
-    // const editLesson = useCallback(
-    //     async (courseId: string, sectionId: string, lessonId: string, data: Partial<LessonCreateUpdateData>) => {
-    //         setLoading(true);
-    //         setError(null);
-    //         try {
-    //             const response = await updateLesson(courseId, sectionId, lessonId, data);
-    //             const updatedLesson = response.data.data;
-    //             setLessons((prev) =>
-    //                 prev.map((l) => (l.id === lessonId ? updatedLesson : l)),
-    //             );
+            setError(null);
 
-    //             // Update section lessons in course detail
-    //             if (course?.id === courseId) {
-    //                 setCourse(prev => prev ? {
-    //                     ...prev,
-    //                     sections: prev.sections.map(s =>
-    //                         s.id === sectionId
-    //                             ? {
-    //                                 ...s,
-    //                                 lessons: s.lessons.map(l =>
-    //                                     l.id === lessonId ? updatedLesson : l
-    //                                 )
-    //                             }
-    //                             : s
-    //                     )
-    //                 } : prev);
-    //             }
+            try {
 
-    //             if (lesson?.id === lessonId) setLesson(updatedLesson);
-    //             return updatedLesson;
-    //         } catch (err: any) {
-    //             const errorMsg = err.response?.data?.error?.message ||
-    //                 err.response?.data?.message ||
-    //                 'Failed to update lesson';
-    //             setError(errorMsg);
-    //             throw err;
-    //         } finally {
-    //             setLoading(false);
-    //         }
-    //     },
-    //     [lesson, course],
-    // );
+                const formData = new FormData();
+
+                for (const key in data) {
+
+                    if (Object.prototype.hasOwnProperty.call(data, key)) {
+
+                        const value = (data as any)[key];
+
+                        if (value !== undefined && value !== null) {
+
+                            if (key === 'resources' && value instanceof File) {
+
+                                formData.append(key, value);
+
+                            } else if (key === 'video_duration' && typeof value === 'number') {
+
+                                // Convert number to string for FormData
+
+                                formData.append(key, value.toString());
+
+                            }
+
+                            else {
+
+                                formData.append(key, value);
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+
+
+                const response = await createLesson(courseId, sectionId, formData);
+
+                const newLesson = response.data.data;
+
+                setLessons((prev) => [...prev, newLesson]);
+
+
+
+                // Update section lessons in course detail
+
+                if (course?.id === courseId) {
+
+                    setCourse(prev => {
+
+                        if (!prev) return prev;
+
+                        const updatedSections = prev.sections.map(s =>
+
+                            s.id === sectionId
+
+                                ? { ...s, lessons: [...s.lessons, newLesson], lesson_count: s.lesson_count + 1 }
+
+                                : s
+
+                        );
+
+                        return {
+
+                            ...prev,
+
+                            sections: updatedSections,
+
+                            total_classes: (prev.total_classes || 0) + 1 // Assuming each lesson is a 'class'
+
+                        };
+
+                    });
+
+                }
+
+
+
+                return newLesson;
+
+            } catch (err: any) {
+
+                const errorMsg = err.response?.data?.error?.message ||
+
+                    err.response?.data?.message ||
+
+                    'Failed to create lesson';
+
+                setError(errorMsg);
+
+                throw err;
+
+            } finally {
+
+                setLoading(false);
+
+            }
+
+        },
+
+        [course],
+
+    );
+
+
+
+    const editLesson = useCallback(
+
+        async (courseId: string, sectionId: string, lessonId: string, data: Partial<LessonCreateUpdateData>) => {
+
+            setLoading(true);
+
+            setError(null);
+
+            try {
+
+                const formData = new FormData();
+
+                for (const key in data) {
+
+                    if (Object.prototype.hasOwnProperty.call(data, key)) {
+
+                        const value = (data as any)[key];
+
+                        if (value !== undefined && value !== null) {
+
+                            if (key === 'resources' && value instanceof File) {
+
+                                formData.append(key, value);
+
+                            } else if (key === 'video_duration' && typeof value === 'number') {
+
+                                formData.append(key, value.toString());
+
+                            }
+
+                            else {
+
+                                formData.append(key, value);
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+
+
+                const response = await updateLesson(courseId, sectionId, lessonId, formData);
+
+                const updatedLesson = response.data.data;
+
+                setLessons((prev) =>
+
+                    prev.map((l) => (l.id === lessonId ? updatedLesson : l)),
+
+                );
+
+
+
+                // Update section lessons in course detail
+
+                if (course?.id === courseId) {
+
+                    setCourse(prev => {
+
+                        if (!prev) return prev;
+
+                        const updatedSections = prev.sections.map(s =>
+
+                            s.id === sectionId
+
+                                ? {
+
+                                    ...s,
+
+                                    lessons: s.lessons.map(l =>
+
+                                        l.id === lessonId ? updatedLesson : l
+
+                                    )
+
+                                }
+
+                                : s
+
+                        );
+
+                        return { ...prev, sections: updatedSections };
+
+                    });
+
+                }
+
+
+
+                if (lesson?.id === lessonId) setLesson(updatedLesson);
+
+                return updatedLesson;
+
+            } catch (err: any) {
+
+                const errorMsg = err.response?.data?.error?.message ||
+
+                    err.response?.data?.message ||
+
+                    'Failed to update lesson';
+
+                setError(errorMsg);
+
+                throw err;
+
+            } finally {
+
+                setLoading(false);
+
+            }
+
+        },
+
+        [lesson, course],
+
+    );
 
     const removeLesson = useCallback(
         async (courseId: string, sectionId: string, lessonId: string) => {
@@ -854,8 +1047,8 @@ export function useCourses() {
         // Lesson Actions
         fetchLessons,
         fetchLessonDetail,
-        // addLesson,
-        // editLesson,
+        addLesson,
+        editLesson,
         removeLesson,
 
         // Review Actions

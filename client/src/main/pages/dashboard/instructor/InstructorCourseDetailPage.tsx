@@ -111,11 +111,11 @@ export function InstructorCourseDetailPage() {
     }
 
     const handleViewAnalytics = () => {
-        navigate(`/dashboard/instructor/courses/${id}/analytics`)
+        navigate(`/dashboard/instructor/my-courses/${id}/analytics`)
     }
 
     const handleManageCurriculum = () => {
-        navigate(`/dashboard/instructor/courses/${id}/curriculum`)
+        navigate(`/dashboard/instructor/my-courses/${id}/curriculum`)
     }
 
 

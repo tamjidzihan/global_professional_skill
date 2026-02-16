@@ -145,7 +145,7 @@ const CreateCoursePage: React.FC = () => {
     try {
       const success = await addCourse(formData);
       if (success) {
-        navigate('/dashboard/instructor/my-courses');
+        navigate('/dashboard/instructor/my-courses', { state: { refresh: true } });
       } else {
         setServerError(error || 'Failed to create course. Please try again.');
       }

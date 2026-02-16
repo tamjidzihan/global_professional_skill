@@ -141,7 +141,7 @@ export interface LessonSummary {
     id: string;
     title: string;
     lesson_type: LessonType;
-    video_duration: number;
+    video_duration?: number;
     is_preview: boolean;
     order: number;
 }
@@ -245,7 +245,7 @@ export interface Lesson {
     video_url?: string;
     video_duration?: number;
     content?: string;
-    resources?: string;
+    resources?: string | null;
     quiz_data?: any;
     is_preview: boolean;
     order: number;
