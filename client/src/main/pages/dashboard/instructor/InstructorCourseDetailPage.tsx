@@ -115,6 +115,10 @@ export function InstructorCourseDetailPage() {
     }
 
     const handleManageCurriculum = () => {
+        if (course?.status === 'PENDING') {
+            toast.error('You cannot manage curriculum while the course is pending for review.')
+            return
+        }
         navigate(`/dashboard/instructor/my-courses/${id}/curriculum`)
     }
 
@@ -195,7 +199,6 @@ export function InstructorCourseDetailPage() {
         )
     }
     const breadcrumbSubtitle = `${course.total_classes} classes • ${course.difficulty_level} • ${course.enrollment_count || 0} students enrolled`
-
     return (
         <>
             {/* Breadcrumb Navigation */}
@@ -228,13 +231,23 @@ export function InstructorCourseDetailPage() {
                             )} */}
                         </div>
                         <div className="flex flex-wrap gap-3">
-                            <Link
-                                to={`/dashboard/instructor/edit-course/${course.id}`}
-                                className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#0066CC] text-[#0066CC] rounded-lg font-medium hover:bg-[#0066CC] hover:text-white transition-all shadow-sm hover:shadow-md"
-                            >
-                                <Edit className="w-4 h-4" />
-                                Edit Course
-                            </Link>
+                            {course.status === 'PENDING' && (
+                                <div className="flex items-center gap-2 px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg text-sm border border-yellow-200">
+                                    <AlertTriangle className="w-6 h-6" />
+                                    You can not edit or submit this course while it is pending review.<br /> Please wait for the review process to complete before making changes.
+                                </div>
+                            )}
+
+
+                            {course.status !== 'PENDING' && (
+                                <Link
+                                    to={`/dashboard/instructor/edit-course/${course.id}`}
+                                    className="flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#0066CC] text-[#0066CC] rounded-lg font-medium hover:bg-[#0066CC] hover:text-white transition-all shadow-sm hover:shadow-md"
+                                >
+                                    <Edit className="w-4 h-4" />
+                                    Edit Course
+                                </Link>
+                            )}
                             {course.status === 'DRAFT' && (
                                 <button
                                     onClick={() => setShowSubmitModal(true)}
@@ -397,7 +410,7 @@ export function InstructorCourseDetailPage() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                     <button
                         onClick={handleManageCurriculum}
-                        className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-[#0066CC] hover:shadow-md transition-all group"
+                        className={`flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-200 hover:border-[#0066CC] hover:shadow-md transition-all group cursor-pointer ${course.status === 'PENDING' ? 'opacity-90 cursor-not-allowed' : ''}`}
                     >
                         <div className="p-3 bg-blue-50 rounded-lg group-hover:bg-[#0066CC] group-hover:text-white transition-colors">
                             <BookOpen className="w-5 h-5 text-[#0066CC] group-hover:text-white" />
@@ -598,7 +611,7 @@ export function InstructorCourseDetailPage() {
                                 </div>
                                 <button
                                     onClick={handleManageCurriculum}
-                                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-linear-to-r from-[#0066CC] to-[#0052a3] text-white rounded-xl hover:from-[#0052a3] hover:to-[#004080] transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm font-medium"
+                                    className={`inline-flex items-center gap-2 px-5 py-2.5 bg-linear-to-r from-[#0066CC] to-[#0052a3] text-white rounded-xl hover:from-[#0052a3] hover:to-[#004080] transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-sm font-medium ${course.status === 'PENDING' ? 'opacity-70 cursor-not-allowed' : ''}`}
                                 >
                                     <Edit className="w-4 h-4" />
                                     Manage Curriculum

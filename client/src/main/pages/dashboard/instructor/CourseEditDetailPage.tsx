@@ -231,7 +231,7 @@ const CourseEditDetailPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50  px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto mt-8">
+      <div className=" mx-auto mt-8">
         {/* Error Alert */}
         {serverError && (
           <div className="mb-6 flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
