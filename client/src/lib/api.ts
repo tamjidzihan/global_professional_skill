@@ -15,6 +15,8 @@ import type {
     ApiResponse,
     // PaginatedResponse,
     ReviewCreateUpdateData,
+    SectionCreateData,
+    LessonCreateUpdateData,
     // CourseCreateUpdateData,
 } from '../types';
 
@@ -322,10 +324,10 @@ export const getSections = <T = ApiResponse<Section[]>>(
 export const getSectionDetail = (courseId: string, sectionId: string): Promise<AxiosResponse<ApiResponse<Section>>> =>
     api.get<ApiResponse<Section>>(endpoints.sections.detail(courseId, sectionId));
 
-export const createSection = (courseId: string, data: Partial<Section>): Promise<AxiosResponse<ApiResponse<Section>>> =>
+export const createSection = (courseId: string, data: SectionCreateData): Promise<AxiosResponse<ApiResponse<Section>>> =>
     api.post<ApiResponse<Section>>(endpoints.sections.create(courseId), data);
 
-export const updateSection = (courseId: string, sectionId: string, data: Partial<Section>): Promise<AxiosResponse<ApiResponse<Section>>> =>
+export const updateSection = (courseId: string, sectionId: string, data: Partial<SectionCreateData>): Promise<AxiosResponse<ApiResponse<Section>>> =>
     api.put<ApiResponse<Section>>(endpoints.sections.update(courseId, sectionId), data);
 
 export const deleteSection = (courseId: string, sectionId: string): Promise<AxiosResponse<void>> =>
@@ -348,11 +350,17 @@ export const getLessons = <T = ApiResponse<Lesson[]>>(
 export const getLessonDetail = (courseId: string, sectionId: string, lessonId: string): Promise<AxiosResponse<ApiResponse<Lesson>>> =>
     api.get<ApiResponse<Lesson>>(endpoints.lessons.detail(courseId, sectionId, lessonId));
 
-export const createLesson = (courseId: string, sectionId: string, data: FormData): Promise<AxiosResponse<ApiResponse<Lesson>>> =>
+export const createLesson = (courseId: string, sectionId: string, data: LessonCreateUpdateData): Promise<AxiosResponse<ApiResponse<Lesson>>> =>
     api.post<ApiResponse<Lesson>>(endpoints.lessons.create(courseId, sectionId), data);
 
-export const updateLesson = (courseId: string, sectionId: string, lessonId: string, data: FormData): Promise<AxiosResponse<ApiResponse<Lesson>>> =>
+export const updateLesson = (
+    courseId: string,
+    sectionId: string,
+    lessonId: string,
+    data: Partial<LessonCreateUpdateData>
+): Promise<AxiosResponse<ApiResponse<Lesson>>> =>
     api.put<ApiResponse<Lesson>>(endpoints.lessons.update(courseId, sectionId, lessonId), data);
+
 
 export const deleteLesson = (courseId: string, sectionId: string, lessonId: string): Promise<AxiosResponse<void>> =>
     api.delete<void>(endpoints.lessons.delete(courseId, sectionId, lessonId));

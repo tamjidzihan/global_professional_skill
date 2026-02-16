@@ -78,7 +78,7 @@ export type CategoryDetailResponse = Category;
 
 export type DifficultyLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
 export type CourseStatus = 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'PUBLISHED';
-export type LessonType = 'VIDEO' | 'ARTICLE' | 'QUIZ' | 'ASSIGNMENT' | 'RESOURCE';
+export type LessonType = 'VIDEO' | 'TEXT' | 'QUIZ' | 'ASSIGNMENT' | 'RESOURCE';
 
 // export interface CoursesSummary {
 //     id: string;
@@ -155,6 +155,13 @@ export interface Section {
     lessons: LessonSummary[];
     lesson_count: number;
     created_at: string;
+}
+
+export interface SectionCreateData {
+    course: string;
+    title: string;
+    description?: string;
+    order: number;
 }
 
 export interface CourseDetail {
