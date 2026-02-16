@@ -4,7 +4,11 @@ import Layout from "./main/layouts/Layout";
 import AboutPage from "./main/pages/AboutPage";
 import { CourseDetailPage } from "./main/pages/CourseDetailPage";
 import CoursesPage from "./main/pages/CoursesPage";
+import CreateCoursePage from "./main/pages/CreateCoursePage";
 import { AdminDashboard } from "./main/pages/dashboard/AdminDashboard";
+import CourseEditDetailPage from "./main/pages/dashboard/instructor/CourseEditDetailPage";
+import { InstructorCourseDetailPage } from "./main/pages/dashboard/instructor/InstructorCourseDetailPage";
+import MyCoursesPage from "./main/pages/dashboard/instructor/MyCoursesPage";
 import { InstructorDashboard } from "./main/pages/dashboard/InstructorDashboard";
 import { MyProfilePage } from "./main/pages/dashboard/MyProfilePage";
 import { StudentDashboard } from "./main/pages/dashboard/StudentDashboard";
@@ -19,18 +23,16 @@ import ProfilePage from "./main/pages/ProfilePage";
 import { RegisterPage } from "./main/pages/RegisterPage";
 import TermsPage from "./main/pages/TermsPage";
 import VerifyEmailPromptPage from "./main/pages/VerifyEmailPromptPage";
-import MyCoursesPage from "./main/pages/dashboard/instructor/MyCoursesPage";
 import ProtectedRoute from "./ProtectedRoute";
-import CreateCoursePage from "./main/pages/CreateCoursePage";
 import { PublicRoute } from "./PublicRoute";
-import CourseEditDetailPage from "./main/pages/dashboard/instructor/CourseEditDetailPage";
-import { InstructorCourseDetailPage } from "./main/pages/dashboard/instructor/InstructorCourseDetailPage";
+import ErrorPage from "./main/pages/ErrorPage";
 
 
 export const router = createBrowserRouter([
     {
         path: '/',
         element: <Layout />,
+        errorElement: <ErrorPage />,
         children: [
             { index: true, element: <HomePage /> },
             { path: '/courses', element: <CoursesPage /> },
@@ -132,6 +134,7 @@ export const router = createBrowserRouter([
                             </ProtectedRoute>
                         )
                     },
+
                     // User Profile Route
                     {
                         path: 'my-profile',
