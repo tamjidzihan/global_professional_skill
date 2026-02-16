@@ -3,7 +3,7 @@ import { StatsCard } from '../../components/dashboard/StatsCard'
 import { BookOpen, Users, Star, DollarSign, PlusCircle, TrendingUp, FileText } from 'lucide-react'
 import { useAnalytics } from '../../../hooks/useAnalytics'
 import CalendarCard from '../../components/dashboard/CalendarCard'
-import LoadingSpinner from '../../components/LoadingSpinner'
+import LoadingSpinner from '../../components/ui/LoadingSpinner'
 import { Link } from 'react-router-dom'
 
 export function InstructorDashboard() {

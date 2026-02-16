@@ -7,7 +7,8 @@ import * as z from 'zod';
 import { useCourses } from '../../../../hooks/useCourses';
 import { useCategories } from '../../../../hooks/useCategories';
 import { useNavigate, useParams } from 'react-router-dom';
-import LoadingSpinner from '../../../components/LoadingSpinner';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
+import { LoaderButton } from '../../../components/ui/LoaderButton';
 import {
   Info,
   FileText,
@@ -274,7 +275,7 @@ const CourseEditDetailPage: React.FC = () => {
             <h3 className="text-md font-medium text-gray-800 mb-4">Course Thumbnail</h3>
             <div className="flex flex-col md:flex-row gap-6 items-start">
               {/* Preview Area */}
-              <div className="w-full md:w-48 h-48 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+              <div className="w-full md:w-88 h-48 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
                 {(thumbnailPreview || currentThumbnail) ? (
                   <img
                     src={thumbnailPreview || currentThumbnail || ''}
@@ -412,6 +413,7 @@ const CourseEditDetailPage: React.FC = () => {
                     control={control}
                     render={({ field }) => (
                       <RichTextEditor
+                        height={5}
                         value={field.value || ''}
                         onChange={field.onChange}
                         placeholder="Provide a comprehensive description of your course, including what students will learn and why they should enroll..."
@@ -549,12 +551,17 @@ const CourseEditDetailPage: React.FC = () => {
                   <label htmlFor="learning_outcomes" className={labelClassName}>
                     Learning Outcomes <span className="text-red-500">*</span>
                   </label>
-                  <textarea
-                    id="learning_outcomes"
-                    rows={4}
-                    {...register('learning_outcomes')}
-                    className={inputClassName}
-                    placeholder="• Build full-stack web applications&#10;• Master React hooks and state management&#10;• Deploy applications to production"
+                  <Controller
+                    name="learning_outcomes"
+                    control={control}
+                    render={({ field }) => (
+                      <RichTextEditor
+                        value={field.value || ''}
+                        {...register('learning_outcomes')}
+                        onChange={field.onChange}
+                        placeholder="Provide a comprehensive description of your course, including what students will learn and why they should enroll..."
+                      />
+                    )}
                   />
                   <p className="mt-1.5 text-xs text-gray-500">List what students will learn (one per line)</p>
                   {errors.learning_outcomes && (
@@ -569,12 +576,18 @@ const CourseEditDetailPage: React.FC = () => {
                   <label htmlFor="requirements" className={labelClassName}>
                     Prerequisites & Requirements <span className="text-red-500">*</span>
                   </label>
-                  <textarea
-                    id="requirements"
-                    rows={3}
-                    {...register('requirements')}
-                    className={inputClassName}
-                    placeholder="• Basic understanding of HTML and CSS&#10;• Familiarity with JavaScript fundamentals&#10;• A computer with internet connection"
+
+                  <Controller
+                    name="requirements"
+                    control={control}
+                    render={({ field }) => (
+                      <RichTextEditor
+                        value={field.value || ''}
+                        {...register('requirements')}
+                        onChange={field.onChange}
+                        placeholder="• Basic understanding of HTML and CSS&#10;• Familiarity with JavaScript fundamentals&#10;• A computer with internet connection"
+                      />
+                    )}
                   />
                   <p className="mt-1.5 text-xs text-gray-500">List any prerequisites (one per line)</p>
                   {errors.requirements && (
@@ -739,33 +752,32 @@ const CourseEditDetailPage: React.FC = () => {
 
           {/* Form Actions */}
           <div className="flex items-center gap-3 mt-6">
-            <button
+            <LoaderButton
               type="submit"
-              className="flex items-center gap-2 px-6 py-2.5 bg-[#76C043] text-white text-sm font-medium rounded-lg hover:bg-[#65a838] disabled:opacity-50 transition-colors"
+              variant="success"
+              size="md"
+              elevation="lg"
+              loading={loading || isSubmitting}
+              loadingText="Saving Changes..."
+              icon={<Save className="w-4 h-4" />}
               disabled={loading || isSubmitting}
             >
-              {loading || isSubmitting ? (
-                <>
-                  <LoadingSpinner />
-                  <span>Saving Changes...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4" />
-                  <span>Save Changes</span>
-                </>
-              )}
-            </button>
-            <button
+              Save Changes
+            </LoaderButton>
+
+            <LoaderButton
               type="button"
+              variant="secondary"
+              size="md"
+              elevation="md"
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 px-6 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
+              icon={<X className="w-4 h-4" />}
               disabled={loading || isSubmitting}
             >
-              <X className="w-4 h-4" />
               Cancel
-            </button>
+            </LoaderButton>
           </div>
+
         </form>
       </div>
     </div>

@@ -21,7 +21,7 @@ import CalendarCard from '../../components/dashboard/CalendarCard'
 import { format } from 'date-fns'
 import type { InstructorRequest } from '../../../types'
 import { getInstructorRequestDetail, reviewInstructorRequest } from '../../../lib/api'
-import LoadingSpinner from '../../components/LoadingSpinner'
+import LoadingSpinner from '../../components/ui/LoadingSpinner'
 
 type FilterStatus = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'
 

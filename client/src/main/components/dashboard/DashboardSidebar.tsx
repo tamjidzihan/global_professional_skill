@@ -15,7 +15,7 @@ import { useAuthContext } from '../../../context/AuthContext'
 import { useMyProfile } from '../../../hooks/useMyProfile'
 import { cn } from '../../../lib/utils'
 import { useState } from 'react'
-import ProfileSkeleton from '../loadingSkeleton/ProfileSkeleton'
+import ProfileSkeleton from '../ui/loadingSkeleton/ProfileSkeleton'
 
 interface SidebarProps {
     isOpen: boolean

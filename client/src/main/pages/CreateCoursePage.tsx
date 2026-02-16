@@ -7,7 +7,7 @@ import * as z from 'zod';
 import { useCourses } from '../../hooks/useCourses';
 import { useCategories } from '../../hooks/useCategories';
 import { useNavigate } from 'react-router-dom';
-import LoadingSpinner from '../components/LoadingSpinner';
+import { LoaderButton } from '../components/ui/LoaderButton';
 import RichTextEditor from '../components/RichTextEditor';
 import {
   Info,
@@ -480,7 +480,6 @@ const CreateCoursePage: React.FC = () => {
                   <label htmlFor="learning_outcomes" className={labelClassName}>
                     Learning Outcomes <span className="text-red-500">*</span>
                   </label>
-
                   <Controller
                     name="learning_outcomes"
                     control={control}
@@ -679,32 +678,30 @@ const CreateCoursePage: React.FC = () => {
 
           {/* Form Actions */}
           <div className="flex items-center gap-3 mt-6">
-            <button
+            <LoaderButton
               type="submit"
-              className="flex items-center gap-2 px-6 py-2.5 bg-[#76C043] text-white text-sm font-medium rounded-lg hover:bg-[#65a838] disabled:opacity-50 transition-colors"
+              variant="success"
+              size="md"
+              elevation="lg"
+              loading={loading || isSubmitting}
+              loadingText="Saving Changes..."
+              icon={<Save className="w-4 h-4" />}
               disabled={loading || isSubmitting}
             >
-              {loading || isSubmitting ? (
-                <>
-                  <LoadingSpinner />
-                  <span>Creating Course...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4" />
-                  <span>Create Course</span>
-                </>
-              )}
-            </button>
-            <button
+              Save Changes
+            </LoaderButton>
+
+            <LoaderButton
               type="button"
+              variant="secondary"
+              size="md"
+              elevation="md"
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 px-6 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors"
+              icon={<X className="w-4 h-4" />}
               disabled={loading || isSubmitting}
             >
-              <X className="w-4 h-4" />
               Cancel
-            </button>
+            </LoaderButton>
           </div>
         </form>
       </div>

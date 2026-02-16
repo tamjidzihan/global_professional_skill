@@ -4,9 +4,9 @@ import { useEffect, useState, useMemo } from "react"
 import { CourseCard } from "../components/CourseCard"
 import Breadcrumb from "../components/Breadcrumb"
 import { useCourses } from "../../hooks/useCourses"
-import LoadingSpinner from "../components/LoadingSpinner"
+import LoadingSpinner from "../components/ui/LoadingSpinner"
 import { useCategories } from "../../hooks/useCategories"
-import CoursesPageSkeleton from '../components/loadingSkeleton/CoursesPageSkeleton';
+import CoursesPageSkeleton from '../components/ui/loadingSkeleton/CoursesPageSkeleton';
 
 const CoursesPage = () => {
     const location = useLocation();

@@ -20,7 +20,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../../../hooks/useAuth'
 import { useCourses } from '../../../../hooks/useCourses'
-import CourseDetailSkeleton from '../../../components/loadingSkeleton/CourseDetailSkeleton'
+import CourseDetailSkeleton from '../../../components/ui/loadingSkeleton/CourseDetailSkeleton'
 import DashboardBreadcrumb from '../../../components/dashboard/DashboardBreadcrumb'
 import { toast } from 'react-hot-toast'
 import { extractErrorMessage } from '../../../../lib/errorUtils'

@@ -18,7 +18,7 @@ import {
 import { useAuth } from '../../hooks/useAuth'
 import { useCourses } from '../../hooks/useCourses'
 import Breadcrumb from '../components/Breadcrumb'
-import CourseDetailSkeleton from '../components/loadingSkeleton/CourseDetailSkeleton'
+import CourseDetailSkeleton from '../components/ui/loadingSkeleton/CourseDetailSkeleton'
 
 export function CourseDetailPage() {
     const { id } = useParams<{ id: string }>()
@@ -336,7 +336,7 @@ export function CourseDetailPage() {
                                     {user?.role === 'INSTRUCTOR' && user.id === course.instructor.id && (
                                         <>
                                             <Link
-                                                to={`/instructor/courses/${course.id}/edit`}
+                                                to={`/dashboard/instructor/edit-course//${course.id}`}
                                                 className="bg-white text-[#0066CC] border-2 border-[#0066CC] px-6 py-3 rounded font-bold hover:bg-[#0066CC] hover:text-white transition-colors"
                                             >
                                                 Edit Course

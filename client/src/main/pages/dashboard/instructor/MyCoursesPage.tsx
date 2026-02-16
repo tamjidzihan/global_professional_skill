@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMyCourses } from '../../../../hooks/useMyCourses';
-import LoadingSpinner from '../../../components/LoadingSpinner';
+import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { Trash2, Edit, PlusCircle, Search, Filter, Eye, Users, Clock, BookOpen } from 'lucide-react';
 
 const MyCoursesPage = () => {
