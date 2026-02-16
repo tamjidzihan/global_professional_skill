@@ -72,6 +72,17 @@ export function InstructorCourseDetailPage() {
         }
     }, [course, user, navigate])
 
+
+    useEffect(() => {
+        const handleEsc = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setShowSubmitModal(false);
+        };
+
+        window.addEventListener('keydown', handleEsc);
+        return () => window.removeEventListener('keydown', handleEsc);
+    }, []);
+
+
     const toggleModule = (moduleId: string) => {
         setExpandedModules((prev) =>
             prev.includes(moduleId)
@@ -227,7 +238,7 @@ export function InstructorCourseDetailPage() {
                             {course.status === 'DRAFT' && (
                                 <button
                                     onClick={() => setShowSubmitModal(true)}
-                                    className="flex items-center gap-2 px-4 py-2 bg-[#76C043] text-white rounded-lg font-medium hover:bg-[#65a838] transition-all shadow-sm hover:shadow-md"
+                                    className="flex items-center gap-2 px-4 py-2 bg-[#76C043] text-white rounded-lg font-medium hover:bg-[#65a838] transition-all shadow-sm hover:shadow-md cursor-pointer"
                                 >
                                     <CheckCircle className="w-4 h-4" />
                                     Submit for Review
@@ -418,7 +429,7 @@ export function InstructorCourseDetailPage() {
                             onClick={() => setActiveTab('overview')}
                             className={`px-6 py-3 font-medium whitespace-nowrap border-b-2 transition-colors ${activeTab === 'overview'
                                 ? 'border-[#76C043] text-[#76C043]'
-                                : 'border-transparent text-gray-600 hover:text-gray-900 '
+                                : 'border-transparent text-gray-600 hover:text-gray-900 cursor-pointer'
                                 }`}
                         >
                             Overview
@@ -697,30 +708,45 @@ export function InstructorCourseDetailPage() {
 
             {/* Submit for Review Modal */}
             {showSubmitModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl max-w-md w-full p-6">
-                        <h3 className="text-xl font-bold text-gray-900 mb-4">Submit for Review</h3>
+                <div
+                    onClick={() => setShowSubmitModal(false)}
+                    className="fixed inset-0 bg-transparent backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="bg-white rounded-xl max-w-md w-full p-6"
+                    >
+                        <h3 className="text-xl font-bold text-gray-900 mb-4">
+                            Submit for Review
+                        </h3>
+
                         <p className="text-gray-600 mb-6">
-                            Are you sure you want to submit this course for admin review? Once submitted, you won't be able to make changes until the review is complete.
+                            Are you sure you want to submit this course for admin review? Once
+                            submitted, you won't be able to make changes until the review is
+                            complete.
                         </p>
+
                         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                             <div className="flex items-start gap-3">
                                 <AlertTriangle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
                                 <p className="text-sm text-yellow-700">
-                                    Please ensure all course details, curriculum, and pricing information are complete before submitting.
+                                    Please ensure all course details, curriculum, and pricing
+                                    information are complete before submitting.
                                 </p>
                             </div>
                         </div>
+
                         <div className="flex justify-end gap-3">
                             <button
                                 onClick={() => setShowSubmitModal(false)}
-                                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
                             >
                                 Cancel
                             </button>
+
                             <button
                                 onClick={handleSubmitForReview}
-                                className="px-4 py-2 bg-[#76C043] text-white rounded-lg hover:bg-[#65a838] transition-colors"
+                                className="px-4 py-2 bg-[#76C043] text-white rounded-lg hover:bg-[#65a838] transition-colors cursor-pointer"
                             >
                                 Submit for Review
                             </button>
@@ -728,6 +754,7 @@ export function InstructorCourseDetailPage() {
                     </div>
                 </div>
             )}
+
 
             {/* Rejection Reason Modal */}
             {/* {showRejectionModal && (
