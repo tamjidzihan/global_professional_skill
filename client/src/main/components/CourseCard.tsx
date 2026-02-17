@@ -38,7 +38,7 @@ export function CourseCard({
     const config = levelConfig[level]
 
     return (
-        <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-gray-200 overflow-hidden flex flex-col h-full hover:-translate-y-2 hover:border-blue-400">
+        <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 overflow-hidden flex flex-col h-full hover:-translate-y-2 hover:border-blue-400">
             {/* Thumbnail Container */}
             <div className="relative h-48 overflow-hidden bg-linear-to-br from-blue-900 via-blue-800 to-indigo-900">
                 {thumbnail ? (
@@ -95,7 +95,7 @@ export function CourseCard({
                 </div>
 
                 {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-linear-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </div>
 
             {/* Content */}
