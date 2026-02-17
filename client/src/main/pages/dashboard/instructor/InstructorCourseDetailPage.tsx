@@ -32,7 +32,6 @@ export function InstructorCourseDetailPage() {
     const {
         course,
         loading,
-        error,
         fetchCourseDetail,
         submitForReview,
         fetchReviews,
@@ -181,13 +180,13 @@ export function InstructorCourseDetailPage() {
         return <CourseDetailSkeleton />
     }
 
-    if (error || !course) {
+    if (!course) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">Error</h2>
-                    <p className=" text-red-600 mb-4">{error || 'The course you are looking for does not exist.'}</p>
+                    <p className=" text-red-600 mb-4">{'The course you are looking for does not exist.'}</p>
                     <Link
                         to="/dashboard/instructor/my-courses"
                         className="inline-block bg-[#0066CC] text-white px-6 py-3 rounded-lg hover:bg-[#004c99] transition-colors"

@@ -5,6 +5,7 @@ import { useCourses } from '../../hooks/useCourses';
 import { toast } from 'react-hot-toast';
 import type { LessonType } from '../../types';
 import { LoaderButton } from './ui/LoaderButton';
+import { formatFieldErrors, parseError } from '../../lib/errorUtils';
 
 interface AddLessonFormProps {
     courseId: string;
@@ -47,6 +48,7 @@ const AddLessonForm: React.FC<AddLessonFormProps> = ({ courseId, sectionId, onSu
             setLessonData(prev => ({ ...prev, [name]: value }));
         }
     };
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -94,8 +96,49 @@ const AddLessonForm: React.FC<AddLessonFormProps> = ({ courseId, sectionId, onSu
                 onSuccess();
             }
         } catch (error: any) {
-            toast.error(error.message || 'Failed to add lesson. Please try again.');
-            console.error("Failed to add lesson", error);
+            // Parse the error using the utility
+            const parsedError = parseError(error);
+
+            console.error("Failed to add lesson", {
+                originalError: error,
+                parsedError,
+                courseId,
+                sectionId,
+                lessonData
+            });
+
+            // Handle validation errors (like duplicate order)
+            if (parsedError.validationErrors) {
+                const fieldErrors = formatFieldErrors(parsedError.validationErrors);
+
+                // Check for non_field_errors (like unique constraint)
+                if (fieldErrors.non_field_errors) {
+                    if (fieldErrors.non_field_errors.includes('unique set') ||
+                        fieldErrors.non_field_errors.includes('already exists')) {
+                        toast.error('A lesson with this order number already exists. Please choose a different order.');
+                    } else {
+                        toast.error(fieldErrors.non_field_errors);
+                    }
+                }
+                // Check for order field errors
+                else if (fieldErrors.order) {
+                    if (fieldErrors.order.includes('unique') || fieldErrors.order.includes('already exists')) {
+                        toast.error('A lesson with this order number already exists. Please choose a different order.');
+                    } else {
+                        toast.error(`Order error: ${fieldErrors.order}`);
+                    }
+                }
+            }
+
+            // Handle duplicate order (specific message check)
+            else if (parsedError.message.includes('order') &&
+                (parsedError.message.includes('unique') || parsedError.message.includes('already exists'))) {
+                toast.error('A lesson with this order number already exists. Please choose a different order.');
+            }
+            // Handle all other errors
+            else {
+                toast.error(parsedError.message || 'Failed to add lesson. Please try again.');
+            }
         } finally {
             setIsAddingLesson(false);
         }

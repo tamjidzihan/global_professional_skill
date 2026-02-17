@@ -24,6 +24,7 @@ import { toast } from 'react-hot-toast';
 import type { LessonSummary, Section } from '../../../../types';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import DashboardBreadcrumb from '../../../components/dashboard/DashboardBreadcrumb';
+import { extractErrorMessage } from '../../../../lib/errorUtils';
 
 interface SectionToEdit {
     id: string;
@@ -53,7 +54,6 @@ const CurriculumPage: React.FC = () => {
         removeSection,
         removeLesson,
         loading,
-        error
     } = useCourses();
 
     // UI State
@@ -106,15 +106,23 @@ const CurriculumPage: React.FC = () => {
                 order: newSection.order
             });
 
-            // Reset form
             setNewSection({ title: '', description: '', order: 0 });
-
-            // Refresh course data
             await fetchCourseDetail(courseId);
             toast.success('Section added successfully!');
         } catch (error) {
-            setServerError('Failed to add section. Please try again.');
-            toast.error('Failed to add section. Please try again.');
+            // Use the updated extractErrorMessage
+            const errorMessage = extractErrorMessage(error);
+
+            // Check if it's the unique constraint error
+            if (errorMessage.includes('unique set') || errorMessage.includes('already exists')) {
+                const friendlyMessage = 'A section with this order number already exists. Please choose a different order.';
+                setServerError(friendlyMessage);
+                toast.error(friendlyMessage);
+            } else {
+                setServerError(errorMessage);
+                toast.error(errorMessage);
+            }
+
             console.error("Failed to add section", error);
         } finally {
             setIsAddingSection(false);
@@ -262,13 +270,13 @@ const CurriculumPage: React.FC = () => {
         return <LoadingSpinner fullscreen text="Loading curriculum..." />;
     }
 
-    if (error || !course) {
+    if (!course) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
                     <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">Error Loading Course</h2>
-                    <p className="text-gray-600 mb-4">{error || 'The course you are looking for does not exist or an error occurred.'}</p>
+                    <p className="text-gray-600 mb-4">{'The course you are looking for does not exist or an error occurred.'}</p>
                     <button
                         onClick={() => navigate('/dashboard/instructor/my-courses')}
                         className="inline-block bg-[#0066CC] text-white px-6 py-3 rounded-lg hover:bg-[#004c99] transition-colors"

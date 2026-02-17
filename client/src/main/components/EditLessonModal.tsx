@@ -112,9 +112,75 @@ const EditLessonModal: React.FC<EditLessonModalProps> = ({
             toast.success('Lesson updated successfully!');
             onClose();
         } catch (error: any) {
-            setValidationError(error.message || 'Failed to update lesson');
-            toast.error(error.message || 'Failed to update lesson');
-            console.error("Failed to update lesson", error);
+            console.error("Full error object:", error);
+            console.error("Error response:", error.response?.data);
+
+            // Try to extract the error message from the response
+            let errorMessage = 'Failed to update lesson. Please try again.';
+
+            if (error.response?.data) {
+                const data = error.response.data;
+
+                // Handle your specific error structure
+                if (data.success === false) {
+                    // Check for non_field_errors in details
+                    if (data.error?.details?.non_field_errors?.length > 0) {
+                        const nonFieldError = data.error.details.non_field_errors[0];
+                        if (nonFieldError.includes('unique set') || nonFieldError.includes('already exists')) {
+                            errorMessage = 'A lesson with this order number already exists. Please choose a different order.';
+                        } else {
+                            errorMessage = nonFieldError;
+                        }
+                    }
+                    // Check for error message
+                    else if (data.error?.message) {
+                        errorMessage = data.error.message;
+                    }
+                }
+                // Handle DRF's non_field_errors at root level
+                else if (data.non_field_errors?.length > 0) {
+                    const nonFieldError = data.non_field_errors[0];
+                    if (nonFieldError.includes('unique set') || nonFieldError.includes('already exists')) {
+                        errorMessage = 'A lesson with this order number already exists. Please choose a different order.';
+                    } else {
+                        errorMessage = nonFieldError;
+                    }
+                }
+                // Handle field errors
+                else if (data.errors) {
+                    // Check for order field errors
+                    if (data.errors.order?.length > 0) {
+                        const orderError = data.errors.order[0];
+                        if (orderError.includes('unique') || orderError.includes('already exists')) {
+                            errorMessage = 'A lesson with this order number already exists. Please choose a different order.';
+                        } else {
+                            errorMessage = `Order error: ${orderError}`;
+                        }
+                    }
+                    // Check for other field errors
+                    else {
+                        const firstField = Object.keys(data.errors)[0];
+                        if (firstField && data.errors[firstField]?.length > 0) {
+                            errorMessage = data.errors[firstField][0];
+                        }
+                    }
+                }
+                // Check for detail field
+                else if (data.detail) {
+                    errorMessage = data.detail;
+                }
+            }
+
+            // Check if the error message contains the unique constraint text
+            if (errorMessage.toLowerCase().includes('unique') ||
+                errorMessage.toLowerCase().includes('already exists') ||
+                errorMessage.toLowerCase().includes('unique set')) {
+                toast.error('A lesson with this order number already exists. Please choose a different order.');
+            } else {
+                toast.error(errorMessage);
+            }
+
+            setValidationError(errorMessage);
         } finally {
             setIsSubmitting(false);
         }
@@ -243,7 +309,7 @@ const EditLessonModal: React.FC<EditLessonModalProps> = ({
                                         value={lessonData.order}
                                         onChange={handleInputChange}
                                         min="0"
-                                        className={inputClassName}
+                                        className={inputClassName + (validationError && validationError.toLowerCase().includes('order') ? ' border-red-500' : '')}
                                         disabled={isSubmitting}
                                     />
                                     <p className="mt-1.5 text-xs text-gray-500">
