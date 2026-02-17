@@ -63,10 +63,10 @@ const CourseSection = () => {
     ]
 
     return (
-        <section className="py-16 sm:py-24 bg-linear-to-b from-[#FCF8F1] to-white overflow-hidden">
+        <section className="py-10 sm:py-14 bg-linear-to-b from-white to-[#FCF8F1] overflow-hidden">
             <div className="container mx-auto px-4">
                 {/* Header */}
-                <div className="mb-12 text-center max-w-3xl mx-auto">
+                <div className="mb-6 text-center max-w-3xl mx-auto">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 border border-green-200 text-green-700 rounded-full text-sm font-semibold mb-4">
                         <Sparkles className="w-4 h-4" />
                         Popular Courses
@@ -81,7 +81,7 @@ const CourseSection = () => {
 
 
                 {/* Category Scroll */}
-                <div className="relative mb-12">
+                <div className="relative mb-8">
                     {/* Left Arrow */}
                     <button
                         onClick={() => scrollByAmount(-300)}

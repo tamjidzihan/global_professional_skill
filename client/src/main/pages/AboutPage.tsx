@@ -78,17 +78,17 @@ const AboutPage = () => {
                 <div className="container mx-auto px-4 relative z-10">
                     {/* Introduction */}
                     <div className="max-w-4xl mx-auto text-center mb-16">
-                        <div className="inline-flex items-center gap-2 px-5 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full text-sm font-bold mb-6 shadow-lg">
+                        <div className="inline-flex items-center gap-2 px-5 py-2 bg-linear-to-r from-blue-500 to-purple-500 text-white rounded-full text-sm font-bold mb-6 shadow-lg">
                             <Sparkles className="w-4 h-4" />
                             Pioneering IT Education Since 2007
                         </div>
-                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 mb-6 leading-tight">
+                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
                             Welcome to
-                            <span className="block mt-2 bg-gradient-to-r from-[#0066CC] via-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            <span className="block mt-2 bg-linear-to-r from-[#0066CC] via-blue-600 to-purple-600 bg-clip-text text-transparent">
                                 GPIS-BD
                             </span>
                         </h1>
-                        <div className="h-1 w-24 bg-gradient-to-r from-[#0066CC] to-[#76C043] mx-auto rounded-full mb-8"></div>
+                        <div className="h-1 w-24 bg-linear-to-r from-[#0066CC] to-[#76C043] mx-auto rounded-full mb-8"></div>
                         <p className="text-lg sm:text-xl text-gray-700 leading-relaxed">
                             To address the skill gap of HR in the industry, BASIS started its
                             own training activities in 2007. Later in 2012, BASIS
@@ -118,7 +118,7 @@ const AboutPage = () => {
                                     <div className={`${colorClasses[color as keyof typeof colorClasses]} p-3 rounded-xl inline-flex mb-4 shadow-lg group-hover:scale-110 transition-transform`}>
                                         <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                                     </div>
-                                    <div className="text-3xl sm:text-4xl font-black text-gray-900 mb-2">
+                                    <div className="text-3xl sm:text-4xl font-bold text-black mb-2">
                                         {stat.number}
                                     </div>
                                     <div className="text-sm sm:text-base font-semibold text-gray-600">
@@ -132,21 +132,21 @@ const AboutPage = () => {
             </section>
 
             {/* Mission & Vision */}
-            <section className="py-16 bg-gradient-to-b from-white to-[#F5EFE6]">
+            <section className="py-16 bg-linear-to-b from-white to-[#F5EFE6]">
                 <div className="container mx-auto px-4">
                     <div className="max-w-6xl mx-auto">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             {/* Mission Card */}
                             <div className="relative group">
-                                <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-purple-600 rounded-3xl transform rotate-1 group-hover:rotate-2 transition-transform duration-300"></div>
+                                <div className="absolute inset-0 bg-linear-to-br from-blue-600 to-purple-600 rounded-3xl transform rotate-1 group-hover:rotate-2 transition-transform duration-300"></div>
                                 <div className="relative bg-white rounded-3xl p-8 sm:p-10 shadow-2xl border-4 border-white">
                                     <div className="flex items-center gap-4 mb-6">
-                                        <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-4 rounded-2xl shadow-lg">
+                                        <div className="bg-linear-to-br from-blue-500 to-blue-600 p-4 rounded-2xl shadow-lg">
                                             <Target className="w-8 h-8 text-white" />
                                         </div>
                                         <div>
-                                            <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Our Mission</h2>
-                                            <div className="h-1 w-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mt-2"></div>
+                                            <h2 className="text-2xl sm:text-3xl font-bold text-black">Our Mission</h2>
+                                            <div className="h-1 w-20 bg-linear-to-r from-blue-500 to-purple-500 rounded-full mt-2"></div>
                                         </div>
                                     </div>
                                     <p className="text-gray-700 leading-relaxed text-lg">
@@ -165,15 +165,15 @@ const AboutPage = () => {
 
                             {/* Vision Card */}
                             <div className="relative group">
-                                <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-green-600 rounded-3xl transform -rotate-1 group-hover:-rotate-2 transition-transform duration-300"></div>
+                                <div className="absolute inset-0 bg-linear-to-br from-green-500 to-green-600 rounded-3xl transform -rotate-1 group-hover:-rotate-2 transition-transform duration-300"></div>
                                 <div className="relative bg-white rounded-3xl p-8 sm:p-10 shadow-2xl border-4 border-white">
                                     <div className="flex items-center gap-4 mb-6">
-                                        <div className="bg-gradient-to-br from-green-500 to-green-600 p-4 rounded-2xl shadow-lg">
+                                        <div className="bg-linear-to-br from-green-500 to-green-600 p-4 rounded-2xl shadow-lg">
                                             <Eye className="w-8 h-8 text-white" />
                                         </div>
                                         <div>
-                                            <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Our Vision</h2>
-                                            <div className="h-1 w-20 bg-gradient-to-r from-green-500 to-green-600 rounded-full mt-2"></div>
+                                            <h2 className="text-2xl sm:text-3xl font-bold text-black">Our Vision</h2>
+                                            <div className="h-1 w-20 bg-linear-to-r from-green-500 to-green-600 rounded-full mt-2"></div>
                                         </div>
                                     </div>
                                     <p className="text-gray-700 leading-relaxed text-lg">
@@ -203,7 +203,7 @@ const AboutPage = () => {
                                 <Star className="w-4 h-4" />
                                 Our Achievements
                             </div>
-                            <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">
+                            <h2 className="text-3xl sm:text-4xl font-bold text-black mb-4">
                                 Trusted & <span className="text-[#0066CC]">Accredited</span>
                             </h2>
                             <p className="text-gray-600 max-w-2xl mx-auto">
@@ -217,7 +217,7 @@ const AboutPage = () => {
                                 return (
                                     <div
                                         key={index}
-                                        className="bg-gradient-to-br from-green-50 to-white rounded-2xl p-5 border-2 border-green-200 hover:border-green-400 transition-all duration-300 group hover:shadow-xl"
+                                        className="bg-linear-to-br from-green-50 to-white rounded-2xl p-5 border-2 border-green-200 hover:border-green-400 transition-all duration-300 group hover:shadow-xl"
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className="bg-green-500 p-2 rounded-xl group-hover:scale-110 transition-transform">
@@ -234,7 +234,7 @@ const AboutPage = () => {
             </section>
 
             {/* Why Choose Us */}
-            <section className="py-16 bg-gradient-to-b from-[#F5EFE6] to-[#FCF8F1]">
+            <section className="py-16 bg-linear-to-b from-[#F5EFE6] to-[#FCF8F1]">
                 <div className="container mx-auto px-4">
                     <div className="max-w-6xl mx-auto">
                         <div className="text-center mb-12">
@@ -242,7 +242,7 @@ const AboutPage = () => {
                                 <Shield className="w-4 h-4" />
                                 Why Choose Us
                             </div>
-                            <h2 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">
+                            <h2 className="text-3xl sm:text-4xl font-bold text-black mb-4">
                                 What Makes Us <span className="text-[#0066CC]">Different</span>
                             </h2>
                             <p className="text-gray-600 max-w-2xl mx-auto">
@@ -288,7 +288,7 @@ const AboutPage = () => {
             <section className="py-16">
                 <div className="container mx-auto px-4">
                     <div className="max-w-5xl mx-auto">
-                        <div className="relative overflow-hidden bg-gradient-to-r from-[#0066CC] via-blue-600 to-purple-600 rounded-3xl p-10 sm:p-16 text-center text-white shadow-2xl">
+                        <div className="relative overflow-hidden bg-linear-to-r from-[#0066CC] via-blue-600 to-purple-600 rounded-3xl p-10 sm:p-16 text-center text-white shadow-2xl">
                             {/* Decorative Elements */}
                             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
                             <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
@@ -298,7 +298,7 @@ const AboutPage = () => {
                                     <Heart className="w-4 h-4" />
                                     Join Our Community
                                 </div>
-                                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black mb-4">
+                                <h2 className="text-3xl sm:text-4xl lg:text-5xl  font-bold  mb-4">
                                     Ready to Start Your Journey?
                                 </h2>
                                 <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto leading-relaxed">

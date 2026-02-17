@@ -33,7 +33,7 @@ const AboutSection = () => {
     ]
 
     return (
-        <section className="relative py-20 sm:py-28 overflow-hidden bg-[#FCF8F1]">
+        <section className="relative py-20 sm:py-28 overflow-hidden from-white to-[#FCF8F1] bg-linear-to-b">
             {/* Decorative Background Elements */}
             <div className="absolute inset-0 overflow-hidden">
                 {/* Large Circle - Top Right */}
@@ -55,7 +55,7 @@ const AboutSection = () => {
                                 <Sparkles className="w-4 h-4" />
                                 Pioneering Digital Education Since 2007
                             </div>
-                            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 leading-tight mb-6">
+                            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-black leading-tight mb-6">
                                 Building Bangladesh's
                                 <span className="block mt-2 bg-linear-to-r from-[#0066CC] via-blue-600 to-purple-600 bg-clip-text text-transparent">
                                     Tech Leaders
@@ -96,7 +96,7 @@ const AboutSection = () => {
                                         <Target className="w-8 h-8 text-white" />
                                     </div>
                                     <div>
-                                        <h3 className="text-2xl font-black text-gray-900 mb-2">Our Mission</h3>
+                                        <h3 className="text-2xl font-bold text-black mb-2">Our Mission</h3>
                                         <div className="h-1 w-20 bg-linear-to-r from-blue-500 to-purple-500 rounded-full"></div>
                                     </div>
                                 </div>
@@ -215,7 +215,7 @@ const AboutSection = () => {
                         <div className="bg-linear-to-r from-yellow-400 to-orange-400 p-3 rounded-xl">
                             <Zap className="w-6 h-6 text-white" />
                         </div>
-                        <h3 className="text-2xl font-black text-gray-900">Our Impact in Numbers</h3>
+                        <h3 className="text-2xl font-bold text-black">Our Impact in Numbers</h3>
                     </div>
 
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -234,7 +234,7 @@ const AboutSection = () => {
                                         <div className={`${achievement.color} p-3 sm:p-4 rounded-xl sm:rounded-2xl inline-flex mb-4 shadow-lg`}>
                                             <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                                         </div>
-                                        <div className="text-3xl sm:text-4xl font-black text-gray-900 mb-2">
+                                        <div className="text-3xl sm:text-4xl font-bold text-black mb-2">
                                             {achievement.number}
                                         </div>
                                         <div className="text-sm sm:text-base font-semibold text-gray-600">
@@ -259,7 +259,7 @@ const AboutSection = () => {
                                 <Award className="w-8 h-8 text-white" />
                             </div>
                             <div>
-                                <h4 className="font-black text-gray-900 text-lg mb-1">Trusted & Accredited</h4>
+                                <h4 className="font-bold text-black text-lg mb-1">Trusted & Accredited</h4>
                                 <p className="text-gray-600 text-sm">Recognized by leading organizations worldwide</p>
                             </div>
                         </div>
