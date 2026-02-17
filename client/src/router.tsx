@@ -27,6 +27,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
 import CurriculumPage from "./main/pages/dashboard/instructor/CurriculumPage";
 import ErrorPage from "./main/pages/ErrorPage";
+import DashboardIndex from "./DashboardIndex";
 
 
 export const router = createBrowserRouter([
@@ -77,6 +78,16 @@ export const router = createBrowserRouter([
                 path: '/dashboard',
                 element: <DashboardLayout />,
                 children: [
+                    // Dahboard index route - can show overview or redirect based on role
+                    {
+                        index: true,
+                        element: (
+                            <ProtectedRoute allowedRoles={['STUDENT', 'INSTRUCTOR', 'ADMIN']}>
+                                <DashboardIndex />
+                            </ProtectedRoute>
+                        )
+                    },
+                    // Student dashboard routes
                     {
                         path: 'student/*',
                         element: (
