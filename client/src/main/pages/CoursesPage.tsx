@@ -849,6 +849,7 @@ const CoursesPage = () => {
                                             title={course.title}
                                             price={course.price}
                                             duration={course.duration_hours}
+                                            level={course.difficulty_level}
                                             rating={course.average_rating}
                                             enrolled={course.enrollment_count}
                                             category={course.category_name}
