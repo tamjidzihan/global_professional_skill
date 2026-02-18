@@ -3,11 +3,12 @@ import { Menu } from 'lucide-react'
 import { Outlet } from 'react-router-dom'
 import { DashboardSidebar } from '../components/dashboard/DashboardSidebar'
 
+// In DashboardLayout.tsx
 export function DashboardLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false)
 
     return (
-        <div className="min-h-screen  bg-gray-50 flex">
+        <div className="min-h-screen bg-gray-50 flex">
             <DashboardSidebar
                 isOpen={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}
@@ -27,8 +28,8 @@ export function DashboardLayout() {
                 </div>
 
                 {/* Main Content */}
-                <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-                    <Outlet /> {/* This renders the nested routes */}
+                <main className="flex-1 p-4 sm:p-6 lg:p-8">
+                    <Outlet />
                 </main>
             </div>
         </div>

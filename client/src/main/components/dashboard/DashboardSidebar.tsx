@@ -173,7 +173,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                 : studentLinks
 
     return (
-        <div className="h-full min-h-screen bg-gray-50 flex">
+        <>
             {/* Enhanced Mobile Overlay with stronger blur */}
             {isOpen && (
                 <div
@@ -185,7 +185,8 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
             {/* Modern Glass Morphism Sidebar */}
             <aside
                 className={cn(
-                    "fixed top-0 left-0 h-full bg-white/80 backdrop-blur-2xl border-r border-white/20 z-50 transform transition-all duration-500 ease-out lg:translate-x-0 lg:static lg:h-screen",
+                    "fixed top-0 left-0 bg-white/80 backdrop-blur-2xl border-r border-white/20 z-50 transform transition-all duration-500 ease-out lg:translate-x-0 lg:static",
+                    "h-screen lg:h-auto lg:min-h-full ",
                     isOpen
                         ? "translate-x-0 shadow-2xl shadow-black/10"
                         : "-translate-x-full lg:translate-x-0",
@@ -395,7 +396,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                         <button
                             onClick={logout}
                             className={cn(
-                                "group w-full flex items-center justify-between px-4 py-3.5 text-sm font-semibold rounded-xl transition-all duration-300",
+                                "group w-full flex items-center justify-between px-4 py-3.5 text-sm font-semibold rounded-xl transition-all duration-300 cursor-pointer",
                                 "text-red-600 hover:bg-linear-to-r hover:from-red-500 hover:to-rose-500 hover:text-white",
                                 "hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]",
                                 "bg-white/60 backdrop-blur-xl border border-red-200/40",
@@ -403,7 +404,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                             )}
                         >
                             <div className="flex items-center gap-3">
-                                <div className="p-2.5 rounded-lg bg-red-100 text-red-500 group-hover:bg-white/20 transition-all duration-300 group-hover:scale-110">
+                                <div className="p-2.5 rounded-lg bg-red-100 text-wtite group-hover:bg-white/20 transition-all duration-300 group-hover:scale-110">
                                     <LogOut className="w-5 h-5" />
                                 </div>
                                 {!isCollapsed && <span>Logout</span>}
@@ -442,6 +443,6 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                     </div>
                 </div>
             </aside>
-        </div>
+        </>
     )
 }
