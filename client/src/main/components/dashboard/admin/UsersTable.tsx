@@ -14,6 +14,9 @@ import {
 } from 'lucide-react';
 import { useUsers } from '../../../../hooks/useUsers';
 import type { User } from '../../../../types';
+import { Link } from 'react-router-dom';
+import { api } from '../../../../lib/api';
+import { toast } from 'react-hot-toast';
 
 type FilterRole = 'ALL' | 'STUDENT' | 'INSTRUCTOR' | 'ADMIN';
 
@@ -31,6 +34,7 @@ export function UsersTable(): JSX.Element {
 
     const [filterRole, setFilterRole] = useState<FilterRole>('ALL');
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
     useEffect(() => {
         fetchUsers();
@@ -43,8 +47,43 @@ export function UsersTable(): JSX.Element {
 
     const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // Implement search functionality in useUsers hook
-        console.log('Search query:', searchQuery);
+        // Implement search functionality
+    };
+
+    const handleDeactivate = async (userId: string) => {
+        if (window.confirm('Are you sure you want to deactivate this user?')) {
+            try {
+                await api.post(`/accounts/users/${userId}/deactivate/`);
+                toast.success('User deactivated successfully');
+                fetchUsers();
+            } catch {
+                toast.error('Failed to deactivate user');
+            }
+        }
+    };
+
+    const handleActivate = async (userId: string) => {
+        if (window.confirm('Are you sure you want to activate this user?')) {
+            try {
+                await api.post(`/accounts/users/${userId}/activate/`);
+                toast.success('User activated successfully');
+                fetchUsers();
+            } catch {
+                toast.error('Failed to activate user');
+            }
+        }
+    };
+
+    const handleDelete = async (userId: string) => {
+        if (window.confirm('Are you sure you want to delete this user?')) {
+            try {
+                await api.delete(`/accounts/users/${userId}/`);
+                toast.success('User deleted successfully');
+                fetchUsers();
+            } catch {
+                toast.error('Failed to delete user');
+            }
+        }
     };
 
     const getRoleIcon = (role: string): JSX.Element => {
@@ -89,6 +128,7 @@ export function UsersTable(): JSX.Element {
         }
         return true;
     });
+
 
     return (
         <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
@@ -146,7 +186,14 @@ export function UsersTable(): JSX.Element {
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
                                             <div className="shrink-0 h-10 w-10">
-                                                <img className="h-10 w-10 rounded-full object-cover" src={user.profile_picture || '/placeholder.svg'} alt={user.full_name} />
+                                                {user.profile_picture ? (
+                                                    <img className="h-10 w-10 rounded-full object-cover" src={user.profile_picture} alt={user.full_name} />
+                                                ) : (
+                                                    <div className="h-10 w-10 rounded-full bg-linear-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-sm font-medium">
+                                                        {(user.first_name?.[0] || '') +
+                                                            (user.last_name?.[0] || '')}
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="ml-4">
                                                 <div className="text-sm font-medium text-gray-900">{user.full_name}</div>
@@ -161,10 +208,58 @@ export function UsersTable(): JSX.Element {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div className="relative inline-block text-left">
-                                            <button className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full">
+                                            <button
+                                                onClick={() => setOpenDropdown(openDropdown === user.id ? null : user.id)}
+                                                className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
+                                            >
                                                 <MoreVertical className="w-5 h-5" />
                                             </button>
-                                            {/* Dropdown for actions */}
+                                            {openDropdown === user.id && (
+                                                <div
+                                                    className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
+                                                    role="menu"
+                                                    aria-orientation="vertical"
+                                                    aria-labelledby="menu-button"
+                                                >
+                                                    <div className="py-1" role="none">
+                                                        <Link
+                                                            to={`/dashboard/admin/users/${user.id}`}
+                                                            className="text-gray-700 block px-4 py-2 text-sm"
+                                                            role="menuitem"
+                                                            id="menu-item-0"
+                                                        >
+                                                            View Profile
+                                                        </Link>
+                                                        {user.is_active ? (
+                                                            <button
+                                                                onClick={() => handleDeactivate(user.id)}
+                                                                className="text-gray-700 block w-full text-left px-4 py-2 text-sm"
+                                                                role="menuitem"
+                                                                id="menu-item-1"
+                                                            >
+                                                                Deactivate
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => handleActivate(user.id)}
+                                                                className="text-gray-700 block w-full text-left px-4 py-2 text-sm"
+                                                                role="menuitem"
+                                                                id="menu-item-1"
+                                                            >
+                                                                Activate
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            onClick={() => handleDelete(user.id)}
+                                                            className="text-red-700 block w-full text-left px-4 py-2 text-sm"
+                                                            role="menuitem"
+                                                            id="menu-item-2"
+                                                        >
+                                                            Delete User
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

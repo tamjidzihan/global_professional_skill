@@ -146,15 +146,23 @@ export function AdminCourseCatalog(): JSX.Element {
                             <tr><td colSpan={5} className="text-center py-10"><div className="animate-pulse h-8 bg-gray-200 rounded w-1/3 mx-auto"></div></td></tr>
                         ) : filteredCourses.length > 0 ? (
                             filteredCourses.map((course) => (
-                                <tr key={course.id}>
+                                <tr key={course.id} className="hover:bg-gray-50 transition-colors">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center">
-                                            <div className="shrink-0 h-10 w-10">
-                                                <img className="h-10 w-10 rounded-full object-cover" src={course.thumbnail || '/placeholder.svg'} alt={course.title} />
+                                            <div className="shrink-0 h-12 w-12 ">
+                                                {course.thumbnail ? (
+                                                    <img className="h-12 w-12 rounded-full object-cover" src={course.thumbnail} alt={course.title} />
+                                                ) : (
+                                                    <div className="text-center rounded-full text-white relative z-10 bg-linear-to-br from-blue-900 via-blue-800 to-indigo-900 ">
+                                                        <div className="h-12 w-12 rounded-full  bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform ">
+                                                            <BookOpen className="w-8 h-8" />
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className="ml-4">
-                                                <div className="text-sm font-medium text-gray-900">{course.title}</div>
-                                                <div className="text-sm text-gray-500">{course.category_name}</div>
+                                            <div className="ml-4 cursor-pointer ">
+                                                <div className="text-sm font-medium text-gray-900 hover:text-blue-600">{course.title}</div>
+                                                <div className="text-sm text-gray-500 hover:text-blue-600">{course.category_name}</div>
                                             </div>
                                         </div>
                                     </td>

@@ -336,7 +336,7 @@ export function CourseDetailPage() {
                                     {user?.role === 'INSTRUCTOR' && user.id === course.instructor.id && (
                                         <>
                                             <Link
-                                                to={`/dashboard/instructor/edit-course//${course.id}`}
+                                                to={`/dashboard/instructor/edit-course/${course.id}`}
                                                 className="bg-white text-[#0066CC] border-2 border-[#0066CC] px-6 py-3 rounded font-bold hover:bg-[#0066CC] hover:text-white transition-colors"
                                             >
                                                 Edit Course

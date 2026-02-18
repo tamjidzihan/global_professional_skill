@@ -61,9 +61,33 @@ The `client` directory contains the frontend application built with React, Vite,
             -   `AboutPage.tsx`
             -   `CourseDetailPage.tsx`
             -   `CoursesPage.tsx`
+            -   `CreateCoursePage.tsx`
+            -   `EmailVerificationPage.tsx`
+            -   `ForgotPasswordPage.tsx`
             -   `HomePage.tsx`
+            -   `InstructorApplicationPage.tsx`
             -   `LoginPage.tsx`
+            -   `NotificationsPage.tsx`
+            -   `PrivacyPage.tsx`
+            -   `ProfilePage.tsx`
             -   `RegisterPage.tsx`
+            -   `TermsPage.tsx`
+            -   `VerifyEmailPromptPage.tsx`
+            -   `dashboard/`
+                -   `admin/`
+                    -   `CourseManagementPage.tsx`
+                    -   `UserManagementPage.tsx`
+                -   `instructor/`
+                    -   `CourseEditDetailPage.tsx`
+                    -   `CurriculumPage.tsx`
+                    -   `InstructorCourseDetailPage.tsx`
+                    -   `MyCoursesPage.tsx`
+                -   `AdminDashboard.tsx`
+                -   `CourseDetailPage.tsx`
+                -   `InstructorDashboard.tsx`
+                -   `MyProfilePage.tsx`
+                -   `StudentDashboard.tsx`
+                -   `UserDetailPage.tsx`
         -   `main/components/`: Reusable UI components:
             -   `AboutSection.tsx`
             -   `AuthLayout.tsx`
