@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.db.models import Avg, Sum
+from django.db.models import Avg, Sum, Count
 from apps.accounts.permissions import IsInstructor, IsAdmin
 from apps.courses.models import Course
 from apps.enrollments.models import Enrollment
@@ -31,6 +31,12 @@ class AdminAnalyticsView(APIView):
     def get(self, request):
         from apps.accounts.models import User, InstructorRequest
 
+        course_status_distribution = (
+            Course.objects.values("status")
+            .annotate(count=Count("status"))
+            .order_by("status")
+        )
+
         stats = {
             "total_users": User.objects.count(),
             "total_students": User.objects.filter(role="STUDENT").count(),
@@ -42,6 +48,9 @@ class AdminAnalyticsView(APIView):
             "pending_instructor_requests": InstructorRequest.objects.filter(
                 status="PENDING"
             ).count(),
+            "course_status_distribution": {
+                item["status"]: item["count"] for item in course_status_distribution
+            },
         }
 
         return Response({"success": True, "data": stats})

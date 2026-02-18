@@ -4,7 +4,7 @@ import {
     BookOpen,
     Users,
     FileText,
-    BarChart,
+    // BarChart,
     GraduationCap,
     LogOut,
     ChevronRight,
@@ -111,22 +111,23 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
             path: '/dashboard/instructor/my-courses',
             icon: BookOpen,
             gradient: 'from-purple-500 to-pink-500',
+            badge: '📚'
         },
-        {
-            name: 'Analytics',
-            // path: '/dashboard/instructor/analytics',
-            path: '#',
-            icon: BarChart,
-            gradient: 'from-emerald-500 to-teal-500',
-            badge: '📈'
-        },
-        {
-            name: 'Reviews',
-            // path: '/dashboard/instructor/reviews',
-            path: '#',
-            icon: Users,
-            gradient: 'from-orange-500 to-amber-500',
-        },
+        // {
+        //     name: 'Analytics',
+        //     // path: '/dashboard/instructor/analytics',
+        //     path: '#',
+        //     icon: BarChart,
+        //     gradient: 'from-emerald-500 to-teal-500',
+        //     badge: '📈'
+        // },
+        // {
+        //     name: 'Reviews',
+        //     // path: '/dashboard/instructor/reviews',
+        //     path: '#',
+        //     icon: Users,
+        //     gradient: 'from-orange-500 to-amber-500',
+        // },
     ]
 
     const adminLinks = [
@@ -150,18 +151,18 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
             icon: BookOpen,
             gradient: 'from-emerald-500 to-teal-500',
         },
-        {
-            name: 'Course Reviews',
-            path: '/dashboard/admin/course-reviews',
-            icon: FileText,
-            gradient: 'from-red-500 to-rose-500',
-        },
-        {
-            name: 'Platform Analytics',
-            path: '/dashboard/admin/analytics',
-            icon: BarChart,
-            gradient: 'from-orange-500 to-amber-500',
-        },
+        // {
+        //     name: 'Course Reviews',
+        //     path: '/dashboard/admin/course-reviews',
+        //     icon: FileText,
+        //     gradient: 'from-red-500 to-rose-500',
+        // },
+        // {
+        //     name: 'Platform Analytics',
+        //     path: '/dashboard/admin/analytics',
+        //     icon: BarChart,
+        //     gradient: 'from-orange-500 to-amber-500',
+        // },
 
     ]
 

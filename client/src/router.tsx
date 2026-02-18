@@ -28,6 +28,8 @@ import { PublicRoute } from "./PublicRoute";
 import CurriculumPage from "./main/pages/dashboard/instructor/CurriculumPage";
 import ErrorPage from "./main/pages/ErrorPage";
 import DashboardIndex from "./DashboardIndex";
+import { CourseManagementPage } from "./main/pages/dashboard/admin/CourseManagementPage";
+import { UserManagementPage } from "./main/pages/dashboard/admin/UserManagementPage";
 
 
 export const router = createBrowserRouter([
@@ -147,10 +149,26 @@ export const router = createBrowserRouter([
                     },
                     // Admin dashboard routes
                     {
-                        path: 'admin/*',
+                        path: 'admin',
                         element: (
                             <ProtectedRoute allowedRoles={['ADMIN']}>
                                 <AdminDashboard />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/courses',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <CourseManagementPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/users',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <UserManagementPage />
                             </ProtectedRoute>
                         )
                     },
