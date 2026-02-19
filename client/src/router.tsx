@@ -30,6 +30,7 @@ import ErrorPage from "./main/pages/ErrorPage";
 import DashboardIndex from "./DashboardIndex";
 import { CourseManagementPage } from "./main/pages/dashboard/admin/CourseManagementPage";
 import { UserManagementPage } from "./main/pages/dashboard/admin/UserManagementPage";
+import AdminCourseDetailPage from "./main/pages/dashboard/admin/AdminCourseDetailPage";
 
 
 export const router = createBrowserRouter([
@@ -161,6 +162,14 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['ADMIN']}>
                                 <CourseManagementPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/courses/:id',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <AdminCourseDetailPage />
                             </ProtectedRoute>
                         )
                     },

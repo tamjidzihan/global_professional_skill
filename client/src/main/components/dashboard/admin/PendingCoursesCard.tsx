@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BookOpen } from 'lucide-react'
 import type { JSX } from 'react'
+import { Link } from 'react-router-dom'
 
 interface PendingCoursesCardProps {
     courses: any[]
@@ -35,9 +36,9 @@ export function PendingCoursesCard({ courses, loading, onViewDetails }: PendingC
                         >
                             <div className="flex justify-between items-center">
                                 <div className="flex-1 min-w-0">
-                                    <button onClick={() => onViewDetails(course.id)} className="font-medium text-gray-900 truncate cursor-pointer">
+                                    <Link to={`/dashboard/admin/courses/${course.id}`} className="font-medium text-gray-900 truncate cursor-pointer">
                                         {course.title}
-                                    </button>
+                                    </Link>
                                     <p className="text-sm text-gray-500 mt-0.5">
                                         Submitted by {course.instructor_name}
                                     </p>

@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useAdminCourses } from '../../../../hooks/useAdminCourses';
 import type { CoursesSummary } from '../../../../types';
+import { Link } from 'react-router-dom';
 
 type FilterStatus = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'PUBLISHED' | 'DRAFT';
 
@@ -161,7 +162,7 @@ export function AdminCourseCatalog(): JSX.Element {
                                                 )}
                                             </div>
                                             <div className="ml-4 cursor-pointer ">
-                                                <div className="text-sm font-medium text-gray-900 hover:text-blue-600">{course.title}</div>
+                                                <Link to={`/dashboard/admin/courses/${course.id}`} className="text-sm font-medium text-gray-900 hover:text-blue-600">{course.title}</Link>
                                                 <div className="text-sm text-gray-500 hover:text-blue-600">{course.category_name}</div>
                                             </div>
                                         </div>
