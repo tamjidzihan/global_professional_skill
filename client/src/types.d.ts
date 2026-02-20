@@ -308,12 +308,14 @@ export interface EnrollmentStatus {
 
 export interface Enrollment {
     id: string;
-    student: string; // User ID of the student
-    course: CoursesSummary; // Course ID, now an object
-    enrollment_date: string;
-    completed: boolean;
-    completion_percentage: number;
-    progress_percentage?: number; // Add this property
+    course: CoursesSummary;
+    student_name: string;
+    student: string;
+    progress_percentage?: string;
+    enrolled_at: string;
+    last_accessed: string;
+    completed_at: boolean;
+    completed_lessons: number;
 }
 
 export interface PaginatedResponse<T> {

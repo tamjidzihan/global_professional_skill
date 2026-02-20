@@ -32,6 +32,7 @@ import { CourseManagementPage } from "./main/pages/dashboard/admin/CourseManagem
 import { UserManagementPage } from "./main/pages/dashboard/admin/UserManagementPage";
 import AdminCourseDetailPage from "./main/pages/dashboard/admin/AdminCourseDetailPage";
 import CheckoutPage from "./main/pages/CheckoutPage";
+import MyEnrollmentsPage from "./main/pages/dashboard/student/MyEnrollmentsPage";
 
 
 export const router = createBrowserRouter([
@@ -94,12 +95,25 @@ export const router = createBrowserRouter([
                     },
                     // Student dashboard routes
                     {
-                        path: 'student/*',
-                        element: (
-                            <ProtectedRoute allowedRoles={['STUDENT']}>
-                                <StudentDashboard />
-                            </ProtectedRoute>
-                        )
+                        path: 'student',
+                        children: [
+                            {
+                                index: true,
+                                element: (
+                                    <ProtectedRoute allowedRoles={['STUDENT']}>
+                                        <StudentDashboard />
+                                    </ProtectedRoute>
+                                )
+                            },
+                            {
+                                path: 'my-courses',
+                                element: (
+                                    <ProtectedRoute allowedRoles={['STUDENT']}>
+                                        <MyEnrollmentsPage />
+                                    </ProtectedRoute>
+                                )
+                            }
+                        ]
                     },
                     // Instructor dashboard routes
                     {

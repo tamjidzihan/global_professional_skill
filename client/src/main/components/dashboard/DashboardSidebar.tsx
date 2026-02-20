@@ -78,7 +78,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
         },
         {
             name: 'My Enrollments',
-            path: '/dashboard/student/enrollments',
+            path: '/dashboard/student/my-courses',
             icon: BookOpen,
             gradient: 'from-purple-500 to-pink-500',
         },

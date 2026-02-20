@@ -21,6 +21,7 @@ import type {
     Payment,
     PaymentCreateData,
     Enrollment,
+    PaginatedResponse,
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
@@ -429,7 +430,7 @@ export const updateMyProfile = (data: Partial<User> | FormData): Promise<AxiosRe
 export const enrollInCourse = (courseId: string): Promise<AxiosResponse<ApiResponse<Enrollment>>> =>
     api.post<ApiResponse<Enrollment>>(endpoints.enrollments.enroll, { course: courseId });
 
-export const getEnrollments = <T = ApiResponse<Enrollment[]>>(
+export const getEnrollments = <T = PaginatedResponse<Enrollment[]>>(
     params?: Record<string, any>,
     pageUrl?: string | null,
 ): Promise<AxiosResponse<T>> => {

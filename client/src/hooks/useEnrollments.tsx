@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import { api, endpoints, enrollInCourse } from '../lib/api'
+import { enrollInCourse, getEnrollments } from '../lib/api'
 import type { Enrollment } from '../types'
 import { isAxiosError } from 'axios'
 import { toast } from 'react-hot-toast'
@@ -12,8 +12,8 @@ export function useEnrollments() {
     const getMyEnrollments = useCallback(async () => {
         setLoading(true)
         try {
-            const response = await api.get(endpoints.enrollments.list)
-            setEnrollments(response.data.data)
+            const response = await getEnrollments()
+            setEnrollments(response.data.results)
         } catch (err: unknown) {
             if (isAxiosError(err)) {
                 setError(err.response?.data?.message || 'Failed to fetch enrollments')

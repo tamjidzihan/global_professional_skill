@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { StatsCard } from '../../components/dashboard/StatsCard'
-import { BookOpen, CheckCircle, Clock, Award, Briefcase, Sparkles, AlertCircle } from 'lucide-react'
+import { BookOpen, CheckCircle, Clock, Award, Briefcase, Sparkles, AlertCircle, PlayCircle } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuthContext } from '../../../context/AuthContext'
 import { useEnrollments } from '../../../hooks/useEnrollments'
@@ -69,10 +69,11 @@ export function StudentDashboard() {
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-lg font-bold text-gray-900">Recent Courses</h2>
                         <Link
-                            to="/courses"
-                            className="text-sm text-[#0066CC] hover:underline"
+                            to="/dashboard/student/my-courses"
+                            className="text-sm text-[#0066CC] hover:underline flex items-center gap-1 font-medium"
                         >
-                            Browse All Courses
+                            View All My Courses
+                            <PlayCircle className="w-4 h-4" />
                         </Link>
                     </div>
 
