@@ -323,6 +323,30 @@ export interface PaginatedResponse<T> {
     results: T;
 }
 
+export interface Payment {
+    id: string;
+    user: string;
+    user_email: string;
+    course: string;
+    course_title: string;
+    amount: string;
+    currency: string;
+    status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
+    transaction_id?: string;
+    payment_method: string;
+    created_at: string;
+    completed_at?: string;
+    metadata: any;
+}
+
+export interface PaymentCreateData {
+    course: string;
+    amount: string | number;
+    currency: string;
+    payment_method: string;
+    metadata?: any;
+}
+
 export interface ApiResponse<T> {
     success: boolean;
     data: T;

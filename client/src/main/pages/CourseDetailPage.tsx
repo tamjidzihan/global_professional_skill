@@ -15,6 +15,7 @@ import {
     BookOpen,
     Award,
 } from 'lucide-react'
+import { toast } from 'react-hot-toast'
 import { useAuth } from '../../hooks/useAuth'
 import { useCourses } from '../../hooks/useCourses'
 import Breadcrumb from '../components/Breadcrumb'
@@ -80,24 +81,39 @@ export function CourseDetailPage() {
             return
         }
 
+        if (user.role !== 'STUDENT') {
+            alert('Only students can enroll in courses.')
+            return
+        }
+
         if (!course?.is_admission_open) {
-            alert('Admission is currently closed for this course.')
+            toast.error('Admission is currently closed for this course.')
             return
         }
 
         if (course?.is_full) {
-            alert('Sorry, this course is full. No seats available.')
+            toast.error('Sorry, this course is full. No seats available.')
             return
         }
 
+        // If it's a paid course, redirect to checkout
+        if (!course.is_free) {
+            navigate(`/checkout/${course.id}`)
+            return
+        }
+
+        // For free courses, proceed with direct enrollment
         setEnrollLoading(true)
         try {
-            // TODO: Implement enrollment API call
-            // await enrollInCourse(course.id)
-            alert('Successfully enrolled in the course!')
-        } catch (error) {
+            const { enrollInCourse } = await import('../../lib/api')
+            const response = await enrollInCourse(course.id)
+            if (response.data.success) {
+                toast.success('Successfully enrolled in the course!')
+                fetchCourseDetail(course.id) // Refresh course data to show 'Enrolled' status
+            }
+        } catch (error: any) {
             console.error('Enrollment failed:', error)
-            alert('Failed to enroll. Please try again.')
+            toast.error(error.response?.data?.error?.message || 'Failed to enroll. Please try again.')
         } finally {
             setEnrollLoading(false)
         }
@@ -107,9 +123,10 @@ export function CourseDetailPage() {
         if (!id) return
         try {
             await submitForReview(id)
-            alert('Course submitted for review successfully!')
+            toast.success('Course submitted for review successfully!')
         } catch (error) {
             console.error('Failed to submit for review:', error)
+            toast.error('Failed to submit for review. Please try again.')
         }
     }
 
@@ -121,10 +138,10 @@ export function CourseDetailPage() {
     //             review_notes: adminReviewNotes,
     //         })
     //         setShowAdminReviewModal(false)
-    //         alert(`Course ${adminReviewStatus.toLowerCase()} successfully!`)
+    //         toast.success(`Course ${adminReviewStatus.toLowerCase()} successfully!`)
     //     } catch (error) {
     //         console.error('Failed to review course:', error)
-    //         alert('Failed to review course. Please try again.')
+    //         toast.error('Failed to review course. Please try again.')
     //     }
     // }
 
@@ -139,10 +156,10 @@ export function CourseDetailPage() {
             setShowReviewModal(false)
             setReviewRating(5)
             setReviewText('')
-            alert('Review submitted successfully!')
+            toast.success('Review submitted successfully!')
         } catch (error: any) {
             console.error('Failed to submit review:', error)
-            alert(error.message || 'Failed to submit review. Please try again.')
+            toast.error(error.message || 'Failed to submit review. Please try again.')
         }
     }
 

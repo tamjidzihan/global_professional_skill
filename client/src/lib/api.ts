@@ -18,6 +18,9 @@ import type {
     SectionCreateData,
     LessonCreateUpdateData,
     // CourseCreateUpdateData,
+    Payment,
+    PaymentCreateData,
+    Enrollment,
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
@@ -207,7 +210,30 @@ export const endpoints = {
         instructor: '/analytics/instructor/',
         admin: '/analytics/admin/',
     },
+    payments: {
+        list: '/payments/payments/',
+        create: '/payments/payments/',
+        detail: (id: string) => `/payments/payments/${id}/`,
+    },
 };
+
+// Payment API Calls
+export const getPayments = <T = ApiResponse<Payment[]>>(
+    params?: Record<string, any>,
+    pageUrl?: string | null,
+): Promise<AxiosResponse<T>> => {
+    if (pageUrl) {
+        return api.get<T>(pageUrl);
+    }
+    return api.get<T>(endpoints.payments.list, { params });
+};
+
+export const createPaymentOrder = (data: PaymentCreateData): Promise<AxiosResponse<ApiResponse<Payment>>> =>
+    api.post<ApiResponse<Payment>>(endpoints.payments.create, data);
+
+export const getPaymentDetail = (id: string): Promise<AxiosResponse<ApiResponse<Payment>>> =>
+    api.get<ApiResponse<Payment>>(endpoints.payments.detail(id));
+
 
 // Instructor Request API Calls
 export const createInstructorRequest = (data: CreateInstructorRequest) =>
@@ -397,3 +423,18 @@ export const getMyProfile = (): Promise<AxiosResponse<ApiResponse<User>>> =>
 
 export const updateMyProfile = (data: Partial<User> | FormData): Promise<AxiosResponse<ApiResponse<User>>> =>
     api.put<ApiResponse<User>>(endpoints.profile.update, data);
+
+
+// Enrollment API Calls
+export const enrollInCourse = (courseId: string): Promise<AxiosResponse<ApiResponse<Enrollment>>> =>
+    api.post<ApiResponse<Enrollment>>(endpoints.enrollments.enroll, { course: courseId });
+
+export const getEnrollments = <T = ApiResponse<Enrollment[]>>(
+    params?: Record<string, any>,
+    pageUrl?: string | null,
+): Promise<AxiosResponse<T>> => {
+    if (pageUrl) {
+        return api.get<T>(pageUrl);
+    }
+    return api.get<T>(endpoints.enrollments.list, { params });
+};

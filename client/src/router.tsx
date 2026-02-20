@@ -31,6 +31,7 @@ import DashboardIndex from "./DashboardIndex";
 import { CourseManagementPage } from "./main/pages/dashboard/admin/CourseManagementPage";
 import { UserManagementPage } from "./main/pages/dashboard/admin/UserManagementPage";
 import AdminCourseDetailPage from "./main/pages/dashboard/admin/AdminCourseDetailPage";
+import CheckoutPage from "./main/pages/CheckoutPage";
 
 
 export const router = createBrowserRouter([
@@ -42,6 +43,7 @@ export const router = createBrowserRouter([
             { index: true, element: <HomePage /> },
             { path: '/courses', element: <CoursesPage /> },
             { path: '/courses/:id', element: <CourseDetailPage /> },
+            { path: '/checkout/:id', element: <ProtectedRoute allowedRoles={['STUDENT']}><CheckoutPage /></ProtectedRoute> },
             { path: '/about', element: <AboutPage /> },
             { path: '/notifications', element: <NotificationsPage /> },
             { path: '/profile', element: <ProfilePage /> },
