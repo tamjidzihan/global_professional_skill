@@ -2,9 +2,11 @@
 Signals for courses app.
 """
 
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 import logging
+import os
+
+from django.db.models.signals import post_delete, post_save
+from django.dispatch import receiver
 
 logger = logging.getLogger(__name__)
 
@@ -19,3 +21,13 @@ def course_post_save(sender, instance, created, **kwargs):
 
     if instance.status == "PUBLISHED" and not created:
         logger.info(f"Course published: {instance.title}")
+
+
+@receiver(post_delete, sender="courses.Course")
+def delete_course_thumbnail(sender, instance, **kwargs):
+    """
+    Delete the thumbnail file from storage when the Course is deleted.
+    """
+    if instance.thumbnail:
+        if os.path.isfile(instance.thumbnail.path):
+            os.remove(instance.thumbnail.path)
