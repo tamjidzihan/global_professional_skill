@@ -1,7 +1,8 @@
 import { useState, useCallback } from 'react'
-import { api, endpoints } from '../lib/api'
+import { api, endpoints, enrollInCourse } from '../lib/api'
 import type { Enrollment } from '../types'
 import { isAxiosError } from 'axios'
+import { toast } from 'react-hot-toast'
 
 export function useEnrollments() {
     const [enrollments, setEnrollments] = useState<Enrollment[]>([])
@@ -26,10 +27,32 @@ export function useEnrollments() {
         }
     }, [])
 
+    const enroll = async (courseId: string) => {
+        setLoading(true)
+        try {
+            const response = await enrollInCourse(courseId)
+            if (response.data.success) {
+                toast.success('Successfully enrolled in the course!')
+                return true
+            }
+            return false
+        } catch (err: unknown) {
+            let message = 'Failed to enroll'
+            if (isAxiosError(err)) {
+                message = err.response?.data?.error?.message || message
+            }
+            toast.error(message)
+            return false
+        } finally {
+            setLoading(false)
+        }
+    }
+
     return {
         enrollments,
         loading,
         error,
         getMyEnrollments,
+        enroll,
     }
 }

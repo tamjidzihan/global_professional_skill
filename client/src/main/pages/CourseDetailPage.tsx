@@ -18,6 +18,7 @@ import {
 import { toast } from 'react-hot-toast'
 import { useAuth } from '../../hooks/useAuth'
 import { useCourses } from '../../hooks/useCourses'
+import { useEnrollments } from '../../hooks/useEnrollments'
 import Breadcrumb from '../components/Breadcrumb'
 import CourseDetailSkeleton from '../components/ui/loadingSkeleton/CourseDetailSkeleton'
 
@@ -37,6 +38,7 @@ export function CourseDetailPage() {
         reviews,
         clearStates,
     } = useCourses()
+    const { enroll } = useEnrollments()
 
     const [activeTab, setActiveTab] = useState('description')
     const [expandedModules, setExpandedModules] = useState<string[]>([])
@@ -105,15 +107,13 @@ export function CourseDetailPage() {
         // For free courses, proceed with direct enrollment
         setEnrollLoading(true)
         try {
-            const { enrollInCourse } = await import('../../lib/api')
-            const response = await enrollInCourse(course.id)
-            if (response.data.success) {
-                toast.success('Successfully enrolled in the course!')
+            const success = await enroll(course.id)
+            if (success) {
                 fetchCourseDetail(course.id) // Refresh course data to show 'Enrolled' status
             }
         } catch (error: any) {
             console.error('Enrollment failed:', error)
-            toast.error(error.response?.data?.error?.message || 'Failed to enroll. Please try again.')
+            toast.error('Failed to enroll. Please try again.')
         } finally {
             setEnrollLoading(false)
         }
