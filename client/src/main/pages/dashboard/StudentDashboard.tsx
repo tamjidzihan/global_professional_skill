@@ -19,7 +19,7 @@ export function StudentDashboard() {
     // Safely calculate stats
     const totalEnrolled = enrollments?.length || 0
     const completed = enrollments?.filter(
-        (e) => e?.progress_percentage === 100,
+        (e) => Number(e?.progress_percentage) === 100,
     ).length || 0
     const inProgress = totalEnrolled - completed
 
@@ -100,7 +100,7 @@ export function StudentDashboard() {
                                         </h3>
                                         <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                                             <span>Progress</span>
-                                            <span>{Math.round(enrollment?.progress_percentage || 0)}%</span>
+                                            <span>{Math.round(Number(enrollment?.progress_percentage) || 0)}%</span>
                                         </div>
                                         <div className="w-full bg-gray-100 rounded-full h-2 mb-4">
                                             <div
