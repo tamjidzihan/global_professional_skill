@@ -4,6 +4,8 @@ import { Menu, X, ChevronDown, User, UserPlus, Phone, Mail, LogOut } from 'lucid
 import { useAuth } from '../../hooks/useAuth'
 import { useAuthContext } from '../../context/AuthContext'
 import { useCategories } from '../../hooks/useCategories'
+import gpilogo_head from '../../assets/gpilogo_head.png'
+import gpilogo_tail from '../../assets/gpilogo_tail.png'
 
 const Header = () => {
     const location = useLocation()
@@ -73,11 +75,11 @@ const Header = () => {
                     <div className="hidden lg:flex items-center space-x-6 text-gray-600">
                         <div className="flex items-center">
                             <Phone className="w-4 h-4 text-[#76C043] mr-2" />
-                            <span>+88 09638-016499</span>
+                            <span>+88 01978100105</span>
                         </div>
                         <div className="flex items-center">
                             <Mail className="w-4 h-4 text-[#76C043] mr-2" />
-                            <span>info@gpis.org.bd</span>
+                            <span>info@gpibd.com</span>
                         </div>
                     </div>
 
@@ -127,12 +129,14 @@ const Header = () => {
             <div>
                 <div className="bg-[#FCF8F1]">
                     <div className="container mx-auto px-4">
-                        <div className="flex items-center justify-between h-16">
-                            {/* Logo */}
+                        <div className="flex items-center justify-between h-18">
+                            {/* Logo - Updated with image */}
                             <Link to="/" className="flex items-center space-x-3">
-                                <div className="px-4 py-2 rounded-xl bg-linear-to-br from-blue-600 to-indigo-600 text-white font-bold text-lg shadow">
-                                    GPIS-BD
-                                </div>
+                                <img
+                                    src={gpilogo_head}
+                                    alt="GPIS-BD Logo"
+                                    className="h-16 w-auto" // Adjust height as needed
+                                />
                             </Link>
 
                             {/* Desktop Navigation */}
@@ -180,16 +184,25 @@ const Header = () => {
                             </nav>
 
                             {/* Right Side Actions */}
-
                             <div className="hidden lg:flex items-center space-x-3">
-                                {isAuthenticated && user?.role === 'STUDENT' && (
-                                    <Link
-                                        to="/apply-as-instructor"
-                                        className="ml-2 px-5 py-2 rounded-xl bg-linear-to-r from-[#76C043] to-green-500 text-white font-semibold shadow hover:shadow-lg transition-all duration-300 hover:scale-105"
-                                    >
-                                        Join as Instructor
-                                    </Link>
-                                )}
+                                {isAuthenticated && user?.role === 'STUDENT'
+                                    ? (
+                                        <Link
+                                            to="/apply-as-instructor"
+                                            className="ml-2 px-5 py-2 rounded-xl bg-linear-to-r from-[#76C043] to-green-500 text-white font-semibold shadow hover:shadow-lg transition-all duration-300 hover:scale-105"
+                                        >
+                                            Join as Instructor
+                                        </Link>
+                                    ) : (
+                                        <Link to="/" className="flex items-center space-x-3">
+                                            <img
+                                                src={gpilogo_tail}
+                                                alt="GPIS-BD Logo"
+                                                className="h-16 w-auto" // Adjust height as needed
+                                            />
+                                        </Link>
+                                    )
+                                }
                             </div>
 
                             {/* Mobile Menu Button (UNCHANGED) */}
