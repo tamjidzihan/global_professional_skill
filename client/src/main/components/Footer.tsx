@@ -185,8 +185,8 @@ export function Footer() {
                                     <div>
                                         <p className="text-sm font-semibold text-gray-900 mb-1">Head Office</p>
                                         <p className="text-gray-600 text-sm leading-relaxed">
-                                            5 no Kolotan School Road, Badda,<br />
-                                            Dhaka-1212, Bangladesh
+                                            House-5, Kolotan School Road, Notunbazar <br />
+                                            Vatara, Dhaka-1212, Bangladesh
                                         </p>
                                     </div>
                                 </div>
