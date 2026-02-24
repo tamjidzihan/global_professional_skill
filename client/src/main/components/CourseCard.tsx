@@ -38,18 +38,17 @@ export function CourseCard({
     const config = levelConfig[level]
 
     return (
-        <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 overflow-hidden flex flex-col h-full hover:-translate-y-2 hover:border-blue-400">
-            {/* Thumbnail Container */}
-            <div className="relative h-48 overflow-hidden bg-linear-to-br from-blue-900 via-blue-800 to-indigo-900">
+        <div className="group bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 overflow-hidden flex flex-col h-full hover:-translate-y-1.5 hover:border-blue-400/50">
+            {/* Thumbnail Container - Adjusted height for mobile */}
+            <div className="relative h-44 sm:h-48 overflow-hidden bg-linear-to-br from-blue-900 via-blue-800 to-indigo-900 shrink-0">
                 {thumbnail ? (
                     <img
                         src={thumbnail}
                         alt={title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center p-6 relative">
-                        {/* Pattern Overlay */}
                         <div className="absolute inset-0 opacity-10">
                             <div className="absolute inset-0"
                                 style={{
@@ -60,112 +59,105 @@ export function CourseCard({
                         </div>
 
                         <div className="text-center text-white relative z-10">
-                            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                                <BookOpen className="w-8 h-8" />
+                            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-2 sm:mb-3 group-hover:scale-110 transition-transform">
+                                <BookOpen className="w-6 h-6 sm:w-8 sm:h-8" />
                             </div>
-                            <span className="font-bold text-lg">GPIS-BD Course</span>
-                            <p className="text-sm opacity-80 mt-1">{category}</p>
+                            <span className="font-bold text-base sm:text-lg">GPIS-BD Course</span>
+                            <p className="text-[10px] sm:text-sm opacity-80 mt-1 uppercase tracking-wider">{category}</p>
                         </div>
                     </div>
                 )}
 
-                {/* Top Badge */}
+                {/* Badges - Scaled for mobile */}
                 {badge && (
-                    <div className="absolute top-3 left-3">
-                        <div className="flex items-center gap-1.5 bg-linear-to-r from-emerald-500 to-green-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg backdrop-blur-sm">
-                            <Sparkles className="w-3 h-3" />
+                    <div className="absolute top-2 left-2 sm:top-3 sm:left-3">
+                        <div className="flex items-center gap-1 bg-linear-to-r from-emerald-500 to-green-500 text-white px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold shadow-lg">
+                            <Sparkles className="w-2.5 h-2.5" />
                             {badge}
                         </div>
                     </div>
                 )}
 
-                {/* Rating Badge - Top Right */}
-                <div className="absolute top-3 right-3">
-                    <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-full shadow-lg">
-                        <Star className="w-3.5 h-3.5 text-yellow-500 fill-current" />
-                        <span className="text-xs font-bold text-gray-900">{rating}</span>
+                <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
+                    <div className="flex items-center gap-1 bg-white/95 backdrop-blur-sm px-2 py-0.5 sm:py-1 rounded-full shadow-md">
+                        <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                        <span className="text-[10px] sm:text-xs font-black text-gray-900">{rating}</span>
                     </div>
                 </div>
 
-                {/* Level Indicator - Bottom Left */}
-                <div className="absolute bottom-3 left-3">
-                    <div className={`${config.color} text-white px-2 py-1 rounded-lg text-xs font-bold shadow-lg`}>
+                <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3">
+                    <div className={`${config.color} text-white px-2 py-0.5 sm:py-1 rounded-lg text-[10px] sm:text-xs font-black shadow-lg uppercase tracking-tight`}>
                         {level}
                     </div>
                 </div>
-
-                {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </div>
 
-            {/* Content */}
-            <div className="p-4 flex flex-col grow">
+            {/* Content Container */}
+            <div className="p-3 sm:p-4 flex flex-col grow">
                 {/* Category & Enrolled */}
                 <div className="flex items-center justify-between mb-2">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg border border-blue-200">
-                        <TrendingUp className="w-3 h-3" />
-                        {category}
+                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                        <TrendingUp className="w-2.5 h-2.5 shrink-0" />
+                        <span className="truncate max-w-20 sm:max-w-none">{category}</span>
                     </span>
-                    <div className="flex items-center text-xs font-semibold text-gray-600 bg-gray-50 px-2 py-1 rounded-lg">
-                        <Users className="w-3.5 h-3.5 mr-1.5 text-gray-500" />
+                    <div className="flex items-center text-[10px] sm:text-xs font-semibold text-gray-500">
+                        <Users className="w-3 h-3 mr-1" />
                         {enrolled.toLocaleString()}
                     </div>
                 </div>
 
-                {/* Title */}
+                {/* Title - Smaller text on mobile */}
                 <Link
                     to={`/courses/${id}`}
-                    className="font-bold text-gray-900 text-base mb-3 line-clamp-2 min-h-12 leading-tight group-hover:text-blue-600 transition-colors"
+                    className="font-bold text-gray-900 text-sm sm:text-base mb-3 line-clamp-2 min-h-10 sm:min-h-12 leading-snug group-hover:text-blue-600 transition-colors"
                 >
                     {title}
                 </Link>
 
-                {/* Instructor, Duration & Rating - Redesigned */}
-                <div className="flex items-center gap-2 mb-2 pb-2">
-                    <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                        <Award className="w-4 h-4 text-white" />
-                    </div>
-                    <div className="flex-1">
-                        <p className="text-xs text-gray-500">Instructor</p>
-                        <p className="text-sm font-semibold text-gray-900">{instructor}</p>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-1 bg-purple-50 px-2.5 py-1.5 rounded-lg border border-purple-200">
-                            <Clock className="w-3.5 h-3.5 text-purple-600" />
-                            <span className="text-xs font-semibold text-purple-600">Duration: {duration}h</span>
+                {/* Metadata Grid - Redesigned for mobile responsiveness */}
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                    <div className="col-span-2 flex items-center gap-2 mb-1">
+                        <div className="w-7 h-7 bg-linear-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center shrink-0">
+                            <Award className="w-3.5 h-3.5 text-white" />
                         </div>
-                        <div className="flex items-center gap-0.5 bg-yellow-50 px-2.5 py-1.5 rounded-lg border border-yellow-200">
-                            {[...Array(5)].map((_, i) => (
-                                <Star
-                                    key={i}
-                                    className={`w-2.5 h-2.5 ${i < Math.floor(parseFloat(rating)) ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-                                />
-                            ))}
-                            <span className="text-xs font-bold text-gray-700 ml-0.5">{rating}</span>
+                        <div className="min-w-0">
+                            <p className="text-[10px] text-gray-400 leading-none mb-0.5">Instructor</p>
+                            <p className="text-xs font-semibold text-gray-800 truncate">{instructor}</p>
                         </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 bg-purple-50 px-2 py-1.5 rounded-lg border border-purple-100">
+                        <Clock className="w-3 h-3 text-purple-600 shrink-0" />
+                        <span className="text-[10px] sm:text-xs font-semibold text-purple-600 truncate">{duration}h</span>
+                    </div>
+
+                    <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1.5 rounded-lg border border-yellow-100">
+                        <div className="flex shrink-0">
+                            <Star className="w-2.5 h-2.5 text-yellow-400 fill-current" />
+                        </div>
+                        <span className="text-[10px] sm:text-xs font-semibold text-gray-700">{rating} Rating</span>
                     </div>
                 </div>
 
-                {/* Spacer */}
                 <div className="grow"></div>
 
-                {/* Price & CTA */}
-                <div className="flex items-center justify-between gap-3 pt-1 border-t-2 border-gray-100">
-                    <div>
-                        <p className="text-xs text-gray-400">Course Fee</p>
-                        <span className="text-2xl font-black bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                {/* Footer Section - Optimized CTA */}
+                <div className="flex items-center justify-between gap-2 pt-3 border-t border-gray-100">
+                    <div className="shrink-0">
+                        <p className="text-[10px] text-gray-400 font-medium">Course Fee</p>
+                        <span className="text-lg sm:text-xl font-black bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                             ৳{price}
                         </span>
                     </div>
 
                     <Link
                         to={`/courses/${id}`}
-                        className="group/btn relative overflow-hidden bg-linear-to-r from-[#0066CC] to-blue-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl hover:shadow-xl transition-all duration-300 flex items-center gap-1.5 hover:scale-105"
+                        className="group/btn relative overflow-hidden bg-linear-to-r from-[#0066CC] to-blue-600 text-white font-semibold text-[10px] sm:text-xs px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl hover:shadow-lg transition-all active:scale-95 flex items-center gap-1 shrink-0"
                     >
-                        <span className="relative z-10">View Course</span>
-                        <ChevronRight className="w-3.5 h-3.5 relative z-10 group-hover/btn:translate-x-0.5 transition-transform" />
+                        <span className="relative z-10">Enroll</span>
+                        <ChevronRight className="w-3 h-3 relative z-10 group-hover/btn:translate-x-0.5 transition-transform" />
                         <div className="absolute inset-0 bg-linear-to-r from-blue-700 to-blue-800 translate-x-full group-hover/btn:translate-x-0 transition-transform duration-300"></div>
-                        <Zap className="absolute -right-1 -bottom-1 w-10 h-10 text-white/10 rotate-12" />
+                        <Zap className="absolute -right-1 -bottom-1 w-8 h-8 text-white/10 rotate-12" />
                     </Link>
                 </div>
             </div>

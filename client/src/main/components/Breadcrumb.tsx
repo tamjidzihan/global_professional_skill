@@ -31,14 +31,12 @@ const Breadcrumb = ({ name, subtitle, icon: Icon }: BreadcrumbProps) => {
     const getBreadcrumbItems = (): BreadcrumbItem[] => {
         const path = location.pathname
         const parts = path.split('/').filter(Boolean)
-
         const items: BreadcrumbItem[] = [{ name: 'Home', path: '/', icon: Home }]
 
         let currentPath = ''
         for (let i = 0; i < parts.length; i++) {
             currentPath += '/' + parts[i]
             const isLast = i === parts.length - 1
-
             let formattedName = parts[i]
                 .split('-')
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -53,47 +51,57 @@ const Breadcrumb = ({ name, subtitle, icon: Icon }: BreadcrumbProps) => {
                 current: isLast
             })
         }
-
         return items
     }
 
     const breadcrumbItems = getBreadcrumbItems()
 
     return (
-        <nav className="flex bg-gray-50 border border-blue-200 py-3 px-5 rounded-lg" aria-label="Breadcrumb">
-            <div className="container mx-auto px-4" >
-                <ol className="inline-flex max-w-4xl items-center space-x-1 md:space-x-3">
+        <nav
+            className="w-full bg-gray-50 border-y border-blue-100 md:border md:rounded-lg py-2 md:py-3 px-3 md:px-5"
+            aria-label="Breadcrumb"
+        >
+            <div className="container mx-auto">
+                {/* overflow-x-auto allows scrolling if the path is extremely long on mobile */}
+                <ol className="flex items-center whitespace-nowrap overflow-x-auto no-scrollbar py-1">
                     {breadcrumbItems.map((item, index) => {
                         const isLast = index === breadcrumbItems.length - 1
+                        const isFirst = index === 0
                         const ItemIcon = item.icon
+
                         return (
-                            <li key={item.path} className="inline-flex items-center" aria-current={isLast ? 'page' : undefined}>
+                            <li key={item.path} className="flex items-center shrink-0" aria-current={isLast ? 'page' : undefined}>
                                 {index > 0 && (
-                                    <div className="flex items-center">
-                                        <ChevronRight className="w-5 h-5 text-blue-400" />
-                                    </div>
+                                    <ChevronRight className="w-4 h-4 mx-1 md:mx-2 text-blue-300 shrink-0" />
                                 )}
-                                <div className={`flex items-center ${index > 0 ? 'ml-1 md:ml-2' : ''}`}>
-                                    {index === 0 && !isLast ? (
-                                        <Link to={item.path} className="text-[#0066CC] hover:text-[#004c99] text-md font-medium inline-flex items-center">
-                                            <ItemIcon className="w-5 h-5 mr-2.5" />
-                                            {item.name}
-                                        </Link>
-                                    ) : isLast ? (
-                                        <>
-                                            <span className="text-gray-600 hover:text-gray-800 ml-1 md:ml-2 text-sm font-medium inline-flex items-center">
-                                                <ItemIcon className="w-5 h-5 mr-1.5" />
+
+                                <div className="flex items-center">
+                                    {!isLast ? (
+                                        <Link
+                                            to={item.path}
+                                            className="flex items-center text-[#0066CC] hover:text-[#004c99] transition-colors"
+                                        >
+                                            <ItemIcon className="w-4 h-4 md:w-5 md:h-5" />
+                                            {/* Hide text on mobile for middle items, show on Home and Last */}
+                                            <span className={`${isFirst ? 'ml-2' : 'hidden md:block md:ml-2'} text-sm md:text-base font-medium`}>
                                                 {item.name}
                                             </span>
-                                            {subtitle && (
-                                                <span className="text-gray-600 hover:text-gray-800 text-sm ml-2">| {subtitle}</span>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <Link to={item.path} className="text-[#0066CC] hover:text-[#004c99] ml-1 md:ml-2 text-md font-medium inline-flex items-center">
-                                            <ItemIcon className="w-4 h-4 mr-1.5" />
-                                            {item.name}
                                         </Link>
+                                    ) : (
+                                        <div className="flex items-center text-gray-600 min-w-0">
+                                            <ItemIcon className="w-4 h-4 md:w-5 md:h-5 shrink-0" />
+                                            <div className="ml-2 flex flex-col md:flex-row md:items-center truncate">
+                                                <span className="text-sm md:text-base font-semibold truncate max-w-30 md:max-w-full">
+                                                    {item.name}
+                                                </span>
+                                                {subtitle && (
+                                                    <span className="hidden sm:inline-block text-gray-400 text-sm ml-2">
+                                                        <span className="hidden md:inline mr-2">|</span>
+                                                        {subtitle}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
                                     )}
                                 </div>
                             </li>
