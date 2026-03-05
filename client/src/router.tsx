@@ -19,7 +19,6 @@ import InstructorApplicationPage from "./main/pages/InstructorApplicationPage";
 import { LoginPage } from "./main/pages/LoginPage";
 import NotificationsPage from "./main/pages/NotificationsPage";
 import PrivacyPage from "./main/pages/PrivacyPage";
-import ProfilePage from "./main/pages/ProfilePage";
 import { RegisterPage } from "./main/pages/RegisterPage";
 import TermsPage from "./main/pages/TermsPage";
 import VerifyEmailPromptPage from "./main/pages/VerifyEmailPromptPage";
@@ -47,7 +46,6 @@ export const router = createBrowserRouter([
             { path: '/checkout/:id', element: <ProtectedRoute allowedRoles={['STUDENT']}><CheckoutPage /></ProtectedRoute> },
             { path: '/about', element: <AboutPage /> },
             { path: '/notifications', element: <NotificationsPage /> },
-            { path: '/profile', element: <ProfilePage /> },
             { path: '/forgot-password', element: <ForgotPasswordPage /> },
             { path: '/terms', element: <TermsPage /> },
             { path: '/privacy', element: <PrivacyPage /> },
