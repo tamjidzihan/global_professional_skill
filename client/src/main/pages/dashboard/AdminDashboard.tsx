@@ -6,9 +6,6 @@ import { useAdminCourses } from '../../../hooks/useAdminCourses'
 import CalendarCard from '../../components/dashboard/CalendarCard'
 import LoadingSpinner from '../../components/ui/LoadingSpinner'
 import { getInstructorRequestDetail, reviewInstructorRequest, getCourseDetail } from '../../../lib/api'
-
-// Import refactored components
-
 import type { InstructorRequest } from '../../../types'
 import { StatsSection } from '../../components/dashboard/admin/StatsSection'
 import { PendingCoursesCard } from '../../components/dashboard/admin/PendingCoursesCard'
@@ -18,6 +15,7 @@ import { getStatusBadge, getStatusColor } from '../../../utils/statusHelpers'
 import { InstructorRequestModal } from '../../components/dashboard/admin/InstructorRequestModal'
 import { CourseReviewModal } from '../../components/dashboard/admin/CourseReviewModal'
 import { CourseStatusPanel } from '../../components/dashboard/admin/CourseStatusPanel'
+import PageTitle from '../../components/PageTitle'
 
 type FilterStatus = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'
 
@@ -229,6 +227,7 @@ export function AdminDashboard(): JSX.Element {
 
     return (
         <div className="p-4 md:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <PageTitle title="Admin Dashboard" />
             <div className="lg:col-span-3 space-y-6">
                 <div>
                     <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Admin Dashboard</h1>

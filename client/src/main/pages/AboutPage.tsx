@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Breadcrumb from '../components/Breadcrumb'
+import PageTitle from '../components/PageTitle'
 
 const AboutPage = () => {
     const features = [
@@ -65,6 +66,7 @@ const AboutPage = () => {
 
     return (
         <div className="bg-[#FCF8F1]">
+            <PageTitle title="About Us | Global Professional Institute " />
             <Breadcrumb name="About Us" />
 
             {/* Hero Section */}

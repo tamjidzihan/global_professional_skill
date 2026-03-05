@@ -35,6 +35,7 @@ import {
     Timer,
     Award,
 } from 'lucide-react';
+import PageTitle from '../../../components/PageTitle';
 
 const AdminCourseDetailPage = () => {
     const { id } = useParams<{ id: string }>();
@@ -159,6 +160,7 @@ const AdminCourseDetailPage = () => {
     if (error || !selectedCourse) {
         return (
             <div className="min-h-screen bg-gray-50 p-6">
+                <PageTitle title={`Course Details | ${selectedCourse?.title || 'Unknown Course'}`} />
                 <div className="max-w-7xl mx-auto">
                     <button
                         onClick={() => navigate('/dashboard/admin/courses')}
@@ -231,7 +233,7 @@ const AdminCourseDetailPage = () => {
 
                             {actionError && (
                                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                                    <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                                    <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                                     <p className="text-sm text-red-700">{actionError}</p>
                                 </div>
                             )}
@@ -754,7 +756,7 @@ const AdminCourseDetailPage = () => {
                                         className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
                                     />
                                 ) : (
-                                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-xl">
+                                    <div className="w-16 h-16 rounded-full bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold text-xl">
                                         {selectedCourse.instructor?.full_name?.charAt(0) || 'I'}
                                     </div>
                                 )}

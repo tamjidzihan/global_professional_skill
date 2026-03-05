@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import PageTitle from "../components/PageTitle"
 
 interface ErrorPageProps {
     message?: string
@@ -6,6 +7,9 @@ interface ErrorPageProps {
 const ErrorPage = ({ message }: ErrorPageProps) => {
     return (
         <div className="grid h-screen place-content-center bg-white px-4 ">
+
+            <PageTitle title="404  Uh-oh! Global Professional Institute " />
+
             <div className="text-center">
                 <h1 className="text-9xl font-black text-gray-200 ">404</h1>
 

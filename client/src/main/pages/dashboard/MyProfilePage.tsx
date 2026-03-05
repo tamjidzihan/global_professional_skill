@@ -25,6 +25,7 @@ import {
 import { useMyProfile } from '../../../hooks/useMyProfile'
 import { useAuth } from '../../../hooks/useAuth'
 import type { User } from '../../../types'
+import PageTitle from '../../components/PageTitle'
 
 export function MyProfilePage() {
     const navigate = useNavigate()
@@ -291,6 +292,7 @@ export function MyProfilePage() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" ref={formRef}>
+            <PageTitle title={`My Profile | ${displayData?.first_name} ${displayData?.last_name}`} />
             {/* Error Message */}
             {updateError && (
                 <div className="mb-6 flex items-center gap-3 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm animate-slideDown">

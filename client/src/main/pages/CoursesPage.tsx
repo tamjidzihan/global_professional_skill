@@ -10,6 +10,7 @@ import DesktopSidebar from '../components/courses/DesktopSidebar';
 import MobileFilterDrawer from '../components/courses/MobileFilterDrawer';
 import MobileFilterInfo from '../components/courses/MobileFilterInfo';
 import CourseGrid from '../components/courses/CourseGrid';
+import PageTitle from '../components/PageTitle';
 
 const CoursesPage = () => {
     const location = useLocation();
@@ -156,6 +157,7 @@ const CoursesPage = () => {
 
     return (
         <>
+            <PageTitle title={`Courses | ${activeCategoryName || 'Global Professional Institute'}`} />
             <Breadcrumb name="Courses" icon={Folder} />
 
             <SearchBar

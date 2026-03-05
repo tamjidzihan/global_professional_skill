@@ -21,6 +21,7 @@ import { useCourses } from '../../hooks/useCourses'
 import { useEnrollments } from '../../hooks/useEnrollments'
 import Breadcrumb from '../components/Breadcrumb'
 import CourseDetailSkeleton from '../components/ui/loadingSkeleton/CourseDetailSkeleton'
+import PageTitle from '../components/PageTitle'
 
 export function CourseDetailPage() {
     const { id } = useParams<{ id: string }>()
@@ -213,6 +214,7 @@ export function CourseDetailPage() {
     return (
         <>
             {/* Breadcrumb Navigation */}
+            <PageTitle title={course.title} />
             <Breadcrumb
                 name={course.title}
                 subtitle={breadcrumbSubtitle}

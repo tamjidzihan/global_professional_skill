@@ -4,6 +4,7 @@ import { User, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { AuthLayout } from '../components/AuthLayout'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import PageTitle from '../components/PageTitle'
 
 interface RegisterFormData {
     email: string;
@@ -81,6 +82,7 @@ export function RegisterPage() {
 
     return (
         <AuthLayout type="register">
+            <PageTitle title="Create Your Account" />
             {/* Desktop Header */}
             <div className="hidden lg:block mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign Up</h1>

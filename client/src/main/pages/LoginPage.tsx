@@ -5,6 +5,7 @@ import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
 import { AuthLayout } from '../components/AuthLayout'
 import { useAuth } from '../../hooks/useAuth'
 import { toast } from 'react-hot-toast' // Added toast
+import PageTitle from '../components/PageTitle'
 
 export function LoginPage() {
     const { login, loading, error } = useAuth()
@@ -35,6 +36,7 @@ export function LoginPage() {
 
     return (
         <AuthLayout type="login">
+            <PageTitle title="Login to Your Account" />
             {/* Desktop Header */}
             <div className="hidden lg:block mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign In</h1>

@@ -2,10 +2,12 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { MailCheck } from 'lucide-react';
 import { AuthLayout } from '../components/AuthLayout';
+import PageTitle from '../components/PageTitle';
 
 const VerifyEmailPromptPage: React.FC = () => {
     return (
         <AuthLayout type="info">
+            <PageTitle title="Verify Your Email" />
             <div className="flex flex-col items-center justify-center text-center px-4">
                 <MailCheck className="h-24 w-24 text-[#0066CC] mb-6" />
                 <h1 className="text-3xl font-bold text-gray-900 mb-4">Verify Your Email Address</h1>
