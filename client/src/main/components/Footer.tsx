@@ -1,7 +1,6 @@
 import {
     Facebook,
     Linkedin,
-    Twitter,
     Youtube,
     Instagram,
     MapPin,
@@ -18,6 +17,7 @@ import {
     Building2,
     Users,
 } from 'lucide-react'
+import { FaWhatsapp } from "react-icons/fa";
 import { Link } from 'react-router-dom'
 import { useEffect } from 'react'
 import gpiLogo from '../../assets/gpilogo_1.png' // Import your logo
@@ -53,11 +53,10 @@ export function Footer() {
     ]
 
     const socialLinks = [
-        { icon: Facebook, label: 'Facebook', color: 'hover:bg-blue-600', path: 'https://facebook.com' },
-        { icon: Linkedin, label: 'LinkedIn', color: 'hover:bg-blue-700', path: 'https://linkedin.com' },
-        { icon: Twitter, label: 'Twitter', color: 'hover:bg-sky-500', path: 'https://twitter.com' },
-        { icon: Youtube, label: 'YouTube', color: 'hover:bg-red-600', path: 'https://youtube.com' },
-        { icon: Instagram, label: 'Instagram', color: 'hover:bg-pink-600', path: 'https://instagram.com' },
+        { icon: Facebook, label: 'Facebook', color: 'hover:bg-blue-600', path: 'https://www.facebook.com/gpibd360' },
+        { icon: Linkedin, label: 'LinkedIn', color: 'hover:bg-blue-700', path: 'https://www.linkedin.com/in/global-professional-institute-2b80583b1' },
+        { icon: Youtube, label: 'YouTube', color: 'hover:bg-red-600', path: 'https://www.youtube.com/@GlobalProfessionalInstitute' },
+        { icon: Instagram, label: 'Instagram', color: 'hover:bg-pink-600', path: 'https://www.instagram.com/gpibd360' },
     ]
 
     return (
@@ -179,23 +178,27 @@ export function Footer() {
                             <div className="space-y-4">
                                 {/* Address - Updated */}
                                 <div className="flex items-start space-x-3 group">
-                                    <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-blue-600 transition-colors">
-                                        <MapPin className="w-5 h-5 text-blue-600 group-hover:text-white transition-colors" />
-                                    </div>
+                                    <a href='https://maps.app.goo.gl/b7jfULcxSAWiVtiA6' target='_blank'  >
+                                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-blue-600 transition-colors">
+                                            <MapPin className="w-5 h-5 text-blue-600 group-hover:text-white transition-colors" />
+                                        </div>
+                                    </a>
                                     <div>
                                         <p className="text-sm font-semibold text-gray-900 mb-1">Head Office</p>
-                                        <p className="text-gray-600 text-sm leading-relaxed">
+                                        <a href='https://maps.app.goo.gl/b7jfULcxSAWiVtiA6' target='_blank' className="text-gray-600 text-sm leading-relaxed">
                                             House-5, Kolotan School Road, Notunbazar <br />
                                             Vatara, Dhaka-1212, Bangladesh
-                                        </p>
+                                        </a>
                                     </div>
                                 </div>
 
                                 {/* Phone - Updated */}
                                 <div className="flex items-start space-x-3 group">
-                                    <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-green-600 transition-colors">
-                                        <Phone className="w-5 h-5 text-green-600 group-hover:text-white transition-colors" />
-                                    </div>
+                                    <a href="tel:+8801978100105">
+                                        <div className="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-cyan-600 transition-colors">
+                                            <Phone className="w-5 h-5 text-cyan-600 group-hover:text-white transition-colors" />
+                                        </div>
+                                    </a>
                                     <div>
                                         <p className="text-sm font-semibold text-gray-900 mb-1">Call Us</p>
                                         <a href="tel:+8801978100105" className="text-gray-700 hover:text-[#0066CC] font-medium text-sm transition-colors">
@@ -204,11 +207,28 @@ export function Footer() {
                                     </div>
                                 </div>
 
+                                {/* Whats app */}
+                                <div className="flex items-start space-x-3 group">
+                                    <a href="https://wa.me/8801978100105" target="_blank">
+                                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-green-600 transition-colors">
+                                            <FaWhatsapp className="w-6 h-6 text-green-600 group-hover:text-white transition-colors" />
+                                        </div>
+                                    </a>
+                                    <div>
+                                        <p className="text-sm font-semibold text-gray-900 mb-1">WhatsApp</p>
+                                        <a href="https://wa.me/8801978100105" target="_blank" className="text-gray-700 hover:text-[#0066CC] font-medium text-sm transition-colors">
+                                            +88 01978-100105
+                                        </a>
+                                    </div>
+                                </div>
+
                                 {/* Email - Updated */}
                                 <div className="flex items-start space-x-3 group">
-                                    <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-purple-600 transition-colors">
-                                        <Mail className="w-5 h-5 text-purple-600 group-hover:text-white transition-colors" />
-                                    </div>
+                                    <a href="mailto:info@gpibd.com">
+                                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-purple-600 transition-colors">
+                                            <Mail className="w-5 h-5 text-purple-600 group-hover:text-white transition-colors" />
+                                        </div>
+                                    </a>
                                     <div>
                                         <p className="text-sm font-semibold text-gray-900 mb-1">Email Us</p>
                                         <a href="mailto:info@gpibd.com" className="text-gray-700 hover:text-[#0066CC] text-sm transition-colors">
