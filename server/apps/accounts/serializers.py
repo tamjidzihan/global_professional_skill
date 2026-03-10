@@ -61,7 +61,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("email", "password", "password_confirm", "first_name", "last_name")
+        fields = ("email", "password", "password_confirm", "first_name", "last_name","phone_number")
 
     def validate(self, attrs):
         """Validate password confirmation."""
@@ -78,6 +78,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         user = User.objects.create_user(  # type: ignore
             email=validated_data["email"],
             password=validated_data["password"],
+            phone_number = validated_data.get("phone_number",""),
             first_name=validated_data.get("first_name", ""),
             last_name=validated_data.get("last_name", ""),
             role=UserRole.STUDENT,  # Default role
