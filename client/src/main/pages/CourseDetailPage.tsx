@@ -512,13 +512,35 @@ export function CourseDetailPage() {
                                     {course.requirements && (
                                         <div className="space-y-3">
                                             <h3 className="text-lg font-bold text-gray-800">Requirements</h3>
-                                            <p className="text-justify leading-relaxed">{course.requirements || 'No specific requirements. Everyone can join!'}</p>
+                                            <div
+                                                className="
+                                                        prose prose-sm max-w-none
+                                                        text-justify leading-relaxed
+                                                        wrap-break-word
+                                                        [&_ul]:list-disc [&_ul]:pl-5
+                                                        [&_ol]:list-decimal [&_ol]:pl-5
+                                                        [&_li]:mb-1
+                                                        [&_p]:mb-2
+                                                    "
+                                                dangerouslySetInnerHTML={{ __html: course.requirements }}
+                                            />
                                         </div>
                                     )}
                                     {course.learning_outcomes && (
                                         <div className="space-y-3">
                                             <h3 className="text-lg font-bold text-gray-800">What You'll Learn</h3>
-                                            <p className="text-justify leading-relaxed"> {course.learning_outcomes}</p>
+                                            <div
+                                                className="
+                                                        prose prose-sm max-w-none
+                                                        text-justify leading-relaxed
+                                                        wrap-break-word
+                                                        [&_ul]:list-disc [&_ul]:pl-5
+                                                        [&_ol]:list-decimal [&_ol]:pl-5
+                                                        [&_li]:mb-1
+                                                        [&_p]:mb-2
+                                                    "
+                                                dangerouslySetInnerHTML={{ __html: course.learning_outcomes }}
+                                            />
                                         </div>
                                     )}
                                 </div>

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useMemo } from "react"
 import { Link } from "react-router-dom"
-import { ChevronLeft, ChevronRight, BookOpen, TrendingUp, Sparkles, ArrowRight, AlertCircle, RefreshCw } from "lucide-react"
+import { ChevronLeft, ChevronRight, BookOpen, Sparkles, ArrowRight, AlertCircle, RefreshCw } from "lucide-react"
 import { CourseCard } from "./CourseCard"
 import { useCourses } from "../../hooks/useCourses"
 import CourseCardSkeleton from "./ui/loadingSkeleton/CourseCardSkeleton"
@@ -18,6 +18,27 @@ const CourseSection = () => {
         fetchCourses()
         fetchCategories()
     }, [fetchCourses, fetchCategories])
+
+    // Add "All Courses" to categories
+    const allCategories = useMemo(() => {
+        return [
+            { name: "All Courses", icon: "" },
+            ...categories
+        ]
+    }, [categories])
+
+    // Filter courses based on active category
+    const filteredCourses = useMemo(() => {
+        if (activeCategory === "All Courses") {
+            return courses
+        }
+        return courses.filter(course => course.category_name === activeCategory)
+    }, [courses, activeCategory])
+
+    // Get only the last 8 courses from filtered results
+    const displayedCourses = useMemo(() => {
+        return filteredCourses.slice(-8)
+    }, [filteredCourses])
 
     const scrollByAmount = (amount: number) => {
         scrollRef.current?.scrollBy({
@@ -87,7 +108,7 @@ const CourseSection = () => {
                                 onMouseLeave={stopDragging}
                                 className="flex gap-3 overflow-x-auto scrollbar-hide px-2 md:px-16 py-4 cursor-grab active:cursor-grabbing select-none"
                             >
-                                {categories.map((category) => (
+                                {allCategories.map((category) => (
                                     <button
                                         key={category.name}
                                         onClick={() => setActiveCategory(category.name)}
@@ -130,7 +151,9 @@ const CourseSection = () => {
                                 <h3 className="text-xl font-bold text-gray-900">
                                     {activeCategory}
                                 </h3>
-                                <p className="text-sm text-gray-600">{courses.length} courses available</p>
+                                <p className="text-sm text-gray-600">
+                                    {filteredCourses.length} courses available (showing last {Math.min(8, filteredCourses.length)})
+                                </p>
                             </div>
                         </div>
 
@@ -170,7 +193,7 @@ const CourseSection = () => {
                         <CourseCardSkeleton key={i} />
                     ))}
 
-                    {!loading && !error && courses.length === 0 && (
+                    {!loading && !error && filteredCourses.length === 0 && (
                         <div className="col-span-full py-12">
                             <div className="bg-gray-50 border-2 border-gray-200 rounded-2xl p-8 text-center max-w-md mx-auto">
                                 <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
@@ -186,7 +209,7 @@ const CourseSection = () => {
                         </div>
                     )}
 
-                    {!error && courses.map((course) => (
+                    {!loading && !error && displayedCourses.length > 0 && displayedCourses.map((course) => (
                         <CourseCard
                             key={course.id}
                             id={course.id}
@@ -201,41 +224,6 @@ const CourseSection = () => {
                             thumbnail={course.thumbnail}
                         />
                     ))}
-                </div>
-
-                {/* Bottom CTA Section */}
-                <div className="relative overflow-hidden bg-linear-to-r from-blue-600 via-blue-700 to-purple-600 rounded-3xl p-10 sm:p-12 text-center text-white shadow-2xl">
-                    {/* Decorative Elements */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
-                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
-
-                    <div className="relative z-10">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-bold mb-6">
-                            <TrendingUp className="w-4 h-4" />
-                            Start Learning Today
-                        </div>
-                        <h3 className="text-2xl sm:text-3xl lg:text-4xl font-black mb-4">
-                            Can't Find What You're Looking For?
-                        </h3>
-                        <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto">
-                            Explore our complete catalog of 200+ courses across 12+ categories
-                        </p>
-                        <div className="flex flex-col sm:flex-row justify-center gap-4">
-                            <Link
-                                to="/courses"
-                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-blue-600 rounded-xl font-bold hover:bg-blue-50 transition-all shadow-lg hover:shadow-2xl group"
-                            >
-                                Browse All Courses
-                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </Link>
-                            <Link
-                                to="/contact"
-                                className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-transparent border-2 border-white text-white rounded-xl font-bold hover:bg-white/10 transition-all"
-                            >
-                                Contact Advisor
-                            </Link>
-                        </div>
-                    </div>
                 </div>
             </div>
         </section>
