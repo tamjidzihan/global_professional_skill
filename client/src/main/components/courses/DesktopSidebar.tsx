@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from "../ui/LoadingSpinner";
 import type { Category } from '../../../types';
 
@@ -124,13 +124,26 @@ interface AllCoursesLinkProps {
 }
 
 const AllCoursesLink = ({ urlCategoryId, urlSearchQuery }: AllCoursesLinkProps) => {
+    const navigate = useNavigate();
     const isActive = !urlCategoryId && !urlSearchQuery;
 
+    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        // Build URL without page parameter (resets to page 1)
+        const params = new URLSearchParams();
+        if (urlSearchQuery) {
+            params.set('search', urlSearchQuery);
+        }
+        // Don't include page parameter - this resets to page 1
+        navigate(`/courses${params.toString() ? `?${params.toString()}` : ''}`);
+    };
+
     return (
-        <Link
-            to="/courses"
+        <a
+            href="/courses"
+            onClick={handleClick}
             className={`group relative w-full flex items-center justify-between px-3 py-2.5 rounded-lg 
-                text-sm transition-all duration-200 ease-in-out ${isActive
+                text-sm transition-all duration-200 ease-in-out cursor-pointer ${isActive
                     ? 'bg-linear-to-r from-[#0066CC]/10 to-[#0066CC]/5 text-[#0066CC] font-medium border border-[#0066CC]/20'
                     : 'text-gray-700 hover:bg-gray-100 hover:text-[#0066CC] border border-transparent hover:border-gray-200'
                 }`}
@@ -147,7 +160,7 @@ const AllCoursesLink = ({ urlCategoryId, urlSearchQuery }: AllCoursesLinkProps) 
                     Active
                 </span>
             )}
-        </Link>
+        </a>
     )
 }
 
@@ -158,13 +171,29 @@ interface CategoryLinkProps {
 }
 
 const CategoryLink = ({ category, urlCategoryId, urlSearchQuery }: CategoryLinkProps) => {
+    const navigate = useNavigate();
     const isActive = urlCategoryId === category.id.toString();
 
+    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        // Build URL with category and search params, but WITHOUT page parameter
+        const params = new URLSearchParams();
+        params.set('category', category.id.toString());
+
+        if (urlSearchQuery) {
+            params.set('search', urlSearchQuery);
+        }
+
+        // Don't include page parameter - this resets to page 1
+        navigate(`/courses?${params.toString()}`);
+    };
+
     return (
-        <Link
-            to={`/courses?category=${category.id}${urlSearchQuery ? `&search=${encodeURIComponent(urlSearchQuery)}` : ''}`}
+        <a
+            href={`/courses?category=${category.id}${urlSearchQuery ? `&search=${encodeURIComponent(urlSearchQuery)}` : ''}`}
+            onClick={handleClick}
             className={`group relative w-full flex items-center justify-between px-3 py-2.5 rounded-lg 
-                text-sm transition-all duration-200 ease-in-out ${isActive
+                text-sm transition-all duration-200 ease-in-out cursor-pointer ${isActive
                     ? 'bg-linear-to-r from-[#0066CC]/10 to-[#0066CC]/5 text-[#0066CC] font-medium border border-[#0066CC]/20'
                     : 'text-gray-700 hover:bg-gray-100 hover:text-[#0066CC] border border-transparent hover:border-gray-200'
                 }`}
@@ -181,7 +210,7 @@ const CategoryLink = ({ category, urlCategoryId, urlSearchQuery }: CategoryLinkP
                     Active
                 </span>
             )}
-        </Link>
+        </a>
     )
 }
 
@@ -279,4 +308,4 @@ const ActiveFiltersSummary = ({
     </div>
 )
 
-export default DesktopSidebar
+export default DesktopSidebar;

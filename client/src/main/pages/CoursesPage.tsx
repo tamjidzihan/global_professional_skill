@@ -18,6 +18,7 @@ const CoursesPage = () => {
     const queryParams = new URLSearchParams(location.search);
     const urlCategoryId = queryParams.get('category');
     const urlSearchQuery = queryParams.get('search') || '';
+    const urlPage = queryParams.get('page');
 
     const {
         courses,
@@ -56,7 +57,7 @@ const CoursesPage = () => {
         fetchCategories()
     }, [fetchCategories])
 
-    // Fetch courses when URL params change
+    // Fetch courses when URL params change (including page)
     useEffect(() => {
         const filters: Record<string, string | number> = {}
 
@@ -68,11 +69,15 @@ const CoursesPage = () => {
             filters.search = urlSearchQuery;
         }
 
+        if (urlPage) {
+            filters.page = parseInt(urlPage);
+        }
+
         setAppliedFilters(filters);
         fetchCourses(filters);
-    }, [urlCategoryId, urlSearchQuery, fetchCourses])
+    }, [urlCategoryId, urlSearchQuery, urlPage, fetchCourses])
 
-    // Update URL when search query changes (with debounce)
+    // Update URL when search query changes (with debounce) - reset page to 1
     useEffect(() => {
         const timeoutId = setTimeout(() => {
             const newParams = new URLSearchParams();
@@ -83,9 +88,10 @@ const CoursesPage = () => {
 
             if (searchQuery.trim()) {
                 newParams.set('search', searchQuery.trim());
-            } else {
-                newParams.delete('search');
             }
+
+            // Reset to page 1 when search changes
+            // Don't include page parameter for page 1
 
             navigate(`/courses?${newParams.toString()}`, { replace: true });
         }, 500);
@@ -105,13 +111,16 @@ const CoursesPage = () => {
                 newParams.set('search', searchQuery.trim());
             }
 
+            // Reset to page 1 on new search
+            // Don't include page parameter for page 1
+
             navigate(`/courses?${newParams.toString()}`);
         }
     }
 
     const clearAllFilters = () => {
         setSearchQuery('');
-        navigate('/courses');
+        navigate('/courses'); // This will clear all params including page
     }
 
     const closeMobileFilters = () => {
@@ -139,6 +148,8 @@ const CoursesPage = () => {
         if (urlSearchQuery) {
             newParams.set('search', urlSearchQuery);
         }
+        // Reset to page 1 when removing category
+        // Don't include page parameter for page 1
         navigate(`/courses?${newParams.toString()}`);
     }
 
@@ -148,6 +159,8 @@ const CoursesPage = () => {
         if (urlCategoryId) {
             newParams.set('category', urlCategoryId);
         }
+        // Reset to page 1 when removing search
+        // Don't include page parameter for page 1
         navigate(`/courses?${newParams.toString()}`);
     }
 
@@ -227,4 +240,4 @@ const CoursesPage = () => {
     )
 }
 
-export default CoursesPage
+export default CoursesPage;

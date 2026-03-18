@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ChevronRight, Search, X, RotateCcw } from "lucide-react"
+import { ChevronRight, ChevronLeft, Search, X, RotateCcw } from "lucide-react"
+import { useNavigate, useLocation } from 'react-router-dom';
 import { CourseCard } from "../CourseCard";
 import type { CoursesSummary } from "../../../types";
 
@@ -21,24 +22,87 @@ const CourseGrid = ({
     pagination,
     appliedFilters,
     activeCategoryName,
-    urlSearchQuery,
     onFetchCourses,
     onClearAll,
     onOpenMobileFilters
 }: CourseGridProps) => {
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    // Extract current page from URL or default to 1
+    const queryParams = new URLSearchParams(location.search);
+    const currentPage = parseInt(queryParams.get('page') || '1');
+
+    // Handle page change with URL update
+    const handlePageChange = (pageUrl: string | null, direction: 'next' | 'prev') => {
+        if (!pageUrl) return;
+
+        // Calculate new page number
+        const newPage = direction === 'next' ? currentPage + 1 : currentPage - 1;
+
+        // Update URL with new page number
+        const newParams = new URLSearchParams(location.search);
+        if (newPage > 1) {
+            newParams.set('page', newPage.toString());
+        } else {
+            newParams.delete('page');
+        }
+
+        // Update URL without reloading the page
+        navigate(`/courses?${newParams.toString()}`, { replace: true });
+
+        // Fetch data for the new page
+        onFetchCourses(appliedFilters, pageUrl);
+    };
+
     return (
         <div className="w-full">
-            {/* Header Section: Scaled text for mobile */}
+            {/* Header Section with Pagination */}
             <div className="mb-4 md:mb-6 px-1">
-                <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-1">
-                    {activeCategoryName}
-                </h2>
-                <p className="text-sm md:text-base text-gray-600">
-                    Showing <span className="font-semibold text-gray-900">{pagination.count || 0}</span> courses
-                    {urlSearchQuery && (
-                        <span className="block sm:inline"> for <span className="italic">"{urlSearchQuery}"</span></span>
+                {/* Top Row: Title and Header Pagination */}
+                <div className="flex flex-row items-center justify-between gap-3 mb-1">
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+                        {activeCategoryName}
+                    </h2>
+
+                    {/* Header Pagination - Visible on all screens */}
+                    {(pagination.next || pagination.previous) && (
+                        <div className="flex items-center gap-2">
+                            {/* Previous Button */}
+                            <button
+                                onClick={() => handlePageChange(pagination.previous, 'prev')}
+                                disabled={!pagination.previous}
+                                className={`p-2 rounded-lg flex items-center justify-center transition-all
+                                    ${pagination.previous
+                                        ? 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 active:scale-95 shadow-sm cursor-pointer'
+                                        : 'bg-gray-50 text-gray-300 border border-gray-100 cursor-not-allowed'
+                                    }`}
+                                aria-label="Previous page"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+
+                            {/* Page Indicator */}
+                            <span className="text-sm font-medium text-gray-600 px-2">
+                                Page {currentPage} of {pagination.total_pages || 1}
+                            </span>
+
+                            {/* Next Button */}
+                            <button
+                                onClick={() => handlePageChange(pagination.next, 'next')}
+                                disabled={!pagination.next}
+                                className={`p-2 rounded-lg flex items-center justify-center transition-all
+                                    ${pagination.next
+                                        ? 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 active:scale-95 shadow-sm cursor-pointer'
+                                        : 'bg-gray-50 text-gray-300 border border-gray-100 cursor-not-allowed'
+                                    }`}
+                                aria-label="Next page"
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
                     )}
-                </p>
+                </div>
             </div>
 
             {error ? (
@@ -46,7 +110,7 @@ const CourseGrid = ({
             ) : courses.length > 0 ? (
                 <>
                     {/* Grid: 1 col mobile, 2 col tablet (sm/md), 3 col desktop (lg) */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 ">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                         {courses.map((course) => (
                             <CourseCard
                                 key={course.id}
@@ -64,12 +128,13 @@ const CourseGrid = ({
                         ))}
                     </div>
 
-                    {/* Pagination: Compact for mobile */}
+                    {/* Bottom Pagination */}
                     {(pagination.next || pagination.previous) && (
                         <Pagination
                             pagination={pagination}
                             appliedFilters={appliedFilters}
-                            onFetchCourses={onFetchCourses}
+                            currentPage={currentPage}
+                            onPageChange={handlePageChange}
                         />
                     )}
                 </>
@@ -96,30 +161,39 @@ const ErrorState = ({ error, onRetry }: any) => (
     </div>
 )
 
-const Pagination = ({ pagination, appliedFilters, onFetchCourses }: any) => (
+interface PaginationProps {
+    pagination: any;
+    appliedFilters: Record<string, string | number>;
+    currentPage: number;
+    onPageChange: (pageUrl: string | null, direction: 'next' | 'prev') => void;
+}
+
+const Pagination = ({ pagination, currentPage, onPageChange }: PaginationProps) => (
     <div className="flex items-center justify-between mt-10 pb-10 border-t border-gray-100 pt-6 px-1">
         <button
-            onClick={() => pagination.previous && onFetchCourses(appliedFilters, pagination.previous)}
+            onClick={() => onPageChange(pagination.previous, 'prev')}
             disabled={!pagination.previous}
             className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm font-medium transition-all
                 ${pagination.previous
-                    ? 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 active:scale-95 shadow-sm'
+                    ? 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 active:scale-95 shadow-sm cursor-pointer'
                     : 'bg-gray-50 text-gray-300 border border-gray-100 cursor-not-allowed'
                 }`}
         >
-            <ChevronRight className="w-4 h-4 rotate-180" />
+            <ChevronLeft className="w-4 h-4" />
             <span>Prev</span>
         </button>
 
-        {/* Optional Page Indicator for Mobile */}
-        <span className="text-xs font-medium text-gray-400 sm:hidden">Page Navigation</span>
+        {/* Page Indicator for Desktop */}
+        <span className="hidden sm:block text-sm font-medium text-gray-600">
+            Page {currentPage} of {pagination.total_pages || 1}
+        </span>
 
         <button
-            onClick={() => pagination.next && onFetchCourses(appliedFilters, pagination.next)}
+            onClick={() => onPageChange(pagination.next, 'next')}
             disabled={!pagination.next}
             className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 text-sm font-medium transition-all
                 ${pagination.next
-                    ? 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 active:scale-95 shadow-sm'
+                    ? 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 active:scale-95 shadow-sm cursor-pointer'
                     : 'bg-gray-50 text-gray-300 border border-gray-100 cursor-not-allowed'
                 }`}
         >
@@ -156,4 +230,4 @@ const EmptyState = ({ onClearAll, onOpenMobileFilters }: any) => (
     </div>
 )
 
-export default CourseGrid
+export default CourseGrid;
