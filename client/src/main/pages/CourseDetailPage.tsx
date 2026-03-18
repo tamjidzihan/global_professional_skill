@@ -382,7 +382,7 @@ export function CourseDetailPage() {
                                         <button
                                             onClick={handleEnrollNow}
                                             disabled={!course.is_admission_open || course.is_full || enrollLoading}
-                                            className={`px-8 py-3 rounded font-bold transition-colors shadow-md hover:shadow-lg ${course.is_enrolled
+                                            className={`px-8 py-3 rounded font-bold transition-colors shadow-md hover:shadow-lg cursor-pointer ${course.is_enrolled
                                                 ? 'bg-green-600 text-white hover:bg-green-700'
                                                 : !course.is_admission_open || course.is_full
                                                     ? 'bg-gray-400 text-white cursor-not-allowed'
@@ -413,22 +413,6 @@ export function CourseDetailPage() {
                                     </div>
                                 </div>
                             )}
-
-                            {/* Share and Save Buttons */}
-                            <div className="mt-4 flex gap-2">
-                                <button className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors">
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z" />
-                                    </svg>
-                                    Share
-                                </button>
-                                <button className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors">
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                                    </svg>
-                                    Save
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -661,23 +645,25 @@ export function CourseDetailPage() {
                                 <Award className="w-5 h-5 mr-2 text-[#0066CC]" />
                                 Instructor
                             </h3>
-                            <div className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
-                                {course.instructor.profile_picture ? (
-                                    <img
-                                        src={course.instructor.profile_picture}
-                                        alt={course.instructor.full_name || course.instructor.email}
-                                        className="w-16 h-16 rounded-full mr-4 border-2 border-[#0066CC] object-cover"
-                                    />
-                                ) : (
-                                    <img
-                                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                            course.instructor.full_name || course.instructor.email
-                                        )}&background=0066CC&color=fff`}
-                                        alt={course.instructor.full_name || course.instructor.email}
-                                        className="w-16 h-16 rounded-full mr-4 border-2 border-[#0066CC]"
-                                    />
-                                )}
-                                <div>
+                            <div className="flex flex-col p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                                <div className="flex justify-center mb-3">
+                                    {course.instructor.profile_picture ? (
+                                        <img
+                                            src={course.instructor.profile_picture}
+                                            alt={course.instructor.full_name || course.instructor.email}
+                                            className="w-24 h-24 rounded-full border-2 border-[#0066CC] object-cover"
+                                        />
+                                    ) : (
+                                        <img
+                                            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                                course.instructor.full_name || course.instructor.email
+                                            )}&background=0066CC&color=fff`}
+                                            alt={course.instructor.full_name || course.instructor.email}
+                                            className="w-24 h-24 rounded-full border-2 border-[#0066CC]"
+                                        />
+                                    )}
+                                </div>
+                                <div className="text-center">
                                     <p className="font-bold text-gray-800">
                                         {course.instructor.full_name || course.instructor.email}
                                     </p>
@@ -685,7 +671,7 @@ export function CourseDetailPage() {
                                         Instructor
                                     </p>
                                     {course.instructor.bio && (
-                                        <p className="text-sm text-gray-600 line-clamp-2">{course.instructor.bio}</p>
+                                        <p className="text-sm text-gray-600">{course.instructor.bio}</p>
                                     )}
                                 </div>
                             </div>

@@ -119,7 +119,8 @@ export function CourseCard({
                 {/* Price and Level row */}
                 <div className="flex items-center justify-between pt-2">
                     <div className="flex items-center gap-2">
-                        <span className="text-lg font-semibold text-gray-900"><span className='font-extrabold'>৳</span>{price}</span>
+                        <span className="text-lg font-semibold text-gray-900">
+                            <span className='font-extrabold'>৳</span>{price}</span>
                         {originalPrice && (
                             <span className="text-sm text-gray-400 line-through font-medium">৳{originalPrice}</span>
                         )}
