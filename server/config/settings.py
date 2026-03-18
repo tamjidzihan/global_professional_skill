@@ -99,22 +99,24 @@ WSGI_APPLICATION = "config.wsgi.application"
 # }
 
 # # Database for postgresql
-# DATABASES = {
-#     'default': dj_database_url.config(
-#         default=str(config('DATABASE_URL', default='postgresql://postgres:postgres@localhost:5432/learning_platform')),
-#         conn_max_age=600,
-#         conn_health_checks=True,
-#     )
-# }
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=str(config('MYSQL_DATABASE_URL')),
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
 
+if DEBUG:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=str(config("POSTGRESQL_DATABASE_URL")),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=str(config("MYSQL_DATABASE_URL")),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
 
 
 # Custom User Model
@@ -167,7 +169,7 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 10,
+    "PAGE_SIZE": 12,
     "DEFAULT_FILTER_BACKENDS": (
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.SearchFilter",
@@ -230,15 +232,14 @@ CORS_ALLOW_CREDENTIALS = True
 
 if DEBUG:
     CORS_ALLOWED_ORIGINS = config(
-    "CORS_ALLOWED_ORIGINS", default="http://localhost:3000", cast=Csv()
-)
+        "CORS_ALLOWED_ORIGINS", default="http://localhost:3000", cast=Csv()
+    )
 else:
     CORS_ALLOWED_ORIGINS = config(
         "CORS_ALLOWED_ORIGINS",
         cast=Csv(),
-        default="https://gpibd.com,https://www.gpibd.com,https://api.gpibd.com"
+        default="https://gpibd.com,https://www.gpibd.com,https://api.gpibd.com",
     )
-
 
 
 # Security Settings (Production)
