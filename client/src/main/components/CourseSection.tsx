@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo } from "react"
+import { useEffect, useRef, useState, useMemo, useCallback } from "react"
 import { Link } from "react-router-dom"
 import { ChevronLeft, ChevronRight, BookOpen, Sparkles, ArrowRight, AlertCircle, RefreshCw } from "lucide-react"
 import { CourseCard } from "./CourseCard"
@@ -12,33 +12,56 @@ const CourseSection = () => {
     const [isDragging, setIsDragging] = useState(false)
     const [startX, setStartX] = useState(0)
     const [scrollLeft, setScrollLeft] = useState(0)
-    const [activeCategory, setActiveCategory] = useState("All Courses")
+    const [activeCategory, setActiveCategory] = useState("Our Courses")
+    const [categoryLoading, setCategoryLoading] = useState(false)
 
     useEffect(() => {
-        fetchCourses()
         fetchCategories()
+        // Initial fetch for Our courses
+        fetchCourses()
     }, [fetchCourses, fetchCategories])
 
     // Add "All Courses" to categories
     const allCategories = useMemo(() => {
         return [
-            { name: "All Courses", icon: "" },
+            { name: "Our Courses", icon: "" },
             ...categories
         ]
     }, [categories])
 
-    // Filter courses based on active category
-    const filteredCourses = useMemo(() => {
-        if (activeCategory === "All Courses") {
-            return courses
-        }
-        return courses.filter(course => course.category_name === activeCategory)
-    }, [courses, activeCategory])
+    // Handle category change - fetch from database
+    const handleCategoryChange = useCallback(async (categoryName: string) => {
+        setActiveCategory(categoryName)
+        setCategoryLoading(true)
 
-    // Get only the last 8 courses from filtered results
+        try {
+            if (categoryName === "Our Courses") {
+                await fetchCourses()
+            } else {
+                // Find the category ID from the categories list
+                const selectedCategory = categories.find(cat => cat.name === categoryName)
+                if (selectedCategory) {
+                    // Fetch courses filtered by category
+                    await fetchCourses({
+                        category: selectedCategory.id
+                        // You can add other filters here if needed
+                        // difficulty_level: '',
+                        // status: 'PUBLISHED',
+                        // search: '',
+                    })
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching courses for category:', error)
+        } finally {
+            setCategoryLoading(false)
+        }
+    }, [categories, fetchCourses])
+
+    // Get only the last 8 courses
     const displayedCourses = useMemo(() => {
-        return filteredCourses.slice(-8)
-    }, [filteredCourses])
+        return courses.slice(-12)
+    }, [courses])
 
     const scrollByAmount = (amount: number) => {
         scrollRef.current?.scrollBy({
@@ -65,9 +88,12 @@ const CourseSection = () => {
     const stopDragging = () => setIsDragging(false)
 
     const handleRetry = () => {
-        fetchCourses()
         fetchCategories()
+        handleCategoryChange(activeCategory)
     }
+
+    // Combine loading states
+    const isLoading = loading || categoryLoading
 
     return (
         <section className="py-10 sm:py-14 bg-linear-to-b from-white to-[#FCF8F1] overflow-hidden">
@@ -111,15 +137,19 @@ const CourseSection = () => {
                                 {allCategories.map((category) => (
                                     <button
                                         key={category.name}
-                                        onClick={() => setActiveCategory(category.name)}
+                                        onClick={() => handleCategoryChange(category.name)}
+                                        disabled={categoryLoading}
                                         className={`group relative px-3 py-2 rounded-2xl text-sm font-semibold whitespace-nowrap transition-all duration-300 cursor-pointer ${activeCategory === category.name
                                             ? 'bg-linear-to-r from-[#0066CC] to-blue-600 text-white shadow-lg scale-105'
                                             : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
-                                            }`}
+                                            } ${categoryLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
                                         <span className="flex items-center gap-2">
                                             <span className="text-lg">{category.icon}</span>
                                             {category.name}
+                                            {categoryLoading && activeCategory === category.name && (
+                                                <RefreshCw className="w-3 h-3 animate-spin" />
+                                            )}
                                         </span>
                                         {activeCategory === category.name && (
                                             <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 rounded-xl transition-opacity"></div>
@@ -151,18 +181,17 @@ const CourseSection = () => {
                                 <h3 className="text-xl font-bold text-gray-900">
                                     {activeCategory}
                                 </h3>
-                                <p className="text-sm text-gray-600">
-                                    {filteredCourses.length} courses available (showing last {Math.min(8, filteredCourses.length)})
-                                </p>
                             </div>
                         </div>
 
+                        {/* View All Courses Button - Same line, smaller on mobile */}
                         <Link
                             to="/courses"
-                            className="hidden lg:inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-linear-to-r from-yellow-400 to-yellow-500 text-gray-900 font-bold hover:from-yellow-500 hover:to-yellow-600 transition-all shadow-lg hover:shadow-xl group"
+                            className="inline-flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-1.5 sm:py-2 rounded-xl bg-linear-to-r from-yellow-400 to-yellow-500 text-gray-900 font-bold hover:from-yellow-500 hover:to-yellow-600 transition-all shadow-lg hover:shadow-xl group text-xs sm:text-sm md:text-base"
                         >
-                            View All Courses
-                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                            <span className="hidden xs:inline">View All Courses</span>
+                            <span className="xs:hidden">All</span>
+                            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-5 group-hover:translate-x-1 transition-transform" />
                         </Link>
                     </div>
                 )}
@@ -188,19 +217,19 @@ const CourseSection = () => {
                 )}
 
                 {/* Course Grid with Error Handling */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-                    {loading && [1, 2, 3, 4, 5, 6].map((i) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+                    {isLoading && [1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                         <CourseCardSkeleton key={i} />
                     ))}
 
-                    {!loading && !error && filteredCourses.length === 0 && (
+                    {!isLoading && !error && courses.length === 0 && (
                         <div className="col-span-full py-12">
                             <div className="bg-gray-50 border-2 border-gray-200 rounded-2xl p-8 text-center max-w-md mx-auto">
                                 <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                                 <h3 className="text-lg font-bold text-gray-700 mb-2">No Courses Found</h3>
                                 <p className="text-gray-500 mb-4">There are no courses available in this category at the moment.</p>
                                 <button
-                                    onClick={() => setActiveCategory("All Courses")}
+                                    onClick={() => handleCategoryChange("Our Courses")}
                                     className="text-blue-600 font-semibold hover:text-blue-700"
                                 >
                                     View all courses instead
@@ -209,7 +238,7 @@ const CourseSection = () => {
                         </div>
                     )}
 
-                    {!loading && !error && displayedCourses.length > 0 && displayedCourses.map((course) => (
+                    {!isLoading && !error && displayedCourses.length > 0 && displayedCourses.map((course) => (
                         <CourseCard
                             key={course.id}
                             id={course.id}
@@ -225,6 +254,19 @@ const CourseSection = () => {
                         />
                     ))}
                 </div>
+
+                {/* Bottom View All Courses Button - Visible on all screens */}
+                {!error && courses.length > 0 && (
+                    <div className="flex justify-center mt-8 mb-4">
+                        <Link
+                            to="/courses"
+                            className="inline-flex items-center gap-2 px-8 py-2 rounded-xl bg-linear-to-r from-[#0066CC] to-blue-600 text-white font-bold hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg hover:shadow-xl group text-base sm:text-lg"
+                        >
+                            <span>All Courses</span>
+                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                    </div>
+                )}
             </div>
         </section>
     )
