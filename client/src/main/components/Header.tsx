@@ -62,8 +62,8 @@ const Header = () => {
                 ...categoryDropdownItems
             ]
         },
-        { path: '#', label: 'PGD' },
-        { path: '#', label: 'RPL' },
+        // { path: '#', label: 'PGD' },
+        // { path: '#', label: 'RPL' },
         { path: '/about', label: 'About Us' }
     ]
 
