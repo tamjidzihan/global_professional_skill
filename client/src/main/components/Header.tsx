@@ -151,12 +151,12 @@ const Header = () => {
                                         <Link
                                             to={item.path}
                                             className={`
-                                    flex items-center space-x-1 px-4 py-2 rounded-lg transition-all duration-200
-                                    ${isActive(item.path).includes('font-semibold')
+                    flex items-center space-x-1 px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap
+                    ${isActive(item.path).includes('font-semibold')
                                                     ? 'text-[#0066CC] bg-blue-50 font-semibold'
                                                     : 'text-gray-700 hover:text-[#0066CC] hover:bg-blue-50'
                                                 }
-                                `}
+                `}
                                         >
                                             <span>{item.label}</span>
                                             {item.dropdown && (
@@ -166,15 +166,15 @@ const Header = () => {
 
                                         {/* Dropdown Menu */}
                                         {item.dropdown && dropdownOpen === item.path && (
-                                            <div className="absolute top-full left-0 w-48 bg-white/90 backdrop-blur-xl rounded-xl shadow-xl border border-gray-100 py-2 z-50">
+                                            <div className="absolute top-full left-0 min-w-full bg-white/90 backdrop-blur-xl rounded-xl shadow-xl border border-gray-100 py-2 z-50">
                                                 {item.dropdown.map((subItem) => (
                                                     <Link
                                                         key={subItem.path}
                                                         to={subItem.path}
-                                                        className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-[#0066CC] transition"
+                                                        className="block px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-[#0066CC] transition whitespace-nowrap"
                                                         onClick={() => setDropdownOpen(null)}
                                                     >
-                                                        <span className="font-medium">{subItem.label}</span>
+                                                        {subItem.label}
                                                     </Link>
                                                 ))}
                                             </div>
@@ -182,7 +182,6 @@ const Header = () => {
                                     </div>
                                 ))}
                             </nav>
-
                             {/* Right Side Actions */}
                             <div className="hidden lg:flex items-center space-x-3">
                                 {isAuthenticated && user?.role === 'STUDENT'

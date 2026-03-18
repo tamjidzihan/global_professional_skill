@@ -245,7 +245,7 @@ const CourseSection = () => {
                             title={course.title}
                             price={course.price}
                             level={course.difficulty_level}
-                            duration={course.duration_hours}
+                            badge={course.difficulty_level}
                             rating={course.average_rating}
                             enrolled={course.enrollment_count}
                             category={course.category_name}
