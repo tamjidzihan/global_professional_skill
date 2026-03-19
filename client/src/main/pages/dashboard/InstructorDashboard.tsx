@@ -19,7 +19,7 @@ export function InstructorDashboard() {
     }
 
     return (
-        <div className="p-4 grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="py-4 grid grid-cols-1 lg:grid-cols-4 gap-6">
             <PageTitle title="Instructor Dashboard" />
             <div className="lg:col-span-3">
                 <div className="mb-8">
