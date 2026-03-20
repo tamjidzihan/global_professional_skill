@@ -33,6 +33,7 @@ import AdminCourseDetailPage from "./main/pages/dashboard/admin/AdminCourseDetai
 import CheckoutPage from "./main/pages/CheckoutPage";
 import MyEnrollmentsPage from "./main/pages/dashboard/student/MyEnrollmentsPage";
 import { CertificatesPage } from "./main/pages/dashboard/student/CertificatesPage";
+import { ReportsPage } from "./main/pages/dashboard/instructor/ReportsPage";
 
 
 export const router = createBrowserRouter([
@@ -168,6 +169,14 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
                                 <CurriculumPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/reports',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+                                <ReportsPage />
                             </ProtectedRoute>
                         )
                     },

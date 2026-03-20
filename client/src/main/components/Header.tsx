@@ -97,7 +97,7 @@ const Header = () => {
                                 </Link>
                                 <button
                                     onClick={logout}
-                                    className="flex items-center gap-2 text-gray-700 hover:text-red-500 transition"
+                                    className="flex items-center gap-2 text-gray-700 hover:text-red-500 transition cursor-pointer"
                                 >
                                     <LogOut className="w-4 h-4 text-[#76C043]" />
                                     Logout

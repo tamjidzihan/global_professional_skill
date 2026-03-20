@@ -70,11 +70,11 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
         { name: 'Dashboard', path: '/dashboard/instructor', icon: LayoutDashboard, exact: true },
         { name: 'My Courses', path: '/dashboard/instructor/my-courses', icon: BookOpen },
         // { name: 'Students', path: '/dashboard/instructor/students', icon: Users },
-        // { name: 'Reports', path: '/dashboard/instructor/reports', icon: FileText },
+        { name: 'Reports', path: '/dashboard/instructor/reports', icon: FileText, badge: 'New' },
     ]
 
     const adminLinks = [
-        { name: 'Dashboard', path: '/dashboard/admin', icon: LayoutDashboard, badge: '05', exact: true },
+        { name: 'Dashboard', path: '/dashboard/admin', icon: LayoutDashboard, exact: true },
         { name: 'User Management', path: '/dashboard/admin/users', icon: Users },
         { name: 'Course Catalog', path: '/dashboard/admin/courses', icon: BookOpen, badge: 'New' },
         // { name: 'Permissions', path: '/dashboard/admin/permissions', icon: ShieldCheck },
@@ -237,7 +237,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                                             </div>
 
                                             {/* Badge — only in expanded state */}
-                                            {/* {!isCollapsed && link.badge && (
+                                            {!isCollapsed && link.badge && (
                                                 <span className={cn(
                                                     'inline-flex items-center px-2 py-0.5 text-[11px] font-bold rounded-md shrink-0 leading-none',
                                                     typeof link.badge === 'string' && link.badge === 'New'
@@ -246,7 +246,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                                                 )}>
                                                     {link.badge}
                                                 </span>
-                                            )} */}
+                                            )}
                                         </Link>
 
                                         {/* Tooltip — only in collapsed state */}
