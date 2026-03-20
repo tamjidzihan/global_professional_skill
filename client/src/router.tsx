@@ -32,6 +32,7 @@ import { UserManagementPage } from "./main/pages/dashboard/admin/UserManagementP
 import AdminCourseDetailPage from "./main/pages/dashboard/admin/AdminCourseDetailPage";
 import CheckoutPage from "./main/pages/CheckoutPage";
 import MyEnrollmentsPage from "./main/pages/dashboard/student/MyEnrollmentsPage";
+import { CertificatesPage } from "./main/pages/dashboard/student/CertificatesPage";
 
 
 export const router = createBrowserRouter([
@@ -108,6 +109,14 @@ export const router = createBrowserRouter([
                                 element: (
                                     <ProtectedRoute allowedRoles={['STUDENT']}>
                                         <MyEnrollmentsPage />
+                                    </ProtectedRoute>
+                                )
+                            },
+                            {
+                                path: 'certificates',
+                                element: (
+                                    <ProtectedRoute allowedRoles={['STUDENT']}>
+                                        <CertificatesPage />
                                     </ProtectedRoute>
                                 )
                             }

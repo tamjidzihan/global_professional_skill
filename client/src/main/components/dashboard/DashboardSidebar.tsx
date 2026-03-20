@@ -7,8 +7,8 @@ import {
     GraduationCap,
     LogOut,
     ChevronRight,
-    Settings,
-    ShieldCheck,
+    // Settings,
+    // ShieldCheck,
 } from 'lucide-react'
 import { useAuthContext } from '../../../context/AuthContext'
 import { useMyProfile } from '../../../hooks/useMyProfile'
@@ -63,7 +63,6 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
     const studentLinks = [
         { name: 'Dashboard', path: '/dashboard/student', icon: LayoutDashboard, exact: true },
         { name: 'My Enrollments', path: '/dashboard/student/my-courses', icon: BookOpen },
-        { name: 'Browse Courses', path: '/courses', icon: GraduationCap, external: true },
         { name: 'Certificates', path: '/dashboard/student/certificates', icon: FileText, badge: 'New' },
     ]
 
@@ -78,9 +77,9 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
         { name: 'Dashboard', path: '/dashboard/admin', icon: LayoutDashboard, badge: '05', exact: true },
         { name: 'User Management', path: '/dashboard/admin/users', icon: Users },
         { name: 'Course Catalog', path: '/dashboard/admin/courses', icon: BookOpen, badge: 'New' },
-        { name: 'Permissions', path: '/dashboard/admin/permissions', icon: ShieldCheck },
-        { name: 'Settings', path: '/dashboard/admin/settings', icon: Settings },
-        { name: 'Reports', path: '/dashboard/admin/reports', icon: FileText },
+        // { name: 'Permissions', path: '/dashboard/admin/permissions', icon: ShieldCheck },
+        // { name: 'Settings', path: '/dashboard/admin/settings', icon: Settings },
+        // { name: 'Reports', path: '/dashboard/admin/reports', icon: FileText },
     ]
 
     const links =
@@ -153,7 +152,9 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                                     ? 'AdminPortal'
                                     : profile?.role === 'INSTRUCTOR'
                                         ? 'Instruct Hub'
-                                        : 'EduPortal'}
+                                        : profile?.role === 'STUDENT'
+                                            ? 'EduPortal'
+                                            : 'Loading...'}
                             </span>
                         )}
                     </div>

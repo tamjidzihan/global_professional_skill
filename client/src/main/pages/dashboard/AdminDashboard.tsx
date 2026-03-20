@@ -29,14 +29,14 @@ export function AdminDashboard(): JSX.Element {
         nextPage,
         prevPage,
         loadNextPage,
-        loadPrevPage
+        loadPrevPage,
     } = useInstructorRequests()
 
     const {
         courses: pendingCourses,
         fetchCourses: fetchPendingCourses,
         loading: coursesLoading,
-        reviewCourseAction
+        reviewCourseAction,
     } = useAdminCourses()
 
     const [selectedRequest, setSelectedRequest] = useState<InstructorRequest | null>(null)
@@ -60,31 +60,20 @@ export function AdminDashboard(): JSX.Element {
         fetchPendingCourses('PENDING')
     }, [getAdminAnalytics, fetchInstructorRequests, fetchPendingCourses])
 
-    // Click outside handlers
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (
-                modalRef.current &&
-                !modalRef.current.contains(event.target as Node) &&
-                showDetails &&
-                !isReviewing
-            ) {
+            if (modalRef.current && !modalRef.current.contains(event.target as Node) && showDetails && !isReviewing) {
                 closeModal()
             }
         }
-
         const handleEscape = (event: KeyboardEvent) => {
-            if (event.key === 'Escape' && showDetails && !isReviewing) {
-                closeModal()
-            }
+            if (event.key === 'Escape' && showDetails && !isReviewing) closeModal()
         }
-
         if (showDetails) {
             document.addEventListener('mousedown', handleClickOutside)
             document.addEventListener('keydown', handleEscape)
             document.body.style.overflow = 'hidden'
         }
-
         return () => {
             document.removeEventListener('mousedown', handleClickOutside)
             document.removeEventListener('keydown', handleEscape)
@@ -94,28 +83,18 @@ export function AdminDashboard(): JSX.Element {
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (
-                courseModalRef.current &&
-                !courseModalRef.current.contains(event.target as Node) &&
-                showCourseModal &&
-                !isReviewingCourse
-            ) {
+            if (courseModalRef.current && !courseModalRef.current.contains(event.target as Node) && showCourseModal && !isReviewingCourse) {
                 closeCourseModal()
             }
         }
-
         const handleEscape = (event: KeyboardEvent) => {
-            if (event.key === 'Escape' && showCourseModal && !isReviewingCourse) {
-                closeCourseModal()
-            }
+            if (event.key === 'Escape' && showCourseModal && !isReviewingCourse) closeCourseModal()
         }
-
         if (showCourseModal) {
             document.addEventListener('mousedown', handleClickOutside)
             document.addEventListener('keydown', handleEscape)
             document.body.style.overflow = 'hidden'
         }
-
         return () => {
             document.removeEventListener('mousedown', handleClickOutside)
             document.removeEventListener('keydown', handleEscape)
@@ -155,7 +134,7 @@ export function AdminDashboard(): JSX.Element {
         try {
             await reviewCourseAction(courseId, {
                 status,
-                feedback: feedback.trim() || `Your course has been ${status.toLowerCase()}.`
+                feedback: feedback.trim() || `Your course has been ${status.toLowerCase()}.`,
             })
             fetchPendingCourses('PENDING')
             getAdminAnalytics()
@@ -195,7 +174,7 @@ export function AdminDashboard(): JSX.Element {
                 feedback: feedback.trim() ||
                     (status === 'APPROVED'
                         ? 'Your instructor request has been approved.'
-                        : 'Your instructor request has been reviewed and rejected.')
+                        : 'Your instructor request has been reviewed and rejected.'),
             })
             fetchInstructorRequests(filterStatus === 'ALL' ? 'ALL' : filterStatus)
             closeModal()
@@ -221,62 +200,74 @@ export function AdminDashboard(): JSX.Element {
         return true
     })
 
-    if (loading) {
-        return <LoadingSpinner />
-    }
+    if (loading) return <LoadingSpinner />
 
     return (
-        <div className="p-4 md:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="py-6 px-4 md:px-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
             <PageTitle title="Admin Dashboard" />
+
             <div className="lg:col-span-3 space-y-6">
+
+                {/* ── Page header ── */}
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-                    <p className="text-gray-600 mt-1 text-sm md:text-base">
+                    <h1 className="text-xl font-semibold text-gray-900 tracking-tight">
+                        Admin Dashboard
+                    </h1>
+                    <p className="text-sm text-gray-400 mt-0.5">
                         System-wide statistics and management panel
                     </p>
                 </div>
 
+                {/* ── Stats ── */}
                 <StatsSection data={data} />
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* ── Management cards ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Pending Courses */}
                     <PendingCoursesCard
                         courses={pendingCourses}
                         loading={coursesLoading}
                         onViewDetails={handleViewCourseDetails}
                     />
 
-                    <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                        <InstructorRequestFilters
-                            filterStatus={filterStatus}
-                            searchQuery={searchQuery}
-                            totalCount={totalCount}
-                            pendingCount={data?.pending_instructor_requests}
-                            onFilterChange={handleStatusFilter}
-                            onSearchChange={setSearchQuery}
-                        />
-
-                        <InstructorRequestsList
-                            requests={filteredRequests}
-                            loading={requestsLoading}
-                            filterStatus={filterStatus}
-                            searchQuery={searchQuery}
-                            totalCount={totalCount}
-                            nextPage={nextPage}
-                            prevPage={prevPage}
-                            onViewDetails={handleViewDetails}
-                            onNextPage={loadNextPage}
-                            onPrevPage={loadPrevPage}
-                            getStatusBadge={getStatusBadge}
-                        />
+                    {/* Instructor Requests */}
+                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+                        <div className="px-5 py-4 border-b border-gray-100">
+                            <InstructorRequestFilters
+                                filterStatus={filterStatus}
+                                searchQuery={searchQuery}
+                                totalCount={totalCount}
+                                pendingCount={data?.pending_instructor_requests}
+                                onFilterChange={handleStatusFilter}
+                                onSearchChange={setSearchQuery}
+                            />
+                        </div>
+                        <div className="p-4">
+                            <InstructorRequestsList
+                                requests={filteredRequests}
+                                loading={requestsLoading}
+                                filterStatus={filterStatus}
+                                searchQuery={searchQuery}
+                                totalCount={totalCount}
+                                nextPage={nextPage}
+                                prevPage={prevPage}
+                                onViewDetails={handleViewDetails}
+                                onNextPage={loadNextPage}
+                                onPrevPage={loadPrevPage}
+                                getStatusBadge={getStatusBadge}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="lg:col-span-1 space-y-6">
+            {/* ── Sidebar column ── */}
+            <div className="lg:col-span-1 space-y-4">
                 <CalendarCard />
                 <CourseStatusPanel />
             </div>
 
+            {/* ── Modals ── */}
             {selectedRequest && (
                 <InstructorRequestModal
                     request={selectedRequest}

@@ -18,21 +18,60 @@ export function InstructorDashboard() {
         return <LoadingSpinner />
     }
 
+    const quickActions = [
+        {
+            to: '/dashboard/instructor/create-course',
+            icon: PlusCircle,
+            label: 'Create New Course',
+            sub: 'Organize your knowledge',
+            iconBg: 'bg-violet-50',
+            iconText: 'text-violet-600',
+            primary: true,
+        },
+        {
+            to: '/dashboard/instructor/my-courses',
+            icon: BookOpen,
+            label: 'View All Courses',
+            sub: 'Track performance',
+            iconBg: 'bg-amber-50',
+            iconText: 'text-amber-600',
+        },
+        {
+            to: '#',
+            icon: TrendingUp,
+            label: 'View Analytics',
+            sub: 'Insights at a glance',
+            iconBg: 'bg-blue-50',
+            iconText: 'text-blue-600',
+        },
+        {
+            to: '#',
+            icon: FileText,
+            label: 'Make Announcement',
+            sub: 'Notify your students',
+            iconBg: 'bg-emerald-50',
+            iconText: 'text-emerald-600',
+        },
+    ]
+
     return (
-        <div className="py-4 grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <div className="py-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
             <PageTitle title="Instructor Dashboard" />
-            <div className="lg:col-span-3">
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-gray-900">
+
+            <div className="lg:col-span-3 space-y-6">
+
+                {/* ── Page header ── */}
+                <div>
+                    <h1 className="text-xl font-semibold text-gray-900 tracking-tight">
                         Instructor Dashboard
                     </h1>
-                    <p className="text-gray-600 mt-1">
+                    <p className="text-sm text-gray-400 mt-0.5">
                         Manage your courses and view performance.
                     </p>
                 </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 mb-8">
+                {/* ── Stats Grid ── */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                     <StatsCard
                         title="Total Courses"
                         value={data?.total_courses || 0}
@@ -59,81 +98,67 @@ export function InstructorDashboard() {
                     />
                 </div>
 
-                {/* Quick Actions - Enhanced Design */}
-                <div className="bg-linear-to-br from-white to-blue-50/30 p-6 rounded-xl border border-blue-100/50 shadow-sm hover:shadow-md transition-all duration-300 mb-8">
-                    <div className="flex items-center justify-between mb-4">
+                {/* ── Quick Actions ── */}
+                <div className="bg-white border border-gray-100 rounded-xl shadow-sm">
+                    {/* Card header */}
+                    <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
                         <div>
-                            <h2 className="text-lg font-bold text-gray-900">Quick Actions</h2>
-                            <p className="text-sm text-gray-500 mt-0.5">Frequently used tasks and shortcuts</p>
+                            <h2 className="text-sm font-semibold text-gray-900">Quick Actions</h2>
+                            <p className="text-xs text-gray-400 mt-0.5">Frequently used tasks and shortcuts</p>
                         </div>
-                        <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                        <span className="px-2.5 py-1 text-[11px] font-semibold bg-violet-50 text-violet-600 rounded-md">
                             {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
                         </span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <Link to="/dashboard/instructor/create-course">
-                            <button className="group w-full flex items-center gap-3 p-4 bg-linear-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 cursor-pointer">
-                                <div className="p-2 bg-white/20 rounded-lg group-hover:scale-110 transition-transform duration-200">
-                                    <PlusCircle className="w-5 h-5" />
+                    {/* Actions grid */}
+                    <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {quickActions.map((action) => (
+                            <Link key={action.label} to={action.to}>
+                                <div className={`
+                                    group flex items-center gap-3 p-4 rounded-xl border transition-all duration-150 cursor-pointer
+                                    ${action.primary
+                                        ? 'bg-violet-600 border-violet-600 hover:bg-violet-700 hover:border-violet-700'
+                                        : 'bg-white border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                                    }
+                                `}>
+                                    <div className={`
+                                        w-9 h-9 rounded-lg flex items-center justify-center shrink-0
+                                        group-hover:scale-110 transition-transform duration-150
+                                        ${action.primary ? 'bg-white/20' : action.iconBg}
+                                    `}>
+                                        <action.icon className={`w-4.5 h-4.5 ${action.primary ? 'text-white' : action.iconText}`} />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className={`text-sm font-semibold leading-tight ${action.primary ? 'text-white' : 'text-gray-800'}`}>
+                                            {action.label}
+                                        </p>
+                                        <p className={`text-xs mt-0.5 ${action.primary ? 'text-violet-200' : 'text-gray-400'}`}>
+                                            {action.sub}
+                                        </p>
+                                    </div>
+                                    <span className={`text-sm shrink-0 group-hover:translate-x-0.5 transition-transform duration-150 ${action.primary ? 'text-violet-200' : 'text-gray-300'}`}>
+                                        →
+                                    </span>
                                 </div>
-                                <div className="flex-1 text-left">
-                                    <div className="font-semibold">Create New Course</div>
-                                    <div className="text-xs text-blue-100 mt-0.5">Organize your knowledge</div>
-                                </div>
-                                <span className="text-blue-200 group-hover:translate-x-1 transition-transform duration-200">→</span>
-                            </button>
-                        </Link>
-
-                        <Link to="/dashboard/instructor/my-courses">
-                            <button className="group w-full flex items-center gap-3 p-4 bg-white border-2 border-gray-100 text-gray-700 rounded-xl hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 cursor-pointer">
-                                <div className="p-2 bg-yellow-100 rounded-lg group-hover:scale-110 transition-transform duration-200">
-                                    <BookOpen className="w-5 h-5 text-yellow-600" />
-                                </div>
-                                <div className="flex-1 text-left">
-                                    <div className="font-semibold">View All Course</div>
-                                    <div className="text-xs text-gray-500 mt-0.5">Track performance</div>
-                                </div>
-                                <span className="text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-200">→</span>
-                            </button>
-                        </Link>
-
-                        <Link to="#">
-                            <button className="group w-full flex items-center gap-3 p-4 bg-white border-2 border-gray-100 text-gray-700 rounded-xl hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 cursor-pointer">
-                                <div className="p-2 bg-purple-100 rounded-lg group-hover:scale-110 transition-transform duration-200">
-                                    <TrendingUp className="w-5 h-5 text-purple-600" />
-                                </div>
-                                <div className="flex-1 text-left">
-                                    <div className="font-semibold">View Analytics</div>
-                                    <div className="text-xs text-gray-500 mt-0.5">Track performance</div>
-                                </div>
-                                <span className="text-gray-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all duration-200">→</span>
-                            </button>
-                        </Link>
-
-                        <Link to="#">
-                            <button className="group w-full flex items-center gap-3 p-4 bg-white border-2 border-gray-100 text-gray-700 rounded-xl hover:border-blue-200 hover:bg-blue-50/30 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 cursor-pointer">
-                                <div className="p-2 bg-green-100 rounded-lg group-hover:scale-110 transition-transform duration-200">
-                                    <FileText className="w-5 h-5 text-green-600" />
-                                </div>
-                                <div className="flex-1 text-left">
-                                    <div className="font-semibold">Make Announcement</div>
-                                    <div className="text-xs text-gray-500 mt-0.5">Notify your students</div>
-                                </div>
-                                <span className="text-gray-400 group-hover:text-green-600 group-hover:translate-x-1 transition-all duration-200">→</span>
-                            </button>
-                        </Link>
+                            </Link>
+                        ))}
                     </div>
 
-                    {/* Quick Tips */}
-                    <div className="mt-3 pt-3 border-t border-blue-100/50">
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                            <span>You have {data?.total_courses || 0} active courses</span>
+                    {/* Footer hint */}
+                    <div className="px-5 py-3 border-t border-gray-100">
+                        <div className="flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                            <span className="text-xs text-gray-400">
+                                You have <span className="font-semibold text-gray-600">{data?.total_courses || 0}</span> active courses
+                            </span>
                         </div>
                     </div>
                 </div>
+
             </div>
+
+            {/* ── Calendar ── */}
             <div className="lg:col-span-1">
                 <CalendarCard />
             </div>

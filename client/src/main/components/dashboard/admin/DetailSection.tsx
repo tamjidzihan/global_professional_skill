@@ -1,4 +1,3 @@
-// components/admin/dashboard/DetailSection.tsx
 import type { JSX } from 'react'
 
 interface DetailSectionProps {
