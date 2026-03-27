@@ -21,6 +21,7 @@ import NotificationsPage from "./main/pages/NotificationsPage";
 import PrivacyPage from "./main/pages/PrivacyPage";
 import { RegisterPage } from "./main/pages/RegisterPage";
 import TermsPage from "./main/pages/TermsPage";
+import ContactPage from "./main/pages/ContactPage";
 import VerifyEmailPromptPage from "./main/pages/VerifyEmailPromptPage";
 import ProtectedRoute from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
             { path: '/forgot-password', element: <ForgotPasswordPage /> },
             { path: '/terms', element: <TermsPage /> },
             { path: '/privacy', element: <PrivacyPage /> },
+            { path: '/contact', element: <ContactPage /> },
 
             // Auth routes
             {

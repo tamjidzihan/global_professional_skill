@@ -1,27 +1,27 @@
 import { Link } from "react-router-dom"
 import {
-    Award,
+    // Award,
     Target,
-    Users,
-    TrendingUp,
-    BookOpen,
+    // Users,
+    // TrendingUp,
+    // BookOpen,
     Globe,
     Sparkles,
     Rocket,
     CheckCircle,
     ArrowUpRight,
-    Zap,
+    // Zap,
     Heart,
-    Shield
+    Shield,
 } from "lucide-react"
 
 const AboutSection = () => {
-    const achievements = [
-        { number: "50,000+", label: "Happy Students", icon: Users, color: "bg-blue-500" },
-        { number: "200+", label: "Expert Courses", icon: BookOpen, color: "bg-green-500" },
-        { number: "98%", label: "Success Rate", icon: TrendingUp, color: "bg-purple-500" },
-        { number: "18+", label: "Years Legacy", icon: Award, color: "bg-orange-500" },
-    ]
+    // const achievements = [
+    //     { number: "50,000+", label: "Happy Students", icon: Users, color: "bg-blue-500" },
+    //     { number: "200+", label: "Expert Courses", icon: BookOpen, color: "bg-green-500" },
+    //     { number: "98%", label: "Success Rate", icon: TrendingUp, color: "bg-purple-500" },
+    //     { number: "18+", label: "Years Legacy", icon: Award, color: "bg-orange-500" },
+    // ]
 
     const highlights = [
         { text: "Industry-Aligned Curriculum", icon: CheckCircle },
@@ -102,25 +102,21 @@ const AboutSection = () => {
                                 </div>
 
                                 <p className="text-gray-700 leading-relaxed mb-6 text-lg">
-                                    To be a <strong className="text-blue-600">world-class IT institute</strong> in Bangladesh,
-                                    enhancing the competitiveness of the IT sector by creating qualified professionals
-                                    and certified companies that drive digital transformation.
+                                    To provide <strong className="text-blue-600">high-quality, industry-focused training</strong> that equips
+                                    students and professionals with practical skills and professional competencies for today's competitive world.
                                 </p>
 
                                 <div className="bg-linear-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border-2 border-blue-200">
                                     <div className="flex items-center gap-3 mb-4">
                                         <Shield className="w-6 h-6 text-blue-600" />
-                                        <h4 className="font-bold text-gray-900">Our Foundation</h4>
+                                        <h4 className="font-bold text-gray-900">Our Vision</h4>
                                     </div>
                                     <p className="text-gray-700 leading-relaxed">
-                                        Established in <strong>2012 with World Bank support</strong>, building on BASIS's
-                                        training legacy from 2007. We've trained over 50,000 students and continue to bridge
-                                        the industry skill gap with innovative programs.
+                                        To become a <strong>leading skill development institute</strong> recognized for excellence in education and workforce development.
                                     </p>
                                 </div>
                             </div>
                         </div>
-
                         {/* Highlights Grid */}
                         <div className="grid grid-cols-2 gap-4">
                             {highlights.map((item, index) => {
@@ -210,7 +206,7 @@ const AboutSection = () => {
                 </div>
 
                 {/* Achievement Cards - Horizontal Scroll on Mobile, Grid on Desktop */}
-                <div className="relative">
+                {/* <div className="relative">
                     <div className="flex items-center gap-3 mb-8">
                         <div className="bg-linear-to-r from-yellow-400 to-orange-400 p-3 rounded-xl">
                             <Zap className="w-6 h-6 text-white" />
@@ -226,10 +222,7 @@ const AboutSection = () => {
                                     key={index}
                                     className="relative group"
                                 >
-                                    {/* Background Glow */}
                                     <div className={`absolute inset-0 ${achievement.color} opacity-0 group-hover:opacity-20 blur-2xl rounded-3xl transition-opacity duration-300`}></div>
-
-                                    {/* Card */}
                                     <div className="relative bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-gray-200 group-hover:border-transparent group-hover:-translate-y-2">
                                         <div className={`${achievement.color} p-3 sm:p-4 rounded-xl sm:rounded-2xl inline-flex mb-4 shadow-lg`}>
                                             <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
@@ -240,8 +233,6 @@ const AboutSection = () => {
                                         <div className="text-sm sm:text-base font-semibold text-gray-600">
                                             {achievement.label}
                                         </div>
-
-                                        {/* Decorative Element */}
                                         <div className="absolute top-4 right-4 w-2 h-2 bg-gray-300 rounded-full group-hover:bg-green-400 transition-colors"></div>
                                         <div className="absolute top-4 right-8 w-2 h-2 bg-gray-200 rounded-full group-hover:bg-blue-400 transition-colors"></div>
                                     </div>
@@ -249,10 +240,10 @@ const AboutSection = () => {
                             )
                         })}
                     </div>
-                </div>
+                </div> */}
 
                 {/* Bottom Trust Bar */}
-                <div className="mt-16 bg-white rounded-3xl p-8 shadow-xl border-2 border-gray-200">
+                {/* <div className="mt-16 bg-white rounded-3xl p-8 shadow-xl border-2 border-gray-200">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-6">
                         <div className="flex items-center gap-4">
                             <div className="bg-linear-to-br from-blue-500 to-purple-500 p-4 rounded-2xl">
@@ -274,7 +265,7 @@ const AboutSection = () => {
                             ))}
                         </div>
                     </div>
-                </div>
+                </div> */}
             </div>
         </section>
     )

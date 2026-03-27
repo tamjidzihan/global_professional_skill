@@ -105,7 +105,7 @@ export function Footer() {
                             </div>
 
                             {/* Certifications */}
-                            <div className="mt-6">
+                            {/* <div className="mt-6">
                                 <h4 className="font-semibold mb-3 text-gray-700 text-sm">Accredited & Certified By</h4>
                                 <div className="flex flex-wrap gap-2">
                                     {['ISO Certified', 'BASIS Accredited', 'NTVQF Approved'].map((cert, index) => (
@@ -117,7 +117,7 @@ export function Footer() {
                                         </span>
                                     ))}
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
 
                         {/* Popular Courses - Spans 3 columns */}

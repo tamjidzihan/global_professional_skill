@@ -72,7 +72,7 @@ const HeroSection = () => {
 
     return (
         <div className="bg-white">
-            <section className="bg-[#FCF8F1] bg-opacity-30 py-10 sm:pt-14   relative overflow-hidden">
+            <section className="bg-[#FCF8F1] bg-opacity-30 py-10 sm:pt-14 relative overflow-hidden">
                 <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="grid items-center grid-cols-1 gap-12 lg:grid-cols-2">
 
@@ -100,7 +100,7 @@ const HeroSection = () => {
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     onKeyDown={handleKeyDown}
                                 />
-                                <button 
+                                <button
                                     onClick={handleSearch}
                                     className="absolute top-1/2 right-2 -translate-y-1/2 h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:scale-105 transition"
                                 >
