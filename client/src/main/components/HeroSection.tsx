@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState } from "react"
 import { Search } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { motion } from 'framer-motion'
 import { useAuth } from "../../hooks/useAuth"
 
@@ -52,6 +53,23 @@ const floatAnimationDelayed = {
 }
 const HeroSection = () => {
     const { user } = useAuth()
+    const [searchQuery, setSearchQuery] = useState("")
+    const navigate = useNavigate()
+
+    const handleSearch = () => {
+        if (searchQuery.trim()) {
+            navigate(`/courses?search=${encodeURIComponent(searchQuery.trim())}`)
+        } else {
+            navigate('/courses')
+        }
+    }
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            handleSearch()
+        }
+    }
+
     return (
         <div className="bg-white">
             <section className="bg-[#FCF8F1] bg-opacity-30 py-10 sm:pt-14   relative overflow-hidden">
@@ -78,8 +96,14 @@ const HeroSection = () => {
                                     type="text"
                                     placeholder="Search courses, skills, mentors..."
                                     className="w-full h-14 px-6 pr-14 rounded-full bg-white shadow-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-300 transition"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={handleKeyDown}
                                 />
-                                <button className="absolute top-1/2 right-2 -translate-y-1/2 h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:scale-105 transition">
+                                <button 
+                                    onClick={handleSearch}
+                                    className="absolute top-1/2 right-2 -translate-y-1/2 h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:scale-105 transition"
+                                >
                                     <Search className="w-5 h-5" />
                                 </button>
                             </div>

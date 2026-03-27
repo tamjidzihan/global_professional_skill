@@ -1,1 +1,0 @@
-The build and linting errors in the client frontend are now resolved.
