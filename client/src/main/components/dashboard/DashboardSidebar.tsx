@@ -4,48 +4,42 @@ import {
     BookOpen,
     Users,
     FileText,
-    // BarChart,
     GraduationCap,
     LogOut,
     ChevronRight,
-    Sparkles,
-    ChevronLeft,
+    // Settings,
+    // ShieldCheck,
 } from 'lucide-react'
 import { useAuthContext } from '../../../context/AuthContext'
 import { useMyProfile } from '../../../hooks/useMyProfile'
 import { cn } from '../../../lib/utils'
 import { useState } from 'react'
-import ProfileSkeleton from '../ui/loadingSkeleton/ProfileSkeleton'
 
 interface SidebarProps {
     isOpen: boolean
     onClose: () => void
 }
 
-// Enhanced gradient avatars with more vibrant colors
 const getAvatarGradient = (role?: string, firstName?: string) => {
     const gradients = {
-        ADMIN: 'from-violet-600 via-purple-600 to-fuchsia-600',
-        INSTRUCTOR: 'from-blue-600 via-cyan-500 to-teal-500',
-        STUDENT: 'from-emerald-500 via-green-500 to-lime-500',
-        default: 'from-indigo-600 via-purple-600 to-pink-600'
+        ADMIN: 'from-violet-600 to-fuchsia-600',
+        INSTRUCTOR: 'from-blue-600 to-cyan-500',
+        STUDENT: 'from-emerald-500 to-teal-500',
+        default: 'from-indigo-600 to-purple-600',
     }
-
     if (firstName) {
-        const firstLetter = firstName.charAt(0).toUpperCase()
-        const letterCode = firstLetter.charCodeAt(0)
+        const letterCode = firstName.charAt(0).toUpperCase().charCodeAt(0)
         const colors = [
-            'from-rose-600 via-pink-600 to-fuchsia-600',
-            'from-orange-600 via-amber-500 to-yellow-500',
-            'from-yellow-500 via-lime-500 to-green-500',
-            'from-emerald-600 via-teal-600 to-cyan-600',
-            'from-cyan-600 via-blue-600 to-indigo-600',
-            'from-indigo-600 via-violet-600 to-purple-600',
-            'from-purple-600 via-fuchsia-600 to-pink-600'
+            'from-rose-500 to-pink-600',
+            'from-orange-500 to-amber-600',
+            'from-yellow-500 to-lime-600',
+            'from-emerald-500 to-teal-600',
+            'from-cyan-500 to-blue-600',
+            'from-indigo-500 to-violet-600',
+            'from-purple-500 to-fuchsia-600',
         ]
         return colors[letterCode % colors.length]
     }
-
     return gradients[role as keyof typeof gradients] || gradients.default
 }
 
@@ -56,10 +50,8 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
     const [isCollapsed, setIsCollapsed] = useState(false)
 
     const isActive = (path: string, exact?: boolean) => {
-        if (exact) {
-            return location.pathname === path;
-        }
-        return location.pathname.startsWith(path);
+        if (exact) return location.pathname === path
+        return location.pathname.startsWith(path)
     }
 
     const initials =
@@ -69,101 +61,25 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
         '?'
 
     const studentLinks = [
-        {
-            name: 'Dashboard',
-            path: '/dashboard/student',
-            icon: LayoutDashboard,
-            gradient: 'from-blue-500 to-cyan-500',
-            exact: true
-        },
-        {
-            name: 'My Enrollments',
-            path: '/dashboard/student/my-courses',
-            icon: BookOpen,
-            gradient: 'from-purple-500 to-pink-500',
-        },
-        {
-            name: 'Browse Courses',
-            path: '/courses',
-            icon: GraduationCap,
-            gradient: 'from-emerald-500 to-teal-500',
-            external: true
-        },
-        {
-            name: 'Certificates',
-            path: '/dashboard/student/certificates',
-            icon: FileText,
-            gradient: 'from-orange-500 to-amber-500',
-            badge: 'New'
-        },
+        { name: 'Dashboard', path: '/dashboard/student', icon: LayoutDashboard, exact: true },
+        { name: 'My Enrollments', path: '/dashboard/student/my-courses', icon: BookOpen },
+        { name: 'Certificates', path: '/dashboard/student/certificates', icon: FileText, badge: 'New' },
     ]
 
     const instructorLinks = [
-        {
-            name: 'Dashboard',
-            path: '/dashboard/instructor',
-            icon: LayoutDashboard,
-            gradient: 'from-blue-500 to-cyan-500',
-            exact: true
-        },
-        {
-            name: 'My Courses',
-            path: '/dashboard/instructor/my-courses',
-            icon: BookOpen,
-            gradient: 'from-purple-500 to-pink-500',
-            badge: '📚'
-        },
-        // {
-        //     name: 'Analytics',
-        //     // path: '/dashboard/instructor/analytics',
-        //     path: '#',
-        //     icon: BarChart,
-        //     gradient: 'from-emerald-500 to-teal-500',
-        //     badge: '📈'
-        // },
-        // {
-        //     name: 'Reviews',
-        //     // path: '/dashboard/instructor/reviews',
-        //     path: '#',
-        //     icon: Users,
-        //     gradient: 'from-orange-500 to-amber-500',
-        // },
+        { name: 'Dashboard', path: '/dashboard/instructor', icon: LayoutDashboard, exact: true },
+        { name: 'My Courses', path: '/dashboard/instructor/my-courses', icon: BookOpen },
+        // { name: 'Students', path: '/dashboard/instructor/students', icon: Users },
+        { name: 'Reports', path: '/dashboard/instructor/reports', icon: FileText, badge: 'New' },
     ]
 
     const adminLinks = [
-        {
-            name: 'Dashboard',
-            path: '/dashboard/admin',
-            icon: LayoutDashboard,
-            gradient: 'from-blue-500 to-cyan-500',
-            badge: <Sparkles className="w-3 h-3" />,
-            exact: true
-        },
-        {
-            name: 'User Management',
-            path: '/dashboard/admin/users',
-            icon: Users,
-            gradient: 'from-purple-500 to-pink-500',
-        },
-        {
-            name: 'Course Catalog',
-            path: '/dashboard/admin/courses',
-            icon: BookOpen,
-            gradient: 'from-emerald-500 to-teal-500',
-        },
-        // {
-        //     name: 'Course Reviews',
-        //     path: '/dashboard/admin/course-reviews',
-        //     icon: FileText,
-        //     gradient: 'from-red-500 to-rose-500',
-        // },
-        // {
-        //     name: 'Platform Analytics',
-        //     path: '/dashboard/admin/analytics',
-        //     icon: BarChart,
-        //     gradient: 'from-orange-500 to-amber-500',
-        // },
-
+        { name: 'Dashboard', path: '/dashboard/admin', icon: LayoutDashboard, exact: true },
+        { name: 'User Management', path: '/dashboard/admin/users', icon: Users },
+        { name: 'Course Catalog', path: '/dashboard/admin/courses', icon: BookOpen, badge: 'New' },
+        // { name: 'Permissions', path: '/dashboard/admin/permissions', icon: ShieldCheck },
+        // { name: 'Settings', path: '/dashboard/admin/settings', icon: Settings },
+        // { name: 'Reports', path: '/dashboard/admin/reports', icon: FileText },
     ]
 
     const links =
@@ -173,276 +89,287 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                 ? instructorLinks
                 : studentLinks
 
+    const myLinks = [
+        { name: 'My Profile', path: '/dashboard/my-profile', icon: Users },
+        // { name: 'Team', path: '/dashboard/team', icon: Users },
+        // { name: 'Privacy', path: '/dashboard/privacy', icon: ShieldCheck },
+    ]
+
+    // Reusable tooltip for collapsed state
+    const CollapsedTooltip = ({ label, badge }: { label: string; badge?: string | number }) => (
+        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 pointer-events-none
+                        opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                        transition-all duration-150">
+            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg shadow-xl whitespace-nowrap">
+                {label}
+                {badge && (
+                    <span className="px-1.5 py-0.5 text-[10px] font-bold bg-amber-500 rounded-sm leading-none">
+                        {badge}
+                    </span>
+                )}
+            </div>
+            {/* Arrow */}
+            <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900" />
+        </div>
+    )
+
     return (
         <>
-            {/* Enhanced Mobile Overlay with stronger blur */}
+            {/* Mobile overlay */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-linear-to-br from-black/50 via-black/40 to-black/50 backdrop-blur-md z-40 lg:hidden animate-in fade-in duration-300"
+                    className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"
                     onClick={onClose}
                 />
             )}
 
-            {/* Modern Glass Morphism Sidebar */}
             <aside
                 className={cn(
-                    "fixed top-0 left-0 bg-white/80 backdrop-blur-2xl border-r border-white/20 z-50 transform transition-all duration-500 ease-out lg:translate-x-0 lg:static",
-                    "h-screen lg:h-auto lg:min-h-full ",
-                    isOpen
-                        ? "translate-x-0 shadow-2xl shadow-black/10"
-                        : "-translate-x-full lg:translate-x-0",
-                    isCollapsed ? "w-20" : "w-80",
-                    "before:absolute before:inset-0 before:bg-linear-to-br before:from-blue-50/50 before:via-purple-50/30 before:to-pink-50/50 before:-z-10"
+                    'fixed top-0 left-0 z-50 h-screen flex flex-col',
+                    'transform transition-all duration-300 ease-in-out',
+                    'bg-white border-r border-gray-100',
+                    'lg:static lg:translate-x-0',
+                    isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0',
+                    isCollapsed ? 'w-17' : 'w-[256px]'
                 )}
             >
-                <div className="flex flex-col h-full relative z-10">
-                    {/* Collapse Toggle Button - Desktop Only */}
+
+                {/* ════════════════════════════
+                    HEADER
+                ════════════════════════════ */}
+                <div className={cn(
+                    'relative flex items-center h-15 border-b border-gray-100 shrink-0',
+                    isCollapsed ? 'justify-center' : 'px-5 justify-between'
+                )}>
+                    {/* Logo + App name */}
+                    <div className="flex items-center gap-2.5 overflow-hidden">
+                        <div className="w-8 h-8 rounded-xl bg-violet-600 flex items-center justify-center shadow-md shrink-0">
+                            <GraduationCap className="w-4 h-4 text-white" />
+                        </div>
+                        {!isCollapsed && (
+                            <span className="text-[15px] font-semibold text-gray-900 tracking-tight truncate leading-none">
+                                {profile?.role === 'ADMIN'
+                                    ? 'AdminPortal'
+                                    : profile?.role === 'INSTRUCTOR'
+                                        ? 'Instruct Hub'
+                                        : profile?.role === 'STUDENT'
+                                            ? 'EduPortal'
+                                            : 'Loading...'}
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Expand / Collapse toggle button — pill on the right edge */}
                     <button
                         onClick={() => setIsCollapsed(!isCollapsed)}
                         className={cn(
-                            "hidden cursor-pointer lg:flex absolute -right-3 top-8 w-6 h-6 items-center justify-center rounded-full shadow-lg hover:shadow-xl transition-all duration-300 z-50 hover:scale-110",
-                            "bg-linear-to-br from-blue-500 to-purple-600 text-white"
+                            'absolute -right-3 top-1/2 -translate-y-1/2 hidden lg:flex',
+                            'w-6 h-6 items-center justify-center',
+                            'rounded-full bg-white border border-gray-200 shadow-sm text-gray-400',
+                            'hover:border-violet-400 hover:text-violet-600 transition-all duration-200 cursor-pointer z-50'
                         )}
                     >
-                        {isCollapsed ? (
-                            <ChevronRight className="w-3.5 h-3.5" />
-                        ) : (
-                            <ChevronLeft className="w-3.5 h-3.5" />
-                        )}
-                    </button>
-
-                    {/* User Info with Glass Effect */}
-                    <div className={cn(
-                        "p-6 border-b border-white/20",
-                        "bg-linear-to-br from-white/40 to-white/20 backdrop-blur-xl",
-                        isCollapsed && "p-3"
-                    )}>
-                        <Link
-                            to={'/dashboard/my-profile'}
+                        <ChevronRight
                             className={cn(
-                                "flex items-center gap-4 rounded-2xl p-3 transition-all duration-300",
-                                "bg-white/60 backdrop-blur-xl border border-white/40",
-                                "hover:bg-white/80 hover:shadow-lg hover:scale-[1.02]",
-                                "shadow-lg shadow-blue-500/10",
-                                isCollapsed && "flex-col gap-2 p-2"
+                                'w-3.5 h-3.5 transition-transform duration-300',
+                                !isCollapsed && 'rotate-180'
                             )}
-                        >
-                            {isLoading ? (
-                                <ProfileSkeleton isCollapsed={isCollapsed} />
-                            ) : (
-                                <>
-                                    {/* Enhanced Avatar with Glow */}
-                                    <div className="relative group">
-                                        {profile?.profile_picture ? (
-                                            <img
-                                                src={profile?.profile_picture || ''}
-                                                alt={profile?.first_name || profile?.email || "Profile Picture"}
-                                                className={cn(
-                                                    "rounded-2xl object-cover shadow-xl ring-2 ring-white/50",
-                                                    isCollapsed ? "w-12 h-12" : "w-16 h-16"
-                                                )}
-                                            />
-                                        ) : (
-                                            <div
-                                                className={cn(
-                                                    "rounded-2xl flex items-center justify-center font-bold text-white shadow-xl",
-                                                    "bg-linear-to-br ring-2 ring-white/50",
-                                                    getAvatarGradient(profile?.role, profile?.first_name),
-                                                    "relative overflow-hidden",
-                                                    isCollapsed ? "w-12 h-12" : "w-16 h-16"
-                                                )}
-                                            >
-                                                {/* Animated shine effect */}
-                                                <div className="absolute inset-0 bg-linear-to-tr from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                                                <span className={cn("text-xl relative z-10", isCollapsed && "text-lg")}>
-                                                    {initials}
-                                                </span>
-                                            </div>
-                                        )}
-                                        {/* Enhanced Online Status with Pulse */}
-                                        <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-linear-to-br from-green-400 to-emerald-500 border-3 border-white rounded-full shadow-lg">
-                                            <div className="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></div>
-                                        </div>
-                                    </div>
+                        />
+                    </button>
+                </div>
 
-                                    {!isCollapsed && (
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-base font-bold truncate bg-linear-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-                                                {profile?.first_name} {profile?.last_name}
-                                            </p>
-                                            <p className="text-xs text-gray-600 truncate mt-0.5">
-                                                {profile?.email}
-                                            </p>
-                                            {/* Enhanced Role Badge with Gradient */}
-                                            <div className="flex items-center gap-2 mt-2">
-                                                <span className={cn(
-                                                    "inline-flex px-3 py-1 text-xs font-bold rounded-full shadow-md",
-                                                    "bg-linear-to-r backdrop-blur-xl border border-white/40",
-                                                    profile?.role === 'ADMIN' && "from-violet-500 to-fuchsia-500 text-white",
-                                                    profile?.role === 'INSTRUCTOR' && "from-blue-500 to-cyan-500 text-white",
-                                                    profile?.role === 'STUDENT' && "from-emerald-500 to-teal-500 text-white"
-                                                )}>
-                                                    {profile?.role?.toLowerCase()}
-                                                </span>
+
+                {/* ════════════════════════════
+                    NAVIGATION
+                ════════════════════════════ */}
+                <nav className={cn('flex-1 overflow-y-auto py-3 space-y-4', isCollapsed ? 'px-3.5' : 'px-3')}>
+
+                    {/* — GENERAL section — */}
+                    <div>
+                        {!isCollapsed ? (
+                            <p className="px-2 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400 select-none">
+                                {profile?.role === 'ADMIN' ? 'Admin' : profile?.role === 'INSTRUCTOR' ? 'Instructor' : 'General'}
+                            </p>
+                        ) : (
+                            /* Collapsed: thin divider label replacement */
+                            <p className="mb-2 text-[9px] font-semibold uppercase tracking-widest text-gray-300 text-center select-none">
+                                {profile?.role === 'ADMIN' ? 'ADM' : profile?.role === 'INSTRUCTOR' ? 'INS' : 'GEN'}
+                            </p>
+                        )}
+
+                        <div className="space-y-0.5">
+                            {links.map((link) => {
+                                const Icon = link.icon
+                                const active = isActive(link.path, link.exact)
+                                const isExternal = 'external' in link
+
+                                return (
+                                    <div key={link.path} className="relative group">
+                                        <Link
+                                            to={link.path}
+                                            onClick={onClose}
+                                            target={isExternal ? '_blank' : undefined}
+                                            rel={isExternal ? 'noopener noreferrer' : undefined}
+                                            className={cn(
+                                                'flex items-center rounded-lg text-sm transition-all duration-150',
+                                                isCollapsed
+                                                    ? 'w-10 h-10 justify-center'
+                                                    : 'gap-3 px-3 py-2.25 justify-between',
+                                                active
+                                                    ? 'bg-violet-50 text-violet-700'
+                                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                            )}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <Icon
+                                                    className={cn(
+                                                        'w-4.5 h-4.5 shrink-0 transition-colors',
+                                                        active
+                                                            ? 'text-violet-600'
+                                                            : 'text-gray-400 group-hover:text-gray-600'
+                                                    )}
+                                                />
+                                                {!isCollapsed && (
+                                                    <span className={cn('font-medium leading-none', active && 'font-semibold text-violet-700')}>
+                                                        {link.name}
+                                                    </span>
+                                                )}
                                             </div>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                        </Link>
+
+                                            {/* Badge — only in expanded state */}
+                                            {!isCollapsed && link.badge && (
+                                                <span className={cn(
+                                                    'inline-flex items-center px-2 py-0.5 text-[11px] font-bold rounded-md shrink-0 leading-none',
+                                                    typeof link.badge === 'string' && link.badge === 'New'
+                                                        ? 'bg-violet-600 text-white'
+                                                        : 'bg-amber-500 text-white'
+                                                )}>
+                                                    {link.badge}
+                                                </span>
+                                            )}
+                                        </Link>
+
+                                        {/* Tooltip — only in collapsed state */}
+                                        {/* {isCollapsed && (
+                                            <CollapsedTooltip label={link.name} badge={link.badge as string | undefined} />
+                                        )} */}
+                                    </div>
+                                )
+                            })}
+                        </div>
                     </div>
 
-                    {/* Navigation with Modern Glass Cards */}
-                    <nav className={cn("flex-1 overflow-y-auto p-4 space-y-2", isCollapsed && "p-2")}>
-                        {links.map((link) => {
-                            const Icon = link.icon
-                            const active = isActive(link.path, link.exact)
-                            const isExternal = 'external' in link
+                    {/* — MY section — */}
+                    <div>
+                        {!isCollapsed ? (
+                            <p className="px-2 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-gray-400 select-none">
+                                My
+                            </p>
+                        ) : (
+                            <p className="mb-2 text-[9px] font-semibold uppercase tracking-widest text-gray-300 text-center select-none">
+                                MY
+                            </p>
+                        )}
 
-                            return (
-                                <Link
-                                    key={link.path}
-                                    to={link.path}
-                                    onClick={onClose}
-                                    target={isExternal ? "_blank" : undefined}
-                                    rel={isExternal ? "noopener noreferrer" : undefined}
+                        <div className="space-y-0.5">
+                            {myLinks.map((link) => {
+                                const Icon = link.icon
+                                const active = isActive(link.path, true)
+                                return (
+                                    <div key={link.path} className="relative group">
+                                        <Link
+                                            to={link.path}
+                                            className={cn(
+                                                'flex items-center gap-3 rounded-lg text-sm transition-all duration-150',
+                                                isCollapsed ? 'w-10 h-10 justify-center' : 'px-3 py-2.25',
+                                                active
+                                                    ? 'bg-violet-50 text-violet-700'
+                                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                            )}
+                                        >
+                                            <Icon className={cn('w-4.5 h-4.5 shrink-0', active ? 'text-violet-600' : 'text-gray-400 group-hover:text-gray-600')} />
+                                            {!isCollapsed && <span className="font-medium">{link.name}</span>}
+                                        </Link>
+                                        {isCollapsed && <CollapsedTooltip label={link.name} />}
+                                    </div>
+                                )
+                            })}
+
+                            {/* Logout */}
+                            <div className="relative group">
+                                <button
+                                    onClick={logout}
                                     className={cn(
-                                        "group relative flex items-center justify-between px-4 py-3.5 text-sm font-semibold rounded-xl transition-all duration-300",
-                                        " active:scale-[0.98]",
-                                        active
-                                            ? "bg-linear-to-r text-white shadow-lg"
-                                            : "text-gray-700 hover:bg-white/60 backdrop-blur-xl",
-                                        active && link.gradient,
-                                        isCollapsed && "justify-center px-2"
+                                        'w-full flex items-center gap-3 rounded-lg text-sm transition-all duration-150 cursor-pointer',
+                                        isCollapsed ? 'w-10 h-10 justify-center' : 'px-3 py-2.25',
+                                        'text-gray-600 hover:bg-red-50 hover:text-red-600'
                                     )}
                                 >
-                                    {/* Animated background glow for active state */}
-                                    {active && (
-                                        <div className={cn(
-                                            "absolute inset-0 bg-linear-to-r rounded-xl opacity-50 blur-xl -z-10",
-                                            link.gradient
-                                        )}></div>
-                                    )}
-
-                                    <div className="flex items-center gap-3">
-                                        <div className={cn(
-                                            "p-2.5 rounded-lg transition-all duration-300 relative overflow-hidden group-hover:scale-110",
-                                            active
-                                                ? "bg-white/20 text-white shadow-lg"
-                                                : "bg-gray-100 text-gray-500 group-hover:bg-linear-to-br group-hover:from-white/80 group-hover:to-white/60"
-                                        )}>
-                                            {/* Icon glow effect on hover */}
-                                            <div className={cn(
-                                                "absolute inset-0 bg-linear-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-                                                link.gradient
-                                            )}></div>
-                                            <Icon className="w-5 h-5 relative z-10" />
-                                        </div>
-                                        {!isCollapsed && (
-                                            <span className="relative">
-                                                {link.name}
-                                                {/* Underline animation on hover */}
-                                                <span className={cn(
-                                                    "absolute -bottom-1 left-0 h-0.5 w-0 transition-all duration-300 rounded-full",
-                                                    active ? "bg-white" : "bg-linear-to-r " + link.gradient,
-                                                    "group-hover:w-full"
-                                                )}></span>
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    {!isCollapsed && (
-                                        <div className="flex items-center gap-2">
-                                            {link.badge && (
-                                                <span className={cn(
-                                                    "inline-flex items-center px-2.5 py-1 text-xs font-bold rounded-full shadow-md",
-                                                    "bg-linear-to-r from-yellow-400 to-orange-500 text-white",
-                                                    "animate-pulse"
-                                                )}>
-                                                    {link.badge}
-                                                </span>
-                                            )}
-                                            <ChevronRight className={cn(
-                                                "w-4 h-4 transition-all duration-300",
-                                                active
-                                                    ? "text-white translate-x-1"
-                                                    : "text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1",
-                                                isExternal && "rotate-45"
-                                            )} />
-                                        </div>
-                                    )}
-
-                                    {/* Tooltip for collapsed state */}
-                                    {isCollapsed && (
-                                        <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap shadow-xl z-50">
-                                            {link.name}
-                                            {link.badge && (
-                                                <span className="ml-2 px-2 py-0.5 text-xs bg-yellow-400 text-gray-900 rounded-full">
-                                                    {link.badge}
-                                                </span>
-                                            )}
-                                        </div>
-                                    )}
-                                </Link>
-                            )
-                        })}
-                    </nav>
-
-                    {/* Footer with Glass Effect */}
-                    <div className={cn(
-                        "p-4 border-t border-white/20",
-                        "bg-linear-to-br from-white/40 to-white/20 backdrop-blur-xl",
-                        isCollapsed && "p-2"
-                    )}>
-                        <button
-                            onClick={logout}
-                            className={cn(
-                                "group w-full flex items-center justify-between px-4 py-3.5 text-sm font-semibold rounded-xl transition-all duration-300 cursor-pointer",
-                                "text-red-600 hover:bg-linear-to-r hover:from-red-500 hover:to-rose-500 hover:text-white",
-                                "hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]",
-                                "bg-white/60 backdrop-blur-xl border border-red-200/40",
-                                isCollapsed && "justify-center px-2"
-                            )}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="p-2.5 rounded-lg bg-red-100 text-wtite group-hover:bg-white/20 transition-all duration-300 group-hover:scale-110">
-                                    <LogOut className="w-5 h-5" />
-                                </div>
-                                {!isCollapsed && <span>Logout</span>}
+                                    <LogOut className="w-4.5 h-4.5 shrink-0 text-gray-400 group-hover:text-red-500" />
+                                    {!isCollapsed && <span className="font-medium">Logout</span>}
+                                </button>
                             </div>
-                            {!isCollapsed && (
-                                <ChevronRight className="w-4 h-4 text-red-400 group-hover:text-white group-hover:translate-x-1 transition-all duration-300" />
-                            )}
-
-                            {/* Tooltip for collapsed state */}
-                            {isCollapsed && (
-                                <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 text-white text-sm font-medium rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap shadow-xl z-50">
-                                    Logout
-                                </div>
-                            )}
-                        </button>
-
-                        {/* Enhanced Version/Status Footer */}
-                        {!isCollapsed && (
-                            <div className="mt-4 pt-4 border-t border-white/20">
-                                <div className="flex items-center justify-between text-xs">
-                                    <span className="font-medium text-gray-500">
-                                        v2.1.4 • Dashboard
-                                    </span>
-                                    <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-linear-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20">
-                                        <div className="relative w-2 h-2">
-                                            <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-75"></div>
-                                            <div className="relative w-2 h-2 bg-green-500 rounded-full"></div>
-                                        </div>
-                                        <span className="font-semibold text-green-600">
-                                            System OK
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                        </div>
                     </div>
+                </nav>
+
+                {/* ════════════════════════════
+                    FOOTER
+                ════════════════════════════ */}
+                <div className={cn('border-t border-gray-100 shrink-0', isCollapsed ? 'px-3.5 py-3' : 'px-4 py-3')}>
+
+                    {/* Profile row */}
+                    <Link
+                        to="/dashboard/my-profile"
+                        className={cn(
+                            'flex items-center rounded-xl hover:bg-gray-50 transition-colors group',
+                            isCollapsed ? 'justify-center p-1' : 'gap-3 px-2 py-2'
+                        )}
+                    >
+                        {/* Avatar */}
+                        <div className="relative shrink-0">
+                            {isLoading ? (
+                                <div className={cn('rounded-full bg-gray-200 animate-pulse', isCollapsed ? 'w-9 h-9' : 'w-8 h-8')} />
+                            ) : profile?.profile_picture ? (
+                                <img
+                                    src={profile.profile_picture}
+                                    alt={profile.first_name || 'Profile'}
+                                    className={cn('rounded-full object-cover ring-2 ring-white shadow-sm', isCollapsed ? 'w-9 h-9' : 'w-8 h-8')}
+                                />
+                            ) : (
+                                <div
+                                    className={cn(
+                                        'rounded-full flex items-center justify-center font-bold text-white bg-linear-to-br',
+                                        isCollapsed ? 'w-9 h-9 text-sm' : 'w-8 h-8 text-xs',
+                                        getAvatarGradient(profile?.role, profile?.first_name)
+                                    )}
+                                >
+                                    {initials}
+                                </div>
+                            )}
+                            {/* Online indicator */}
+                            <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white" />
+                        </div>
+
+                        {/* Name + role — only when expanded */}
+                        {!isCollapsed && (
+                            <>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-900 truncate leading-tight">
+                                        {profile?.first_name} {profile?.last_name}
+                                    </p>
+                                    <p className="text-[11px] text-gray-400 truncate leading-tight capitalize">
+                                        {profile?.role?.toLowerCase()}
+                                    </p>
+                                </div>
+                                <div className="w-6 h-6 flex items-center justify-center rounded-full border border-gray-200 group-hover:border-violet-400 group-hover:text-violet-500 transition-colors shrink-0">
+                                    <ChevronRight className="w-3 h-3 text-gray-400 group-hover:text-violet-500 transition-colors" />
+                                </div>
+                            </>
+                        )}
+                    </Link>
                 </div>
+
             </aside>
         </>
     )

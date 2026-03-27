@@ -14,57 +14,71 @@ import {
     BookOpen,
     Zap,
     Heart,
-    Star
+    Star,
+    Code,
+    Palette,
+    Megaphone,
+    Briefcase
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Breadcrumb from '../components/Breadcrumb'
+import PageTitle from '../components/PageTitle'
 
 const AboutPage = () => {
     const features = [
         {
             icon: Building,
-            title: "Modern Infrastructure",
-            description: "State-of-the-art labs and classrooms equipped with latest technology",
+            title: "Modern Learning Facilities",
+            description: "State-of-the-art labs and classrooms equipped with latest technology for optimal learning",
             color: "blue"
         },
         {
             icon: Users,
-            title: "Expert Trainers",
-            description: "Industry experienced professionals as mentors and instructors",
+            title: "Industry Expert Trainers",
+            description: "Experienced professionals with real-world expertise as mentors and instructors",
             color: "green"
         },
         {
             icon: Award,
-            title: "Industry Certification",
-            description: "Globally recognized certificates upon successful course completion",
+            title: "Professional Certification",
+            description: "Industry-recognized certificates upon successful course completion",
             color: "purple"
         },
         {
             icon: Monitor,
-            title: "Hands-on Training",
-            description: "Practical project-based learning approach for real-world skills",
+            title: "Project-Based Learning",
+            description: "Practical, hands-on training approach for real-world skill development",
             color: "orange"
         },
     ]
 
     const stats = [
-        { number: "50,000+", label: "Students Trained", icon: Users },
-        { number: "200+", label: "Courses Offered", icon: BookOpen },
-        { number: "98%", label: "Success Rate", icon: TrendingUp },
-        { number: "18+", label: "Years Experience", icon: Award },
+        { number: "10,000+", label: "Students Trained", icon: Users },
+        { number: "50+", label: "Professional Courses", icon: BookOpen },
+        { number: "95%", label: "Success Rate", icon: TrendingUp },
+        { number: "15+", label: "Years Experience", icon: Award },
     ]
 
     const achievements = [
-        { text: "World Bank Supported Institute", icon: CheckCircle },
-        { text: "BASIS Accredited Training Center", icon: CheckCircle },
-        { text: "ISO 9001:2015 Certified", icon: CheckCircle },
-        { text: "NTVQF Approved Programs", icon: CheckCircle },
-        { text: "Industry-Leading Curriculum", icon: CheckCircle },
-        { text: "Job Placement Assistance", icon: CheckCircle },
+        { text: "Industry-Focused Curriculum", icon: CheckCircle },
+        { text: "Practical Project-Based Training", icon: CheckCircle },
+        { text: "Experienced Professional Trainers", icon: CheckCircle },
+        { text: "Modern Learning Environment", icon: CheckCircle },
+        { text: "Career Growth Support", icon: CheckCircle },
+        { text: "Flexible Learning Options", icon: CheckCircle },
+    ]
+
+    const programs = [
+        { icon: Code, name: "IT & Technical Skills", color: "blue" },
+        { icon: Megaphone, name: "Digital Marketing", color: "purple" },
+        { icon: Palette, name: "Graphic Design", color: "orange" },
+        { icon: Monitor, name: "Web Design & Development", color: "green" },
+        { icon: Briefcase, name: "Corporate Certification", color: "red" },
     ]
 
     return (
         <div className="bg-[#FCF8F1]">
+            <PageTitle title="About Us | GPI - Global Professional Institute" />
             <Breadcrumb name="About Us" />
 
             {/* Hero Section */}
@@ -80,24 +94,22 @@ const AboutPage = () => {
                     <div className="max-w-4xl mx-auto text-center mb-16">
                         <div className="inline-flex items-center gap-2 px-5 py-2 bg-linear-to-r from-blue-500 to-purple-500 text-white rounded-full text-sm font-bold mb-6 shadow-lg">
                             <Sparkles className="w-4 h-4" />
-                            Pioneering IT Education Since 2007
+                            Modern Skill Development Since 2010
                         </div>
                         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
                             Welcome to
                             <span className="block mt-2 bg-linear-to-r from-[#0066CC] via-blue-600 to-purple-600 bg-clip-text text-transparent">
-                                GPIS-BD
+                                GPI - Global Professional Institute
                             </span>
                         </h1>
                         <div className="h-1 w-24 bg-linear-to-r from-[#0066CC] to-[#76C043] mx-auto rounded-full mb-8"></div>
                         <p className="text-lg sm:text-xl text-gray-700 leading-relaxed">
-                            To address the skill gap of HR in the industry, BASIS started its
-                            own training activities in 2007. Later in 2012, BASIS
-                            institutionalized its training activities and set up BASIS Institute
-                            of Technology & Management Limited (GPIS-BD) with the support of <strong className="text-blue-600">World Bank</strong>.
-                            GPIS-BD was established with a vision to be a <strong className="text-blue-600">world-class IT
-                                institute</strong> in Bangladesh for the purpose of enhancing the
-                            competitiveness of the IT Sector in Bangladesh by creating a pool of
-                            qualified IT professionals and quality certified IT companies.
+                            GPI – Global Professional Institute is a modern skill development and professional
+                            training institute committed to empowering individuals with industry-relevant knowledge
+                            and practical skills. Our mission is to develop skilled professionals who are prepared
+                            to meet the demands of today's competitive and technology-driven world. At GPI, we focus
+                            on providing <strong className="text-blue-600">practical, project-based learning</strong> that helps students and professionals
+                            build real-world capabilities and advance their careers.
                         </p>
                     </div>
 
@@ -128,6 +140,34 @@ const AboutPage = () => {
                             )
                         })}
                     </div>
+
+                    {/* Programs Section */}
+                    <div className="max-w-4xl mx-auto text-center">
+                        <p className="text-lg text-gray-700 mb-6">
+                            We offer a range of professional training programs including:
+                        </p>
+                        <div className="flex flex-wrap justify-center gap-3">
+                            {programs.map((program, index) => {
+                                const Icon = program.icon
+                                const colorClasses = {
+                                    blue: 'bg-blue-100 text-blue-700 border-blue-200',
+                                    green: 'bg-green-100 text-green-700 border-green-200',
+                                    purple: 'bg-purple-100 text-purple-700 border-purple-200',
+                                    orange: 'bg-orange-100 text-orange-700 border-orange-200',
+                                    red: 'bg-red-100 text-red-700 border-red-200',
+                                }
+                                return (
+                                    <span key={index} className={`px-4 py-2 rounded-full border ${colorClasses[program.color as keyof typeof colorClasses]} flex items-center gap-2 text-sm font-semibold`}>
+                                        <Icon className="w-4 h-4" />
+                                        {program.name}
+                                    </span>
+                                )
+                            })}
+                        </div>
+                        <p className="text-gray-600 mt-6">
+                            and various Corporate & Professional Certification courses.
+                        </p>
+                    </div>
                 </div>
             </section>
 
@@ -150,15 +190,16 @@ const AboutPage = () => {
                                         </div>
                                     </div>
                                     <p className="text-gray-700 leading-relaxed text-lg">
-                                        To create a pool of <strong className="text-blue-600">qualified IT professionals</strong> and quality
-                                        certified IT companies to enhance the competitiveness of the IT
-                                        Sector in Bangladesh. We aim to bridge the gap between industry
-                                        requirements and academic output through practical, hands-on
-                                        training that prepares students for real-world challenges.
+                                        Our mission is to provide <strong className="text-blue-600">high-quality, industry-focused training</strong> that
+                                        equips students and professionals with practical skills, technological knowledge,
+                                        and professional competencies required in today's competitive world. GPI is committed
+                                        to developing skilled individuals through innovative learning methods, real-world
+                                        projects, and a professional training environment that supports career growth and
+                                        lifelong learning.
                                     </p>
                                     <div className="mt-6 flex items-center gap-2 text-blue-600">
                                         <Rocket className="w-5 h-5" />
-                                        <span className="font-semibold text-sm">Driving Innovation & Excellence</span>
+                                        <span className="font-semibold text-sm">Developing Future-Ready Professionals</span>
                                     </div>
                                 </div>
                             </div>
@@ -166,7 +207,7 @@ const AboutPage = () => {
                             {/* Vision Card */}
                             <div className="relative group">
                                 <div className="absolute inset-0 bg-linear-to-br from-green-500 to-green-600 rounded-3xl transform -rotate-1 group-hover:-rotate-2 transition-transform duration-300"></div>
-                                <div className="relative bg-white rounded-3xl p-8 sm:p-10 shadow-2xl border-4 border-white">
+                                <div className="relative bg-white rounded-3xl p-8 sm:p-10 shadow-2xl border-4 border-white min-h-full">
                                     <div className="flex items-center gap-4 mb-6">
                                         <div className="bg-linear-to-br from-green-500 to-green-600 p-4 rounded-2xl shadow-lg">
                                             <Eye className="w-8 h-8 text-white" />
@@ -177,15 +218,15 @@ const AboutPage = () => {
                                         </div>
                                     </div>
                                     <p className="text-gray-700 leading-relaxed text-lg">
-                                        To be a <strong className="text-green-600">world-class IT institute</strong> in Bangladesh, recognized
-                                        globally for excellence in technology education and professional
-                                        development. We envision a digital Bangladesh where skilled
-                                        professionals drive innovation, economic growth, and technological
-                                        advancement.
+                                        Our vision is to become a <strong className="text-green-600">leading skill development and professional
+                                            training institute</strong> recognized for excellence in education, innovation, and
+                                        workforce development. We aim to empower individuals with the knowledge and skills
+                                        necessary to succeed in the global digital economy and contribute positively to
+                                        society.
                                     </p>
                                     <div className="mt-6 flex items-center gap-2 text-green-600">
                                         <Globe className="w-5 h-5" />
-                                        <span className="font-semibold text-sm">Building Tomorrow's Leaders</span>
+                                        <span className="font-semibold text-sm">Empowering Global Success</span>
                                     </div>
                                 </div>
                             </div>
@@ -194,47 +235,8 @@ const AboutPage = () => {
                 </div>
             </section>
 
-            {/* Achievements */}
-            <section className="py-16 bg-white">
-                <div className="container mx-auto px-4">
-                    <div className="max-w-6xl mx-auto">
-                        <div className="text-center mb-12">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-100 border border-yellow-200 text-yellow-700 rounded-full text-sm font-semibold mb-4">
-                                <Star className="w-4 h-4" />
-                                Our Achievements
-                            </div>
-                            <h2 className="text-3xl sm:text-4xl font-bold text-black mb-4">
-                                Trusted & <span className="text-[#0066CC]">Accredited</span>
-                            </h2>
-                            <p className="text-gray-600 max-w-2xl mx-auto">
-                                Recognized by leading organizations worldwide for our commitment to quality education
-                            </p>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {achievements.map((achievement, index) => {
-                                const Icon = achievement.icon
-                                return (
-                                    <div
-                                        key={index}
-                                        className="bg-linear-to-br from-green-50 to-white rounded-2xl p-5 border-2 border-green-200 hover:border-green-400 transition-all duration-300 group hover:shadow-xl"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="bg-green-500 p-2 rounded-xl group-hover:scale-110 transition-transform">
-                                                <Icon className="w-5 h-5 text-white" />
-                                            </div>
-                                            <span className="font-semibold text-gray-800">{achievement.text}</span>
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
-                    </div>
-                </div>
-            </section>
-
             {/* Why Choose Us */}
-            <section className="py-16 bg-linear-to-b from-[#F5EFE6] to-[#FCF8F1]">
+            <section className="py-16 bg-white">
                 <div className="container mx-auto px-4">
                     <div className="max-w-6xl mx-auto">
                         <div className="text-center mb-12">
@@ -243,10 +245,10 @@ const AboutPage = () => {
                                 Why Choose Us
                             </div>
                             <h2 className="text-3xl sm:text-4xl font-bold text-black mb-4">
-                                What Makes Us <span className="text-[#0066CC]">Different</span>
+                                What Makes GPI <span className="text-[#0066CC]">Different</span>
                             </h2>
                             <p className="text-gray-600 max-w-2xl mx-auto">
-                                Discover the advantages that set GPIS-BD apart from other institutions
+                                Discover the advantages that set Global Professional Institute apart from other institutions
                             </p>
                         </div>
 
@@ -280,6 +282,57 @@ const AboutPage = () => {
                                 )
                             })}
                         </div>
+
+                        {/* Additional Info */}
+                        <div className="mt-12 text-center">
+                            <p className="text-gray-700 text-lg max-w-3xl mx-auto">
+                                With modern learning facilities, experienced trainers, and an industry-focused curriculum,
+                                GPI provides a professional environment where learners can develop the skills needed for
+                                career growth and success.
+                            </p>
+                            <p className="text-gray-700 font-semibold mt-4">
+                                For detailed course information, class schedules, and online enrollment, please visit our official website.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Achievements */}
+            <section className="py-16 bg-linear-to-b from-[#F5EFE6] to-[#FCF8F1]">
+                <div className="container mx-auto px-4">
+                    <div className="max-w-6xl mx-auto">
+                        <div className="text-center mb-12">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-100 border border-yellow-200 text-yellow-700 rounded-full text-sm font-semibold mb-4">
+                                <Star className="w-4 h-4" />
+                                Our Commitment
+                            </div>
+                            <h2 className="text-3xl sm:text-4xl font-bold text-black mb-4">
+                                Why Professionals <span className="text-[#0066CC]">Trust Us</span>
+                            </h2>
+                            <p className="text-gray-600 max-w-2xl mx-auto">
+                                We are dedicated to providing the highest quality education and training
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {achievements.map((achievement, index) => {
+                                const Icon = achievement.icon
+                                return (
+                                    <div
+                                        key={index}
+                                        className="bg-linear-to-br from-green-50 to-white rounded-2xl p-5 border-2 border-green-200 hover:border-green-400 transition-all duration-300 group hover:shadow-xl"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="bg-green-500 p-2 rounded-xl group-hover:scale-110 transition-transform">
+                                                <Icon className="w-5 h-5 text-white" />
+                                            </div>
+                                            <span className="font-semibold text-gray-800">{achievement.text}</span>
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
                     </div>
                 </div>
             </section>
@@ -298,13 +351,13 @@ const AboutPage = () => {
                                     <Heart className="w-4 h-4" />
                                     Join Our Community
                                 </div>
-                                <h2 className="text-3xl sm:text-4xl lg:text-5xl  font-bold  mb-4">
-                                    Ready to Start Your Journey?
+                                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+                                    Build Your Skills. Shape Your Future
                                 </h2>
                                 <p className="text-blue-100 text-lg mb-8 max-w-2xl mx-auto leading-relaxed">
                                     Join thousands of successful graduates who have transformed their
-                                    careers with GPIS-BD. Explore our courses and find the right path for
-                                    you today!
+                                    careers with GPI. Explore our courses and find the right path for
+                                    your professional growth today!
                                 </p>
                                 <div className="flex flex-col sm:flex-row justify-center gap-4">
                                     <Link
@@ -328,15 +381,15 @@ const AboutPage = () => {
                                     <div className="flex flex-wrap items-center justify-center gap-8 text-sm">
                                         <div className="flex items-center gap-2">
                                             <CheckCircle className="w-5 h-5" />
-                                            <span>50,000+ Students Trained</span>
+                                            <span>10,000+ Students Trained</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <CheckCircle className="w-5 h-5" />
-                                            <span>98% Success Rate</span>
+                                            <span>95% Success Rate</span>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <CheckCircle className="w-5 h-5" />
-                                            <span>Industry Recognized</span>
+                                            <span>Industry-Recognized</span>
                                         </div>
                                     </div>
                                 </div>

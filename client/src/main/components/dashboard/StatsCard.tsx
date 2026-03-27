@@ -17,74 +17,55 @@ export function StatsCard({
 }: StatsCardProps) {
     const colors = {
         blue: {
-            bg: 'from-blue-500/10 to-indigo-500/10',
-            text: 'text-blue-600',
-            icon: 'bg-blue-500/15 text-blue-600',
-            ring: 'group-hover:ring-blue-400/30',
+            iconBg: 'bg-blue-50',
+            iconText: 'text-blue-600',
+            badge: 'bg-blue-50 text-blue-600',
+            accent: 'bg-blue-600',
         },
         green: {
-            bg: 'from-emerald-500/10 to-green-500/10',
-            text: 'text-emerald-600',
-            icon: 'bg-emerald-500/15 text-emerald-600',
-            ring: 'group-hover:ring-emerald-400/30',
+            iconBg: 'bg-emerald-50',
+            iconText: 'text-emerald-600',
+            badge: 'bg-emerald-50 text-emerald-600',
+            accent: 'bg-emerald-500',
         },
         orange: {
-            bg: 'from-orange-500/10 to-amber-500/10',
-            text: 'text-orange-600',
-            icon: 'bg-orange-500/15 text-orange-600',
-            ring: 'group-hover:ring-orange-400/30',
+            iconBg: 'bg-orange-50',
+            iconText: 'text-orange-600',
+            badge: 'bg-orange-50 text-orange-600',
+            accent: 'bg-orange-500',
         },
         red: {
-            bg: 'from-rose-500/10 to-red-500/10',
-            text: 'text-rose-600',
-            icon: 'bg-rose-500/15 text-rose-600',
-            ring: 'group-hover:ring-rose-400/30',
+            iconBg: 'bg-rose-50',
+            iconText: 'text-rose-600',
+            badge: 'bg-rose-50 text-rose-600',
+            accent: 'bg-rose-500',
         },
     }
 
-    return (
-        <div
-            className={`
-                group relative overflow-hidden rounded-xl border border-gray-100 
-                bg-linear-to-br ${colors[color].bg}
-                p-6 shadow-sm transition-all duration-300 
-                hover:shadow-lg
-            `}
-        >
-            {/* Glow effect */}
-            <div
-                className={`
-                    absolute inset-0 opacity-0 group-hover:opacity-100 transition 
-                    ring-1 ${colors[color].ring} rounded-xl
-                `}
-            />
+    const c = colors[color]
 
-            <div className="relative flex items-center justify-between">
-                <div>
-                    <p className="text-sm font-medium text-gray-500 mb-1">
+    return (
+        <div className="group relative bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-200 overflow-hidden">
+            {/* Top accent bar */}
+            <div className={`absolute top-0 left-0 right-0 h-0.75 ${c.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
+
+            <div className="flex items-start justify-between">
+                <div className="flex-1 min-w-0">
+                    <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-2 select-none">
                         {title}
                     </p>
-
-                    <h3 className="text-3xl font-bold tracking-tight text-gray-900">
+                    <h3 className="text-2xl font-bold text-gray-900 leading-none tracking-tight">
                         {value}
                     </h3>
-
                     {change && (
-                        <p className={`mt-1 text-xs font-medium ${colors[color].text}`}>
+                        <p className={`mt-2 inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md ${c.badge}`}>
                             {change}
                         </p>
                     )}
                 </div>
 
-                <div
-                    className={`
-                        p-4 rounded-xl backdrop-blur-sm
-                        ${colors[color].icon}
-                        transition-transform duration-300 
-                        group-hover:scale-110
-                    `}
-                >
-                    <Icon className="w-6 h-6" />
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${c.iconBg} group-hover:scale-110 transition-transform duration-200`}>
+                    <Icon className={`w-4.5 h-4.5 ${c.iconText}`} />
                 </div>
             </div>
         </div>

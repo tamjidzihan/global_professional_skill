@@ -35,7 +35,7 @@ export function AuthLayout({ children, type }: AuthLayoutProps) {
                                     </div>
                                     <div>
                                         <div className="text-yellow-900 font-semibold text-sm">
-                                            GPIS-BD Learning Portal
+                                            GPI-BD Learning Portal
                                         </div>
                                         <div className="text-yellow-900/70 text-xs">
                                             Secure Student Access
@@ -48,7 +48,7 @@ export function AuthLayout({ children, type }: AuthLayoutProps) {
                                         ? 'Sign in to your account'
                                         : isRegister
                                             ? 'Create Your Account'
-                                            : 'Welcome to GPIS-BD'}
+                                            : 'Welcome to GPI-BD'}
                                 </h1>
                                 <p className="text-yellow-800 mb-8">
                                     {isLogin

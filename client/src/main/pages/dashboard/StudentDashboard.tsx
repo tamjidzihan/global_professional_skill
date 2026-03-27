@@ -6,6 +6,7 @@ import { useAuthContext } from '../../../context/AuthContext'
 import { useEnrollments } from '../../../hooks/useEnrollments'
 import { useInstructorRequests } from '../../../hooks/useInstructorRequests'
 import CalendarCard from '../../components/dashboard/CalendarCard'
+import PageTitle from '../../components/PageTitle'
 
 export function StudentDashboard() {
     const { user } = useAuthContext()
@@ -19,12 +20,13 @@ export function StudentDashboard() {
     // Safely calculate stats
     const totalEnrolled = enrollments?.length || 0
     const completed = enrollments?.filter(
-        (e) => e?.progress_percentage === 100,
+        (e) => Number(e?.progress_percentage) === 100,
     ).length || 0
     const inProgress = totalEnrolled - completed
 
     return (
         <div className="p-4 grid grid-cols-1 lg:grid-cols-4 gap-6"> {/* Added grid layout */}
+            <PageTitle title="Student Dashboard" />
             <div className="lg:col-span-3"> {/* Main content takes 2/3 width on large screens */}
                 <div className="mb-8">
                     <h1 className="text-2xl font-bold text-gray-900">
@@ -100,7 +102,7 @@ export function StudentDashboard() {
                                         </h3>
                                         <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                                             <span>Progress</span>
-                                            <span>{Math.round(enrollment?.progress_percentage || 0)}%</span>
+                                            <span>{Math.round(Number(enrollment?.progress_percentage) || 0)}%</span>
                                         </div>
                                         <div className="w-full bg-gray-100 rounded-full h-2 mb-4">
                                             <div

@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { 
-    CreditCard, 
-    ShieldCheck, 
-    ChevronLeft, 
-    CheckCircle2, 
+import {
+    CreditCard,
+    ShieldCheck,
+    ChevronLeft,
+    CheckCircle2,
     AlertCircle,
-    BookOpen,
-    DollarSign
+    BookOpen
 } from 'lucide-react';
 import { useCourses } from '../../hooks/useCourses';
 import { usePayments } from '../../hooks/usePayments';
@@ -21,7 +20,7 @@ const CheckoutPage: React.FC = () => {
     const { course, fetchCourseDetail, loading: courseLoading } = useCourses();
     const { initiatePayment, loading: paymentLoading } = usePayments();
 
-    const [paymentMethod, setPaymentMethod] = useState<'CARD' | 'BKASH' | 'NAGAD'>('CARD');
+    const [paymentMethod, setPaymentMethod] = useState<'BKASH'>('BKASH');
     const [isSuccess, setIsSuccess] = useState(false);
 
     useEffect(() => {
@@ -90,17 +89,17 @@ const CheckoutPage: React.FC = () => {
                     </div>
                     <h2 className="text-3xl font-bold text-gray-800 mb-2">Order Placed!</h2>
                     <p className="text-gray-600 mb-8">
-                        Your payment order for <strong>{course.title}</strong> has been created. 
+                        Your payment order for <strong>{course.title}</strong> has been created.
                         Once payment is verified, you will be automatically enrolled.
                     </p>
                     <div className="space-y-3">
-                        <button 
+                        <button
                             onClick={() => navigate('/dashboard/student/my-courses')}
                             className="w-full bg-[#0066CC] text-white px-6 py-3 rounded-lg font-bold hover:bg-[#004c99] transition-colors"
                         >
                             Go to My Courses
                         </button>
-                        <Link 
+                        <Link
                             to="/"
                             className="block w-full text-gray-600 hover:text-gray-800 font-medium py-2"
                         >
@@ -114,14 +113,14 @@ const CheckoutPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
-            <Breadcrumb 
-                name="Checkout" 
+            <Breadcrumb
+                name="Checkout"
                 subtitle={`Complete your purchase for ${course.title}`}
                 icon={CreditCard}
             />
 
             <div className="container mx-auto px-4 mt-8">
-                <button 
+                <button
                     onClick={() => navigate(-1)}
                     className="flex items-center text-gray-600 hover:text-[#0066CC] mb-6 transition-colors group"
                 >
@@ -137,64 +136,22 @@ const CheckoutPage: React.FC = () => {
                                 <CreditCard className="w-5 h-5 text-[#0066CC] mr-3" />
                                 <h2 className="text-lg font-bold text-gray-800">Select Payment Method</h2>
                             </div>
-                            
-                            <div className="p-6 space-y-4">
-                                <div 
-                                    onClick={() => setPaymentMethod('CARD')}
-                                    className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                                        paymentMethod === 'CARD' 
-                                        ? 'border-[#0066CC] bg-blue-50' 
-                                        : 'border-gray-100 hover:border-gray-200'
-                                    }`}
-                                >
-                                    <div className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${
-                                        paymentMethod === 'CARD' ? 'border-[#0066CC]' : 'border-gray-300'
-                                    }`}>
-                                        {paymentMethod === 'CARD' && <div className="w-2.5 h-2.5 bg-[#0066CC] rounded-full" />}
-                                    </div>
-                                    <div className="flex-1 flex items-center justify-between">
-                                        <span className="font-bold text-gray-800">Credit / Debit Card</span>
-                                        <div className="flex gap-2 opacity-70">
-                                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-4" />
-                                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-4" />
-                                        </div>
-                                    </div>
-                                </div>
 
-                                <div 
+                            <div className="p-6 space-y-4">
+                                <div
                                     onClick={() => setPaymentMethod('BKASH')}
-                                    className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                                        paymentMethod === 'BKASH' 
-                                        ? 'border-[#0066CC] bg-blue-50' 
+                                    className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'BKASH'
+                                        ? 'border-[#0066CC] bg-blue-50'
                                         : 'border-gray-100 hover:border-gray-200'
-                                    }`}
+                                        }`}
                                 >
-                                    <div className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${
-                                        paymentMethod === 'BKASH' ? 'border-[#0066CC]' : 'border-gray-300'
-                                    }`}>
+                                    <div className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${paymentMethod === 'BKASH' ? 'border-[#0066CC]' : 'border-gray-300'
+                                        }`}>
                                         {paymentMethod === 'BKASH' && <div className="w-2.5 h-2.5 bg-[#0066CC] rounded-full" />}
                                     </div>
                                     <div className="flex-1 flex items-center justify-between">
                                         <span className="font-bold text-gray-800">bKash</span>
                                         <span className="text-xs bg-pink-100 text-pink-600 px-2 py-0.5 rounded font-bold">POPULAR</span>
-                                    </div>
-                                </div>
-
-                                <div 
-                                    onClick={() => setPaymentMethod('NAGAD')}
-                                    className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                                        paymentMethod === 'NAGAD' 
-                                        ? 'border-[#0066CC] bg-blue-50' 
-                                        : 'border-gray-100 hover:border-gray-200'
-                                    }`}
-                                >
-                                    <div className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${
-                                        paymentMethod === 'NAGAD' ? 'border-[#0066CC]' : 'border-gray-300'
-                                    }`}>
-                                        {paymentMethod === 'NAGAD' && <div className="w-2.5 h-2.5 bg-[#0066CC] rounded-full" />}
-                                    </div>
-                                    <div className="flex-1">
-                                        <span className="font-bold text-gray-800">Nagad</span>
                                     </div>
                                 </div>
                             </div>
@@ -216,7 +173,7 @@ const CheckoutPage: React.FC = () => {
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 sticky top-8">
                             <div className="p-6 border-b border-gray-100">
                                 <h2 className="text-lg font-bold text-gray-800 mb-4">Order Summary</h2>
-                                
+
                                 <div className="flex gap-4 mb-6">
                                     <div className="w-20 h-20 rounded-lg bg-gray-100 overflow-hidden shrink-0">
                                         {course.thumbnail ? (
@@ -252,10 +209,10 @@ const CheckoutPage: React.FC = () => {
                             </div>
 
                             <div className="p-6 bg-gray-50 rounded-b-xl">
-                                <button 
+                                <button
                                     onClick={handlePayment}
                                     disabled={paymentLoading}
-                                    className="w-full bg-[#76C043] hover:bg-[#65a838] text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-green-200 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                                    className="w-full bg-[#76C043] hover:bg-[#65a838] text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-green-200 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
                                 >
                                     {paymentLoading ? (
                                         <>
@@ -264,7 +221,7 @@ const CheckoutPage: React.FC = () => {
                                         </>
                                     ) : (
                                         <>
-                                            <DollarSign className="w-5 h-5" />
+                                            <span className='font-extrabold'>৳</span>
                                             Confirm Purchase
                                         </>
                                     )}

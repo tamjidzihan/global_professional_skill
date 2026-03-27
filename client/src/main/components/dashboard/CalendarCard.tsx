@@ -11,22 +11,22 @@ const CalendarCard: React.FC = () => {
     const [value, onChange] = useState<Value>(new Date())
 
     return (
-        <div
-            className="
-                group relative overflow-hidden rounded-xl border border-gray-100
-                bg-linear-to-br from-blue-50/50 to-indigo-50/30
-                p-6 shadow-sm hover:shadow-lg"
-        >
-            <div className="flex items-center gap-2 mb-4">
-                <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
-                    <CalendarDays size={18} />
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                <div>
+                    <h3 className="text-sm font-semibold text-gray-900">Calendar</h3>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                        {new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                    </p>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 tracking-tight">
-                    Calendar
-                </h3>
+                <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
+                    <CalendarDays className="w-4 h-4 text-violet-600" />
+                </div>
             </div>
 
-            <div className="bg-white/60 backdrop-blur-md rounded-xl p-3 border border-white/40 shadow-inner">
+            {/* Calendar */}
+            <div className="p-4">
                 <Calendar onChange={onChange} value={value} />
             </div>
         </div>

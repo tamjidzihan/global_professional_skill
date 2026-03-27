@@ -76,6 +76,7 @@ export function InstructorRequestModal({
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                     <div className="flex items-center gap-3">
                                         <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border">
+
                                             <User className="w-6 h-6 text-gray-700" />
                                         </div>
                                         <div>

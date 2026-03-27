@@ -169,7 +169,7 @@ export function AdminCourseCatalog(): JSX.Element {
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{course.instructor_name}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(course.status)}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">${course.price}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">                                            <span className='font-extrabold'>৳</span> {course.price}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                         <div className="relative inline-block text-left">
                                             <button className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full">

@@ -25,6 +25,7 @@ import type { LessonSummary, Section } from '../../../../types';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import DashboardBreadcrumb from '../../../components/dashboard/DashboardBreadcrumb';
 import { extractErrorMessage } from '../../../../lib/errorUtils';
+import PageTitle from '../../../components/PageTitle';
 
 interface SectionToEdit {
     id: string;
@@ -290,6 +291,7 @@ const CurriculumPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
+            <PageTitle title={`Manage Curriculum | ${course.title} `} />
             {/* Breadcrumb */}
             <DashboardBreadcrumb
                 name="Manage Curriculum"
@@ -367,6 +369,96 @@ const CurriculumPage: React.FC = () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Add Section Form */}
+                    <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6 mb-8">
+                        <div className="flex items-center gap-3 mb-5">
+                            <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                                <FolderPlus className="w-5 h-5 text-green-600" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-semibold text-gray-900">Add New Section</h2>
+                                <p className="text-sm text-gray-500">Create a new section to organize your lessons</p>
+                            </div>
+                        </div>
+
+                        <form onSubmit={handleAddSection} className="space-y-5">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                <div className="md:col-span-2">
+                                    <label htmlFor="section-title" className={labelClassName}>
+                                        Section Title <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        id="section-title"
+                                        type="text"
+                                        value={newSection.title}
+                                        onChange={(e) => setNewSection(prev => ({ ...prev, title: e.target.value }))}
+                                        placeholder="e.g., Introduction to the Course"
+                                        className={inputClassName}
+                                        disabled={isAddingSection}
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="section-order" className={labelClassName}>
+                                        Order
+                                    </label>
+                                    <input
+                                        id="section-order"
+                                        type="number"
+                                        value={newSection.order}
+                                        onChange={(e) => setNewSection(prev => ({ ...prev, order: parseInt(e.target.value) || 0 }))}
+                                        placeholder="0"
+                                        min="0"
+                                        className={inputClassName}
+                                        disabled={isAddingSection}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label htmlFor="section-description" className={labelClassName}>
+                                    Description (Optional)
+                                </label>
+                                <textarea
+                                    id="section-description"
+                                    value={newSection.description}
+                                    onChange={(e) => setNewSection(prev => ({ ...prev, description: e.target.value }))}
+                                    placeholder="Brief description of this section..."
+                                    rows={3}
+                                    className={inputClassName}
+                                    disabled={isAddingSection}
+                                />
+                                <p className="mt-1.5 text-xs text-gray-500">
+                                    Provide context about what students will learn in this section
+                                </p>
+                            </div>
+
+                            <div className="flex justify-end gap-3">
+                                <LoaderButton
+                                    type="button"
+                                    variant="secondary"
+                                    size="md"
+                                    onClick={() => setNewSection({ title: '', description: '', order: 0 })}
+                                    disabled={isAddingSection || !newSection.title}
+                                >
+                                    Clear
+                                </LoaderButton>
+                                <LoaderButton
+                                    type="submit"
+                                    variant="success"
+                                    size="md"
+                                    icon={<Plus size={18} />}
+                                    loading={isAddingSection}
+                                    loadingText="Adding Section..."
+                                    disabled={!newSection.title.trim()}
+                                >
+                                    Add Section
+                                </LoaderButton>
+                            </div>
+                        </form>
                     </div>
 
                     {/* Sections List */}
@@ -558,96 +650,6 @@ const CurriculumPage: React.FC = () => {
                                 ))}
                             </div>
                         )}
-                    </div>
-
-                    {/* Add Section Form */}
-                    <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6 mb-8">
-                        <div className="flex items-center gap-3 mb-5">
-                            <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-                                <FolderPlus className="w-5 h-5 text-green-600" />
-                            </div>
-                            <div>
-                                <h2 className="text-lg font-semibold text-gray-900">Add New Section</h2>
-                                <p className="text-sm text-gray-500">Create a new section to organize your lessons</p>
-                            </div>
-                        </div>
-
-                        <form onSubmit={handleAddSection} className="space-y-5">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                <div className="md:col-span-2">
-                                    <label htmlFor="section-title" className={labelClassName}>
-                                        Section Title <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        id="section-title"
-                                        type="text"
-                                        value={newSection.title}
-                                        onChange={(e) => setNewSection(prev => ({ ...prev, title: e.target.value }))}
-                                        placeholder="e.g., Introduction to the Course"
-                                        className={inputClassName}
-                                        disabled={isAddingSection}
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label htmlFor="section-order" className={labelClassName}>
-                                        Order
-                                    </label>
-                                    <input
-                                        id="section-order"
-                                        type="number"
-                                        value={newSection.order}
-                                        onChange={(e) => setNewSection(prev => ({ ...prev, order: parseInt(e.target.value) || 0 }))}
-                                        placeholder="0"
-                                        min="0"
-                                        className={inputClassName}
-                                        disabled={isAddingSection}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label htmlFor="section-description" className={labelClassName}>
-                                    Description (Optional)
-                                </label>
-                                <textarea
-                                    id="section-description"
-                                    value={newSection.description}
-                                    onChange={(e) => setNewSection(prev => ({ ...prev, description: e.target.value }))}
-                                    placeholder="Brief description of this section..."
-                                    rows={3}
-                                    className={inputClassName}
-                                    disabled={isAddingSection}
-                                />
-                                <p className="mt-1.5 text-xs text-gray-500">
-                                    Provide context about what students will learn in this section
-                                </p>
-                            </div>
-
-                            <div className="flex justify-end gap-3">
-                                <LoaderButton
-                                    type="button"
-                                    variant="secondary"
-                                    size="md"
-                                    onClick={() => setNewSection({ title: '', description: '', order: 0 })}
-                                    disabled={isAddingSection || !newSection.title}
-                                >
-                                    Clear
-                                </LoaderButton>
-                                <LoaderButton
-                                    type="submit"
-                                    variant="success"
-                                    size="md"
-                                    icon={<Plus size={18} />}
-                                    loading={isAddingSection}
-                                    loadingText="Adding Section..."
-                                    disabled={!newSection.title.trim()}
-                                >
-                                    Add Section
-                                </LoaderButton>
-                            </div>
-                        </form>
                     </div>
                 </div>
             </div>

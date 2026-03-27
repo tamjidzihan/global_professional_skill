@@ -24,6 +24,7 @@ import CourseDetailSkeleton from '../../../components/ui/loadingSkeleton/CourseD
 import DashboardBreadcrumb from '../../../components/dashboard/DashboardBreadcrumb'
 import { toast } from 'react-hot-toast'
 import { extractErrorMessage } from '../../../../lib/errorUtils'
+import PageTitle from '../../../components/PageTitle'
 
 export function InstructorCourseDetailPage() {
     const { id } = useParams<{ id: string }>()
@@ -200,6 +201,7 @@ export function InstructorCourseDetailPage() {
     const breadcrumbSubtitle = `${course.total_classes} classes • ${course.difficulty_level} • ${course.enrollment_count || 0} students enrolled`
     return (
         <>
+            <PageTitle title={`Course Detail | ${course.title}`} />
             {/* Breadcrumb Navigation */}
             <div className="container mx-auto">
                 <DashboardBreadcrumb

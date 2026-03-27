@@ -5,8 +5,9 @@ djangorestframework-simplejwt==5.3.1
 drf-nested-routers==0.93.5
 
 # Database
-psycopg2-binary==2.9.9
+# psycopg2-binary==2.9.9
 dj-database-url==2.1.0
+PyMySQL==1.1.2
 
 # Environment Management
 python-decouple==3.8
@@ -31,5 +32,5 @@ drf-yasg==1.21.14
 # Security
 django-ratelimit==4.1.0
 
-# Production Server
-gunicorn==21.2.0
+# White Noise
+whitenoise==6.12.0

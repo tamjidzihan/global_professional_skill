@@ -12,61 +12,57 @@ interface InstructorRequestItemProps {
 export function InstructorRequestItem({ request, onClick, getStatusBadge }: InstructorRequestItemProps): JSX.Element {
     return (
         <div
-            className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-sm transition-all duration-200 cursor-pointer group"
             onClick={() => onClick(request.id)}
+            className="group flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 hover:bg-white transition-all duration-150 cursor-pointer"
         >
-            <div className="flex justify-between items-start">
-                <div className="flex-1 min-w-0">
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-2">
-                        <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                                <User className="w-5 h-5 text-blue-600" />
-                            </div>
-                            <div className="min-w-0">
-                                <p className="font-bold text-gray-900 truncate">
-                                    {request.user_name || 'No Name'}
-                                </p>
-                                <div className="flex items-center gap-2 mt-0.5">
-                                    <Mail className="w-3 h-3 text-gray-400 shrink-0" />
-                                    <p className="text-sm text-gray-500 truncate">
-                                        {request.user_email}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="shrink-0">
-                            {getStatusBadge(request.status)}
-                        </div>
-                    </div>
+            {/* Avatar icon */}
+            <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0 mt-0.5">
+                <User className="w-4 h-4 text-violet-600" />
+            </div>
 
-                    {request.reason && (
-                        <p className="mt-2 text-sm text-gray-600 line-clamp-2">
-                            <span className="font-medium">Reason:</span> {request.reason}
-                        </p>
+            {/* Content */}
+            <div className="flex-1 min-w-0">
+                {/* Top row: name + badge */}
+                <div className="flex items-start justify-between gap-2">
+                    <p className="text-sm font-semibold text-gray-800 truncate leading-tight">
+                        {request.user_name || 'No Name'}
+                    </p>
+                    <div className="shrink-0">
+                        {getStatusBadge(request.status)}
+                    </div>
+                </div>
+
+                {/* Email */}
+                <div className="flex items-center gap-1.5 mt-0.5">
+                    <Mail className="w-3 h-3 text-gray-300 shrink-0" />
+                    <p className="text-xs text-gray-400 truncate">{request.user_email}</p>
+                </div>
+
+                {/* Reason */}
+                {request.reason && (
+                    <p className="mt-1.5 text-xs text-gray-500 line-clamp-1">
+                        {request.reason}
+                    </p>
+                )}
+
+                {/* Footer meta */}
+                <div className="mt-2 flex items-center gap-2 text-[11px] text-gray-400">
+                    <Clock className="w-3 h-3 shrink-0" />
+                    <span>{format(new Date(request.created_at), 'MMM d, yyyy')}</span>
+
+                    {request.reviewed_at && (
+                        <>
+                            <span className="text-gray-200">•</span>
+                            <span>Reviewed {format(new Date(request.reviewed_at), 'MMM d')}</span>
+                        </>
                     )}
 
-                    <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-                        <span className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {format(new Date(request.created_at), 'MMM d, yyyy')}
-                        </span>
-                        {request.reviewed_at && (
-                            <>
-                                <span className="text-gray-300">•</span>
-                                <span>
-                                    Reviewed: {format(new Date(request.reviewed_at), 'MMM d')}
-                                </span>
-                            </>
-                        )}
-                        {request.reviewed_by_email && (
-                            <>
-                                <span className="text-gray-300">•</span>
-                                <span className="truncate max-w-30">
-                                    By: {request.reviewed_by_email}
-                                </span>
-                            </>
-                        )}
-                    </div>
+                    {request.reviewed_by_email && (
+                        <>
+                            <span className="text-gray-200">•</span>
+                            <span className="truncate max-w-25">{request.reviewed_by_email}</span>
+                        </>
+                    )}
                 </div>
             </div>
         </div>

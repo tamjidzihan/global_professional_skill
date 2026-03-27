@@ -4,6 +4,8 @@ import { Menu, X, ChevronDown, User, UserPlus, Phone, Mail, LogOut } from 'lucid
 import { useAuth } from '../../hooks/useAuth'
 import { useAuthContext } from '../../context/AuthContext'
 import { useCategories } from '../../hooks/useCategories'
+import gpilogo_head from '../../assets/gpilogo_head.png'
+import gpilogo_tail from '../../assets/gpilogo_tail.png'
 
 const Header = () => {
     const location = useLocation()
@@ -60,8 +62,8 @@ const Header = () => {
                 ...categoryDropdownItems
             ]
         },
-        { path: '#', label: 'PGD' },
-        { path: '#', label: 'RPL' },
+        // { path: '#', label: 'PGD' },
+        // { path: '#', label: 'RPL' },
         { path: '/about', label: 'About Us' }
     ]
 
@@ -73,11 +75,11 @@ const Header = () => {
                     <div className="hidden lg:flex items-center space-x-6 text-gray-600">
                         <div className="flex items-center">
                             <Phone className="w-4 h-4 text-[#76C043] mr-2" />
-                            <span>+88 09638-016499</span>
+                            <span>+88 01978100105</span>
                         </div>
                         <div className="flex items-center">
                             <Mail className="w-4 h-4 text-[#76C043] mr-2" />
-                            <span>info@gpis.org.bd</span>
+                            <span>info@gpibd.com</span>
                         </div>
                     </div>
 
@@ -95,7 +97,7 @@ const Header = () => {
                                 </Link>
                                 <button
                                     onClick={logout}
-                                    className="flex items-center gap-2 text-gray-700 hover:text-red-500 transition"
+                                    className="flex items-center gap-2 text-gray-700 hover:text-red-500 transition cursor-pointer"
                                 >
                                     <LogOut className="w-4 h-4 text-[#76C043]" />
                                     Logout
@@ -127,12 +129,14 @@ const Header = () => {
             <div>
                 <div className="bg-[#FCF8F1]">
                     <div className="container mx-auto px-4">
-                        <div className="flex items-center justify-between h-16">
-                            {/* Logo */}
+                        <div className="flex items-center justify-between h-18">
+                            {/* Logo - Updated with image */}
                             <Link to="/" className="flex items-center space-x-3">
-                                <div className="px-4 py-2 rounded-xl bg-linear-to-br from-blue-600 to-indigo-600 text-white font-bold text-lg shadow">
-                                    GPIS-BD
-                                </div>
+                                <img
+                                    src={gpilogo_head}
+                                    alt="GPIS-BD Logo"
+                                    className="h-16 w-auto" // Adjust height as needed
+                                />
                             </Link>
 
                             {/* Desktop Navigation */}
@@ -147,12 +151,12 @@ const Header = () => {
                                         <Link
                                             to={item.path}
                                             className={`
-                                    flex items-center space-x-1 px-4 py-2 rounded-lg transition-all duration-200
-                                    ${isActive(item.path).includes('font-semibold')
+                    flex items-center space-x-1 px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap
+                    ${isActive(item.path).includes('font-semibold')
                                                     ? 'text-[#0066CC] bg-blue-50 font-semibold'
                                                     : 'text-gray-700 hover:text-[#0066CC] hover:bg-blue-50'
                                                 }
-                                `}
+                `}
                                         >
                                             <span>{item.label}</span>
                                             {item.dropdown && (
@@ -162,15 +166,15 @@ const Header = () => {
 
                                         {/* Dropdown Menu */}
                                         {item.dropdown && dropdownOpen === item.path && (
-                                            <div className="absolute top-full left-0 w-48 bg-white/90 backdrop-blur-xl rounded-xl shadow-xl border border-gray-100 py-2 z-50">
+                                            <div className="absolute top-full left-0 min-w-full bg-white/90 backdrop-blur-xl rounded-xl shadow-xl border border-gray-100 py-2 z-50">
                                                 {item.dropdown.map((subItem) => (
                                                     <Link
                                                         key={subItem.path}
                                                         to={subItem.path}
-                                                        className="flex items-center px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-[#0066CC] transition"
+                                                        className="block px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-[#0066CC] transition whitespace-nowrap"
                                                         onClick={() => setDropdownOpen(null)}
                                                     >
-                                                        <span className="font-medium">{subItem.label}</span>
+                                                        {subItem.label}
                                                     </Link>
                                                 ))}
                                             </div>
@@ -178,18 +182,26 @@ const Header = () => {
                                     </div>
                                 ))}
                             </nav>
-
                             {/* Right Side Actions */}
-
                             <div className="hidden lg:flex items-center space-x-3">
-                                {isAuthenticated && user?.role === 'STUDENT' && (
-                                    <Link
-                                        to="/apply-as-instructor"
-                                        className="ml-2 px-5 py-2 rounded-xl bg-linear-to-r from-[#76C043] to-green-500 text-white font-semibold shadow hover:shadow-lg transition-all duration-300 hover:scale-105"
-                                    >
-                                        Join as Instructor
-                                    </Link>
-                                )}
+                                {isAuthenticated && user?.role === 'STUDENT'
+                                    ? (
+                                        <Link
+                                            to="/apply-as-instructor"
+                                            className="ml-2 px-5 py-2 rounded-xl bg-linear-to-r from-[#76C043] to-green-500 text-white font-semibold shadow hover:shadow-lg transition-all duration-300 hover:scale-105"
+                                        >
+                                            Join as Instructor
+                                        </Link>
+                                    ) : (
+                                        <Link to="/" className="flex items-center space-x-3">
+                                            <img
+                                                src={gpilogo_tail}
+                                                alt="GPIS-BD Logo"
+                                                className="h-16 w-auto" // Adjust height as needed
+                                            />
+                                        </Link>
+                                    )
+                                }
                             </div>
 
                             {/* Mobile Menu Button (UNCHANGED) */}

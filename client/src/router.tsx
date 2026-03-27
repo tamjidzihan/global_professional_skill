@@ -19,7 +19,6 @@ import InstructorApplicationPage from "./main/pages/InstructorApplicationPage";
 import { LoginPage } from "./main/pages/LoginPage";
 import NotificationsPage from "./main/pages/NotificationsPage";
 import PrivacyPage from "./main/pages/PrivacyPage";
-import ProfilePage from "./main/pages/ProfilePage";
 import { RegisterPage } from "./main/pages/RegisterPage";
 import TermsPage from "./main/pages/TermsPage";
 import VerifyEmailPromptPage from "./main/pages/VerifyEmailPromptPage";
@@ -33,6 +32,8 @@ import { UserManagementPage } from "./main/pages/dashboard/admin/UserManagementP
 import AdminCourseDetailPage from "./main/pages/dashboard/admin/AdminCourseDetailPage";
 import CheckoutPage from "./main/pages/CheckoutPage";
 import MyEnrollmentsPage from "./main/pages/dashboard/student/MyEnrollmentsPage";
+import { CertificatesPage } from "./main/pages/dashboard/student/CertificatesPage";
+import { ReportsPage } from "./main/pages/dashboard/instructor/ReportsPage";
 
 
 export const router = createBrowserRouter([
@@ -47,7 +48,6 @@ export const router = createBrowserRouter([
             { path: '/checkout/:id', element: <ProtectedRoute allowedRoles={['STUDENT']}><CheckoutPage /></ProtectedRoute> },
             { path: '/about', element: <AboutPage /> },
             { path: '/notifications', element: <NotificationsPage /> },
-            { path: '/profile', element: <ProfilePage /> },
             { path: '/forgot-password', element: <ForgotPasswordPage /> },
             { path: '/terms', element: <TermsPage /> },
             { path: '/privacy', element: <PrivacyPage /> },
@@ -112,6 +112,14 @@ export const router = createBrowserRouter([
                                         <MyEnrollmentsPage />
                                     </ProtectedRoute>
                                 )
+                            },
+                            {
+                                path: 'certificates',
+                                element: (
+                                    <ProtectedRoute allowedRoles={['STUDENT']}>
+                                        <CertificatesPage />
+                                    </ProtectedRoute>
+                                )
                             }
                         ]
                     },
@@ -161,6 +169,14 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
                                 <CurriculumPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/reports',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+                                <ReportsPage />
                             </ProtectedRoute>
                         )
                     },

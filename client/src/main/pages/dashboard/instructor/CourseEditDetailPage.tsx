@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../../../hooks/useAuth';
 import RichTextEditor from '../../../components/RichTextEditor';
+import PageTitle from '../../../components/PageTitle';
 
 // Schemas for form validation and data parsing
 const courseFormInputSchema = z.object({
@@ -231,6 +232,7 @@ const CourseEditDetailPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50  px-4 sm:px-6 lg:px-8">
+      <PageTitle title={`Edit Course | ${course.title}`} />
       <div className=" mx-auto mt-8">
         {/* Error Alert */}
         {serverError && (

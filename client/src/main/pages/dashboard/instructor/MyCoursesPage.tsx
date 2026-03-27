@@ -5,6 +5,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useMyCourses } from '../../../../hooks/useMyCourses';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { Trash2, Edit, PlusCircle, Search, Filter, Eye, Users, Clock, BookOpen } from 'lucide-react';
+import PageTitle from '../../../components/PageTitle';
 
 const MyCoursesPage = () => {
     const { courses, loading, error, fetchMyCourses, removeCourse } = useMyCourses();
@@ -80,6 +81,7 @@ const MyCoursesPage = () => {
 
     return (
         <div className="space-y-6">
+            <PageTitle title="My Courses" />
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>

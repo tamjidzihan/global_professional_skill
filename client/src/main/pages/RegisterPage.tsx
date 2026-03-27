@@ -1,9 +1,10 @@
 import { toast } from 'react-hot-toast'
 import React, { useState } from 'react'
-import { User, Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { User, Mail, Lock, Eye, EyeOff, AlertCircle, Phone } from 'lucide-react'
 import { AuthLayout } from '../components/AuthLayout'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import PageTitle from '../components/PageTitle'
 
 interface RegisterFormData {
     email: string;
@@ -12,6 +13,7 @@ interface RegisterFormData {
     first_name: string;
     last_name: string;
     acceptTerms: boolean;
+    phone_number: string;
 }
 
 export function RegisterPage() {
@@ -25,6 +27,7 @@ export function RegisterPage() {
         password_confirm: '',
         first_name: '',
         last_name: '',
+        phone_number: '',
         acceptTerms: false
     })
 
@@ -54,7 +57,8 @@ export function RegisterPage() {
             password: formData.password,
             password_confirm: formData.password_confirm,
             first_name: formData.first_name,
-            last_name: formData.last_name
+            last_name: formData.last_name,
+            phone_number: formData.phone_number
         }
 
         const success = await register(payload)
@@ -67,6 +71,7 @@ export function RegisterPage() {
                 password_confirm: '',
                 first_name: '',
                 last_name: '',
+                phone_number: '',
                 acceptTerms: false
             })
             // Navigate to login with success message
@@ -81,6 +86,7 @@ export function RegisterPage() {
 
     return (
         <AuthLayout type="register">
+            <PageTitle title="Create Your Account" />
             {/* Desktop Header */}
             <div className="hidden lg:block mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign Up</h1>
@@ -161,6 +167,27 @@ export function RegisterPage() {
                             placeholder="student@example.com"
                             required
                             pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                        />
+                    </div>
+                </div>
+
+                {/* Phone Number Field */}
+                <div>
+                    <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone Number
+                    </label>
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Phone className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <input
+                            id="phone_number"
+                            type="tel"
+                            value={formData.phone_number}
+                            onChange={(e) => handleChange('phone_number', e.target.value)}
+                            className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent"
+                            placeholder="+880 123 456 789"
+                            required
                         />
                     </div>
                 </div>
