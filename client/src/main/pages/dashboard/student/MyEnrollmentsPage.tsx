@@ -1,155 +1,314 @@
-import { useEffect } from 'react';
-import { BookOpen, Clock, CheckCircle, PlayCircle, Search, Filter } from 'lucide-react';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useEffect, useState } from 'react';
+import {
+    BookOpen,
+    Clock,
+    CheckCircle,
+    PlayCircle,
+    Search,
+    Filter,
+    PlaySquare,
+    Award,
+    TrendingUp,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEnrollments } from '../../../../hooks/useEnrollments';
-import DashboardBreadcrumb from '../../../components/dashboard/DashboardBreadcrumb';
+import PageTitle from '../../../components/PageTitle';
 
-const MyEnrollmentsPage = () => {
-    const { enrollments, getMyEnrollments, loading } = useEnrollments();
+type FilterStatus = 'ALL' | 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
 
-    useEffect(() => {
-        getMyEnrollments();
-    }, [getMyEnrollments]);
+const STATUS_TABS: FilterStatus[] = ['ALL', 'IN_PROGRESS', 'NOT_STARTED', 'COMPLETED'];
 
-    const getStatusColor = (percentage: number) => {
-        if (percentage === 100) return 'text-green-600 bg-green-50';
-        if (percentage > 0) return 'text-blue-600 bg-blue-50';
-        return 'text-gray-600 bg-gray-50';
-    };
+const statusConfig: Record<string, { badge: string; iconColor: string; icon: typeof BookOpen }> = {
+    COMPLETED: { badge: 'bg-emerald-50 text-emerald-700', iconColor: 'text-emerald-600', icon: CheckCircle },
+    IN_PROGRESS: { badge: 'bg-blue-50 text-blue-700', iconColor: 'text-blue-600', icon: TrendingUp },
+    NOT_STARTED: { badge: 'bg-gray-100 text-gray-500', iconColor: 'text-gray-400', icon: PlaySquare },
+};
 
-    const getStatusText = (percentage: number) => {
-        if (percentage === 100) return 'Completed';
-        if (percentage > 0) return 'In Progress';
-        return 'Not Started';
-    };
+function getProgressStatus(percentage: number): FilterStatus {
+    if (percentage === 100) return 'COMPLETED';
+    if (percentage > 0) return 'IN_PROGRESS';
+    return 'NOT_STARTED';
+}
+
+function StatusBadge({ percentage }: { percentage: number }) {
+    const key = getProgressStatus(percentage);
+    const cfg = statusConfig[key];
+    const Icon = cfg.icon;
+    const label = key.replace('_', ' ');
+    return (
+        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-bold rounded-md ${cfg.badge}`}>
+            <Icon className={`w-3 h-3 ${cfg.iconColor}`} />
+            {label}
+        </span>
+    );
+}
+
+// ── Progress bar ─────────────────────────────────────────────────────────────
+function ProgressBar({ percentage }: { percentage: number }) {
+    const pct = Math.round(Number(percentage || 0));
+    const barColor =
+        pct === 100 ? 'bg-emerald-500' :
+            pct > 0 ? 'bg-blue-500' :
+                'bg-gray-300';
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-12">
-            <DashboardBreadcrumb
-                name="My Learning"
-                subtitle="Manage and track your enrolled courses"
-                icon={BookOpen}
-            />
+        <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Progress</span>
+                <span className={`text-xs font-bold ${pct === 100 ? 'text-emerald-600' : pct > 0 ? 'text-blue-600' : 'text-gray-400'}`}>
+                    {pct}%
+                </span>
+            </div>
+            <div className="w-full bg-gray-100 rounded-full h-1.5 overflow-hidden">
+                <div
+                    className={`${barColor} h-full rounded-full transition-all duration-700 ease-out`}
+                    style={{ width: `${pct}%` }}
+                />
+            </div>
+        </div>
+    );
+}
 
-            <div className="container mx-auto px-4 mt-8">
-                {/* Search and Filter Header */}
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-8 flex flex-col md:flex-row gap-4 items-center justify-between">
-                    <div className="relative w-full md:w-96">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <input
-                            type="text"
-                            placeholder="Search your courses..."
-                            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent"
-                        />
+// ── Enrollment Card ───────────────────────────────────────────────────────────
+function EnrollmentCard({ enrollment }: { enrollment: any }) {
+    const pct = Number(enrollment.progress_percentage || 0);
+    const isCompleted = pct === 100;
+    const isStarted = pct > 0;
+
+    return (
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col overflow-hidden group">
+
+            {/* Thumbnail */}
+            <div className="h-40 bg-gray-50 relative overflow-hidden shrink-0">
+                {enrollment.course.thumbnail ? (
+                    <img
+                        src={enrollment.course.thumbnail}
+                        alt={enrollment.course.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-violet-50">
+                        <BookOpen className="w-10 h-10 text-violet-200" />
                     </div>
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                        <select className="flex-1 md:flex-none px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#0066CC] bg-white text-gray-700">
-                            <option value="all">All Courses</option>
-                            <option value="in-progress">In Progress</option>
-                            <option value="completed">Completed</option>
-                        </select>
-                        <button className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                            <Filter className="w-4 h-4" />
-                            <span>Filters</span>
-                        </button>
+                )}
+                {/* Status badge overlay */}
+                <div className="absolute top-3 left-3">
+                    <StatusBadge percentage={pct} />
+                </div>
+            </div>
+
+            {/* Body */}
+            <div className="p-4 flex-1 flex flex-col gap-3">
+
+                {/* Category */}
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-violet-500">
+                    {enrollment.course.category_name}
+                </span>
+
+                {/* Title */}
+                <h3 className="text-sm font-semibold text-gray-800 line-clamp-2 leading-snug group-hover:text-violet-600 transition-colors -mt-1">
+                    {enrollment.course.title}
+                </h3>
+
+                {/* Duration */}
+                {enrollment.course.duration_hours && (
+                    <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                        <Clock className="w-3.5 h-3.5" />
+                        {enrollment.course.duration_hours}h total
+                    </div>
+                )}
+
+                {/* Progress */}
+                <div className="mt-auto pt-2">
+                    <ProgressBar percentage={pct} />
+                </div>
+
+                {/* CTA */}
+                <Link
+                    to={`/courses/${enrollment.course.id}`}
+                    className={`mt-1 inline-flex items-center justify-center gap-2 w-full py-2.5 text-xs font-semibold rounded-lg transition-colors ${isCompleted
+                        ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-100'
+                        : 'bg-violet-600 text-white hover:bg-violet-700'
+                        }`}
+                >
+                    {isCompleted ? (
+                        <><Award className="w-3.5 h-3.5" /> View Certificate</>
+                    ) : (
+                        <><PlayCircle className="w-3.5 h-3.5" /> {isStarted ? 'Continue Learning' : 'Start Learning'}</>
+                    )}
+                </Link>
+            </div>
+        </div>
+    );
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
+const MyEnrollmentsPage = () => {
+    const { enrollments, getMyEnrollments, loading } = useEnrollments();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState<FilterStatus>('ALL');
+
+    useEffect(() => { getMyEnrollments(); }, [getMyEnrollments]);
+
+    const filtered = (enrollments ?? []).filter((e: any) => {
+        const pct = Number(e.progress_percentage || 0);
+        const matchesStatus = statusFilter === 'ALL' || getProgressStatus(pct) === statusFilter;
+        const matchesSearch = !searchQuery ||
+            e.course.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            e.course.category_name?.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesStatus && matchesSearch;
+    });
+
+    // Stats
+    const total = (enrollments ?? []).length;
+    const completed = (enrollments ?? []).filter((e: any) => Number(e.progress_percentage) === 100).length;
+    const inProgress = (enrollments ?? []).filter((e: any) => Number(e.progress_percentage) > 0 && Number(e.progress_percentage) < 100).length;
+    const avgProgress = total > 0
+        ? Math.round((enrollments ?? []).reduce((acc: number, e: any) => acc + Number(e.progress_percentage || 0), 0) / total)
+        : 0;
+
+    const stats = [
+        { label: 'Enrolled', value: total, icon: BookOpen, iconBg: 'bg-violet-50', iconColor: 'text-violet-500', valueColor: 'text-gray-900' },
+        { label: 'In Progress', value: inProgress, icon: TrendingUp, iconBg: 'bg-blue-50', iconColor: 'text-blue-500', valueColor: 'text-blue-600' },
+        { label: 'Completed', value: completed, icon: CheckCircle, iconBg: 'bg-emerald-50', iconColor: 'text-emerald-500', valueColor: 'text-emerald-600' },
+        { label: 'Avg Progress', value: `${avgProgress}%`, icon: Award, iconBg: 'bg-amber-50', iconColor: 'text-amber-500', valueColor: 'text-amber-600' },
+    ];
+
+    return (
+        <div className="py-6 px-4 md:px-6 space-y-6">
+            <PageTitle title="My Learning" />
+
+            {/* ── Page header ── */}
+            <div>
+                <h1 className="text-xl font-semibold text-gray-900 tracking-tight">My Learning</h1>
+                <p className="text-sm text-gray-400 mt-0.5">Manage and track your enrolled courses.</p>
+            </div>
+
+            {/* ── Stats ── */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                {stats.map(({ label, value, icon: Icon, iconBg, iconColor, valueColor }) => (
+                    <div key={label} className="bg-white rounded-xl border border-gray-100 shadow-sm px-5 py-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-xs text-gray-400 font-medium">{label}</p>
+                                <p className={`text-2xl font-bold mt-1 ${valueColor}`}>{value}</p>
+                            </div>
+                            <div className={`w-9 h-9 rounded-lg ${iconBg} flex items-center justify-center shrink-0`}>
+                                <Icon className={`w-4 h-4 ${iconColor}`} />
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* ── Filter card ── */}
+            <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 border-b border-gray-100">
+                    <div>
+                        <p className="text-sm font-semibold text-gray-900">Enrolled Courses</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{total} total enrollments</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {/* Search */}
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                            <input
+                                type="text"
+                                placeholder="Search courses..."
+                                value={searchQuery}
+                                onChange={e => setSearchQuery(e.target.value)}
+                                className="pl-8 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700 placeholder-gray-400 outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-50 transition-all w-44"
+                            />
+                        </div>
+                        {/* Dropdown */}
+                        <div className="relative">
+                            <select
+                                value={statusFilter}
+                                onChange={e => setStatusFilter(e.target.value as FilterStatus)}
+                                className="appearance-none pl-3 pr-8 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700 outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-50 transition-all cursor-pointer"
+                            >
+                                {STATUS_TABS.map(s => (
+                                    <option key={s} value={s}>
+                                        {s === 'ALL' ? 'All Statuses' : s.replace('_', ' ')}
+                                    </option>
+                                ))}
+                            </select>
+                            <Filter className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                        </div>
                     </div>
                 </div>
 
-                {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {[1, 2, 3].map((i) => (
-                            <div key={i} className="bg-white rounded-xl h-96 animate-pulse border border-gray-100 shadow-sm" />
-                        ))}
-                    </div>
-                ) : enrollments && enrollments.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {enrollments.map((enrollment) => (
-                            <div
-                                key={enrollment.id}
-                                className="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-xl transition-all group flex flex-col"
+                {/* Tab pills */}
+                <div className="flex items-center gap-1.5 px-5 py-3 border-b border-gray-100 overflow-x-auto">
+                    {STATUS_TABS.map(status => {
+                        const active = statusFilter === status;
+                        const cfg = status === 'ALL' ? null : statusConfig[status];
+                        return (
+                            <button
+                                key={status}
+                                onClick={() => setStatusFilter(status)}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-lg whitespace-nowrap transition-all duration-150 cursor-pointer ${active
+                                    ? status === 'ALL'
+                                        ? 'bg-gray-900 text-white shadow-sm'
+                                        : `${cfg?.badge} ring-2 ring-offset-0 shadow-sm`
+                                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700 border border-gray-100'
+                                    }`}
                             >
-                                {/* Course Thumbnail Placeholder */}
-                                <div className="h-48 bg-gray-100 relative overflow-hidden">
-                                    {enrollment.course.thumbnail ? (
-                                        <img
-                                            src={enrollment.course.thumbnail}
-                                            alt={enrollment.course.title}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        />
-                                    ) : (
-                                        <div className="absolute inset-0 flex items-center justify-center text-[#0066CC]/20 bg-[#0066CC]/5">
-                                            <BookOpen className="w-16 h-16" />
-                                        </div>
-                                    )}
-                                    <div className={`absolute top-4 left-4 px-3 py-1 rounded-full text-xs font-bold shadow-sm ${getStatusColor(Number(enrollment.progress_percentage || 0))}`}>
-                                        {getStatusText(Number(enrollment.progress_percentage || 0))}
-                                    </div>
-                                </div>
+                                {cfg && <cfg.icon className={`w-3 h-3 ${active ? cfg.iconColor : 'text-gray-400'}`} />}
+                                {status === 'ALL' ? 'ALL' : status.replace('_', ' ')}
+                            </button>
+                        );
+                    })}
+                </div>
 
-                                <div className="p-6 flex-1 flex flex-col">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <span className="text-[10px] font-bold tracking-wider text-[#76C043] uppercase bg-[#76C043]/10 px-2 py-0.5 rounded">
-                                            {enrollment.course.category_name}
-                                        </span>
-                                    </div>
-
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight group-hover:text-[#0066CC] transition-colors">
-                                        {enrollment.course.title}
-                                    </h3>
-
-                                    <p className="text-sm text-gray-500 mb-6 flex items-center">
-                                        <Clock className="w-4 h-4 mr-1.5" />
-                                        {enrollment.course.duration_hours} hours total
-                                    </p>
-
-                                    <div className="mt-auto">
-                                        <div className="flex items-center justify-between text-sm mb-2">
-                                            <span className="font-medium text-gray-700">Progress</span>
-                                            <span className="font-bold text-[#0066CC]">{Math.round(Number(enrollment.progress_percentage || 0))}%</span>
-                                        </div>
-                                        <div className="w-full bg-gray-100 rounded-full h-2.5 mb-6 overflow-hidden">
-                                            <div
-                                                className="bg-linear-to-r from-[#0066CC] to-[#0099FF] h-full rounded-full transition-all duration-1000 ease-out"
-                                                style={{ width: `${enrollment.progress_percentage || 0}%` }}
-                                            />
-                                        </div>
-
-                                        <Link
-                                            to={`/courses/${enrollment.course.id}`}
-                                            className="flex items-center justify-center gap-2 w-full py-3 bg-[#0066CC] text-white rounded-xl font-bold hover:bg-[#004c99] transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
-                                        >
-                                            {Number(enrollment.progress_percentage) === 100 ? (
-                                                <>
-                                                    <CheckCircle className="w-5 h-5" />
-                                                    View Certificate
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <PlayCircle className="w-5 h-5" />
-                                                    {Number(enrollment.progress_percentage) > 0 ? 'Continue Learning' : 'Start Learning'}
-                                                </>
-                                            )}
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-300 shadow-sm max-w-2xl mx-auto mt-12">
-                        <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <BookOpen className="w-12 h-12 text-gray-300" />
+                {/* ── Grid / empty / loading ── */}
+                <div className="p-5">
+                    {loading ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {[...Array(3)].map((_, i) => (
+                                <div key={i} className="bg-gray-50 rounded-xl h-72 animate-pulse border border-gray-100" />
+                            ))}
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-900 mb-2">You haven't enrolled in any courses yet</h3>
-                        <p className="text-gray-500 mb-8 max-w-sm mx-auto">
-                            Explore our catalog of professional courses and start your learning journey today.
+                    ) : filtered.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {filtered.map((enrollment: any) => (
+                                <EnrollmentCard key={enrollment.id} enrollment={enrollment} />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="py-14 text-center">
+                            <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center mx-auto mb-3">
+                                <BookOpen className="w-5 h-5 text-gray-300" />
+                            </div>
+                            <p className="text-sm font-medium text-gray-500">
+                                {searchQuery || statusFilter !== 'ALL' ? 'No courses match your filters' : "You haven't enrolled in any courses yet"}
+                            </p>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                                {searchQuery || statusFilter !== 'ALL'
+                                    ? 'Try adjusting your search or filter'
+                                    : 'Browse the catalog to start learning'}
+                            </p>
+                            {!searchQuery && statusFilter === 'ALL' && (
+                                <Link
+                                    to="/courses"
+                                    className="mt-4 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border border-violet-100 rounded-lg hover:bg-violet-100 transition-colors"
+                                >
+                                    <BookOpen className="w-3.5 h-3.5" /> Browse Courses
+                                </Link>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer count */}
+                {filtered.length > 0 && (
+                    <div className="px-5 py-3 border-t border-gray-100">
+                        <p className="text-xs text-gray-400">
+                            Showing {filtered.length} of {total} enrollments
                         </p>
-                        <Link
-                            to="/courses"
-                            className="inline-flex items-center gap-2 px-8 py-3 bg-[#76C043] text-white rounded-full font-bold hover:bg-[#65a838] transition-all shadow-lg shadow-green-100"
-                        >
-                            Browse All Courses
-                        </Link>
                     </div>
                 )}
             </div>
