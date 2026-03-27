@@ -22,6 +22,7 @@ build/
 develop-eggs/
 dist/
 downloads/
+media/
 eggs/
 .eggs/
 lib64/
@@ -50,6 +51,7 @@ db.sqlite3-journal
 
 # Environment Variables
 .env
+.env.production
 .env.local
 .env.*.local
 
