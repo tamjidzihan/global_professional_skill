@@ -1,46 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, Clock, CheckCircle, XCircle, Eye, FileText } from 'lucide-react';
 import { type JSX, useEffect } from 'react';
 import { useAnalytics } from '../../../../hooks/useAnalytics';
 
-const COLORS = {
-    PENDING: '#F59E0B', // amber-500
-    APPROVED: '#10B981', // emerald-500
-    REJECTED: '#EF4444', // red-500
-    PUBLISHED: '#3B82F6', // blue-500
-    DRAFT: '#6B7280',  // gray-500
-};
-
-const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-        return (
-            <div className="bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-lg border border-gray-200">
-                <p className="font-bold text-gray-800">{`${payload[0].name}`}</p>
-                <p className="text-sm" style={{ color: payload[0].payload.fill }}>
-                    {`Courses: ${payload[0].value}`}
-                </p>
-            </div>
-        );
-    }
-    return null;
-};
-
-const CustomLegend = (props: any) => {
-    const { payload } = props;
-    return (
-        <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-4 text-sm text-gray-600">
-            {payload.map((entry: any, index: number) => (
-                <li key={`item-${index}`} className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full" style={{ backgroundColor: entry.color }} />
-                    <span>{entry.value}</span>
-                </li>
-            ))}
-        </ul>
-    );
-};
-
+const statusConfig = [
+    { key: 'PENDING', label: 'Pending', icon: Clock, iconBg: 'bg-amber-50', iconText: 'text-amber-500', bar: 'bg-amber-400', badge: 'bg-amber-50 text-amber-700' },
+    { key: 'PUBLISHED', label: 'Published', icon: Eye, iconBg: 'bg-blue-50', iconText: 'text-blue-500', bar: 'bg-blue-500', badge: 'bg-blue-50 text-blue-700' },
+    { key: 'APPROVED', label: 'Approved', icon: CheckCircle, iconBg: 'bg-emerald-50', iconText: 'text-emerald-500', bar: 'bg-emerald-500', badge: 'bg-emerald-50 text-emerald-700' },
+    { key: 'REJECTED', label: 'Rejected', icon: XCircle, iconBg: 'bg-rose-50', iconText: 'text-rose-500', bar: 'bg-rose-500', badge: 'bg-rose-50 text-rose-700' },
+    { key: 'DRAFT', label: 'Draft', icon: FileText, iconBg: 'bg-gray-50', iconText: 'text-gray-400', bar: 'bg-gray-300', badge: 'bg-gray-50 text-gray-600' },
+];
 
 export function CourseStatusPanel(): JSX.Element {
     const { data: analyticsData, getAdminAnalytics, loading } = useAnalytics();
@@ -49,56 +17,86 @@ export function CourseStatusPanel(): JSX.Element {
         getAdminAnalytics();
     }, [getAdminAnalytics]);
 
-    const courseData = [
-        { name: 'Pending', value: analyticsData?.course_status_distribution?.PENDING || 0, fill: COLORS.PENDING },
-        { name: 'Approved', value: analyticsData?.course_status_distribution?.APPROVED || 0, fill: COLORS.APPROVED },
-        { name: 'Rejected', value: analyticsData?.course_status_distribution?.REJECTED || 0, fill: COLORS.REJECTED },
-        { name: 'Published', value: analyticsData?.course_status_distribution?.PUBLISHED || 0, fill: COLORS.PUBLISHED },
-        { name: 'Draft', value: analyticsData?.course_status_distribution?.DRAFT || 0, fill: COLORS.DRAFT },
-    ].filter(d => d.value > 0);
+    const total = analyticsData?.total_courses || 0;
 
+    const rows = statusConfig.map(cfg => ({
+        ...cfg,
+        value: analyticsData?.course_status_distribution?.[cfg.key] || 0,
+    })).filter(r => r.value > 0 || !total);
 
     return (
-        <div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex flex-col min-h-87.5">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-gray-500" />
-                Course Status Overview
-            </h2>
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
 
-            {loading ? (
-                <div className="grow flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                <div>
+                    <p className="text-sm font-semibold text-gray-900">Course Status</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Distribution overview</p>
                 </div>
-            ) : analyticsData?.total_courses > 0 ? (
-                <div className="grow flex flex-col items-center justify-center">
-                    <ResponsiveContainer width="100%" height={220}>
-                        <PieChart>
-                            <Pie
-                                data={courseData}
-                                cx="50%"
-                                cy="50%"
-                                labelLine={false}
-                                outerRadius={80}
-                                innerRadius={50}
-                                dataKey="value"
-                                stroke="none"
-                            >
-                                {courseData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                                ))}
-                            </Pie>
-                            <Tooltip content={<CustomTooltip />} />
-                            <Legend content={<CustomLegend />} />
-                        </PieChart>
-                    </ResponsiveContainer>
+                <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
+                    <BookOpen className="w-4 h-4 text-violet-600" />
                 </div>
-            ) : (
-                <div className="text-center py-10 grow flex flex-col justify-center">
-                    <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                    <p className="text-gray-500 text-sm">No course data available yet.</p>
-                    <p className="text-gray-400 text-xs mt-1">Total: {analyticsData?.total_courses || 0}</p>
-                </div>
-            )}
+            </div>
+
+            <div className="p-4">
+                {loading ? (
+                    <div className="space-y-2.5">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="animate-pulse h-13 bg-gray-50 rounded-lg border border-gray-100" />
+                        ))}
+                    </div>
+                ) : total === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                        <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-3">
+                            <BookOpen className="w-5 h-5 text-gray-300" />
+                        </div>
+                        <p className="text-sm font-medium text-gray-500">No courses yet</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Course data will appear here</p>
+                    </div>
+                ) : (
+                    <div className="space-y-2">
+                        {rows.map(({ key, label, icon: Icon, iconBg, iconText, bar, badge, value }) => {
+                            const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+                            return (
+                                <div key={key} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 group hover:border-gray-200 hover:bg-white transition-all duration-150">
+                                    {/* Icon */}
+                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}>
+                                        <Icon className={`w-4 h-4 ${iconText}`} />
+                                    </div>
+
+                                    {/* Label + bar */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between mb-1.5">
+                                            <span className="text-xs font-semibold text-gray-700">{label}</span>
+                                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${badge}`}>
+                                                {value}
+                                            </span>
+                                        </div>
+                                        {/* Progress bar */}
+                                        <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full rounded-full ${bar} transition-all duration-500`}
+                                                style={{ width: `${pct}%` }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Percentage */}
+                                    <span className="text-[11px] font-bold text-gray-400 shrink-0 w-9 text-right">
+                                        {pct}%
+                                    </span>
+                                </div>
+                            );
+                        })}
+
+                        {/* Total */}
+                        <div className="flex items-center justify-between px-3 pt-3 mt-1 border-t border-gray-100">
+                            <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Total Courses</span>
+                            <span className="text-sm font-bold text-gray-900">{total}</span>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
