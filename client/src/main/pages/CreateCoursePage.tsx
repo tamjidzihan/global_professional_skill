@@ -104,7 +104,7 @@ const CreateCoursePage: React.FC = () => {
     try {
       parsedData = courseParsedSchema.parse(data);
     } catch (e: any) {
-      setServerError(e.message || 'Form validation error.');
+      setServerError(error || 'Form validation error.');
       console.error('Form parsing error:', e);
       return;
     }
@@ -150,8 +150,8 @@ const CreateCoursePage: React.FC = () => {
       } else {
         setServerError(error || 'Failed to create course. Please try again.');
       }
-    } catch (e: any) {
-      setServerError(e.message || 'An unexpected error occurred. Please try again.');
+    } catch (err: any) {
+      setServerError(err || 'An unexpected error occurred. Please try again.');
     }
   };
 
@@ -449,8 +449,7 @@ const CreateCoursePage: React.FC = () => {
                   <input
                     id="duration_hours"
                     type="number"
-                    min="0"
-                    step="0.5"
+                    min="1"
                     {...register('duration_hours')}
                     className={inputClassName}
                     placeholder="e.g., 20"

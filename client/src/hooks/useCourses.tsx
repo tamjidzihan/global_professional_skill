@@ -53,6 +53,7 @@ import type {
     ReviewCreateUpdateData,
 } from '../types';
 import { extractErrorMessage } from '../lib/errorUtils';
+import toast from 'react-hot-toast';
 
 export function useCourses() {
     // States
@@ -166,14 +167,15 @@ export function useCourses() {
                     instructor_name: `${newCourse.instructor.first_name} ${newCourse.instructor.last_name}`,
                     category_name: newCourse.category.name,
                 };
-
                 setCourses((prev) => [newCourseSummary, ...prev]);
-
+                toast.success('Course created successfully');
                 return newCourse;
+
             } catch (err: any) {
                 const errorMsg = extractErrorMessage(err);
                 setError(errorMsg);
-                throw err;
+                toast.error(errorMsg);
+                return false
             } finally {
                 setLoading(false);
             }
@@ -207,11 +209,13 @@ export function useCourses() {
                     prev.map((c) => (c.id === id ? updatedCourseSummary : c)),
                 );
                 if (course?.id === id) setCourse(updatedCourse);
+                toast.success('Course updated successfully');
                 return updatedCourse;
             } catch (err: any) {
                 const errorMsg = extractErrorMessage(err);
                 setError(errorMsg);
-                throw err;
+                toast.error(errorMsg);
+                return false
             } finally {
                 setLoading(false);
             }
@@ -227,12 +231,15 @@ export function useCourses() {
                 await deleteCourse(id);
                 setCourses((prev) => prev.filter((c) => c.id !== id));
                 if (course?.id === id) setCourse(null);
+                toast.success('Course deleted successfully');
             } catch (err: any) {
                 const errorMsg = err.response?.data?.error?.message ||
                     err.response?.data?.message ||
                     'Failed to delete course';
                 setError(errorMsg);
-                throw err;
+                toast.error(errorMsg);
+
+                return false
             } finally {
                 setLoading(false);
             }
