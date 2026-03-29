@@ -102,17 +102,16 @@ export function LoginPage() {
                             placeholder="Enter your password"
                             required
                         />
-                        <button
-                            type="button"
+                        <div
                             onClick={() => setShowPassword(!showPassword)}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
                         >
                             {showPassword ? (
                                 <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                             ) : (
                                 <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                             )}
-                        </button>
+                        </div>
                     </div>
                 </div>
 
@@ -133,7 +132,7 @@ export function LoginPage() {
                 <button
                     type="submit"
                     disabled={loading || !email || !password}
-                    className="w-full flex justify-center items-center space-x-2 py-3.5 px-4 border border-transparent rounded-lg text-sm font-semibold text-white bg-linear-to-r from-[#0066CC] to-blue-600 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0066CC] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-md hover:shadow-lg"
+                    className="w-full cursor-pointer flex justify-center items-center space-x-2 py-3.5 px-4 border border-transparent rounded-lg text-sm font-semibold text-white bg-linear-to-r from-[#0066CC] to-blue-600 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0066CC] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 shadow-md hover:shadow-lg"
                 >
                     {loading ? (
                         <>

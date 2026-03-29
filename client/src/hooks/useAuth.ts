@@ -23,11 +23,13 @@ export function useAuth() {
                 // Show toast notification
                 toast.error('Please verify your email address to log in.')
                 // Optionally, navigate to a page that prompts email verification
-                navigate('/verify-email-prompt'); // Assuming you create this page
+                navigate('/verify-email-prompt');
                 return false
             }
 
             contextLogin(tokens, user)
+
+            toast.success(`welcome back, ${user.first_name}!`)
 
             // Redirect based on role
             switch (user.role) {
@@ -49,8 +51,16 @@ export function useAuth() {
                 toast.error('Please verify your email address to log in.');
                 navigate('/verify-email-prompt');
             } else {
-                setError(err.response?.data?.message || 'Login failed');
-                toast.error(err.response?.data?.message || 'Login failed'); // Show toast for generic login failures
+                setError(
+                    err.response?.data?.error?.details?.email?.[0] ||
+                    err.response?.data?.error?.details?.password?.[0] ||
+                    'Login failed'
+                );
+                toast.error(
+                    err.response?.data?.error?.details?.email?.[0] ||
+                    err.response?.data?.error?.details?.password?.[0] ||
+                    'Login failed'
+                );
             }
             return false
         } finally {
@@ -65,7 +75,14 @@ export function useAuth() {
             await api.post(endpoints.auth.register, data)
             return true
         } catch (err: any) {
-            setError(err.response?.data?.message || 'Registration failed')
+            setError(
+                err.response?.data?.error?.details?.email?.[0] ||
+                'Registration failed'
+            )
+            toast.error(
+                err.response?.data?.error?.details?.email?.[0] ||
+                'Registration failed'
+            )
             return false
         } finally {
             setLoading(false)
