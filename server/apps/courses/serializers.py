@@ -13,6 +13,7 @@ class CategorySerializer(serializers.ModelSerializer):
     """Serializer for Category model."""
 
     course_count = serializers.SerializerMethodField()
+    slug = serializers.SlugField(required=False, allow_blank=True)
 
     class Meta:
         model = Category
@@ -31,25 +32,23 @@ class CategorySerializer(serializers.ModelSerializer):
     def get_course_count(self, obj):
         return obj.courses.filter(status=CourseStatus.PUBLISHED).count()
 
-    def validate_name(self, value):
-        """Auto-generate slug from name."""
-        slug = slugify(value)
-        if self.instance:
-            # Exclude current instance when updating
-            if Category.objects.filter(slug=slug).exclude(id=self.instance.id).exists():
-                raise serializers.ValidationError(
-                    "Category with this name already exists."
-                )
-        else:
-            if Category.objects.filter(slug=slug).exists():
-                raise serializers.ValidationError(
-                    "Category with this name already exists."
-                )
-        return value
+    def validate(self, attrs):
+        """Auto-generate slug from name if not provided."""
+        if 'name' in attrs:
+            attrs['slug'] = slugify(attrs['name'])
+            
+            # Check for slug uniqueness
+            slug = attrs['slug']
+            if self.instance:
+                if Category.objects.filter(slug=slug).exclude(id=self.instance.id).exists():
+                    raise serializers.ValidationError({"name": "Category with this name already exists."})
+            else:
+                if Category.objects.filter(slug=slug).exists():
+                    raise serializers.ValidationError({"name": "Category with this name already exists."})
+        return attrs
 
     def create(self, validated_data):
-        """Create category with auto-generated slug."""
-        validated_data["slug"] = slugify(validated_data["name"])
+        """Create category with validated data (slug is already set in validate)."""
         return super().create(validated_data)
 
 

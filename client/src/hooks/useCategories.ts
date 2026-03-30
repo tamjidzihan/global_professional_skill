@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback } from 'react'
-import { getCategories, getCategoryDetail } from '../lib/api'
+import { getCategories, getCategoryDetail, createCategory, updateCategory, deleteCategory } from '../lib/api'
 import type { Category, CategoryDetailResponse } from '../types'
+import toast from 'react-hot-toast'
 
 export const useCategories = () => {
     const [categories, setCategories] = useState<Category[]>([])
     const [category, setCategory] = useState<Category | null>(null);
     const [loading, setLoading] = useState(false)
+    const [submitting, setSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [pagination, setPagination] = useState({
         count: 0,
@@ -82,6 +84,57 @@ export const useCategories = () => {
         [fetchData],
     );
 
+    const createCategoryAction = async (data: Partial<Category>) => {
+        setSubmitting(true)
+        setError(null)
+        try {
+            const response = await createCategory(data)
+            toast.success('Category created successfully')
+            return response.data
+        } catch (err: any) {
+            const msg = err.response?.data?.error?.details?.name?.[0] || 'Failed to create category'
+            setError(msg)
+            toast.error(msg)
+            return false
+        } finally {
+            setSubmitting(false)
+        }
+    }
+
+    const updateCategoryAction = async (id: string, data: Partial<Category>) => {
+        setSubmitting(true)
+        setError(null)
+        try {
+            const response = await updateCategory(id, data)
+            toast.success('Category updated successfully')
+            return response.data
+        } catch (err: any) {
+            const msg = err.response?.data?.error?.details?.name?.[0] || 'Failed to update category'
+            setError(msg)
+            toast.error(msg)
+            return false
+        } finally {
+            setSubmitting(false)
+        }
+    }
+
+    const deleteCategoryAction = async (id: string) => {
+        setSubmitting(true)
+        setError(null)
+        try {
+            await deleteCategory(id)
+            setCategories(prev => prev.filter(c => c.id !== id))
+            toast.success('Category deleted successfully')
+        } catch (err: any) {
+            const msg = err.response?.data?.error?.details?.name?.[0] || 'Failed to delete category'
+            setError(msg)
+            toast.error(msg)
+            return false
+        } finally {
+            setSubmitting(false)
+        }
+    }
+
 
     return {
         pagination,
@@ -89,7 +142,11 @@ export const useCategories = () => {
         category,
         fetchCategories,
         fetchCategoryDetail,
+        createCategoryAction,
+        updateCategoryAction,
+        deleteCategoryAction,
         loading,
+        submitting,
         error,
     }
 }

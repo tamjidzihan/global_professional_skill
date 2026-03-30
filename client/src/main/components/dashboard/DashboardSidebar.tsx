@@ -3,6 +3,7 @@ import {
     LayoutDashboard,
     BookOpen,
     Users,
+    Tag,
     FileText,
     GraduationCap,
     LogOut,
@@ -76,6 +77,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
     const adminLinks = [
         { name: 'Dashboard', path: '/dashboard/admin', icon: LayoutDashboard, exact: true },
         { name: 'User Management', path: '/dashboard/admin/users', icon: Users },
+        { name: 'Category Management', path: '/dashboard/admin/categories', icon: Tag },
         { name: 'Course Catalog', path: '/dashboard/admin/courses', icon: BookOpen, badge: 'New' },
         // { name: 'Permissions', path: '/dashboard/admin/permissions', icon: ShieldCheck },
         // { name: 'Settings', path: '/dashboard/admin/settings', icon: Settings },

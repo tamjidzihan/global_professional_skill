@@ -141,7 +141,7 @@ const CourseEditDetailPage: React.FC = () => {
         title: course.title,
         description: course.description,
         short_description: course.short_description,
-        category: course.category.id,
+        category: course?.category?.id,
         difficulty_level: course.difficulty_level,
         price: course.price.toString(),
         preview_video: course.preview_video || '',
