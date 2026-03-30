@@ -22,7 +22,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import Breadcrumb from '../components/Breadcrumb'
-import PageTitle from '../components/PageTitle'
+import SEO from '../components/SEO'
 
 const AboutPage = () => {
     const features = [
@@ -78,7 +78,11 @@ const AboutPage = () => {
 
     return (
         <div className="bg-[#FCF8F1]">
-            <PageTitle title="About Us | GPI - Global Professional Institute" />
+            <SEO 
+                title="About Us"
+                description="Global Professional Institute (GPI) is a modern skill development and professional training institute committed to empowering individuals."
+                keywords="about GPI, professional training institute, skill development, GPI mission"
+            />
             <Breadcrumb name="About Us" />
 
             {/* Hero Section */}

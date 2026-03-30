@@ -4,7 +4,7 @@ import { createInstructorRequest } from '../../lib/api';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { toast } from 'react-toastify';
-import PageTitle from '../components/PageTitle';
+import SEO from '../components/SEO';
 
 
 const InstructorApplicationPage: React.FC = () => {
@@ -42,7 +42,10 @@ const InstructorApplicationPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4 max-w-2xl">
-      <PageTitle title="Become an Instructor" />
+      <SEO 
+        title="Become an Instructor" 
+        description="Share your knowledge and passion by becoming an instructor at Global Professional Institute. Apply now to start teaching and helping students advance their careers."
+      />
       <h1 className="text-3xl font-bold mb-6 text-gray-800">Become an Instructor</h1>
       <p className="text-gray-600 mb-8">
         Share your knowledge and passion by becoming an instructor. Fill out the form below

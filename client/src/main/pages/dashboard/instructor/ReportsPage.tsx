@@ -10,7 +10,7 @@ import {
     ArrowRight,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import PageTitle from '../../../components/PageTitle'
+import SEO from '../../../components/SEO'
 
 export function ReportsPage() {
     const card = 'bg-white rounded-xl border border-gray-100 shadow-sm'
@@ -32,7 +32,7 @@ export function ReportsPage() {
 
     return (
         <div className="py-6 px-4 md:px-6">
-            <PageTitle title="Reports" />
+            <SEO title="Reports" noindex={true} />
 
             {/* Page header */}
             <div className="mb-6">

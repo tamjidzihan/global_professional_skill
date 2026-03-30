@@ -19,7 +19,7 @@ import {
     AlertCircle,
     RefreshCw,
 } from 'lucide-react';
-import PageTitle from '../../../components/PageTitle';
+import SEO from '../../../components/SEO';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type FilterStatus = 'ALL' | 'DRAFT' | 'PENDING' | 'APPROVED' | 'PUBLISHED' | 'ARCHIVED';
@@ -214,7 +214,7 @@ const MyCoursesPage = (): JSX.Element => {
     if (loading) {
         return (
             <div className="py-6 px-4 md:px-6 space-y-6">
-                <PageTitle title="My Courses" />
+                <SEO title="My Courses" noindex={true} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[...Array(4)].map((_, i) => (
                         <div key={i} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
@@ -240,7 +240,7 @@ const MyCoursesPage = (): JSX.Element => {
     if (error) {
         return (
             <div className="py-6 px-4 md:px-6">
-                <PageTitle title="My Courses" />
+                <SEO title="My Courses" noindex={true} />
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm py-16 flex flex-col items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center">
                         <XCircle className="w-5 h-5 text-rose-500" />
@@ -260,7 +260,7 @@ const MyCoursesPage = (): JSX.Element => {
 
     return (
         <div className="py-6 px-4 md:px-6 space-y-6">
-            <PageTitle title="My Courses" />
+            <SEO title="My Courses" noindex={true} />
 
             {/* ── Page header ── */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

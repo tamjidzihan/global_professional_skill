@@ -25,7 +25,7 @@ import { useCourses } from '../../../../hooks/useCourses'
 import CourseDetailSkeleton from '../../../components/ui/loadingSkeleton/CourseDetailSkeleton'
 import { toast } from 'react-hot-toast'
 import { extractErrorMessage } from '../../../../lib/errorUtils'
-import PageTitle from '../../../components/PageTitle'
+import SEO from '../../../components/SEO'
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const statusConfig: Record<string, { badge: string; iconColor: string; icon: typeof BookOpen }> = {
@@ -190,7 +190,7 @@ export function InstructorCourseDetailPage() {
 
     return (
         <>
-            <PageTitle title={`Course Detail | ${course.title}`} />
+            <SEO title={`Course Detail | ${course.title}`} noindex={true} />
 
             <div className="py-6 px-4 md:px-6 space-y-6">
 

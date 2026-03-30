@@ -25,7 +25,7 @@ import type { LessonSummary, Section } from '../../../../types';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import DashboardBreadcrumb from '../../../components/dashboard/DashboardBreadcrumb';
 import { extractErrorMessage } from '../../../../lib/errorUtils';
-import PageTitle from '../../../components/PageTitle';
+import SEO from '../../../components/SEO';
 
 interface SectionToEdit {
     id: string;
@@ -291,7 +291,7 @@ const CurriculumPage: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <PageTitle title={`Manage Curriculum | ${course.title} `} />
+            <SEO title={`Manage Curriculum | ${course.title} `} noindex={true} />
             {/* Breadcrumb */}
             <DashboardBreadcrumb
                 name="Manage Curriculum"

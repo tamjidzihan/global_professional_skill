@@ -35,7 +35,7 @@ import {
     Timer,
     Award,
 } from 'lucide-react';
-import PageTitle from '../../../components/PageTitle';
+import SEO from '../../../components/SEO';
 
 const AdminCourseDetailPage = () => {
     const { id } = useParams<{ id: string }>();
@@ -158,7 +158,7 @@ const AdminCourseDetailPage = () => {
     if (error || !selectedCourse) {
         return (
             <div className="min-h-screen bg-gray-50/50 p-6">
-                <PageTitle title="Course Details" />
+                <SEO title="Course Details" noindex={true} />
                 <div className="max-w-7xl mx-auto">
                     <button
                         onClick={() => navigate('/dashboard/admin/courses')}
@@ -200,7 +200,7 @@ const AdminCourseDetailPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50/50">
-            <PageTitle title={`Course Details | ${selectedCourse.title}`} />
+            <SEO title={`Course Details | ${selectedCourse.title}`} noindex={true} />
 
             {/* ── Status Modal ── */}
             {showStatusModal && statusAction && (

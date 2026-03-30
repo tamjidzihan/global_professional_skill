@@ -21,7 +21,7 @@ import { useCourses } from '../../hooks/useCourses'
 import { useEnrollments } from '../../hooks/useEnrollments'
 import Breadcrumb from '../components/Breadcrumb'
 import CourseDetailSkeleton from '../components/ui/loadingSkeleton/CourseDetailSkeleton'
-import PageTitle from '../components/PageTitle'
+import SEO from '../components/SEO'
 
 export function CourseDetailPage() {
     const { id } = useParams<{ id: string }>()
@@ -211,10 +211,34 @@ export function CourseDetailPage() {
 
     const breadcrumbSubtitle = `${course.total_classes} classes • ${course.difficulty_level} • ${course.enrollment_count} enrolled`
 
+    const courseSchema = {
+        "@context": "https://schema.org",
+        "@type": "Course",
+        "name": course.title,
+        "description": course.short_description,
+        "provider": {
+            "@type": "Organization",
+            "name": "Global Professional Institute",
+            "sameAs": window.location.origin
+        },
+        "image": course.thumbnail,
+        "offers": {
+            "@type": "Offer",
+            "price": course.price,
+            "priceCurrency": "BDT"
+        }
+    };
+
     return (
         <>
-            {/* Breadcrumb Navigation */}
-            <PageTitle title={course.title} />
+            <SEO 
+                title={course.title}
+                description={course.short_description}
+                keywords={`${course.title}, ${course.category?.name}, professional training, GPI`}
+                image={course.thumbnail}
+                type="video.other"
+                schema={courseSchema}
+            />
             <Breadcrumb
                 name={course.title}
                 subtitle={breadcrumbSubtitle}

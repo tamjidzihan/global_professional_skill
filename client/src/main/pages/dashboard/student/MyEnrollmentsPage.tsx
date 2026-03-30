@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEnrollments } from '../../../../hooks/useEnrollments';
-import PageTitle from '../../../components/PageTitle';
+import SEO from '../../../components/SEO';
 
 type FilterStatus = 'ALL' | 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
 
@@ -177,7 +177,7 @@ const MyEnrollmentsPage = () => {
 
     return (
         <div className="py-6 px-4 md:px-6 space-y-6">
-            <PageTitle title="My Learning" />
+            <SEO title="My Learning" noindex />
 
             {/* ── Page header ── */}
             <div>

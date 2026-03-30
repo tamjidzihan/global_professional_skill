@@ -10,7 +10,7 @@ import DesktopSidebar from '../components/courses/DesktopSidebar';
 import MobileFilterDrawer from '../components/courses/MobileFilterDrawer';
 import MobileFilterInfo from '../components/courses/MobileFilterInfo';
 import CourseGrid from '../components/courses/CourseGrid';
-import PageTitle from '../components/PageTitle';
+import SEO from '../components/SEO';
 
 const CoursesPage = () => {
     const location = useLocation();
@@ -168,9 +168,25 @@ const CoursesPage = () => {
         return <CoursesPageSkeleton />
     }
 
+    const coursesSchema = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "itemListElement": courses.map((course, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "url": `${window.location.origin}/courses/${course.id}`,
+            "name": course.title
+        }))
+    };
+
     return (
         <>
-            <PageTitle title={`Courses | ${activeCategoryName || 'Global Professional Institute'}`} />
+            <SEO 
+                title={`Courses | ${activeCategoryName}`}
+                description={`Explore our wide range of professional courses in ${activeCategoryName}. Enhance your skills with GPI.`}
+                keywords={`${activeCategoryName}, professional courses, training, GPI`}
+                schema={coursesSchema}
+            />
             <Breadcrumb name="Courses" icon={Folder} />
 
             <SearchBar

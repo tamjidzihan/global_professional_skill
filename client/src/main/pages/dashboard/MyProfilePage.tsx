@@ -25,7 +25,7 @@ import {
 import { useMyProfile } from '../../../hooks/useMyProfile'
 import { useAuth } from '../../../hooks/useAuth'
 import type { User } from '../../../types'
-import PageTitle from '../../components/PageTitle'
+import SEO from '../../components/SEO'
 
 export function MyProfilePage() {
     const navigate = useNavigate()
@@ -198,7 +198,7 @@ export function MyProfilePage() {
 
     return (
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8" ref={formRef}>
-            <PageTitle title={`My Profile | ${displayData?.first_name} ${displayData?.last_name}`} />
+            <SEO title={`My Profile | ${displayData?.first_name} ${displayData?.last_name}`} noindex={true} />
 
             {/* Error banner */}
             {updateError && (

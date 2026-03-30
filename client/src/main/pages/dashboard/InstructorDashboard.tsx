@@ -5,7 +5,7 @@ import { useAnalytics } from '../../../hooks/useAnalytics'
 import CalendarCard from '../../components/dashboard/CalendarCard'
 import LoadingSpinner from '../../components/ui/LoadingSpinner'
 import { Link } from 'react-router-dom'
-import PageTitle from '../../components/PageTitle'
+import SEO from '../../components/SEO'
 
 export function InstructorDashboard() {
     const { data, getInstructorAnalytics, loading } = useAnalytics()
@@ -56,7 +56,7 @@ export function InstructorDashboard() {
 
     return (
         <div className="py-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <PageTitle title="Instructor Dashboard" />
+            <SEO title="Instructor Dashboard" noindex />
 
             <div className="lg:col-span-3 space-y-6">
 

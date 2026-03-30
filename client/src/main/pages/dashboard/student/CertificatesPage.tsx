@@ -1,11 +1,11 @@
 import { Award, Bell, BookOpen, Star, Lock } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import PageTitle from '../../../components/PageTitle'
+import SEO from '../../../components/SEO'
 
 export function CertificatesPage() {
     return (
         <div className="py-6 px-4 md:px-6">
-            <PageTitle title="Certificates" />
+            <SEO title="Certificates" noindex />
 
             {/* Page header */}
             <div className="mb-6">

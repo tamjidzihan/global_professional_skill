@@ -6,7 +6,7 @@ import { useAuthContext } from '../../../context/AuthContext'
 import { useEnrollments } from '../../../hooks/useEnrollments'
 import { useInstructorRequests } from '../../../hooks/useInstructorRequests'
 import CalendarCard from '../../components/dashboard/CalendarCard'
-import PageTitle from '../../components/PageTitle'
+import SEO from '../../components/SEO'
 
 export function StudentDashboard() {
     const { user } = useAuthContext()
@@ -26,7 +26,7 @@ export function StudentDashboard() {
 
     return (
         <div className="p-4 grid grid-cols-1 lg:grid-cols-4 gap-6"> {/* Added grid layout */}
-            <PageTitle title="Student Dashboard" />
+            <SEO title="Student Dashboard" noindex />
             <div className="lg:col-span-3"> {/* Main content takes 2/3 width on large screens */}
                 <div className="mb-8">
                     <h1 className="text-2xl font-bold text-gray-900">

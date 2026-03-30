@@ -19,7 +19,7 @@ import {
   Save,
   X,
 } from 'lucide-react';
-import PageTitle from '../components/PageTitle';
+import SEO from '../components/SEO';
 
 // Schemas for form validation and data parsing
 
@@ -161,7 +161,7 @@ const CreateCoursePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
-      <PageTitle title="Create Course" />
+      <SEO title="Create Course" noindex={true} />
       <div className="max-w-7xl mx-auto">
         {/* Error Alert */}
         {serverError && (

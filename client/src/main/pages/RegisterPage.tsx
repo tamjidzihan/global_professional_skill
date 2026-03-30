@@ -4,7 +4,7 @@ import { User, Mail, Lock, Eye, EyeOff, AlertCircle, Phone } from 'lucide-react'
 import { AuthLayout } from '../components/AuthLayout'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
-import PageTitle from '../components/PageTitle'
+import SEO from '../components/SEO'
 
 interface RegisterFormData {
     email: string;
@@ -86,7 +86,10 @@ export function RegisterPage() {
 
     return (
         <AuthLayout type="register">
-            <PageTitle title="Create Your Account" />
+            <SEO 
+                title="Create Your Account" 
+                description="Join Global Professional Institute today. Create an account to access professional courses and advance your career."
+            />
             {/* Desktop Header */}
             <div className="hidden lg:block mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Sign Up</h1>

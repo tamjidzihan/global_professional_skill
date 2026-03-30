@@ -15,7 +15,7 @@ import { getStatusBadge, getStatusColor } from '../../../utils/statusHelpers'
 import { InstructorRequestModal } from '../../components/dashboard/admin/InstructorRequestModal'
 import { CourseReviewModal } from '../../components/dashboard/admin/CourseReviewModal'
 import { CourseStatusPanel } from '../../components/dashboard/admin/CourseStatusPanel'
-import PageTitle from '../../components/PageTitle'
+import SEO from '../../components/SEO'
 
 type FilterStatus = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED'
 
@@ -204,7 +204,7 @@ export function AdminDashboard(): JSX.Element {
 
     return (
         <div className="py-6 px-4 md:px-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <PageTitle title="Admin Dashboard" />
+            <SEO title="Admin Dashboard" noindex={true} />
 
             <div className="lg:col-span-3 space-y-6">
 

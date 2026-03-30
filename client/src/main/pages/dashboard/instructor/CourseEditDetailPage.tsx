@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../../../hooks/useAuth';
 import RichTextEditor from '../../../components/RichTextEditor';
-import PageTitle from '../../../components/PageTitle';
+import SEO from '../../../components/SEO';
 import { Link } from 'react-router-dom';
 
 // ── Schemas ───────────────────────────────────────────────────────────────────
@@ -251,7 +251,7 @@ const CourseEditDetailPage: React.FC = () => {
 
   return (
     <div className="py-6 px-4 md:px-6 space-y-5">
-      <PageTitle title={`Edit Course | ${course.title}`} />
+      <SEO title={`Edit Course | ${course.title}`} noindex={true} />
 
       {/* ── Page header ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
