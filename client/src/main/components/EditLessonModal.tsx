@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
-import { X, Video, FileText, HelpCircle, ClipboardList, FolderOpen, AlertCircle, Save, BookOpen, Layers } from 'lucide-react';
+import { X, Video, FileText, HelpCircle, ClipboardList, FolderOpen, AlertCircle, Save, BookOpen, Layers, MonitorPlay } from 'lucide-react';
 import { useCourses } from '../../hooks/useCourses';
 import { toast } from 'react-hot-toast';
 import type { LessonType } from '../../types';
@@ -24,6 +24,7 @@ interface EditLessonModalProps {
 
 const LESSON_TYPES: { value: LessonType; label: string; icon: React.ReactNode; description: string }[] = [
     { value: 'VIDEO', label: 'Video', icon: <Video size={16} />, description: 'Video lesson with URL' },
+    { value: 'LIVE', label: 'Live', icon: <MonitorPlay size={16} />, description: 'Live lesson' },
     { value: 'TEXT', label: 'Text', icon: <FileText size={16} />, description: 'Written content' },
     { value: 'QUIZ', label: 'Quiz', icon: <HelpCircle size={16} />, description: 'Assessment questions' },
     { value: 'ASSIGNMENT', label: 'Assignment', icon: <ClipboardList size={16} />, description: 'Student task' },

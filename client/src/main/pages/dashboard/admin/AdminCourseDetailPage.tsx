@@ -34,6 +34,7 @@ import {
     MapPin,
     Timer,
     Award,
+    MonitorPlay,
 } from 'lucide-react';
 import SEO from '../../../components/SEO';
 
@@ -131,6 +132,7 @@ const AdminCourseDetailPage = () => {
     const getLessonIcon = (type: string) => {
         const map: Record<string, JSX.Element> = {
             VIDEO: <Video className="w-4 h-4 text-blue-500" />,
+            LIVE: <MonitorPlay className="w-4 h-4 text-green-500" />,
             TEXT: <FileText className="w-4 h-4 text-emerald-500" />,
             QUIZ: <HelpCircle className="w-4 h-4 text-violet-500" />,
             ASSIGNMENT: <Briefcase className="w-4 h-4 text-amber-500" />,

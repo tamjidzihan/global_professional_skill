@@ -100,11 +100,18 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 # # Database for postgresql
 
+# DATABASES = {
+#         "default": dj_database_url.config(
+#             default=str(config("POSTGRESQL_DATABASE_URL")),
+#             conn_max_age=600,
+#             conn_health_checks=True,
+#         )
+#     }
 
 if DEBUG:
     DATABASES = {
         "default": dj_database_url.config(
-            default=str(config("POSTGRESQL_DATABASE_URL")),
+            default=str(config("MYSQL_DATABASE")),
             conn_max_age=600,
             conn_health_checks=True,
         )

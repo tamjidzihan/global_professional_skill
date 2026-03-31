@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from 'react';
-import { PlusCircle, Video, FileText, HelpCircle, ClipboardList, FolderOpen } from 'lucide-react';
+import { PlusCircle, Video, FileText, HelpCircle, ClipboardList, FolderOpen, MonitorPlay } from 'lucide-react';
 import { useCourses } from '../../hooks/useCourses';
 import { toast } from 'react-hot-toast';
 import type { LessonType } from '../../types';
@@ -15,6 +15,7 @@ interface AddLessonFormProps {
 
 const LESSON_TYPES: { value: LessonType; label: string; icon: React.ReactNode }[] = [
     { value: 'VIDEO', label: 'Video Lesson', icon: <Video size={16} /> },
+    { value: 'LIVE', label: 'Live Lesson', icon: <MonitorPlay size={16} /> },
     { value: 'TEXT', label: 'Text Lesson', icon: <FileText size={16} /> },
     { value: 'QUIZ', label: 'Quiz', icon: <HelpCircle size={16} /> },
     { value: 'ASSIGNMENT', label: 'Assignment', icon: <ClipboardList size={16} /> },

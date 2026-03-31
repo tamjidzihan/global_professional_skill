@@ -59,7 +59,7 @@ class Course(models.Model):
     slug = models.SlugField(max_length=200, unique=True, db_index=True)
     description = models.TextField()
     short_description = models.CharField(max_length=500)
-
+    
     # Instructor
     instructor = models.ForeignKey(
         User,
@@ -112,24 +112,20 @@ class Course(models.Model):
         null=True, blank=True, help_text="Last date for admission"
     )
     schedule = models.TextField(
-        blank=True, 
-        help_text="e.g., Saturday, Monday, Wednesday - 6:30PM to 9:00PM"
+        blank=True, help_text="e.g., Saturday, Monday, Wednesday - 6:30PM to 9:00PM"
     )
     venue = models.CharField(
-        max_length=255, 
-        blank=True, 
-        help_text="Class venue/location"
+        max_length=255, blank=True, help_text="Class venue/location"
     )
-    
+
     # Capacity Information
     total_seats = models.PositiveIntegerField(
         default=30,
         validators=[MinValueValidator(1)],
-        help_text="Maximum number of students allowed"
+        help_text="Maximum number of students allowed",
     )
     available_seats = models.PositiveIntegerField(
-        default=30,
-        help_text="Number of seats currently available"
+        default=30, help_text="Number of seats currently available"
     )
 
     # Status & Approval
@@ -188,15 +184,15 @@ class Course(models.Model):
     def save(self, *args, **kwargs):
         """Auto-set is_free based on price and ensure available_seats doesn't exceed total_seats."""
         self.is_free = self.price == 0
-        
+
         # Ensure available_seats doesn't exceed total_seats
         if self.available_seats > self.total_seats:
             self.available_seats = self.total_seats
-            
+
         # Ensure enrollment_count doesn't exceed total_seats
         if self.enrollment_count > self.total_seats:
             self.enrollment_count = self.total_seats
-            
+
         super().save(*args, **kwargs)
 
     @property
@@ -212,7 +208,7 @@ class Course(models.Model):
     @property
     def total_classes(self):
         """Count total number of sections (classes)."""
-        return self.sections.count() # type: ignore
+        return self.sections.count()  # type: ignore
 
     @property
     def is_admission_open(self):
@@ -268,6 +264,7 @@ class LessonType(models.TextChoices):
     """Lesson type choices."""
 
     VIDEO = "VIDEO", "Video"
+    LIVE = "LIVE", "Live"
     TEXT = "TEXT", "Text/Article"
     QUIZ = "QUIZ", "Quiz"
     ASSIGNMENT = "ASSIGNMENT", "Assignment"

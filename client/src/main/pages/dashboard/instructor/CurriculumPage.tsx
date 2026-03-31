@@ -18,7 +18,8 @@ import {
     CheckCircle,
     X,
     Video,
-    FileText
+    FileText,
+    MonitorPlay
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import type { LessonSummary, Section } from '../../../../types';
@@ -575,9 +576,12 @@ const CurriculumPage: React.FC = () => {
                                                                     <div className="flex items-center gap-2">
                                                                         {lesson.lesson_type === 'VIDEO' ? (
                                                                             <Video size={16} className="text-[#0066CC]" />
-                                                                        ) : (
+                                                                        ) : lesson.lesson_type === 'TEXT' ? (
                                                                             <FileText size={16} className="text-[#0066CC]" />
+                                                                        ) : (
+                                                                            <MonitorPlay size={16} className="text-[#0066CC]" />
                                                                         )}
+
                                                                         <div>
                                                                             <span className="font-medium text-gray-900 text-sm">
                                                                                 {lesson.title}
