@@ -97,6 +97,9 @@ class Course(models.Model):
     duration_hours = models.PositiveIntegerField(
         default=0, help_text="Estimated course duration in hours"
     )
+    total_classes = models.PositiveIntegerField(
+        default=0, help_text="Total number of classes/sessions"
+    )
     requirements = models.TextField(
         blank=True, help_text="Prerequisites for the course"
     )
@@ -206,8 +209,8 @@ class Course(models.Model):
         return self.sections.aggregate(total=models.Sum("lessons__id"))["total"] or 0  # type: ignore
 
     @property
-    def total_classes(self):
-        """Count total number of sections (classes)."""
+    def total_sections(self):
+        """Count total number of sections."""
         return self.sections.count()  # type: ignore
 
     @property

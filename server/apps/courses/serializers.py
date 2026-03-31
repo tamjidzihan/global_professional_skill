@@ -171,7 +171,7 @@ class CourseListSerializer(serializers.ModelSerializer):
         source="instructor.get_full_name", read_only=True
     )
     category_name = serializers.CharField(source="category.name", read_only=True)
-    total_classes = serializers.SerializerMethodField()
+    total_sections = serializers.SerializerMethodField()
     is_admission_open = serializers.SerializerMethodField()
     is_full = serializers.SerializerMethodField()
 
@@ -190,11 +190,12 @@ class CourseListSerializer(serializers.ModelSerializer):
             "thumbnail",
             "who_can_join",
             "duration_hours",
+            "total_classes",
             "status",
             "enrollment_count",
             "average_rating",
             "total_reviews",
-            "total_classes",
+            "total_sections",
             "available_seats",
             "total_seats",
             "is_admission_open",
@@ -207,8 +208,8 @@ class CourseListSerializer(serializers.ModelSerializer):
             "published_at",
         )
 
-    def get_total_classes(self, obj):
-        return obj.total_classes
+    def get_total_sections(self, obj):
+        return obj.total_sections
 
     def get_is_admission_open(self, obj):
         return obj.is_admission_open
@@ -225,7 +226,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     sections = SectionSerializer(many=True, read_only=True)
     reviews = ReviewSerializer(many=True, read_only=True)
     is_enrolled = serializers.SerializerMethodField()
-    total_classes = serializers.SerializerMethodField()
+    total_sections = serializers.SerializerMethodField()
     is_admission_open = serializers.SerializerMethodField()
     is_full = serializers.SerializerMethodField()
 
@@ -245,6 +246,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "thumbnail",
             "preview_video",
             "duration_hours",
+            "total_classes",
             "requirements",
             "learning_outcomes",
             "target_audience",
@@ -256,7 +258,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "total_reviews",
             "reviews",
             "is_enrolled",
-            "total_classes",
+            "total_sections",
             "available_seats",
             "total_seats",
             "class_starts",
@@ -279,8 +281,8 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             return Enrollment.objects.filter(student=request.user, course=obj).exists()
         return False
 
-    def get_total_classes(self, obj):
-        return obj.total_classes
+    def get_total_sections(self, obj):
+        return obj.total_sections
 
     def get_is_admission_open(self, obj):
         return obj.is_admission_open
@@ -305,6 +307,7 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
             "thumbnail",
             "preview_video",
             "duration_hours",
+            "total_classes",
             "requirements",
             "learning_outcomes",
             "target_audience",

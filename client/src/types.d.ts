@@ -83,15 +83,32 @@ export type LessonType = 'VIDEO' | 'LIVE' | 'TEXT' | 'QUIZ' | 'ASSIGNMENT' | 'RE
 export interface CoursesSummary {
     id: string;
     title: string;
-    price: string;
-    duration_hours: number;
-    average_rating?: string;
-    enrollment_count?: number;
-    thumbnail?: string;
+    slug: string;
+    short_description: string;
     instructor_name: string;
-    difficulty_level: DifficultyLevel;
-    status: CourseStatus;
     category_name: string;
+    difficulty_level: DifficultyLevel;
+    price: string;
+    is_free: boolean;
+    thumbnail?: string;
+    who_can_join: string;
+    duration_hours: number;
+    total_classes: number;
+    status: CourseStatus;
+    enrollment_count: number;
+    average_rating: string;
+    total_reviews: number;
+    total_sections: number;
+    available_seats: number;
+    total_seats: number;
+    is_admission_open: boolean;
+    is_full: boolean;
+    class_starts: string | null;
+    admission_deadline: string | null;
+    schedule: string;
+    venue: string;
+    created_at: string;
+    published_at: string | null;
 }
 
 
@@ -146,6 +163,7 @@ export interface CourseDetail {
     thumbnail?: string;
     preview_video?: string;
     duration_hours: number;
+    total_classes: number;
     requirements: string;
     learning_outcomes: string;
     target_audience: string;
@@ -157,7 +175,7 @@ export interface CourseDetail {
     total_reviews: number;
     reviews: Review[];
     is_enrolled: boolean;
-    total_classes: number;
+    total_sections: number;
     available_seats: number;
     total_seats: number;
     class_starts: string | null;
@@ -187,6 +205,7 @@ export interface CourseCreateUpdateData {
     thumbnail?: File | string | null;
     preview_video?: string;
     duration_hours: number;
+    total_classes: number;
     requirements: string;
     learning_outcomes: string;
     target_audience: string;

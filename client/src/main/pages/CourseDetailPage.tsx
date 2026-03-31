@@ -495,6 +495,10 @@ export function CourseDetailPage() {
                                                 <span className="text-[#0066CC] font-bold">{course.total_classes}</span>
                                             </div>
                                             <div className="flex justify-between py-2 border-b border-gray-100">
+                                                <span className="font-medium">Total Modules</span>
+                                                <span className="text-[#0066CC] font-bold">{course.total_sections}</span>
+                                            </div>
+                                            <div className="flex justify-between py-2 border-b border-gray-100">
                                                 <span className="font-medium">Total Hours</span>
                                                 <span className="text-[#0066CC] font-bold">{course.duration_hours}</span>
                                             </div>

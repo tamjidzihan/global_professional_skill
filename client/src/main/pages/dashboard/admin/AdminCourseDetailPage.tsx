@@ -35,6 +35,7 @@ import {
     Timer,
     Award,
     MonitorPlay,
+    Layers,
 } from 'lucide-react';
 import SEO from '../../../components/SEO';
 
@@ -292,6 +293,7 @@ const AdminCourseDetailPage = () => {
                                     {[
                                         { label: 'Price', icon: TbCurrencyTaka, value: selectedCourse.is_free ? 'Free' : `৳${selectedCourse.price}`, iconColor: 'bg-emerald-50 text-emerald-600' },
                                         { label: 'Duration', icon: Timer, value: `${selectedCourse.duration_hours}h`, iconColor: 'bg-blue-50 text-blue-600' },
+                                        { label: 'Classes', icon: Layers, value: selectedCourse.total_classes || 0, iconColor: 'bg-amber-50 text-amber-600' },
                                         { label: 'Category', icon: Tag, value: selectedCourse.category?.name || 'N/A', iconColor: 'bg-violet-50 text-violet-600' },
                                     ].map(({ label, icon: Icon, value, iconColor }) => (
                                         <div key={label} className="flex items-center gap-2.5 p-3 bg-gray-50 rounded-lg">
@@ -300,7 +302,7 @@ const AdminCourseDetailPage = () => {
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{label}</p>
-                                                <p className="text-sm font-semibold text-gray-800 text-nowrap">{value}</p>
+                                                <p className="text-sm font-semibold text-gray-800">{value}</p>
                                             </div>
                                         </div>
                                     ))}
@@ -310,7 +312,7 @@ const AdminCourseDetailPage = () => {
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-gray-100">
                                     {[
                                         { label: 'Enrollments', icon: Users, value: selectedCourse.enrollment_count || 0, iconColor: 'bg-blue-50 text-blue-600' },
-                                        { label: 'Sections', icon: BookOpen, value: selectedCourse.sections?.length || 0, iconColor: 'bg-violet-50 text-violet-600' },
+                                        { label: 'Sections / Modules', icon: Layers, value: selectedCourse.total_sections || 0, iconColor: 'bg-violet-50 text-violet-600' },
                                         { label: 'Lessons', icon: FileText, value: totalLessons, iconColor: 'bg-emerald-50 text-emerald-600' },
                                         { label: 'Rating', icon: Star, value: selectedCourse.average_rating || '0', iconColor: 'bg-amber-50 text-amber-600' },
                                     ].map(({ label, icon: Icon, value, iconColor }) => (

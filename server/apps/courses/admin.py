@@ -81,7 +81,7 @@ class CourseAdmin(admin.ModelAdmin):
         "available_seats",
         "average_rating",
         "total_reviews",
-        "total_classes_display",
+        "total_sections_display",
         "created_at",
         "updated_at",
         "published_at",
@@ -109,6 +109,7 @@ class CourseAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "duration_hours",
+                    "total_classes",
                     "requirements",
                     "learning_outcomes",
                     "target_audience",
@@ -134,7 +135,7 @@ class CourseAdmin(admin.ModelAdmin):
                 "fields": (
                     "total_seats",
                     "available_seats",
-                    "total_classes_display",
+                    "total_sections_display",
                     "enrollment_count",
                 ),
                 "description": "Manage course capacity and enrollment",
@@ -162,17 +163,17 @@ class CourseAdmin(admin.ModelAdmin):
         return format_html('{} <span style="color: #999;">classes</span>', count)
 
     total_classes.short_description = "Total Classes" # type: ignore
-    total_classes.admin_order_field = "sections__count"  # type: ignore
+    total_classes.admin_order_field = "total_classes"  # type: ignore
 
-    def total_classes_display(self, obj):
-        count = obj.total_classes
+    def total_sections_display(self, obj):
+        count = obj.total_sections
         return format_html(
             '<strong>{}</strong> section{} total',
             count,
             's' if count != 1 else ''
         )
     
-    total_classes_display.short_description = "Total Classes" # type: ignore
+    total_sections_display.short_description = "Total Sections" # type: ignore
 
     def available_seats_status(self, obj):
         if obj.available_seats <= 0:

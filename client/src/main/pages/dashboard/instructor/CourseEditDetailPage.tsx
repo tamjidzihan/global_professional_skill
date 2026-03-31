@@ -44,6 +44,7 @@ const courseFormInputSchema = z.object({
   schedule: z.string().min(1, 'Schedule is required'),
   venue: z.string().min(1, 'Venue is required'),
   total_seats: z.string().min(1, 'Total seats is required'),
+  total_classes: z.string().min(1, 'Total classes is required'),
 });
 
 type CourseFormInputs = z.infer<typeof courseFormInputSchema>;
@@ -52,6 +53,7 @@ const courseParsedSchema = courseFormInputSchema.extend({
   price: z.string().transform(Number).refine(val => !isNaN(val) && val >= 0, { message: 'Price must be a valid positive number' }),
   duration_hours: z.string().transform(Number).refine(val => !isNaN(val) && val > 0, { message: 'Duration must be a positive number' }),
   total_seats: z.string().transform(Number).refine(val => !isNaN(val) && val > 0 && Number.isInteger(val), { message: 'Total seats must be a positive whole number' }),
+  total_classes: z.string().transform(Number).refine(val => !isNaN(val) && val >= 0 && Number.isInteger(val), { message: 'Total classes must be a positive whole number' }),
 });
 
 type CourseParsedData = z.infer<typeof courseParsedSchema>;
@@ -155,6 +157,7 @@ const CourseEditDetailPage: React.FC = () => {
         schedule: course.schedule,
         venue: course.venue,
         total_seats: course.total_seats.toString(),
+        total_classes: course.total_classes.toString(),
       });
       setCurrentThumbnail(course.thumbnail || null);
     }
@@ -198,6 +201,7 @@ const CourseEditDetailPage: React.FC = () => {
     formData.append('schedule', parsedData.schedule);
     formData.append('venue', parsedData.venue);
     formData.append('total_seats', parsedData.total_seats.toString());
+    formData.append('total_classes', parsedData.total_classes.toString());
     if (parsedData.preview_video) formData.append('preview_video', parsedData.preview_video);
     if (parsedData.thumbnail && parsedData.thumbnail.length > 0)
       formData.append('thumbnail', parsedData.thumbnail[0]);
@@ -520,6 +524,11 @@ const CourseEditDetailPage: React.FC = () => {
               <label htmlFor="total_seats" className={labelCls}>Total Seats <span className="text-rose-500">*</span></label>
               <input id="total_seats" type="number" min="1" {...register('total_seats')} className={inputCls} placeholder="e.g., 30" />
               <FieldError message={errors.total_seats?.message} />
+            </div>
+            <div>
+              <label htmlFor="total_classes" className={labelCls}>Total Classes <span className="text-rose-500">*</span></label>
+              <input id="total_classes" type="number" min="1" {...register('total_classes')} className={inputCls} placeholder="e.g., 24" />
+              <FieldError message={errors.total_classes?.message} />
             </div>
           </div>
         </SectionCard>

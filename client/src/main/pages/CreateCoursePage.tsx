@@ -42,6 +42,7 @@ const courseFormInputSchema = z.object({
   schedule: z.string().min(1, 'Schedule is required'),
   venue: z.string().min(1, 'Venue is required'),
   total_seats: z.string().min(1, 'Total seats is required'),
+  total_classes: z.string().min(1, 'Total classes is required'),
 });
 
 type CourseFormInputs = z.infer<typeof courseFormInputSchema>;
@@ -51,6 +52,7 @@ const courseParsedSchema = courseFormInputSchema.extend({
   price: z.string().transform(Number).refine(val => !isNaN(val) && val >= 0, { message: 'Price must be a valid positive number' }),
   duration_hours: z.string().transform(Number).refine(val => !isNaN(val) && val > 0, { message: 'Duration must be a positive number' }),
   total_seats: z.string().transform(Number).refine(val => !isNaN(val) && val > 0 && Number.isInteger(val), { message: 'Total seats must be a positive whole number' }),
+  total_classes: z.string().transform(Number).refine(val => !isNaN(val) && val >= 0 && Number.isInteger(val), { message: 'Total classes must be a positive whole number' }),
 });
 
 type CourseParsedData = z.infer<typeof courseParsedSchema>;
@@ -132,6 +134,7 @@ const CreateCoursePage: React.FC = () => {
     formData.append('schedule', parsedData.schedule);
     formData.append('venue', parsedData.venue);
     formData.append('total_seats', parsedData.total_seats.toString());
+    formData.append('total_classes', parsedData.total_classes.toString());
 
     // Optional video URL
     if (parsedData.preview_video) {
@@ -670,6 +673,26 @@ const CreateCoursePage: React.FC = () => {
                     <p className={errorClassName}>
                       <AlertCircle className="w-4 h-4" />
                       {errors.total_seats.message}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label htmlFor="total_classes" className={labelClassName}>
+                    Total Classes <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="total_classes"
+                    type="number"
+                    min="1"
+                    {...register('total_classes')}
+                    className={inputClassName}
+                    placeholder="e.g., 24"
+                  />
+                  {errors.total_classes && (
+                    <p className={errorClassName}>
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.total_classes.message}
                     </p>
                   )}
                 </div>
