@@ -194,7 +194,7 @@ const MyCoursesPage = (): JSX.Element => {
         },
         {
             label: 'Total Students',
-            value: courses.reduce((acc: number, c: any) => acc + (c.enrolled_students ?? 0), 0),
+            value: courses.reduce((acc: number, c: any) => acc + (c.enrollment_count ?? 0), 0),
             icon: Users,
             iconBg: 'bg-emerald-50',
             iconColor: 'text-emerald-500',
@@ -403,7 +403,7 @@ const MyCoursesPage = (): JSX.Element => {
                                                     <Users className="w-3 h-3 text-gray-400" />
                                                 </div>
                                                 <span className="text-sm text-gray-600">
-                                                    {course.enrolled_students ?? 0}
+                                                    {course.enrollment_count ?? 0}
                                                 </span>
                                             </div>
                                         </td>

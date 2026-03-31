@@ -10,6 +10,7 @@ import {
     PlaySquare,
     Award,
     TrendingUp,
+    Layers,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEnrollments } from '../../../../hooks/useEnrollments';
@@ -111,13 +112,21 @@ function EnrollmentCard({ enrollment }: { enrollment: any }) {
                     {enrollment.course.title}
                 </h3>
 
-                {/* Duration */}
-                {enrollment.course.duration_hours && (
-                    <div className="flex items-center gap-1.5 text-xs text-gray-400">
-                        <Clock className="w-3.5 h-3.5" />
-                        {enrollment.course.duration_hours}h total
-                    </div>
-                )}
+                {/* Duration & Classes */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-400">
+                    {enrollment.course.duration_hours && (
+                        <div className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5" />
+                            {enrollment.course.duration_hours}h
+                        </div>
+                    )}
+                    {enrollment.course.total_classes && (
+                        <div className="flex items-center gap-1.5">
+                            <Layers className="w-3.5 h-3.5" />
+                            {enrollment.course.total_classes} classes
+                        </div>
+                    )}
+                </div>
 
                 {/* Progress */}
                 <div className="mt-auto pt-2">

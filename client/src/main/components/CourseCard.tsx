@@ -15,6 +15,8 @@ interface CourseCardProps {
     level: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
     badge?: 'Bestseller' | 'Hot & New' | 'New' | string
     thumbnail?: string
+    duration_hours?: number
+    total_classes?: number
 }
 
 export function CourseCard({
@@ -27,6 +29,8 @@ export function CourseCard({
     description,
     level,
     thumbnail = '',
+    duration_hours,
+    total_classes,
 }: CourseCardProps) {
     const ratingNum = parseFloat(rating)
 
@@ -110,7 +114,14 @@ export function CourseCard({
                 <div className="flex items-center gap-1.5 mt-0.5">
                     <span className="text-sm font-bold text-orange-500 leading-none">{rating}</span>
                     <div className="flex items-center gap-0.5">{renderStars(ratingNum)}</div>
-                    {/* <span className="text-xs text-gray-500">({reviewCount.toLocaleString()})</span> */}
+                    <div className="flex items-center gap-2 ml-auto">
+                        {duration_hours !== undefined && (
+                            <span className="text-[10px] text-gray-400 font-medium">{duration_hours}h</span>
+                        )}
+                        {total_classes !== undefined && (
+                            <span className="text-[10px] text-gray-400 font-medium">• {total_classes} classes</span>
+                        )}
+                    </div>
                 </div>
 
                 {/* Spacer */}

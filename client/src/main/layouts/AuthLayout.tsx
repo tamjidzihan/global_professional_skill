@@ -103,7 +103,7 @@ export function AuthLayout({ children, type }: AuthLayoutProps) {
                                     </div>
                                     <div>
                                         <h1 className="text-2xl font-bold text-gray-900">
-                                            {isLogin ? 'Welcome Back' : isRegister ? 'Join BITM' : 'Information'}
+                                            {isLogin ? 'Welcome Back' : isRegister ? 'Join GPI-BD' : 'Information'}
                                         </h1>
                                         <p className="text-gray-600 text-sm">
                                             {isLogin

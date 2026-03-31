@@ -1,10 +1,10 @@
 import { toast } from 'react-hot-toast'
 import React, { useState } from 'react'
 import { User, Mail, Lock, Eye, EyeOff, AlertCircle, Phone } from 'lucide-react'
-import { AuthLayout } from '../components/AuthLayout'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import SEO from '../components/SEO'
+import { AuthLayout } from '../layouts/AuthLayout'
 
 interface RegisterFormData {
     email: string;
@@ -86,8 +86,8 @@ export function RegisterPage() {
 
     return (
         <AuthLayout type="register">
-            <SEO 
-                title="Create Your Account" 
+            <SEO
+                title="Create Your Account"
                 description="Join Global Professional Institute today. Create an account to access professional courses and advance your career."
             />
             {/* Desktop Header */}

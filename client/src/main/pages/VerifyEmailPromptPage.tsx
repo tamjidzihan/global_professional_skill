@@ -1,14 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { MailCheck } from 'lucide-react';
-import { AuthLayout } from '../components/AuthLayout';
+import { AuthLayout } from '../layouts/AuthLayout'
 import SEO from '../components/SEO';
 
 const VerifyEmailPromptPage: React.FC = () => {
     return (
         <AuthLayout type="info">
-            <SEO 
-                title="Verify Your Email" 
+            <SEO
+                title="Verify Your Email"
                 description="Please verify your email address to activate your account and access all features of Global Professional Institute."
             />
             <div className="flex flex-col items-center justify-center text-center px-4">

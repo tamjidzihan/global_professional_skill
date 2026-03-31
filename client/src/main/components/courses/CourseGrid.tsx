@@ -123,6 +123,8 @@ const CourseGrid = ({
                                 category={course.category_name}
                                 instructor={course.instructor_name}
                                 thumbnail={course.thumbnail}
+                                duration_hours={course.duration_hours}
+                                total_classes={course.total_classes}
                             />
                         ))}
                     </div>

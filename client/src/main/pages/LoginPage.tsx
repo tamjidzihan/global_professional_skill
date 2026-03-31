@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom' // Added useLocation, useNavigate
 import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
-import { AuthLayout } from '../components/AuthLayout'
+import { AuthLayout } from '../layouts/AuthLayout'
 import { useAuth } from '../../hooks/useAuth'
 import { toast } from 'react-hot-toast' // Added toast
 import SEO from '../components/SEO'
@@ -36,8 +36,8 @@ export function LoginPage() {
 
     return (
         <AuthLayout type="login">
-            <SEO 
-                title="Login to Your Account" 
+            <SEO
+                title="Login to Your Account"
                 description="Sign in to your Global Professional Institute account to access your courses, track your progress, and continue your learning journey."
             />
             {/* Desktop Header */}
