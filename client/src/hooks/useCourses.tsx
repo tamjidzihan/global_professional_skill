@@ -155,17 +155,11 @@ export function useCourses() {
                 const response = await createCourse(data);
                 const newCourse = response.data.data;
 
+                const { instructor, category, ...rest } = newCourse;
                 const newCourseSummary: CoursesSummary = {
-                    id: newCourse.id,
-                    title: newCourse.title,
-                    duration_hours: newCourse.duration_hours,
-                    thumbnail: newCourse.thumbnail,
-                    price: newCourse.price,
-                    difficulty_level: newCourse.difficulty_level,
-                    average_rating: newCourse.average_rating,
-                    status: newCourse.status,
-                    instructor_name: `${newCourse.instructor.first_name} ${newCourse.instructor.last_name}`,
-                    category_name: newCourse.category.name,
+                    ...rest,
+                    instructor_name: `${instructor.first_name} ${instructor.last_name}`,
+                    category_name: category.name,
                 };
                 setCourses((prev) => [newCourseSummary, ...prev]);
                 toast.success('Course created successfully');
@@ -192,17 +186,11 @@ export function useCourses() {
                 const response = await updateCourse(id, data);
                 const updatedCourse = response.data.data;
 
+                const { instructor, category, ...rest } = updatedCourse;
                 const updatedCourseSummary: CoursesSummary = {
-                    id: updatedCourse.id,
-                    title: updatedCourse.title,
-                    duration_hours: updatedCourse.duration_hours,
-                    thumbnail: updatedCourse.thumbnail,
-                    price: updatedCourse.price,
-                    difficulty_level: updatedCourse.difficulty_level,
-                    average_rating: updatedCourse.average_rating,
-                    status: updatedCourse.status,
-                    instructor_name: `${updatedCourse.instructor.first_name} ${updatedCourse.instructor.last_name}`,
-                    category_name: updatedCourse.category.name,
+                    ...rest,
+                    instructor_name: `${instructor.first_name} ${instructor.last_name}`,
+                    category_name: category.name,
                 };
 
                 setCourses((prev) =>
