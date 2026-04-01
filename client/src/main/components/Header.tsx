@@ -336,14 +336,14 @@ const Header = () => {
                             <div className="text-sm text-gray-600 space-y-3">
                                 <div className="flex items-center">
                                     <Phone className="w-4 h-4 text-[#76C043] mr-2 shrink-0" />
-                                    <span className="font-medium">+88 09638-016499</span>
+                                    <span className="font-medium">+88 01978100105</span>
                                 </div>
                                 <div className="flex items-center">
                                     <Mail className="w-4 h-4 text-[#76C043] mr-2 shrink-0" />
-                                    <span className="font-medium">info@gpis.org.bd</span>
+                                    <span className="font-medium">info@gpibd.com</span>
                                 </div>
                                 <div className="pt-2 text-xs text-gray-500">
-                                    <p>© {new Date().getFullYear()} GPISBD. All rights reserved.</p>
+                                    <p>© {new Date().getFullYear()} GPI-BD. All rights reserved.</p>
                                 </div>
                             </div>
                         </div>
