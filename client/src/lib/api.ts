@@ -22,6 +22,8 @@ import type {
     PaymentCreateData,
     Enrollment,
     PaginatedResponse,
+    PasswordResetRequestData,
+    PasswordResetConfirmData,
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
@@ -137,6 +139,8 @@ export const endpoints = {
         verifyEmail: '/accounts/verify-email/',
         login: '/accounts/login/',
         refresh: '/accounts/token/refresh/',
+        passwordReset: '/accounts/password/reset/',
+        passwordResetConfirm: '/accounts/password/reset/confirm/',
     },
     profile: {
         get: '/accounts/profile/',
@@ -439,3 +443,10 @@ export const getEnrollments = <T = PaginatedResponse<Enrollment[]>>(
     }
     return api.get<T>(endpoints.enrollments.list, { params });
 };
+
+// Password Reset API Calls
+export const requestPasswordReset = (data: PasswordResetRequestData): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(endpoints.auth.passwordReset, data);
+
+export const confirmPasswordReset = (data: PasswordResetConfirmData): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(endpoints.auth.passwordResetConfirm, data);

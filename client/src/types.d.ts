@@ -386,3 +386,13 @@ export interface ErrorResponse {
         details?: Record<string, any>;
     };
 }
+
+export interface PasswordResetRequestData {
+    email: string;
+}
+
+export interface PasswordResetConfirmData {
+    token: string;
+    new_password: string;
+    new_password_confirm: string;
+}

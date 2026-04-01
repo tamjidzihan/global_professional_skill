@@ -14,6 +14,7 @@ import { MyProfilePage } from "./main/pages/dashboard/MyProfilePage";
 import { StudentDashboard } from "./main/pages/dashboard/StudentDashboard";
 import EmailVerificationPage from "./main/pages/EmailVerificationPage";
 import ForgotPasswordPage from "./main/pages/ForgotPasswordPage";
+import ResetPasswordPage from "./main/pages/ResetPasswordPage";
 import HomePage from "./main/pages/HomePage";
 import InstructorApplicationPage from "./main/pages/InstructorApplicationPage";
 import { LoginPage } from "./main/pages/LoginPage";
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
             { path: '/about', element: <AboutPage /> },
             { path: '/notifications', element: <NotificationsPage /> },
             { path: '/forgot-password', element: <ForgotPasswordPage /> },
+            { path: '/reset-password', element: <ResetPasswordPage /> },
             { path: '/terms', element: <TermsPage /> },
             { path: '/privacy', element: <PrivacyPage /> },
             { path: '/contact', element: <ContactPage /> },

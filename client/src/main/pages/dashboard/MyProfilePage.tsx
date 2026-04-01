@@ -15,7 +15,7 @@ import {
     Save,
     Camera,
     User as UserIcon,
-    Globe,
+    // Globe,
     Award,
     BookOpen,
     Star,
@@ -429,8 +429,8 @@ export function MyProfilePage() {
                                 <div className="space-y-2">
                                     {[
                                         { icon: Lock, label: 'Password', sub: 'Last changed 30 days ago', action: 'Change' },
-                                        { icon: Mail, label: 'Email Notifications', sub: 'Receive updates about your courses', action: 'Configure' },
-                                        { icon: Globe, label: 'Privacy Settings', sub: 'Manage who can see your profile', action: 'Manage' },
+                                        // { icon: Mail, label: 'Email Notifications', sub: 'Receive updates about your courses', action: 'Configure' },
+                                        // { icon: Globe, label: 'Privacy Settings', sub: 'Manage who can see your profile', action: 'Manage' },
                                     ].map(({ icon: Icon, label, sub, action }) => (
                                         <div key={label} className="group flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 hover:bg-white transition-all duration-150">
                                             <div className="w-8 h-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center shrink-0">
