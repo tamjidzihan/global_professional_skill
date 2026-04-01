@@ -2,42 +2,51 @@
 {% extends 'accounts/emails/base.html' %}
 
 {% block content %}
-<h2 style="color: #333; margin-top: 0;">New Instructor Request</h2>
+<h2>New Instructor Request</h2>
 
-<p style="font-size: 16px; color: #555;">
-    Hello Admin,
+<p>Hello <strong>Admin</strong>,</p>
+
+<p>
+    A new instructor role request has been submitted on <strong>{{ site_name }}</strong>
+    and is awaiting your review.
 </p>
 
-<p style="font-size: 16px; color: #555;">
-    A new instructor role request has been submitted on <strong>{{ site_name }}</strong>.
-</p>
-
-<div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
-    <h3 style="color: #333; margin-top: 0;">Request Details:</h3>
-    <ul style="color: #555;">
-        <li><strong>User:</strong> {{ request.user.get_full_name }}</li>
-        <li><strong>Email:</strong> {{ request.user.email }}</li>
-        <li><strong>Submitted:</strong> {{ request.created_at|date:"F j, Y, g:i a" }}</li>
-        <li><strong>Qualifications:</strong> {{ request.qualifications|truncatechars:100 }}</li>
-    </ul>
+<div class="info-box">
+    <h4>Request Details</h4>
+    <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td style="padding: 6px 0; font-size: 14px; color: #6b7280; width: 130px; vertical-align: top;">Name</td>
+            <td style="padding: 6px 0; font-size: 14px; color: #111827; font-weight: 600;">
+                {{ request.user.get_full_name}}</td>
+        </tr>
+        <tr>
+            <td style="padding: 6px 0; font-size: 14px; color: #6b7280; vertical-align: top;">Email</td>
+            <td style="padding: 6px 0; font-size: 14px; color: #111827;">{{ request.user.email }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 6px 0; font-size: 14px; color: #6b7280; vertical-align: top;">Submitted</td>
+            <td style="padding: 6px 0; font-size: 14px; color: #111827;">{{ request.created_at|date:"F j, Y, g:i a" }}
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 6px 0; font-size: 14px; color: #6b7280; vertical-align: top;">Qualifications</td>
+            <td style="padding: 6px 0; font-size: 14px; color: #111827;">{{ request.qualifications|truncatechars:120 }}
+            </td>
+        </tr>
+    </table>
 </div>
 
-<div style="text-align: center; margin: 30px 0;">
-    <a href="{{ admin_url }}" class="button">
-        Review Request
-    </a>
+<div class="btn-wrap">
+    <a href="{{ admin_url }}" class="btn">Review Request</a>
 </div>
 
 <div class="divider"></div>
 
-<p style="font-size: 14px; color: #777;">
-    This is an automated notification. Please review the request in the admin panel
-    and take appropriate action within 48 hours.
-</p>
-{% endblock %}
+<div class="note-box">
+    <p>
+        This is an automated notification. Please review the request in the admin panel
+        and take appropriate action within <strong style="color: #374151;">48 hours</strong>.
+    </p>
+</div>
 
-{% block extra_context %}
-{% with email_subtitle="New Instructor Request" %}
-{{ block.super }}
-{% endwith %}
 {% endblock %}

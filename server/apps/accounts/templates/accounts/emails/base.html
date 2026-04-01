@@ -1,124 +1,359 @@
 <!-- accounts/templates/accounts/emails/base.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ subject }}</title>
     <style>
-        /* Base styles */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            color: #333;
+        * {
             margin: 0;
             padding: 0;
-            background-color: #f7f9fc;
+            box-sizing: border-box;
         }
-        
-        .email-container {
-            max-width: 600px;
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #374151;
+            background-color: #f3f4f6;
+            padding: 32px 16px;
+        }
+
+        .wrapper {
+            max-width: 580px;
             margin: 0 auto;
+        }
+
+        /* ── Top logo bar ── */
+        .top-bar {
+            text-align: center;
+            padding-bottom: 20px;
+        }
+
+        .top-bar img {
+            height: 48px;
+            width: auto;
+        }
+
+        /* ── Card ── */
+        .card {
             background-color: #ffffff;
-            border-radius: 8px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
             overflow: hidden;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        
+
+        /* ── Header strip ── */
         .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 30px 20px;
+            background-color: #7c3aed;
+            background-image: radial-gradient(ellipse at top left, #6d28d9 0%, #7c3aed 50%, #8b5cf6 100%);
+            padding: 32px 32px 28px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
-        
-        .logo {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 10px;
+
+        /* Subtle decorative circles */
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
         }
-        
-        .content {
-            padding: 40px 30px;
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: -30px;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
         }
-        
-        .button {
+
+        .header-site-name {
+            display: block;
+            color: #ffffff;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+            margin-bottom: 6px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-subtitle {
             display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white !important;
-            text-decoration: none;
-            padding: 12px 30px;
-            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #ede9fe;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 4px 14px;
+            border-radius: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Content ── */
+        .content {
+            padding: 36px 32px;
+        }
+
+        .content h2 {
+            color: #111827;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.3;
+        }
+
+        .content h3 {
+            color: #111827;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .content p {
+            font-size: 15px;
+            color: #4b5563;
+            margin-bottom: 16px;
+        }
+
+        .content strong {
+            color: #111827;
             font-weight: 600;
+        }
+
+        .content ul,
+        .content ol {
+            padding-left: 20px;
+            margin-bottom: 16px;
+        }
+
+        .content li {
+            font-size: 15px;
+            color: #4b5563;
+            margin-bottom: 6px;
+        }
+
+        /* ── Info box ── */
+        .info-box {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px 24px;
             margin: 20px 0;
-            text-align: center;
         }
-        
-        .footer {
-            background-color: #f8f9fa;
-            padding: 20px;
-            text-align: center;
+
+        .info-box h4 {
+            color: #111827;
             font-size: 14px;
-            color: #6c757d;
-            border-top: 1px solid #dee2e6;
+            font-weight: 700;
+            margin-bottom: 12px;
         }
-        
-        .footer-links {
-            margin-top: 15px;
+
+        /* ── Status box variants ── */
+        .box-success {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin: 20px 0;
         }
-        
-        .footer-links a {
-            color: #667eea;
+
+        .box-error {
+            background-color: #fff5f5;
+            border: 1px solid #fecaca;
+            border-left: 4px solid #ef4444;
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin: 20px 0;
+        }
+
+        .box-error h4 {
+            color: #b91c1c;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .box-error p {
+            color: #4b5563;
+            margin-bottom: 0;
+        }
+
+        .note-box {
+            background-color: #fafafa;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 20px 0;
+        }
+
+        .note-box p {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 0;
+        }
+
+        /* ── Button ── */
+        .btn-wrap {
+            text-align: center;
+            margin: 28px 0;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #7c3aed;
+            color: #ffffff !important;
             text-decoration: none;
-            margin: 0 10px;
+            padding: 13px 32px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.01em;
         }
-        
-        .footer-links a:hover {
-            text-decoration: underline;
+
+        /* ── URL fallback ── */
+        .url-fallback {
+            text-align: center;
+            margin: 0 0 20px;
         }
-        
+
+        .url-fallback p {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+
+        .url-fallback a {
+            font-size: 12px;
+            color: #7c3aed;
+            word-break: break-all;
+        }
+
+        /* ── Divider ── */
         .divider {
             height: 1px;
-            background-color: #e9ecef;
-            margin: 30px 0;
+            background-color: #f3f4f6;
+            margin: 28px 0;
         }
-        
-        /* Responsive */
+
+        /* ── Resource links ── */
+        .resource-link {
+            display: block;
+            font-size: 14px;
+            color: #7c3aed;
+            text-decoration: none;
+            margin-bottom: 6px;
+        }
+
+        .resource-link:before {
+            content: "→ ";
+            color: #a78bfa;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            background-color: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+            padding: 24px 32px;
+            text-align: center;
+        }
+
+        .footer p {
+            font-size: 13px;
+            color: #9ca3af;
+            margin-bottom: 8px;
+        }
+
+        .footer a {
+            color: #7c3aed;
+            text-decoration: none;
+            font-size: 13px;
+            margin: 0 6px;
+        }
+
+        .footer-note {
+            font-size: 12px !important;
+            color: #d1d5db !important;
+            margin-top: 12px !important;
+        }
+
+        /* ── Responsive ── */
         @media (max-width: 600px) {
-            .content {
-                padding: 20px 15px;
+            body {
+                padding: 16px 12px;
             }
-            
-            .button {
+
+            .content {
+                padding: 24px 20px;
+            }
+
+            .footer {
+                padding: 20px;
+            }
+
+            .header {
+                padding: 24px 20px 20px;
+            }
+
+            .btn {
                 display: block;
-                margin: 20px auto;
+                text-align: center;
             }
         }
     </style>
 </head>
+
 <body>
-    <div class="email-container">
-        <div class="header">
-            <div class="logo">{{ site_name }}</div>
-            <div style="opacity: 0.9; font-size: 16px;">{{ email_subtitle }}</div>
+    <div class="wrapper">
+
+        <!-- Logo -->
+        <div class="top-bar">
+            <img src="https://gpibd.com/assets/gpilogo_1-B7nInYrC.png" alt="{{ site_name }}" />
         </div>
-        
-        <div class="content">
-            {% block content %}{% endblock %}
-        </div>
-        
-        <div class="footer">
-            <p>© {% now "Y" %} {{ site_name }}. All rights reserved.</p>
-            <div class="footer-links">
-                <a href="{{ site_url }}">Visit Website</a> | 
-                <a href="{{ site_url }}/privacy">Privacy Policy</a> | 
-                <a href="{{ site_url }}/terms">Terms of Service</a>
+
+        <div class="card">
+
+            <!-- Header strip -->
+            <div class="header">
+                <span class="header-site-name">{{ site_name }}</span>
+                <span class="header-subtitle">{{ email_subtitle }}</span>
             </div>
-            <p style="margin-top: 15px; font-size: 12px;">
-                This email was sent to {{ user_email }}. 
-                If you didn't request this, please ignore this email.
-            </p>
+
+            <!-- Content -->
+            <div class="content">
+                {% block content %}{% endblock %}
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <p>© {% now "Y" %} {{ site_name }}. All rights reserved.</p>
+                <p>
+                    <a href="{{ site_url }}">Website</a> &nbsp;·&nbsp;
+                    <a href="{{ site_url }}/privacy">Privacy</a> &nbsp;·&nbsp;
+                    <a href="{{ site_url }}/terms">Terms</a>
+                </p>
+                <p class="footer-note">
+                    This email was sent to {{ user_email }}.<br>
+                    If you didn't request this, you can safely ignore it.
+                </p>
+            </div>
+
         </div>
     </div>
 </body>
+
 </html>
