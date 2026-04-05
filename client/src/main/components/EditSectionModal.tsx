@@ -50,7 +50,9 @@ const EditSectionModal: React.FC<EditSectionModalProps> = ({ courseId, section, 
         setIsSubmitting(true);
 
         try {
+            console.log(courseId);
             await editSection(courseId, section.id, {
+                course: courseId,
                 title: title.trim(),
                 description: description.trim() || undefined,
                 order

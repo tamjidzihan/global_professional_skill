@@ -73,7 +73,7 @@ export function CourseReviewModal({
                                 </div>
                                 <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                                     <p className="text-sm font-medium text-gray-700 mb-1">Price</p>
-                                    <p className="text-gray-900 font-medium">${course.price}</p>
+                                    <p className="text-gray-900 font-medium"><span className=' font-bold text-xl'>৳</span>{course.price}</p>
                                 </div>
                             </div>
 
