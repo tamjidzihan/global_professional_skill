@@ -60,9 +60,9 @@ const CheckoutPage: React.FC = () => {
 
     const handlePayment = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!course || !user) return;
-        
+
         if (!transactionId || !senderNumber) {
             toast.error("Please provide both Transaction ID and Sender Number");
             return;
@@ -177,7 +177,7 @@ const CheckoutPage: React.FC = () => {
                                             {siteSettings?.bkash_merchant_number || "01XXXXXXXXX"}
                                         </p>
                                     </div>
-                                    
+
                                     <div className="space-y-2">
                                         <h4 className="font-bold text-gray-800 flex items-center gap-2">
                                             <Info className="w-4 h-4 text-blue-500" />
@@ -196,9 +196,9 @@ const CheckoutPage: React.FC = () => {
                                 <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50">
                                     <div className="w-48 h-48 bg-white p-2 rounded-lg shadow-inner mb-4 flex items-center justify-center">
                                         {siteSettings?.bkash_qr_code ? (
-                                            <img 
-                                                src={siteSettings.bkash_qr_code} 
-                                                alt="bKash QR Code" 
+                                            <img
+                                                src={siteSettings.bkash_qr_code}
+                                                alt="bKash QR Code"
                                                 className="w-full h-full object-contain"
                                             />
                                         ) : (
@@ -219,7 +219,7 @@ const CheckoutPage: React.FC = () => {
 
                             <form onSubmit={handlePayment} className="p-6 space-y-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1.5 flex items-center gap-2">
+                                    <label className="block text-sm font-bold text-gray-700 mb-1.5 items-center gap-2">
                                         <Phone className="w-4 h-4" />
                                         Your bKash Number
                                     </label>
@@ -235,7 +235,7 @@ const CheckoutPage: React.FC = () => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1.5 flex items-center gap-2">
+                                    <label className="block text-sm font-bold text-gray-700 mb-1.5 items-center gap-2">
                                         <Hash className="w-4 h-4" />
                                         Transaction ID (TrxID)
                                     </label>

@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from 'react';
-import { 
-    Settings, 
-    Save, 
-    QrCode, 
-    Phone, 
-    Upload, 
+import {
+    Settings,
+    Save,
+    QrCode,
+    Phone,
+    Upload,
     Image as ImageIcon,
     CheckCircle2,
     AlertCircle,
@@ -20,7 +21,7 @@ const SiteSettingsPage: React.FC = () => {
     const [settings, setSettings] = useState<SiteSettings | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    
+
     // Form state
     const [merchantNumber, setMerchantNumber] = useState('');
     const [qrCodeFile, setQrCodeFile] = useState<File | null>(null);
@@ -39,8 +40,8 @@ const SiteSettingsPage: React.FC = () => {
                 setMerchantNumber(data.bkash_merchant_number);
                 setQrCodePreview(data.bkash_qr_code);
             }
-        } catch (error) {
-            toast.error('Failed to load settings');
+        } catch (error: any) {
+            toast.error(error.message || 'Failed to load settings');
         } finally {
             setLoading(false);
         }
@@ -88,7 +89,7 @@ const SiteSettingsPage: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
+            <div className="flex items-center justify-center min-h-100">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
             </div>
         );
@@ -96,8 +97,8 @@ const SiteSettingsPage: React.FC = () => {
 
     return (
         <div className="pb-10">
-            <Breadcrumb 
-                name="Platform Settings" 
+            <Breadcrumb
+                name="Platform Settings"
                 subtitle="Configure global payment details and site info"
                 icon={Settings}
             />
@@ -121,7 +122,7 @@ const SiteSettingsPage: React.FC = () => {
                         <div className="p-8 space-y-8">
                             {/* Merchant Number Input */}
                             <div className="max-w-md">
-                                <label className="block text-sm font-bold text-gray-700 mb-2 flex items-center gap-2">
+                                <label className="block text-sm font-bold text-gray-700 mb-2  items-center gap-2">
                                     <Phone className="w-4 h-4 text-pink-500" />
                                     Merchant bKash Number
                                 </label>
@@ -144,19 +145,19 @@ const SiteSettingsPage: React.FC = () => {
 
                             {/* QR Code Upload */}
                             <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+                                <label className="block text-sm font-bold text-gray-700 mb-4  items-center gap-2">
                                     <ImageIcon className="w-4 h-4 text-pink-500" />
                                     bKash QR Code Image
                                 </label>
-                                
+
                                 <div className="flex flex-col md:flex-row gap-8 items-start">
                                     {/* Preview Area */}
                                     <div className="w-48 h-48 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl flex items-center justify-center relative overflow-hidden group">
                                         {qrCodePreview ? (
                                             <>
-                                                <img 
-                                                    src={qrCodePreview} 
-                                                    alt="bKash QR Code" 
+                                                <img
+                                                    src={qrCodePreview}
+                                                    alt="bKash QR Code"
                                                     className="w-full h-full object-contain p-2"
                                                 />
                                                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -191,11 +192,11 @@ const SiteSettingsPage: React.FC = () => {
                                         <label className="inline-flex items-center px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all cursor-pointer shadow-sm">
                                             <Upload className="w-4 h-4 mr-2 text-violet-600" />
                                             {qrCodePreview ? 'Upload New QR Code' : 'Select QR Code Image'}
-                                            <input 
-                                                type="file" 
-                                                className="hidden" 
-                                                onChange={handleFileChange} 
-                                                accept="image/*" 
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                onChange={handleFileChange}
+                                                accept="image/*"
                                             />
                                         </label>
                                         {qrCodeFile && (
