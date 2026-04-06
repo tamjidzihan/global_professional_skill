@@ -14,6 +14,7 @@ interface StatsSectionProps {
         total_enrollments?: number
         pending_courses?: number
         pending_instructor_requests?: number
+        pending_payments?: number
     }
 }
 
@@ -42,7 +43,8 @@ export function StatsSection({ data }: StatsSectionProps): JSX.Element {
                 title="Pending Approvals"
                 value={
                     (data?.pending_courses || 0) +
-                    (data?.pending_instructor_requests || 0)
+                    (data?.pending_instructor_requests || 0) +
+                    (data?.pending_payments || 0)
                 }
                 icon={AlertCircle}
                 color="red"

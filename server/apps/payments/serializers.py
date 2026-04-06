@@ -21,6 +21,7 @@ class PaymentSerializer(serializers.ModelSerializer):
             "currency",
             "status",
             "transaction_id",
+            "sender_number",
             "payment_method",
             "created_at",
             "completed_at",
@@ -30,7 +31,6 @@ class PaymentSerializer(serializers.ModelSerializer):
             "id",
             "user",
             "status",
-            "transaction_id",
             "created_at",
             "completed_at",
         ]
@@ -56,7 +56,15 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Payment
-        fields = ["course", "amount", "currency", "payment_method", "metadata"]
+        fields = [
+            "course",
+            "amount",
+            "currency",
+            "payment_method",
+            "transaction_id",
+            "sender_number",
+            "metadata",
+        ]
 
     def validate_course(self, value):
         """Additional checks for course before creating an order."""
@@ -65,5 +73,16 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
         
         if value.is_full:
             raise serializers.ValidationError("Course is full.")
+            
+        return value
+
+    def validate_transaction_id(self, value):
+        """Ensure transaction ID is provided for manual payment methods."""
+        if not value:
+            raise serializers.ValidationError("Transaction ID is required for verification.")
+        
+        # Check if transaction ID already exists
+        if Payment.objects.filter(transaction_id=value).exists():
+            raise serializers.ValidationError("This Transaction ID has already been submitted.")
             
         return value

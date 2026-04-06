@@ -8,7 +8,8 @@ import {
     GraduationCap,
     LogOut,
     ChevronRight,
-    // Settings,
+    CreditCard,
+    Settings,
     // ShieldCheck,
 } from 'lucide-react'
 import { useAuthContext } from '../../../context/AuthContext'
@@ -78,7 +79,9 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
         { name: 'Dashboard', path: '/dashboard/admin', icon: LayoutDashboard, exact: true },
         { name: 'User Management', path: '/dashboard/admin/users', icon: Users },
         { name: 'Category Management', path: '/dashboard/admin/categories', icon: Tag },
-        { name: 'Course Catalog', path: '/dashboard/admin/courses', icon: BookOpen, badge: 'New' },
+        { name: 'Course Catalog', path: '/dashboard/admin/courses', icon: BookOpen },
+        { name: 'Payment Management', path: '/dashboard/admin/payments', icon: CreditCard, badge: 'Review' },
+        { name: 'Platform Settings', path: '/dashboard/admin/settings', icon: Settings },
         // { name: 'Permissions', path: '/dashboard/admin/permissions', icon: ShieldCheck },
         // { name: 'Settings', path: '/dashboard/admin/settings', icon: Settings },
         // { name: 'Reports', path: '/dashboard/admin/reports', icon: FileText },

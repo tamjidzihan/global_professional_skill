@@ -354,6 +354,7 @@ export interface Payment {
     currency: string;
     status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
     transaction_id?: string;
+    sender_number?: string;
     payment_method: string;
     created_at: string;
     completed_at?: string;
@@ -365,6 +366,8 @@ export interface PaymentCreateData {
     amount: string | number;
     currency: string;
     payment_method: string;
+    transaction_id: string;
+    sender_number: string;
     metadata?: any;
 }
 
@@ -395,4 +398,10 @@ export interface PasswordResetConfirmData {
     token: string;
     new_password: string;
     new_password_confirm: string;
+}
+
+export interface SiteSettings {
+    bkash_merchant_number: string;
+    bkash_qr_code: string | null;
+    updated_at: string;
 }

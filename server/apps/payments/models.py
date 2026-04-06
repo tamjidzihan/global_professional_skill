@@ -56,6 +56,12 @@ class Payment(models.Model):
         blank=True,
         help_text="e.g., Credit Card, PayPal, etc."
     )
+    sender_number = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text="The phone number the student used to send the payment (e.g., bKash number)"
+    )
     
     # Metadata for additional context
     metadata = models.JSONField(default=dict, blank=True)

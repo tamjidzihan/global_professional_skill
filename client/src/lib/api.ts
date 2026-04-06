@@ -219,8 +219,20 @@ export const endpoints = {
         list: '/payments/payments/',
         create: '/payments/payments/',
         detail: (id: string) => `/payments/payments/${id}/`,
+        approve: (id: string) => `/payments/payments/${id}/approve/`,
+        reject: (id: string) => `/payments/payments/${id}/reject/`,
+    },
+    core: {
+        settings: '/core/settings/',
     },
 };
+
+// Site Settings API Calls
+export const getSiteSettings = (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get<ApiResponse<any>>(endpoints.core.settings);
+
+export const updateSiteSettings = (data: FormData | any): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.patch<ApiResponse<any>>(endpoints.core.settings, data);
 
 // Payment API Calls
 export const getPayments = <T = ApiResponse<Payment[]>>(
@@ -238,6 +250,12 @@ export const createPaymentOrder = (data: PaymentCreateData): Promise<AxiosRespon
 
 export const getPaymentDetail = (id: string): Promise<AxiosResponse<ApiResponse<Payment>>> =>
     api.get<ApiResponse<Payment>>(endpoints.payments.detail(id));
+
+export const approvePayment = (id: string): Promise<AxiosResponse<ApiResponse<Payment>>> =>
+    api.post<ApiResponse<Payment>>(endpoints.payments.approve(id));
+
+export const rejectPayment = (id: string, feedback?: string): Promise<AxiosResponse<ApiResponse<Payment>>> =>
+    api.post<ApiResponse<Payment>>(endpoints.payments.reject(id), { feedback });
 
 
 // Instructor Request API Calls

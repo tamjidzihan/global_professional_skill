@@ -3,12 +3,14 @@ import { useEffect, useRef, useState, type JSX } from 'react'
 import { useAnalytics } from '../../../hooks/useAnalytics'
 import { useInstructorRequests } from '../../../hooks/useInstructorRequests'
 import { useAdminCourses } from '../../../hooks/useAdminCourses'
+import { usePayments } from '../../../hooks/usePayments'
 import CalendarCard from '../../components/dashboard/CalendarCard'
 import LoadingSpinner from '../../components/ui/LoadingSpinner'
 import { getInstructorRequestDetail, reviewInstructorRequest, getCourseDetail } from '../../../lib/api'
 import type { InstructorRequest } from '../../../types'
 import { StatsSection } from '../../components/dashboard/admin/StatsSection'
 import { PendingCoursesCard } from '../../components/dashboard/admin/PendingCoursesCard'
+import { PendingPaymentsCard } from '../../components/dashboard/admin/PendingPaymentsCard'
 import { InstructorRequestFilters } from '../../components/dashboard/admin/InstructorRequestFilters'
 import { InstructorRequestsList } from '../../components/dashboard/admin/InstructorRequestsList'
 import { getStatusBadge, getStatusColor } from '../../../utils/statusHelpers'
@@ -39,6 +41,12 @@ export function AdminDashboard(): JSX.Element {
         reviewCourseAction,
     } = useAdminCourses()
 
+    const {
+        payments,
+        fetchPayments,
+        loading: paymentsLoading,
+    } = usePayments()
+
     const [selectedRequest, setSelectedRequest] = useState<InstructorRequest | null>(null)
     const [showDetails, setShowDetails] = useState<boolean>(false)
     const [filterStatus, setFilterStatus] = useState<FilterStatus>('ALL')
@@ -58,7 +66,8 @@ export function AdminDashboard(): JSX.Element {
         getAdminAnalytics()
         fetchInstructorRequests('ALL')
         fetchPendingCourses('PENDING')
-    }, [getAdminAnalytics, fetchInstructorRequests, fetchPendingCourses])
+        fetchPayments({ status: 'PENDING' })
+    }, [getAdminAnalytics, fetchInstructorRequests, fetchPendingCourses, fetchPayments])
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -222,7 +231,7 @@ export function AdminDashboard(): JSX.Element {
                 <StatsSection data={data} />
 
                 {/* ── Management cards ── */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {/* Pending Courses */}
                     <PendingCoursesCard
                         courses={pendingCourses}
@@ -230,8 +239,14 @@ export function AdminDashboard(): JSX.Element {
                         onViewDetails={handleViewCourseDetails}
                     />
 
+                    {/* Pending Payments */}
+                    <PendingPaymentsCard
+                        payments={payments}
+                        loading={paymentsLoading}
+                    />
+
                     {/* Instructor Requests */}
-                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+                    <div className="bg-white rounded-xl border border-gray-100 shadow-sm md:col-span-2 lg:col-span-1">
                         <div className="px-5 py-4 border-b border-gray-100">
                             <InstructorRequestFilters
                                 filterStatus={filterStatus}

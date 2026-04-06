@@ -30,6 +30,7 @@ class AdminAnalyticsView(APIView):
 
     def get(self, request):
         from apps.accounts.models import User, InstructorRequest
+        from apps.payments.models import Payment, PaymentStatus
 
         course_status_distribution = (
             Course.objects.values("status")
@@ -47,6 +48,9 @@ class AdminAnalyticsView(APIView):
             "total_enrollments": Enrollment.objects.count(),
             "pending_instructor_requests": InstructorRequest.objects.filter(
                 status="PENDING"
+            ).count(),
+            "pending_payments": Payment.objects.filter(
+                status=PaymentStatus.PENDING
             ).count(),
             "course_status_distribution": {
                 item["status"]: item["count"] for item in course_status_distribution

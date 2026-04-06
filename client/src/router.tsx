@@ -32,6 +32,8 @@ import DashboardIndex from "./DashboardIndex";
 import { CourseManagementPage } from "./main/pages/dashboard/admin/CourseManagementPage";
 import { UserManagementPage } from "./main/pages/dashboard/admin/UserManagementPage";
 import { CategoryManagementPage } from "./main/pages/dashboard/admin/CategoryManagementPage";
+import PaymentManagementPage from "./main/pages/dashboard/admin/PaymentManagementPage";
+import SiteSettingsPage from "./main/pages/dashboard/admin/SiteSettingsPage";
 import AdminCourseDetailPage from "./main/pages/dashboard/admin/AdminCourseDetailPage";
 import CheckoutPage from "./main/pages/CheckoutPage";
 import MyEnrollmentsPage from "./main/pages/dashboard/student/MyEnrollmentsPage";
@@ -223,6 +225,22 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['ADMIN']}>
                                 <CategoryManagementPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/payments',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <PaymentManagementPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/settings',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <SiteSettingsPage />
                             </ProtectedRoute>
                         )
                     },

@@ -123,12 +123,12 @@ class Course(models.Model):
 
     # Capacity Information
     total_seats = models.PositiveIntegerField(
-        default=30,
+        default=1,
         validators=[MinValueValidator(1)],
         help_text="Maximum number of students allowed",
     )
     available_seats = models.PositiveIntegerField(
-        default=30, help_text="Number of seats currently available"
+        default=0, help_text="Number of seats currently available"
     )
 
     # Status & Approval

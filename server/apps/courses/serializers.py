@@ -345,7 +345,16 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
 
     def validate_available_seats(self, value):
         """Validate available seats."""
-        if value > self.initial_data.get('total_seats', 30): # type: ignore
+        total_seats = self.initial_data.get('total_seats')
+        if total_seats is not None:
+            try:
+                total_seats = int(total_seats)
+            except (ValueError, TypeError):
+                total_seats = 30
+        else:
+            total_seats = 30
+
+        if value > total_seats:
             raise serializers.ValidationError(
                 "Available seats cannot exceed total seats."
             )
@@ -394,6 +403,11 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
         validated_data["instructor"] = self.context["request"].user
         validated_data["slug"] = slugify(validated_data["title"])
         validated_data["status"] = CourseStatus.DRAFT
+        
+        # If available_seats not provided, set it to total_seats
+        if "available_seats" not in validated_data:
+            validated_data["available_seats"] = validated_data.get("total_seats", 30)
+            
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
