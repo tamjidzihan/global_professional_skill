@@ -60,7 +60,7 @@ export function PendingPaymentsCard({ payments, loading }: PendingPaymentsCardPr
                                             {payment.user_email.charAt(0).toUpperCase()}
                                         </div>
                                         <div className="min-w-0">
-                                            <p className="text-[11px] font-bold text-gray-800 truncate max-w-[120px]">
+                                            <p className="text-[11px] font-bold text-gray-800 truncate max-w-30">
                                                 {payment.user_email}
                                             </p>
                                         </div>
@@ -69,7 +69,7 @@ export function PendingPaymentsCard({ payments, loading }: PendingPaymentsCardPr
                                         TK. {parseFloat(payment.amount).toLocaleString()}
                                     </span>
                                 </div>
-                                
+
                                 <div className="flex items-center gap-3">
                                     <div className="flex items-center gap-1 text-[9px] font-bold text-pink-600 bg-white px-1.5 py-0.5 rounded border border-pink-50">
                                         <Hash className="w-2.5 h-2.5" />

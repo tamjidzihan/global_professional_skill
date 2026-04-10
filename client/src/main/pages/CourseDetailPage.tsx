@@ -85,7 +85,7 @@ export function CourseDetailPage() {
         }
 
         if (user.role !== 'STUDENT') {
-            alert('Only students can enroll in courses.')
+            toast.error('Only students can enroll in courses.')
             return
         }
 
@@ -231,7 +231,7 @@ export function CourseDetailPage() {
 
     return (
         <>
-            <SEO 
+            <SEO
                 title={course.title}
                 description={course.short_description}
                 keywords={`${course.title}, ${course.category?.name}, professional training, GPI`}
