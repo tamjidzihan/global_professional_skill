@@ -2,43 +2,50 @@
 {% extends 'accounts/emails/base.html' %}
 
 {% block content %}
-<h2>🎉 Congratulations, {{ user.get_full_name }}!</h2>
+<h2 style="color: #333; margin-top: 0;">🎉 Congratulations, {{ user.get_full_name }}!</h2>
 
-<p>
-    Your instructor request on <strong>{{ site_name }}</strong> has been reviewed
-    and we're thrilled to let you know — you've been approved!
-</p>
-
-<div class="box-success">
-    <h4 style="color: #15803d; font-size: 14px; font-weight: 700; margin-bottom: 4px;">
-        ✓ &nbsp;Instructor Status: Approved
-    </h4>
-    <p style="color: #4b5563; font-size: 14px; margin: 0;">
-        You now have full access to create and publish courses on the platform.
-    </p>
+<div style="text-align: center; margin: 20px 0;">
+    <div style="font-size: 72px; color: #4CAF50;">✓</div>
+    <h3 style="color: #333;">Your Instructor Request Has Been Approved!</h3>
 </div>
 
-<p><strong>Here's how to get started:</strong></p>
+<p style="font-size: 16px; color: #555;">
+    Welcome to the instructor community at <strong>{{ site_name }}</strong>!
+    We're excited to have you join our team of educators.
+</p>
 
-<div class="info-box">
-    <h4>Getting Started</h4>
-    <ol>
+<p style="font-size: 16px; color: #555;">
+    <strong>What's next?</strong>
+</p>
+
+<div style="background-color: #f0f7ff; padding: 20px; border-radius: 5px; margin: 20px 0;">
+    <h4 style="color: #333; margin-top: 0;">Getting Started:</h4>
+    <ol style="color: #555;">
         <li>Log in to your account</li>
-        <li>Open the <strong>Instructor Dashboard</strong></li>
-        <li>Click <strong>Create New Course</strong></li>
-        <li>Review the Instructor Guidelines</li>
+        <li>Visit the Instructor Dashboard</li>
+        <li>Create your first course</li>
+        <li>Review our Instructor Guidelines</li>
     </ol>
 </div>
 
-<div class="btn-wrap">
-    <a href="{{ instructor_dashboard_url }}" class="btn">Go to Instructor Dashboard</a>
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{ instructor_dashboard_url }}" class="button">
+        Go to Instructor Dashboard
+    </a>
 </div>
 
 <div class="divider"></div>
 
-<p style="font-size: 14px; color: #6b7280;"><strong>Helpful Resources</strong></p>
-<a href="{{ site_url }}/instructor/guide" class="resource-link">Instructor Guide</a>
-<a href="{{ site_url }}/instructor/faq" class="resource-link">Frequently Asked Questions</a>
-<a href="{{ site_url }}/contact/instructor-support" class="resource-link">Instructor Support</a>
+<p style="font-size: 14px; color: #777;">
+    <strong>Resources:</strong><br>
+    • <a href="{{ site_url }}/instructor/guide" style="color: #667eea;">Instructor Guide</a><br>
+    • <a href="{{ site_url }}/instructor/faq" style="color: #667eea;">FAQs</a><br>
+    • <a href="{{ site_url }}/contact/instructor-support" style="color: #667eea;">Instructor Support</a>
+</p>
+{% endblock %}
 
+{% block extra_context %}
+{% with email_subtitle="Instructor Request Approved" %}
+{{ block.super }}
+{% endwith %}
 {% endblock %}

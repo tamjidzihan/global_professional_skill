@@ -1,7 +1,3 @@
-"""
-Celery tasks for asynchronous operations.
-"""
-
 import logging
 import secrets
 from datetime import timedelta
