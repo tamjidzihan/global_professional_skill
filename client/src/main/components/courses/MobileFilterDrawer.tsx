@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Filter, X, ChevronRight, RotateCcw, BookOpen } from "lucide-react";
 import LoadingSpinner from "../ui/LoadingSpinner";
 import type { Category } from '../../../types';
@@ -11,6 +11,7 @@ interface MobileFilterDrawerProps {
     categoryLoading: boolean;
     categoryError: string | null;
     urlCategoryId: string | null;
+    urlDeliveryMode: string | null;
     urlSearchQuery: string;
     activeCategoryName: string;
     onClose: () => void;
@@ -25,14 +26,32 @@ const MobileFilterDrawer = ({
     categoryLoading,
     categoryError,
     urlCategoryId,
+    urlDeliveryMode,
     urlSearchQuery,
     activeCategoryName,
     onClose,
     onClearAll,
     onFetchCategories
 }: MobileFilterDrawerProps) => {
+    const navigate = useNavigate();
 
     if (!showFilters && !isClosing) return null;
+
+    const modes = [
+        { label: 'All Modes', value: null },
+        { label: 'Online', value: 'ONLINE' },
+        { label: 'Offline', value: 'OFFLINE' },
+        { label: 'Both', value: 'BOTH' }
+    ];
+
+    const handleModeChange = (value: string | null) => {
+        const params = new URLSearchParams();
+        if (urlCategoryId) params.set('category', urlCategoryId);
+        if (urlSearchQuery) params.set('search', urlSearchQuery);
+        if (value) params.set('delivery_mode', value);
+        
+        navigate(`/courses?${params.toString()}`);
+    };
 
     return (
         <div className="lg:hidden fixed inset-0 z-50 overflow-hidden">
@@ -65,7 +84,8 @@ const MobileFilterDrawer = ({
 
                 {/* Content - Scrollable area */}
                 <nav className="flex-1 overflow-y-auto py-4 overscroll-contain">
-                    <div className="px-6 mb-4">
+                    {/* Categories Section */}
+                    <div className="px-6 mb-6">
                         <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
                             Browse Categories
                         </h3>
@@ -104,15 +124,54 @@ const MobileFilterDrawer = ({
                         )}
                     </div>
 
+                    {/* Delivery Mode Section */}
+                    <div className="px-6 mb-6 pt-6 border-t border-gray-100">
+                        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+                            Delivery Mode
+                        </h3>
+                        <div className="space-y-3">
+                            {modes.map((mode) => (
+                                <label 
+                                    key={mode.label} 
+                                    className={`flex items-center justify-between p-3 rounded-xl border transition-all duration-200 cursor-pointer ${
+                                        (urlDeliveryMode || null) === mode.value
+                                            ? 'bg-blue-50 border-[#0066CC] text-[#0066CC]'
+                                            : 'bg-gray-50 border-gray-100 text-gray-600'
+                                    }`}
+                                >
+                                    <span className={`text-sm ${ (urlDeliveryMode || null) === mode.value ? 'font-bold' : 'font-medium'}`}>
+                                        {mode.label}
+                                    </span>
+                                    <div className="relative flex items-center">
+                                        <input
+                                            type="radio"
+                                            name="mobile_delivery_mode"
+                                            checked={(urlDeliveryMode || null) === mode.value}
+                                            onChange={() => handleModeChange(mode.value)}
+                                            className="peer h-5 w-5 cursor-pointer appearance-none rounded-full border border-gray-300 checked:border-[#0066CC] transition-all bg-white"
+                                        />
+                                        <span className="absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0066CC] opacity-0 peer-checked:opacity-100 transition-opacity"></span>
+                                    </div>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
+
                     {/* Active Filters Section */}
-                    {(urlCategoryId || urlSearchQuery) && (
-                        <div className="px-6 pt-6 border-t border-gray-100">
+                    {(urlCategoryId || urlDeliveryMode || urlSearchQuery) && (
+                        <div className="px-6 pt-6 border-t border-gray-100 pb-6">
                             <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Active Filters</h4>
                             <div className="space-y-2">
                                 {urlCategoryId && (
                                     <div className="flex items-center justify-between bg-blue-50 px-3 py-2 rounded-lg border border-blue-100">
                                         <span className="text-xs text-gray-600">Category</span>
                                         <span className="text-xs font-bold text-[#0066CC]">{activeCategoryName}</span>
+                                    </div>
+                                )}
+                                {urlDeliveryMode && (
+                                    <div className="flex items-center justify-between bg-purple-50 px-3 py-2 rounded-lg border border-purple-100">
+                                        <span className="text-xs text-gray-600">Mode</span>
+                                        <span className="text-xs font-bold text-purple-700 capitalize">{urlDeliveryMode.toLowerCase()}</span>
                                     </div>
                                 )}
                                 {urlSearchQuery && (

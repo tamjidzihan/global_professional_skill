@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 import { StatsCard } from '../../components/dashboard/StatsCard'
-import { BookOpen, CheckCircle, Clock, Award, Briefcase, Sparkles, AlertCircle, PlayCircle } from 'lucide-react'
+import { BookOpen, CheckCircle, Clock, Award, Briefcase, Sparkles, AlertCircle, PlayCircle, CreditCard } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuthContext } from '../../../context/AuthContext'
 import { useEnrollments } from '../../../hooks/useEnrollments'
+import { usePayments } from '../../../hooks/usePayments'
 import { useInstructorRequests } from '../../../hooks/useInstructorRequests'
 import CalendarCard from '../../components/dashboard/CalendarCard'
 import SEO from '../../components/SEO'
@@ -11,11 +12,13 @@ import SEO from '../../components/SEO'
 export function StudentDashboard() {
     const { user } = useAuthContext()
     const { enrollments, getMyEnrollments, loading } = useEnrollments()
+    const { payments, fetchPayments } = usePayments()
     const { requests, loading: requestsLoading, error: requestsError } = useInstructorRequests()
 
     useEffect(() => {
         getMyEnrollments()
-    }, [getMyEnrollments])
+        fetchPayments({ status: 'PENDING' })
+    }, [getMyEnrollments, fetchPayments])
 
     // Safely calculate stats
     const totalEnrolled = enrollments?.length || 0
@@ -23,6 +26,7 @@ export function StudentDashboard() {
         (e) => Number(e?.progress_percentage) === 100,
     ).length || 0
     const inProgress = totalEnrolled - completed
+    const pendingPayments = payments?.filter(p => p.status === 'PENDING').length || 0
 
     return (
         <div className="p-4 grid grid-cols-1 lg:grid-cols-4 gap-6"> {/* Added grid layout */}
@@ -53,10 +57,10 @@ export function StudentDashboard() {
                         color="orange"
                     />
                     <StatsCard
-                        title="Completed"
-                        value={completed}
-                        icon={CheckCircle}
-                        color="green"
+                        title="Pending Payments"
+                        value={pendingPayments}
+                        icon={CreditCard}
+                        color="orange"
                     />
                     <StatsCard
                         title="Certificates"
@@ -65,6 +69,65 @@ export function StudentDashboard() {
                         color="blue"
                     />
                 </div>
+
+                {/* Pending Payments Section */}
+                {payments && payments.length > 0 && (
+                    <div className="mb-8">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                <Clock className="w-5 h-5 text-yellow-500" /> Pending Enrollments
+                            </h2>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {payments.map((payment) => (
+                                <div
+                                    key={payment.id}
+                                    className="bg-white rounded-lg border border-yellow-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow relative"
+                                >
+                                    <div className="absolute top-2 right-2 z-10">
+                                        <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-yellow-200">
+                                            Verification Pending
+                                        </span>
+                                    </div>
+                                    <div className="h-32 bg-gray-50 relative">
+                                        {payment.course_thumbnail ? (
+                                            <img
+                                                src={payment.course_thumbnail}
+                                                alt={payment.course_title}
+                                                className="w-full h-full object-cover opacity-60"
+                                            />
+                                        ) : (
+                                            <div className="absolute inset-0 flex items-center justify-center text-gray-300">
+                                                <BookOpen className="w-8 h-8" />
+                                            </div>
+                                        )}
+                                        <div className="absolute inset-0 bg-white/40 flex items-center justify-center">
+                                            <Clock className="w-10 h-10 text-yellow-600 opacity-80" />
+                                        </div>
+                                    </div>
+                                    <div className="p-4">
+                                        <h3 className="font-bold text-gray-900 mb-2 line-clamp-1">
+                                            {payment.course_title}
+                                        </h3>
+                                        <div className="space-y-1.5 mb-4">
+                                            <div className="flex items-center justify-between text-xs text-gray-500">
+                                                <span>Amount Paid:</span>
+                                                <span className="font-semibold text-gray-700">{payment.currency} {payment.amount}</span>
+                                            </div>
+                                            <div className="flex items-center justify-between text-xs text-gray-500">
+                                                <span>TrxID:</span>
+                                                <span className="font-mono text-gray-700">{payment.transaction_id}</span>
+                                            </div>
+                                        </div>
+                                        <div className="p-2 bg-yellow-50 rounded text-[11px] text-yellow-800 border border-yellow-100">
+                                            Our team is verifying your payment. You'll get access once approved.
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Recent Enrollments */}
                 <div className="mb-8">
@@ -95,6 +158,17 @@ export function StudentDashboard() {
                                         <div className="absolute inset-0 flex items-center justify-center text-gray-400">
                                             <BookOpen className="w-8 h-8" />
                                         </div>
+                                        {enrollment.course.thumbnail ? (
+                                            <img
+                                                src={enrollment.course.thumbnail}
+                                                alt={enrollment.course.title}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="absolute inset-0 flex items-center justify-center text-gray-300">
+                                                <BookOpen className="w-8 h-8" />
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="p-4">
                                         <h3 className="font-bold text-gray-900 mb-2 line-clamp-1">

@@ -27,6 +27,14 @@ class DifficultyLevel(models.TextChoices):
     ADVANCED = "ADVANCED", "Advanced"
 
 
+class DeliveryMode(models.TextChoices):
+    """Course delivery mode choices."""
+
+    ONLINE = "ONLINE", "Online"
+    OFFLINE = "OFFLINE", "Offline"
+    BOTH = "BOTH", "Both Online & Offline"
+
+
 class Category(models.Model):
     """Course category model."""
 
@@ -74,6 +82,12 @@ class Course(models.Model):
     )
     difficulty_level = models.CharField(
         max_length=20, choices=DifficultyLevel.choices, default=DifficultyLevel.BEGINNER
+    )
+    delivery_mode = models.CharField(
+        max_length=20,
+        choices=DeliveryMode.choices,
+        default=DeliveryMode.ONLINE,
+        help_text="Is this course online, offline, or both?",
     )
 
     # Pricing

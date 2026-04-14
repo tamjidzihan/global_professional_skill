@@ -8,6 +8,8 @@ class PaymentSerializer(serializers.ModelSerializer):
 
     user_email = serializers.EmailField(source="user.email", read_only=True)
     course_title = serializers.CharField(source="course.title", read_only=True)
+    course_thumbnail = serializers.ImageField(source="course.thumbnail", read_only=True)
+    course_slug = serializers.SlugField(source="course.slug", read_only=True)
 
     class Meta:
         model = Payment
@@ -17,6 +19,8 @@ class PaymentSerializer(serializers.ModelSerializer):
             "user_email",
             "course",
             "course_title",
+            "course_thumbnail",
+            "course_slug",
             "amount",
             "currency",
             "status",

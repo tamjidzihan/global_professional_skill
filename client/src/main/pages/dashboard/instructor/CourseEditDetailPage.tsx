@@ -23,6 +23,7 @@ import { useAuth } from '../../../../hooks/useAuth';
 import RichTextEditor from '../../../components/RichTextEditor';
 import SEO from '../../../components/SEO';
 import { Link } from 'react-router-dom';
+import FormSidebar from '../../../components/dashboard/FormSidebar';
 
 // ── Schemas ───────────────────────────────────────────────────────────────────
 const courseFormInputSchema = z.object({
@@ -31,6 +32,7 @@ const courseFormInputSchema = z.object({
   short_description: z.string().min(1, 'Short description is required'),
   category: z.string().min(1, 'Category is required'),
   difficulty_level: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']),
+  delivery_mode: z.enum(['ONLINE', 'OFFLINE', 'BOTH']),
   price: z.string().min(1, 'Price is required'),
   thumbnail: z.instanceof(FileList).optional(),
   preview_video: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
@@ -145,6 +147,7 @@ const CourseEditDetailPage: React.FC = () => {
         short_description: course.short_description,
         category: course?.category?.id,
         difficulty_level: course.difficulty_level,
+        delivery_mode: course.delivery_mode,
         price: course.price.toString(),
         preview_video: course.preview_video || '',
         duration_hours: course.duration_hours.toString(),
@@ -254,312 +257,325 @@ const CourseEditDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="py-6 px-4 md:px-6 space-y-5">
+    <div className="py-6 px-4 md:px-6 ">
       <SEO title={`Edit Course | ${course.title}`} noindex={true} />
-
-      {/* ── Page header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Link
-              to="/dashboard/instructor/my-courses"
-              className="text-xs text-gray-400 hover:text-violet-600 transition-colors"
-            >
-              My Courses
-            </Link>
-            <span className="text-gray-300 text-xs">/</span>
-            <span className="text-xs text-gray-500 truncate">{course.title}</span>
-          </div>
-          <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Edit Course</h1>
-          <p className="text-sm text-gray-400 mt-0.5">Update your course details below.</p>
-        </div>
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer self-start sm:self-auto"
-        >
-          <X className="w-3.5 h-3.5" /> Cancel
-        </button>
-      </div>
-
-      {/* ── Server error ── */}
-      {serverError && (
-        <div className="flex items-center gap-2 px-4 py-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-700 text-xs font-medium">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          {serverError}
-        </div>
-      )}
-
-      {/* ── Media card (outside form — no submit side effects) ── */}
-      <SectionCard
-        icon={ImageIcon}
-        iconBg="bg-violet-50"
-        iconColor="text-violet-500"
-        title="Course Media"
-        subtitle="Thumbnail image and preview video"
-      >
-        {/* Thumbnail */}
-        <div className="pb-5 border-b border-gray-100">
-          <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">Course Thumbnail</p>
-          <div className="flex flex-col md:flex-row gap-5 items-start">
-            <div className="w-full md:w-72 h-40 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
-              {(thumbnailPreview || currentThumbnail) ? (
-                <img
-                  src={thumbnailPreview || currentThumbnail || ''}
-                  alt="Course thumbnail"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="text-center">
-                  <ImageIcon className="w-7 h-7 text-gray-300 mx-auto mb-1" />
-                  <p className="text-xs text-gray-400">No thumbnail</p>
-                </div>
-              )}
-            </div>
-            <div className="flex-1 space-y-2">
-              <label htmlFor="thumbnail" className={labelCls}>Upload New Thumbnail</label>
-              <input
-                id="thumbnail"
-                type="file"
-                accept="image/*"
-                {...register('thumbnail')}
-                className="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 file:cursor-pointer border border-gray-200 rounded-lg p-1 bg-gray-50"
-              />
-              <p className="text-xs text-gray-400">PNG, JPG up to 10MB · Recommended: 1280×720px</p>
-              {currentThumbnail && !thumbnailPreview && (
-                <p className="text-xs text-emerald-600 flex items-center gap-1 font-medium">
-                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full inline-block" />
-                  Current thumbnail kept if no new file selected
-                </p>
-              )}
-              <FieldError message={errors.thumbnail?.message} />
-            </div>
-          </div>
-        </div>
-
-        {/* Preview video */}
-        <div>
-          <label htmlFor="preview_video" className={labelCls}>Preview Video URL</label>
-          <input
-            id="preview_video"
-            type="url"
-            {...register('preview_video')}
-            placeholder="https://www.youtube.com/watch?v=..."
-            className={inputCls}
-          />
-          <p className="mt-1.5 text-xs text-gray-400">YouTube or Vimeo link shown as a preview to potential students.</p>
-          <FieldError message={errors.preview_video?.message} />
-        </div>
-      </SectionCard>
-
-      {/* ── Form ── */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-
-        {/* Basic Information */}
-        <SectionCard
-          icon={Info}
-          iconBg="bg-blue-50"
-          iconColor="text-blue-500"
-          title="Basic Information"
-          subtitle="Core details about your course"
-        >
+      <div className="max-w-7xl mx-auto space-y-5">
+        {/* ── Page header ── */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <label htmlFor="title" className={labelCls}>Course Title <span className="text-rose-500">*</span></label>
-            <input id="title" type="text" {...register('title')} className={inputCls} placeholder="e.g., Advanced Web Development with React" />
-            <FieldError message={errors.title?.message} />
+            <div className="flex items-center gap-2 mb-1">
+              <Link
+                to="/dashboard/instructor/my-courses"
+                className="text-xs text-gray-400 hover:text-violet-600 transition-colors"
+              >
+                My Courses
+              </Link>
+              <span className="text-gray-300 text-xs">/</span>
+              <span className="text-xs text-gray-500 truncate">{course.title}</span>
+            </div>
+            <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Edit Course</h1>
+            <p className="text-sm text-gray-400 mt-0.5">Update your course details below.</p>
           </div>
-
-          <div>
-            <label htmlFor="short_description" className={labelCls}>Short Description <span className="text-rose-500">*</span></label>
-            <input id="short_description" type="text" {...register('short_description')} className={inputCls} placeholder="A brief one-line summary of your course" />
-            <FieldError message={errors.short_description?.message} />
-          </div>
-
-          <div>
-            <label htmlFor="description" className={labelCls}>Full Description <span className="text-rose-500">*</span></label>
-            <Controller
-              name="description"
-              control={control}
-              render={({ field }) => (
-                <RichTextEditor
-                  height={5}
-                  value={field.value || ''}
-                  onChange={field.onChange}
-                  placeholder="Provide a comprehensive description of your course..."
-                />
-              )}
-            />
-            <FieldError message={errors.description?.message} />
-          </div>
-        </SectionCard>
-
-        {/* Course Details */}
-        <SectionCard
-          icon={FileText}
-          iconBg="bg-emerald-50"
-          iconColor="text-emerald-500"
-          title="Course Details"
-          subtitle="Classification and pricing information"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label htmlFor="category" className={labelCls}>Category <span className="text-rose-500">*</span></label>
-              <select id="category" {...register('category')} className={inputCls}>
-                <option value="">Select a category</option>
-                {categories.map(cat => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
-                ))}
-              </select>
-              <FieldError message={errors.category?.message} />
-            </div>
-
-            <div>
-              <label htmlFor="difficulty_level" className={labelCls}>Difficulty Level <span className="text-rose-500">*</span></label>
-              <select id="difficulty_level" {...register('difficulty_level')} className={inputCls}>
-                <option value="">Select difficulty</option>
-                <option value="BEGINNER">Beginner</option>
-                <option value="INTERMEDIATE">Intermediate</option>
-                <option value="ADVANCED">Advanced</option>
-              </select>
-              <FieldError message={errors.difficulty_level?.message} />
-            </div>
-
-            <div>
-              <label htmlFor="price" className={labelCls}>Price <span className="text-rose-500">*</span></label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">৳</span>
-                <input id="price" type="number" step="0.01" min="0" {...register('price')} className={inputCls + ' pl-7'} placeholder="0.00" />
-              </div>
-              <FieldError message={errors.price?.message} />
-            </div>
-
-            <div>
-              <label htmlFor="duration_hours" className={labelCls}>Duration (hours) <span className="text-rose-500">*</span></label>
-              <input id="duration_hours" type="number" min="1"  {...register('duration_hours')} className={inputCls} placeholder="e.g., 20" />
-              <FieldError message={errors.duration_hours?.message} />
-              {error == 'Duration must be a positive number' && (
-                <FieldError message={error} />
-              )}
-
-            </div>
-          </div>
-        </SectionCard>
-
-        {/* Course Content */}
-        <SectionCard
-          icon={BookOpen}
-          iconBg="bg-amber-50"
-          iconColor="text-amber-500"
-          title="Course Content"
-          subtitle="What students will learn and requirements"
-        >
-          <div>
-            <label htmlFor="learning_outcomes" className={labelCls}>Learning Outcomes <span className="text-rose-500">*</span></label>
-            <Controller
-              name="learning_outcomes"
-              control={control}
-              render={({ field }) => (
-                <RichTextEditor value={field.value || ''} onChange={field.onChange} placeholder="List what students will learn..." />
-              )}
-            />
-            <FieldError message={errors.learning_outcomes?.message} />
-          </div>
-
-          <div>
-            <label htmlFor="requirements" className={labelCls}>Prerequisites & Requirements <span className="text-rose-500">*</span></label>
-            <Controller
-              name="requirements"
-              control={control}
-              render={({ field }) => (
-                <RichTextEditor value={field.value || ''} onChange={field.onChange} placeholder="List any prerequisites..." />
-              )}
-            />
-            <FieldError message={errors.requirements?.message} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label htmlFor="target_audience" className={labelCls}>Target Audience <span className="text-rose-500">*</span></label>
-              <textarea id="target_audience" rows={3} {...register('target_audience')} className={inputCls} placeholder="Aspiring web developers, junior developers..." />
-              <FieldError message={errors.target_audience?.message} />
-            </div>
-            <div>
-              <label htmlFor="who_can_join" className={labelCls}>Eligibility Criteria <span className="text-rose-500">*</span></label>
-              <textarea id="who_can_join" rows={3} {...register('who_can_join')} className={inputCls} placeholder="Open to all students, must be 18+..." />
-              <FieldError message={errors.who_can_join?.message} />
-            </div>
-          </div>
-        </SectionCard>
-
-        {/* Schedule & Venue */}
-        <SectionCard
-          icon={Calendar}
-          iconBg="bg-cyan-50"
-          iconColor="text-cyan-500"
-          title="Schedule & Venue"
-          subtitle="When and where the course takes place"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label htmlFor="class_starts" className={labelCls}>Class Start Date</label>
-              <input id="class_starts" type="date" {...register('class_starts')} className={inputCls} />
-              <FieldError message={errors.class_starts?.message} />
-            </div>
-            <div>
-              <label htmlFor="admission_deadline" className={labelCls}>Admission Deadline</label>
-              <input id="admission_deadline" type="date" {...register('admission_deadline')} className={inputCls} />
-              <FieldError message={errors.admission_deadline?.message} />
-            </div>
-            <div>
-              <label htmlFor="schedule" className={labelCls}>Class Schedule <span className="text-rose-500">*</span></label>
-              <input id="schedule" type="text" {...register('schedule')} className={inputCls} placeholder="e.g., Mon & Wed, 6:00 PM – 8:00 PM" />
-              <FieldError message={errors.schedule?.message} />
-            </div>
-            <div>
-              <label htmlFor="venue" className={labelCls}>Venue / Location <span className="text-rose-500">*</span></label>
-              <input id="venue" type="text" {...register('venue')} className={inputCls} placeholder="e.g., Online via Zoom or 123 Main St" />
-              <FieldError message={errors.venue?.message} />
-            </div>
-            <div>
-              <label htmlFor="total_seats" className={labelCls}>Total Seats <span className="text-rose-500">*</span></label>
-              <input id="total_seats" type="number" min="1" {...register('total_seats')} className={inputCls} placeholder="e.g., 30" />
-              <FieldError message={errors.total_seats?.message} />
-            </div>
-            <div>
-              <label htmlFor="total_classes" className={labelCls}>Total Classes <span className="text-rose-500">*</span></label>
-              <input id="total_classes" type="number" min="1" {...register('total_classes')} className={inputCls} placeholder="e.g., 24" />
-              <FieldError message={errors.total_classes?.message} />
-            </div>
-          </div>
-        </SectionCard>
-
-        {/* ── Form actions ── */}
-        <div className="flex items-center gap-2 pb-6">
-          <LoaderButton
-            type="submit"
-            variant="success"
-            size="md"
-            elevation="lg"
-            loading={loading || isSubmitting}
-            loadingText="Saving…"
-            icon={<Save className="w-4 h-4" />}
-            disabled={loading || isSubmitting}
-          >
-            Save Changes
-          </LoaderButton>
-          <LoaderButton
+          <button
             type="button"
-            variant="secondary"
-            size="md"
-            elevation="md"
             onClick={() => navigate(-1)}
-            icon={<X className="w-4 h-4" />}
-            disabled={loading || isSubmitting}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer self-start sm:self-auto"
           >
-            Cancel
-          </LoaderButton>
+            <X className="w-3.5 h-3.5" /> Cancel
+          </button>
         </div>
-      </form>
+
+        {/* ── Server error ── */}
+        {serverError && (
+          <div className="flex items-center gap-2 px-4 py-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-700 text-xs font-medium">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            {serverError}
+          </div>
+        )}
+
+        {/* ── Form ── */}
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
+            <div className="w-full space-y-5">
+              {/* Media Section with FormSidebar side by side */}
+              <div className="flex flex-col lg:flex-row gap-6">
+                {/* Media Section Content */}
+                <div className="flex-1">
+                  <SectionCard
+                    icon={ImageIcon}
+                    iconBg="bg-violet-50"
+                    iconColor="text-violet-500"
+                    title="Course Media"
+                    subtitle="Thumbnail image and preview video"
+                  >
+                    {/* Thumbnail */}
+                    <div className="pb-5 border-b border-gray-100">
+                      <p className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-3">Course Thumbnail</p>
+                      <div className="flex flex-col md:flex-row gap-5 items-start">
+                        <div className="w-full md:w-72 h-40 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden shrink-0">
+                          {(thumbnailPreview || currentThumbnail) ? (
+                            <img
+                              src={thumbnailPreview || currentThumbnail || ''}
+                              alt="Course thumbnail"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="text-center">
+                              <ImageIcon className="w-7 h-7 text-gray-300 mx-auto mb-1" />
+                              <p className="text-xs text-gray-400">No thumbnail</p>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <label htmlFor="thumbnail" className={labelCls}>Upload New Thumbnail</label>
+                          <input
+                            id="thumbnail"
+                            type="file"
+                            accept="image/*"
+                            {...register('thumbnail')}
+                            className="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 file:cursor-pointer border border-gray-200 rounded-lg p-1 bg-gray-50"
+                          />
+                          <p className="text-xs text-gray-400">PNG, JPG up to 10MB · Recommended: 1280×720px</p>
+                          {currentThumbnail && !thumbnailPreview && (
+                            <p className="text-xs text-emerald-600 flex items-center gap-1 font-medium">
+                              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full inline-block" />
+                              Current thumbnail kept if no new file selected
+                            </p>
+                          )}
+                          <FieldError message={errors.thumbnail?.message} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Preview video */}
+                    <div>
+                      <label htmlFor="preview_video" className={labelCls}>Preview Video URL</label>
+                      <input
+                        id="preview_video"
+                        type="url"
+                        {...register('preview_video')}
+                        placeholder="https://www.youtube.com/watch?v=..."
+                        className={inputCls}
+                      />
+                      <p className="mt-1.5 text-xs text-gray-400">YouTube or Vimeo link shown as a preview to potential students.</p>
+                      <FieldError message={errors.preview_video?.message} />
+                    </div>
+                  </SectionCard>
+                </div>
+
+                {/* FormSidebar placed here - side by side with Media Section */}
+                <FormSidebar control={control} errors={errors} />
+              </div>
+
+              {/* Basic Information */}
+              <SectionCard
+                icon={Info}
+                iconBg="bg-blue-50"
+                iconColor="text-blue-500"
+                title="Basic Information"
+                subtitle="Core details about your course"
+              >
+                <div>
+                  <label htmlFor="title" className={labelCls}>Course Title <span className="text-rose-500">*</span></label>
+                  <input id="title" type="text" {...register('title')} className={inputCls} placeholder="e.g., Advanced Web Development with React" />
+                  <FieldError message={errors.title?.message} />
+                </div>
+
+                <div>
+                  <label htmlFor="short_description" className={labelCls}>Short Description <span className="text-rose-500">*</span></label>
+                  <input id="short_description" type="text" {...register('short_description')} className={inputCls} placeholder="A brief one-line summary of your course" />
+                  <FieldError message={errors.short_description?.message} />
+                </div>
+
+                <div>
+                  <label htmlFor="description" className={labelCls}>Full Description <span className="text-rose-500">*</span></label>
+                  <Controller
+                    name="description"
+                    control={control}
+                    render={({ field }) => (
+                      <RichTextEditor
+                        height={5}
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        placeholder="Provide a comprehensive description of your course..."
+                      />
+                    )}
+                  />
+                  <FieldError message={errors.description?.message} />
+                </div>
+              </SectionCard>
+
+              {/* Course Details */}
+              <SectionCard
+                icon={FileText}
+                iconBg="bg-emerald-50"
+                iconColor="text-emerald-500"
+                title="Course Details"
+                subtitle="Classification and pricing information"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label htmlFor="category" className={labelCls}>Category <span className="text-rose-500">*</span></label>
+                    <select id="category" {...register('category')} className={inputCls}>
+                      <option value="">Select a category</option>
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                    <FieldError message={errors.category?.message} />
+                  </div>
+
+                  <div>
+                    <label htmlFor="difficulty_level" className={labelCls}>Difficulty Level <span className="text-rose-500">*</span></label>
+                    <select id="difficulty_level" {...register('difficulty_level')} className={inputCls}>
+                      <option value="">Select difficulty</option>
+                      <option value="BEGINNER">Beginner</option>
+                      <option value="INTERMEDIATE">Intermediate</option>
+                      <option value="ADVANCED">Advanced</option>
+                    </select>
+                    <FieldError message={errors.difficulty_level?.message} />
+                  </div>
+
+                  <div>
+                    <label htmlFor="price" className={labelCls}>Price <span className="text-rose-500">*</span></label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">৳</span>
+                      <input id="price" type="number" step="0.01" min="0" {...register('price')} className={inputCls + ' pl-7'} placeholder="0.00" />
+                    </div>
+                    <FieldError message={errors.price?.message} />
+                  </div>
+
+                  <div>
+                    <label htmlFor="duration_hours" className={labelCls}>Duration (hours) <span className="text-rose-500">*</span></label>
+                    <input id="duration_hours" type="number" min="1"  {...register('duration_hours')} className={inputCls} placeholder="e.g., 20" />
+                    <FieldError message={errors.duration_hours?.message} />
+                    {error == 'Duration must be a positive number' && (
+                      <FieldError message={error} />
+                    )}
+                  </div>
+                </div>
+              </SectionCard>
+
+              {/* Course Content */}
+              <SectionCard
+                icon={BookOpen}
+                iconBg="bg-amber-50"
+                iconColor="text-amber-500"
+                title="Course Content"
+                subtitle="What students will learn and requirements"
+              >
+                <div>
+                  <label htmlFor="learning_outcomes" className={labelCls}>Learning Outcomes <span className="text-rose-500">*</span></label>
+                  <Controller
+                    name="learning_outcomes"
+                    control={control}
+                    render={({ field }) => (
+                      <RichTextEditor value={field.value || ''} onChange={field.onChange} placeholder="List what students will learn..." />
+                    )}
+                  />
+                  <FieldError message={errors.learning_outcomes?.message} />
+                </div>
+
+                <div>
+                  <label htmlFor="requirements" className={labelCls}>Prerequisites & Requirements <span className="text-rose-500">*</span></label>
+                  <Controller
+                    name="requirements"
+                    control={control}
+                    render={({ field }) => (
+                      <RichTextEditor value={field.value || ''} onChange={field.onChange} placeholder="List any prerequisites..." />
+                    )}
+                  />
+                  <FieldError message={errors.requirements?.message} />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label htmlFor="target_audience" className={labelCls}>Target Audience <span className="text-rose-500">*</span></label>
+                    <textarea id="target_audience" rows={3} {...register('target_audience')} className={inputCls} placeholder="Aspiring web developers, junior developers..." />
+                    <FieldError message={errors.target_audience?.message} />
+                  </div>
+                  <div>
+                    <label htmlFor="who_can_join" className={labelCls}>Eligibility Criteria <span className="text-rose-500">*</span></label>
+                    <textarea id="who_can_join" rows={3} {...register('who_can_join')} className={inputCls} placeholder="Open to all students, must be 18+..." />
+                    <FieldError message={errors.who_can_join?.message} />
+                  </div>
+                </div>
+              </SectionCard>
+
+              {/* Schedule & Venue */}
+              <SectionCard
+                icon={Calendar}
+                iconBg="bg-cyan-50"
+                iconColor="text-cyan-500"
+                title="Schedule & Venue"
+                subtitle="When and where the course takes place"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div>
+                    <label htmlFor="class_starts" className={labelCls}>Class Start Date</label>
+                    <input id="class_starts" type="date" {...register('class_starts')} className={inputCls} />
+                    <FieldError message={errors.class_starts?.message} />
+                  </div>
+                  <div>
+                    <label htmlFor="admission_deadline" className={labelCls}>Admission Deadline</label>
+                    <input id="admission_deadline" type="date" {...register('admission_deadline')} className={inputCls} />
+                    <FieldError message={errors.admission_deadline?.message} />
+                  </div>
+                  <div>
+                    <label htmlFor="schedule" className={labelCls}>Class Schedule <span className="text-rose-500">*</span></label>
+                    <input id="schedule" type="text" {...register('schedule')} className={inputCls} placeholder="e.g., Mon & Wed, 6:00 PM – 8:00 PM" />
+                    <FieldError message={errors.schedule?.message} />
+                  </div>
+                  <div>
+                    <label htmlFor="venue" className={labelCls}>Venue / Location <span className="text-rose-500">*</span></label>
+                    <input id="venue" type="text" {...register('venue')} className={inputCls} placeholder="e.g., Online via Zoom or 123 Main St" />
+                    <FieldError message={errors.venue?.message} />
+                  </div>
+                  <div>
+                    <label htmlFor="total_seats" className={labelCls}>Total Seats <span className="text-rose-500">*</span></label>
+                    <input id="total_seats" type="number" min="1" {...register('total_seats')} className={inputCls} placeholder="e.g., 30" />
+                    <FieldError message={errors.total_seats?.message} />
+                  </div>
+                  <div>
+                    <label htmlFor="total_classes" className={labelCls}>Total Classes <span className="text-rose-500">*</span></label>
+                    <input id="total_classes" type="number" min="1" {...register('total_classes')} className={inputCls} placeholder="e.g., 24" />
+                    <FieldError message={errors.total_classes?.message} />
+                  </div>
+                </div>
+              </SectionCard>
+
+              {/* ── Form actions ── */}
+              <div className="flex items-center gap-2 pb-6">
+                <LoaderButton
+                  type="submit"
+                  variant="success"
+                  size="md"
+                  elevation="lg"
+                  loading={loading || isSubmitting}
+                  loadingText="Saving…"
+                  icon={<Save className="w-4 h-4" />}
+                  disabled={loading || isSubmitting}
+                >
+                  Save Changes
+                </LoaderButton>
+                <LoaderButton
+                  type="button"
+                  variant="secondary"
+                  size="md"
+                  elevation="md"
+                  onClick={() => navigate(-1)}
+                  icon={<X className="w-4 h-4" />}
+                  disabled={loading || isSubmitting}
+                >
+                  Cancel
+                </LoaderButton>
+              </div>
+            </div>
+
+            {/* Remove the old FormSidebar from here */}
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

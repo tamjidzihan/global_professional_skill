@@ -20,6 +20,7 @@ import {
   X,
 } from 'lucide-react';
 import SEO from '../components/SEO';
+import FormSidebar from '../components/dashboard/FormSidebar';
 
 // Schemas for form validation and data parsing
 
@@ -29,6 +30,7 @@ const courseFormInputSchema = z.object({
   short_description: z.string().min(1, 'Short description is required'),
   category: z.string().min(1, 'Category is required'),
   difficulty_level: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED']),
+  delivery_mode: z.enum(['ONLINE', 'OFFLINE', 'BOTH']),
   price: z.string().min(1, 'Price is required'),
   thumbnail: z.instanceof(FileList).optional(),
   preview_video: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
@@ -119,6 +121,7 @@ const CreateCoursePage: React.FC = () => {
     formData.append('short_description', parsedData.short_description);
     formData.append('category', parsedData.category);
     formData.append('difficulty_level', parsedData.difficulty_level);
+    formData.append('delivery_mode', parsedData.delivery_mode);
     formData.append('price', parsedData.price.toString());
     formData.append('duration_hours', parsedData.duration_hours.toString());
 
@@ -184,7 +187,7 @@ const CreateCoursePage: React.FC = () => {
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-red-500 hover:text-gray-100  transition-colors sm:mb-1 cursor-pointer"
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-red-500 hover:text-gray-100 transition-colors sm:mb-1 cursor-pointer"
               disabled={loading}
             >
               <X className="w-4 h-4" />
@@ -195,537 +198,552 @@ const CreateCoursePage: React.FC = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="space-y-6">
-            {/* Media Section */}
-            <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6 mb-6">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                  <ImageIcon className="w-5 h-5 text-[#0066CC]" />
+          <div className="flex flex-col lg:flex-row gap-8 items-start">
+            {/* Main Content Area */}
+            <div className="w-full space-y-6">
+              {/* Media Section with FormSidebar side by side */}
+              <div className="flex flex-col lg:flex-row gap-6">
+                {/* Media Section Content */}
+                <div className="flex-1">
+                  <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                        <ImageIcon className="w-5 h-5 text-[#0066CC]" />
+                      </div>
+                      <div>
+                        <h2 className="text-lg font-semibold text-gray-900">Course Media</h2>
+                        <p className="text-sm text-gray-500">Add thumbnail image and preview video</p>
+                      </div>
+                    </div>
+
+                    {/* Thumbnail Section */}
+                    <div className="mb-8 pb-6 border-b border-gray-100">
+                      <h3 className="text-md font-medium text-gray-800 mb-4">Course Thumbnail</h3>
+                      <div className="flex flex-col md:flex-row gap-6 items-start">
+                        {/* Preview Area */}
+                        <div className="w-full md:w-48 h-48 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
+                          {(thumbnailPreview) ? (
+                            <img
+                              src={thumbnailPreview || ''}
+                              alt="Course thumbnail"
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="text-center p-4">
+                              <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                              <p className="text-xs text-gray-500">No thumbnail</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Upload Controls */}
+                        <div className="flex-1">
+                          <label htmlFor="thumbnail" className="block text-sm font-medium text-gray-700 mb-2">
+                            Upload New Thumbnail
+                          </label>
+                          <input
+                            id="thumbnail"
+                            type="file"
+                            accept="image/*"
+                            {...register('thumbnail')}
+                            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-[#0066CC] hover:file:bg-blue-100 file:cursor-pointer cursor-pointer border border-gray-300 rounded-lg p-1"
+                          />
+                          <p className="mt-2 text-xs text-gray-500">
+                            PNG, JPG, GIF up to 10MB. Recommended size: 1280x720px
+                          </p>
+                          {errors.thumbnail && (
+                            <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                              <AlertCircle className="w-4 h-4" />
+                              {errors.thumbnail.message}
+                            </p>
+                          )}
+
+                          {/* Current thumbnail indicator */}
+                          {!thumbnailPreview && (
+                            <p className="mt-2 text-xs text-green-600 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
+                              Current thumbnail will be kept if no new file is selected
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Preview Video Section */}
+                    <div>
+                      <h3 className="text-md font-medium text-gray-800 mb-4">Preview Video</h3>
+                      <div>
+                        <label htmlFor="preview_video" className="block text-sm font-medium text-gray-700 mb-2">
+                          Video URL
+                        </label>
+                        <input
+                          id="preview_video"
+                          type="url"
+                          {...register('preview_video')}
+                          placeholder="https://www.youtube.com/watch?v=..."
+                          className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent transition-shadow"
+                        />
+                        <p className="mt-1.5 text-xs text-gray-500">
+                          YouTube, Vimeo, or other video hosting platform. This video will be shown as a preview to potential students.
+                        </p>
+                        {errors.preview_video && (
+                          <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                            <AlertCircle className="w-4 h-4" />
+                            {errors.preview_video.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Course Media</h2>
-                  <p className="text-sm text-gray-500">Add thumbnail image and preview video</p>
-                </div>
+
+                {/* FormSidebar placed here - side by side with Media Section */}
+
+                <FormSidebar control={control} errors={errors} />
+
               </div>
 
-              {/* Thumbnail Section */}
-              <div className="mb-8 pb-6 border-b border-gray-100">
-                <h3 className="text-md font-medium text-gray-800 mb-4">Course Thumbnail</h3>
-                <div className="flex flex-col md:flex-row gap-6 items-start">
-                  {/* Preview Area */}
-                  <div className="w-full md:w-48 h-48 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden">
-                    {(thumbnailPreview) ? (
-                      <img
-                        src={thumbnailPreview || ''}
-                        alt="Course thumbnail"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="text-center p-4">
-                        <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-xs text-gray-500">No thumbnail</p>
-                      </div>
-                    )}
+              {/* Basic Information Section */}
+              <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                    <Info className="w-4 h-4 text-[#0066CC]" />
                   </div>
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900">Basic Information</h2>
+                    <p className="text-xs text-gray-500">Core details about your course</p>
+                  </div>
+                </div>
 
-                  {/* Upload Controls */}
-                  <div className="flex-1">
-                    <label htmlFor="thumbnail" className="block text-sm font-medium text-gray-700 mb-2">
-                      Upload New Thumbnail
+                <div className="space-y-5">
+                  <div>
+                    <label htmlFor="title" className={labelClassName}>
+                      Course Title <span className="text-red-500">*</span>
                     </label>
                     <input
-                      id="thumbnail"
-                      type="file"
-                      accept="image/*"
-                      {...register('thumbnail')}
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-[#0066CC] hover:file:bg-blue-100 file:cursor-pointer cursor-pointer border border-gray-300 rounded-lg p-1"
+                      id="title"
+                      type="text"
+                      {...register('title')}
+                      className={inputClassName}
+                      placeholder="e.g., Advanced Web Development with React"
                     />
-                    <p className="mt-2 text-xs text-gray-500">
-                      PNG, JPG, GIF up to 10MB. Recommended size: 1280x720px
-                    </p>
-                    {errors.thumbnail && (
-                      <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                    {errors.title && (
+                      <p className={errorClassName}>
                         <AlertCircle className="w-4 h-4" />
-                        {errors.thumbnail.message}
-                      </p>
-                    )}
-
-                    {/* Current thumbnail indicator */}
-                    {!thumbnailPreview && (
-                      <p className="mt-2 text-xs text-green-600 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 bg-green-600 rounded-full"></span>
-                        Current thumbnail will be kept if no new file is selected
+                        {errors.title.message}
                       </p>
                     )}
                   </div>
-                </div>
-              </div>
 
-              {/* Preview Video Section */}
-              <div>
-                <h3 className="text-md font-medium text-gray-800 mb-4">Preview Video</h3>
-                <div>
-                  <label htmlFor="preview_video" className="block text-sm font-medium text-gray-700 mb-2">
-                    Video URL
-                  </label>
-                  <input
-                    id="preview_video"
-                    type="url"
-                    {...register('preview_video')}
-                    placeholder="https://www.youtube.com/watch?v=..."
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent transition-shadow"
-                  />
-                  <p className="mt-1.5 text-xs text-gray-500">
-                    YouTube, Vimeo, or other video hosting platform. This video will be shown as a preview to potential students.
-                  </p>
-                  {errors.preview_video && (
-                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.preview_video.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Basic Information Section */}
-            <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
-                  <Info className="w-4 h-4 text-[#0066CC]" />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-gray-900">Basic Information</h2>
-                  <p className="text-xs text-gray-500">Core details about your course</p>
-                </div>
-              </div>
-
-              <div className="space-y-5">
-                <div>
-                  <label htmlFor="title" className={labelClassName}>
-                    Course Title <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="title"
-                    type="text"
-                    {...register('title')}
-                    className={inputClassName}
-                    placeholder="e.g., Advanced Web Development with React"
-                  />
-                  {errors.title && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.title.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="short_description" className={labelClassName}>
-                    Short Description <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="short_description"
-                    type="text"
-                    {...register('short_description')}
-                    className={inputClassName}
-                    placeholder="A brief one-line summary of your course"
-                  />
-                  {errors.short_description && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.short_description.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="description" className={labelClassName}>
-                    Full Description <span className="text-red-500">*</span>
-                  </label>
-                  <Controller
-                    name="description"
-                    control={control}
-                    render={({ field }) => (
-                      <RichTextEditor
-                        value={field.value || ''}
-                        onChange={field.onChange}
-                        placeholder="Provide a detailed description of your course, including what students can expect to learn, the structure of the course, and any other relevant information."
-                      />
-                    )}
-                  />
-                  {errors.description && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.description.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Course Details Section */}
-            <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
-                  <FileText className="w-4 h-4 text-[#0066CC]" />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-gray-900">Course Details</h2>
-                  <p className="text-xs text-gray-500">Classification and pricing information</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="category" className={labelClassName}>
-                    Category <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    id="category"
-                    {...register('category')}
-                    className={inputClassName}
-                  >
-                    <option value="">Select a category</option>
-                    {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>{cat.name}</option>
-                    ))}
-                  </select>
-                  {errors.category && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.category.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="difficulty_level" className={labelClassName}>
-                    Difficulty Level <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    id="difficulty_level"
-                    {...register('difficulty_level')}
-                    className={inputClassName}
-                  >
-                    <option value="">Select difficulty</option>
-                    <option value="BEGINNER">Beginner</option>
-                    <option value="INTERMEDIATE">Intermediate</option>
-                    <option value="ADVANCED">Advanced</option>
-                  </select>
-                  {errors.difficulty_level && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.difficulty_level.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="price" className={labelClassName}>
-                    Price (TAKA) <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <span className="absolute font-extrabold left-4 top-1/2 -translate-y-1/2 text-gray-500">৳</span>
+                  <div>
+                    <label htmlFor="short_description" className={labelClassName}>
+                      Short Description <span className="text-red-500">*</span>
+                    </label>
                     <input
-                      id="price"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      {...register('price')}
-                      className={inputClassName + ' pl-8'}
-                      placeholder="0.00"
+                      id="short_description"
+                      type="text"
+                      {...register('short_description')}
+                      className={inputClassName}
+                      placeholder="A brief one-line summary of your course"
                     />
+                    {errors.short_description && (
+                      <p className={errorClassName}>
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.short_description.message}
+                      </p>
+                    )}
                   </div>
-                  {errors.price && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.price.message}
-                    </p>
-                  )}
-                </div>
 
-                <div>
-                  <label htmlFor="duration_hours" className={labelClassName}>
-                    Duration (hours) <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="duration_hours"
-                    type="number"
-                    min="1"
-                    {...register('duration_hours')}
-                    className={inputClassName}
-                    placeholder="e.g., 20"
-                  />
-                  {errors.duration_hours && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.duration_hours.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Course Content Section */}
-            <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
-                  <BookOpen className="w-4 h-4 text-[#0066CC]" />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-gray-900">Course Content</h2>
-                  <p className="text-xs text-gray-500">What students will learn and requirements</p>
+                  <div>
+                    <label htmlFor="description" className={labelClassName}>
+                      Full Description <span className="text-red-500">*</span>
+                    </label>
+                    <Controller
+                      name="description"
+                      control={control}
+                      render={({ field }) => (
+                        <RichTextEditor
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          placeholder="Provide a detailed description of your course, including what students can expect to learn, the structure of the course, and any other relevant information."
+                        />
+                      )}
+                    />
+                    {errors.description && (
+                      <p className={errorClassName}>
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.description.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-5">
-                <div>
-                  <label htmlFor="learning_outcomes" className={labelClassName}>
-                    Learning Outcomes <span className="text-red-500">*</span>
-                  </label>
-                  <Controller
-                    name="learning_outcomes"
-                    control={control}
-                    render={({ field }) => (
-                      <RichTextEditor
-                        value={field.value || ''}
-                        onChange={field.onChange}
-                        placeholder="&bull; Build full-stack web applications<br/>&bull; Master React hooks and state management<br/>&bull; Deploy applications to production"
-                      />
-                    )}
-                  />
-                  <p className="mt-1.5 text-xs text-gray-500">List what students will learn (one per line)</p>
-                  {errors.learning_outcomes && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.learning_outcomes.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="requirements" className={labelClassName}>
-                    Prerequisites & Requirements <span className="text-red-500">*</span>
-                  </label>
-                  <Controller
-                    name="requirements"
-                    control={control}
-                    render={({ field }) => (
-                      <RichTextEditor
-                        value={field.value || ''}
-                        onChange={field.onChange}
-                        placeholder="&bull; Basic understanding of HTML and CSS<br/>&bull; Familiarity with JavaScript fundamentals<br/>&bull; A computer with internet connection"
-                      />
-                    )}
-                  />
-                  <p className="mt-1.5 text-xs text-gray-500">List any prerequisites (one per line)</p>
-                  {errors.requirements && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.requirements.message}
-                    </p>
-                  )}
+              {/* Course Details Section */}
+              <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                    <FileText className="w-4 h-4 text-[#0066CC]" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900">Course Details</h2>
+                    <p className="text-xs text-gray-500">Classification and pricing information</p>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="target_audience" className={labelClassName}>
-                      Target Audience <span className="text-red-500">*</span>
+                    <label htmlFor="category" className={labelClassName}>
+                      Category <span className="text-red-500">*</span>
                     </label>
-                    <textarea
-                      id="target_audience"
-                      rows={3}
-                      {...register('target_audience')}
+                    <select
+                      id="category"
+                      {...register('category')}
                       className={inputClassName}
-                      placeholder="Aspiring web developers, junior developers looking to advance their skills, career changers..."
-                    />
-                    {errors.target_audience && (
+                    >
+                      <option value="">Select a category</option>
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                    {errors.category && (
                       <p className={errorClassName}>
                         <AlertCircle className="w-4 h-4" />
-                        {errors.target_audience.message}
+                        {errors.category.message}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <label htmlFor="who_can_join" className={labelClassName}>
-                      Eligibility Criteria <span className="text-red-500">*</span>
+                    <label htmlFor="difficulty_level" className={labelClassName}>
+                      Difficulty Level <span className="text-red-500">*</span>
                     </label>
-                    <textarea
-                      id="who_can_join"
-                      rows={3}
-                      {...register('who_can_join')}
+                    <select
+                      id="difficulty_level"
+                      {...register('difficulty_level')}
                       className={inputClassName}
-                      placeholder="Open to all students, no prior experience required. Must be 18+ years old..."
-                    />
-                    {errors.who_can_join && (
+                    >
+                      <option value="">Select difficulty</option>
+                      <option value="BEGINNER">Beginner</option>
+                      <option value="INTERMEDIATE">Intermediate</option>
+                      <option value="ADVANCED">Advanced</option>
+                    </select>
+                    {errors.difficulty_level && (
                       <p className={errorClassName}>
                         <AlertCircle className="w-4 h-4" />
-                        {errors.who_can_join.message}
+                        {errors.difficulty_level.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="price" className={labelClassName}>
+                      Price (TAKA) <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute font-extrabold left-4 top-1/2 -translate-y-1/2 text-gray-500">৳</span>
+                      <input
+                        id="price"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        {...register('price')}
+                        className={inputClassName + ' pl-8'}
+                        placeholder="0.00"
+                      />
+                    </div>
+                    {errors.price && (
+                      <p className={errorClassName}>
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.price.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="duration_hours" className={labelClassName}>
+                      Duration (hours) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="duration_hours"
+                      type="number"
+                      min="1"
+                      {...register('duration_hours')}
+                      className={inputClassName}
+                      placeholder="e.g., 20"
+                    />
+                    {errors.duration_hours && (
+                      <p className={errorClassName}>
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.duration_hours.message}
                       </p>
                     )}
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Schedule and Venue Section */}
-            <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
-                  <Calendar className="w-4 h-4 text-[#0066CC]" />
+              {/* Course Content Section */}
+              <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                    <BookOpen className="w-4 h-4 text-[#0066CC]" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900">Course Content</h2>
+                    <p className="text-xs text-gray-500">What students will learn and requirements</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-base font-bold text-gray-900">Schedule & Venue</h2>
-                  <p className="text-xs text-gray-500">When and where the course takes place</p>
+
+                <div className="space-y-5">
+                  <div>
+                    <label htmlFor="learning_outcomes" className={labelClassName}>
+                      Learning Outcomes <span className="text-red-500">*</span>
+                    </label>
+                    <Controller
+                      name="learning_outcomes"
+                      control={control}
+                      render={({ field }) => (
+                        <RichTextEditor
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          placeholder="&bull; Build full-stack web applications<br/>&bull; Master React hooks and state management<br/>&bull; Deploy applications to production"
+                        />
+                      )}
+                    />
+                    <p className="mt-1.5 text-xs text-gray-500">List what students will learn (one per line)</p>
+                    {errors.learning_outcomes && (
+                      <p className={errorClassName}>
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.learning_outcomes.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="requirements" className={labelClassName}>
+                      Prerequisites & Requirements <span className="text-red-500">*</span>
+                    </label>
+                    <Controller
+                      name="requirements"
+                      control={control}
+                      render={({ field }) => (
+                        <RichTextEditor
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          placeholder="&bull; Basic understanding of HTML and CSS<br/>&bull; Familiarity with JavaScript fundamentals<br/>&bull; A computer with internet connection"
+                        />
+                      )}
+                    />
+                    <p className="mt-1.5 text-xs text-gray-500">List any prerequisites (one per line)</p>
+                    {errors.requirements && (
+                      <p className={errorClassName}>
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.requirements.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label htmlFor="target_audience" className={labelClassName}>
+                        Target Audience <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        id="target_audience"
+                        rows={3}
+                        {...register('target_audience')}
+                        className={inputClassName}
+                        placeholder="Aspiring web developers, junior developers looking to advance their skills, career changers..."
+                      />
+                      {errors.target_audience && (
+                        <p className={errorClassName}>
+                          <AlertCircle className="w-4 h-4" />
+                          {errors.target_audience.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label htmlFor="who_can_join" className={labelClassName}>
+                        Eligibility Criteria <span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        id="who_can_join"
+                        rows={3}
+                        {...register('who_can_join')}
+                        className={inputClassName}
+                        placeholder="Open to all students, no prior experience required. Must be 18+ years old..."
+                      />
+                      {errors.who_can_join && (
+                        <p className={errorClassName}>
+                          <AlertCircle className="w-4 h-4" />
+                          {errors.who_can_join.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Schedule and Venue Section */}
+              <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                    <Calendar className="w-4 h-4 text-[#0066CC]" />
+                  </div>
+                  <div>
+                    <h2 className="text-base font-bold text-gray-900">Schedule & Venue</h2>
+                    <p className="text-xs text-gray-500">When and where the course takes place</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label htmlFor="class_starts" className={labelClassName}>
+                      Class Start Date
+                    </label>
+                    <input
+                      id="class_starts"
+                      type="date"
+                      {...register('class_starts')}
+                      className={inputClassName}
+                    />
+                    {errors.class_starts && (
+                      <p className={errorClassName}>
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.class_starts.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="admission_deadline" className={labelClassName}>
+                      Admission Deadline
+                    </label>
+                    <input
+                      id="admission_deadline"
+                      type="date"
+                      {...register('admission_deadline')}
+                      className={inputClassName}
+                    />
+                    {errors.admission_deadline && (
+                      <p className={errorClassName}>
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.admission_deadline.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="schedule" className={labelClassName}>
+                      Class Schedule <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="schedule"
+                      type="text"
+                      {...register('schedule')}
+                      placeholder="e.g., Mon & Wed, 6:00 PM - 8:00 PM"
+                      className={inputClassName}
+                    />
+                    {errors.schedule && (
+                      <p className={errorClassName}>
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.schedule.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="venue" className={labelClassName}>
+                      Venue/Location <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="venue"
+                      type="text"
+                      {...register('venue')}
+                      placeholder="e.g., Online via Zoom or 123 Main St, Suite 100"
+                      className={inputClassName}
+                    />
+                    {errors.venue && (
+                      <p className={errorClassName}>
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.venue.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="total_seats" className={labelClassName}>
+                      Total Seats Available <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="total_seats"
+                      type="number"
+                      min="1"
+                      {...register('total_seats')}
+                      className={inputClassName}
+                      placeholder="e.g., 30"
+                    />
+                    {errors.total_seats && (
+                      <p className={errorClassName}>
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.total_seats.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="total_classes" className={labelClassName}>
+                      Total Classes <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="total_classes"
+                      type="number"
+                      min="1"
+                      {...register('total_classes')}
+                      className={inputClassName}
+                      placeholder="e.g., 24"
+                    />
+                    {errors.total_classes && (
+                      <p className={errorClassName}>
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.total_classes.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="class_starts" className={labelClassName}>
-                    Class Start Date
-                  </label>
-                  <input
-                    id="class_starts"
-                    type="date"
-                    {...register('class_starts')}
-                    className={inputClassName}
-                  />
-                  {errors.class_starts && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.class_starts.message}
-                    </p>
-                  )}
-                </div>
+              {/* Form Actions */}
+              <div className="flex items-center gap-3 mt-6">
+                <LoaderButton
+                  type="submit"
+                  variant="success"
+                  size="md"
+                  elevation="lg"
+                  loading={loading || isSubmitting}
+                  loadingText="Saving Changes..."
+                  icon={<Save className="w-4 h-4" />}
+                  disabled={loading || isSubmitting}
+                >
+                  Save Changes
+                </LoaderButton>
 
-                <div>
-                  <label htmlFor="admission_deadline" className={labelClassName}>
-                    Admission Deadline
-                  </label>
-                  <input
-                    id="admission_deadline"
-                    type="date"
-                    {...register('admission_deadline')}
-                    className={inputClassName}
-                  />
-                  {errors.admission_deadline && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.admission_deadline.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="schedule" className={labelClassName}>
-                    Class Schedule <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="schedule"
-                    type="text"
-                    {...register('schedule')}
-                    placeholder="e.g., Mon & Wed, 6:00 PM - 8:00 PM"
-                    className={inputClassName}
-                  />
-                  {errors.schedule && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.schedule.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="venue" className={labelClassName}>
-                    Venue/Location <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="venue"
-                    type="text"
-                    {...register('venue')}
-                    placeholder="e.g., Online via Zoom or 123 Main St, Suite 100"
-                    className={inputClassName}
-                  />
-                  {errors.venue && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.venue.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="total_seats" className={labelClassName}>
-                    Total Seats Available <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="total_seats"
-                    type="number"
-                    min="1"
-                    {...register('total_seats')}
-                    className={inputClassName}
-                    placeholder="e.g., 30"
-                  />
-                  {errors.total_seats && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.total_seats.message}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label htmlFor="total_classes" className={labelClassName}>
-                    Total Classes <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    id="total_classes"
-                    type="number"
-                    min="1"
-                    {...register('total_classes')}
-                    className={inputClassName}
-                    placeholder="e.g., 24"
-                  />
-                  {errors.total_classes && (
-                    <p className={errorClassName}>
-                      <AlertCircle className="w-4 h-4" />
-                      {errors.total_classes.message}
-                    </p>
-                  )}
-                </div>
+                <LoaderButton
+                  type="button"
+                  variant="secondary"
+                  size="md"
+                  elevation="md"
+                  onClick={() => navigate(-1)}
+                  icon={<X className="w-4 h-4" />}
+                  disabled={loading || isSubmitting}
+                >
+                  Cancel
+                </LoaderButton>
               </div>
             </div>
-          </div>
 
-          {/* Form Actions */}
-          <div className="flex items-center gap-3 mt-6">
-            <LoaderButton
-              type="submit"
-              variant="success"
-              size="md"
-              elevation="lg"
-              loading={loading || isSubmitting}
-              loadingText="Saving Changes..."
-              icon={<Save className="w-4 h-4" />}
-              disabled={loading || isSubmitting}
-            >
-              Save Changes
-            </LoaderButton>
-
-            <LoaderButton
-              type="button"
-              variant="secondary"
-              size="md"
-              elevation="md"
-              onClick={() => navigate(-1)}
-              icon={<X className="w-4 h-4" />}
-              disabled={loading || isSubmitting}
-            >
-              Cancel
-            </LoaderButton>
+            {/* Remove the old FormSidebar from here */}
           </div>
         </form>
       </div>

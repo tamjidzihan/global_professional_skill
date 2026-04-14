@@ -77,6 +77,7 @@ export type CategoryDetailResponse = Category;
 // Course Management Types
 
 export type DifficultyLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+export type DeliveryMode = 'ONLINE' | 'OFFLINE' | 'BOTH';
 export type CourseStatus = 'DRAFT' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'PUBLISHED';
 export type LessonType = 'VIDEO' | 'LIVE' | 'TEXT' | 'QUIZ' | 'ASSIGNMENT' | 'RESOURCE';
 
@@ -88,6 +89,7 @@ export interface CoursesSummary {
     instructor_name: string;
     category_name: string;
     difficulty_level: DifficultyLevel;
+    delivery_mode: DeliveryMode;
     price: string;
     is_free: boolean;
     thumbnail?: string;
@@ -158,6 +160,7 @@ export interface CourseDetail {
     instructor: User;
     category: Category;
     difficulty_level: DifficultyLevel;
+    delivery_mode: DeliveryMode;
     price: string;
     is_free: boolean;
     thumbnail?: string;
@@ -201,6 +204,7 @@ export interface CourseCreateUpdateData {
     short_description: string;
     category: string;
     difficulty_level: DifficultyLevel;
+    delivery_mode: DeliveryMode;
     price: string | number;
     thumbnail?: File | string | null;
     preview_video?: string;
@@ -290,6 +294,7 @@ export interface CourseSchedule {
 export interface CourseFilters {
     category?: string;
     difficulty_level?: DifficultyLevel;
+    delivery_mode?: DeliveryMode;
     is_free?: boolean;
     status?: CourseStatus;
     venue?: string;
@@ -350,6 +355,8 @@ export interface Payment {
     user_email: string;
     course: string;
     course_title: string;
+    course_thumbnail?: string;
+    course_slug?: string;
     amount: string;
     currency: string;
     status: 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';

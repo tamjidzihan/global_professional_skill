@@ -52,7 +52,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     """ViewSet for courses with approval workflow."""
 
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ["category", "difficulty_level", "is_free", "status"]
+    filterset_fields = ["category", "difficulty_level", "delivery_mode", "is_free", "status"]
     search_fields = [
         "title",
         "description",
@@ -278,7 +278,7 @@ class MyCoursesViewSet(viewsets.ModelViewSet):
 
     permission_classes = [IsInstructor]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ["category", "difficulty_level", "is_free", "status"]
+    filterset_fields = ["category", "difficulty_level", "delivery_mode", "is_free", "status"]
     search_fields = [
         "title",
         "description",
