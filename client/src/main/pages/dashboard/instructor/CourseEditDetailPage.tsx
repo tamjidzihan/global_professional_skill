@@ -193,6 +193,7 @@ const CourseEditDetailPage: React.FC = () => {
     formData.append('short_description', parsedData.short_description);
     formData.append('category', parsedData.category);
     formData.append('difficulty_level', parsedData.difficulty_level);
+    formData.append('delivery_mode', parsedData.delivery_mode);
     formData.append('price', parsedData.price.toString());
     formData.append('duration_hours', parsedData.duration_hours.toString());
     formData.append('learning_outcomes', parsedData.learning_outcomes);

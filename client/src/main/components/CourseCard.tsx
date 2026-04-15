@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Star } from 'lucide-react'
+import { Star} from 'lucide-react'
 
 interface CourseCardProps {
     id: string
@@ -17,6 +17,7 @@ interface CourseCardProps {
     thumbnail?: string
     duration_hours?: number
     total_classes?: number
+    delivery_mode?: 'ONLINE' | 'OFFLINE' | 'BOTH'
 }
 
 export function CourseCard({
@@ -24,16 +25,16 @@ export function CourseCard({
     title,
     price,
     originalPrice,
-    rating = '4.8',
+    rating,
     instructor,
     description,
     level,
     thumbnail = '',
     duration_hours,
     total_classes,
+    delivery_mode,
 }: CourseCardProps) {
-    const ratingNum = parseFloat(rating)
-
+    const ratingNum = rating ? parseFloat(rating) : 0
     const renderStars = (rating: number) => {
         return Array.from({ length: 5 }, (_, i) => {
             const filled = i < Math.floor(rating)
@@ -64,6 +65,25 @@ export function CourseCard({
     }
     const levelClass = levelStyles[level] ?? 'bg-gray-100 text-gray-700 border-gray-200'
 
+    // Delivery mode configuration
+    const deliveryModeConfig = {
+        ONLINE: { label: 'Online', color: 'bg-blue-500' },
+        OFFLINE: { label: 'Offline', color: 'bg-purple-500' },
+        BOTH: {  label: 'Both', color: 'bg-green-500' }
+    }
+
+    const getDeliveryModeBadge = () => {
+        if (!delivery_mode) return null
+        const config = deliveryModeConfig[delivery_mode]
+        if (!config) return null
+
+        return (
+            <div className={`absolute bottom-2 right-2 flex items-center gap-1.5 px-2 py-1 rounded-lg ${config.color} bg-opacity-90 backdrop-blur-sm shadow-lg`}>
+                              <span className="text-xs font-semibold text-white">{config.label}</span>
+            </div>
+        )
+    }
+
     return (
         <div
             className="
@@ -74,7 +94,7 @@ export function CourseCard({
             "
         >
             {/* ── Thumbnail ── */}
-            <div className="relative overflow-hidden bg-gray-100 shrink-0">
+            <div className="relative overflow-hidden bg-gray-100 shrink-0 aspect-video">
                 {thumbnail ? (
                     <img
                         src={thumbnail}
@@ -88,6 +108,9 @@ export function CourseCard({
                         </span>
                     </div>
                 )}
+
+                {/* Delivery Mode Badge - Bottom Right Corner */}
+                {getDeliveryModeBadge()}
             </div>
 
             {/* ── Body ── */}

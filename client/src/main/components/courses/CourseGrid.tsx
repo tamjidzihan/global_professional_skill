@@ -125,6 +125,7 @@ const CourseGrid = ({
                                 thumbnail={course.thumbnail}
                                 duration_hours={course.duration_hours}
                                 total_classes={course.total_classes}
+                                delivery_mode={course.delivery_mode}
                             />
                         ))}
                     </div>

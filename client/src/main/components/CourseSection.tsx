@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef, useState, useMemo, useCallback } from "react"
 import { Link } from "react-router-dom"
 import { ChevronLeft, ChevronRight, BookOpen, Sparkles, ArrowRight, AlertCircle, RefreshCw } from "lucide-react"
@@ -14,6 +15,7 @@ const CourseSection = () => {
     const [scrollLeft, setScrollLeft] = useState(0)
     const [activeCategory, setActiveCategory] = useState("Our Courses")
     const [categoryLoading, setCategoryLoading] = useState(false)
+    const [activeDeliveryMode, setActiveDeliveryMode] = useState<string | null>(null)
 
     useEffect(() => {
         fetchCategories()
@@ -29,36 +31,73 @@ const CourseSection = () => {
         ]
     }, [categories])
 
+    // Delivery mode options
+    const deliveryModes = useMemo(() => [
+        { value: null, label: "All" },
+        { value: "ONLINE", label: "Online" },
+        { value: "OFFLINE", label: "Offline" },
+        { value: "BOTH", label: "Both" }
+    ], [])
+
     // Handle category change - fetch from database
     const handleCategoryChange = useCallback(async (categoryName: string) => {
         setActiveCategory(categoryName)
         setCategoryLoading(true)
 
         try {
-            if (categoryName === "Our Courses") {
-                await fetchCourses()
-            } else {
+            const filters: any = {}
+
+            if (categoryName !== "Our Courses") {
                 // Find the category ID from the categories list
                 const selectedCategory = categories.find(cat => cat.name === categoryName)
                 if (selectedCategory) {
-                    // Fetch courses filtered by category
-                    await fetchCourses({
-                        category: selectedCategory.id
-                        // You can add other filters here if needed
-                        // difficulty_level: '',
-                        // status: 'PUBLISHED',
-                        // search: '',
-                    })
+                    filters.category = selectedCategory.id
                 }
             }
+
+            // Add delivery mode filter if active
+            if (activeDeliveryMode) {
+                filters.delivery_mode = activeDeliveryMode
+            }
+
+            await fetchCourses(filters)
         } catch (error) {
             console.error('Error fetching courses for category:', error)
         } finally {
             setCategoryLoading(false)
         }
-    }, [categories, fetchCourses])
+    }, [categories, fetchCourses, activeDeliveryMode])
 
-    // Get only the last 8 courses
+    // Handle delivery mode change
+    const handleDeliveryModeChange = useCallback(async (modeValue: string | null) => {
+        setActiveDeliveryMode(modeValue)
+        setCategoryLoading(true)
+
+        try {
+            const filters: any = {}
+
+            // Add category filter if not "Our Courses"
+            if (activeCategory !== "Our Courses") {
+                const selectedCategory = categories.find(cat => cat.name === activeCategory)
+                if (selectedCategory) {
+                    filters.category = selectedCategory.id
+                }
+            }
+
+            // Add delivery mode filter
+            if (modeValue) {
+                filters.delivery_mode = modeValue
+            }
+
+            await fetchCourses(filters)
+        } catch (error) {
+            console.error('Error fetching courses for delivery mode:', error)
+        } finally {
+            setCategoryLoading(false)
+        }
+    }, [activeCategory, categories, fetchCourses])
+
+    // Get only the last 12 courses
     const displayedCourses = useMemo(() => {
         return courses.slice(-12)
     }, [courses])
@@ -114,7 +153,7 @@ const CourseSection = () => {
 
                 {/* Category Scroll - Only show if no error */}
                 {!error && (
-                    <div className="relative mb-8">
+                    <div className="relative mb-6">
                         {/* Left Arrow */}
                         <button
                             onClick={() => scrollByAmount(-300)}
@@ -170,29 +209,76 @@ const CourseSection = () => {
                     </div>
                 )}
 
-                {/* Active Category Display - Only show if no error */}
+                {/* Active Category Display and Delivery Mode Radio Buttons */}
                 {!error && (
-                    <div className="mb-8 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
-                                <BookOpen className="w-5 h-5 text-white" />
+                    <div className="mb-8">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            {/* Left side - Category info */}
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+                                    <BookOpen className="w-5 h-5 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900">
+                                        {activeCategory}
+                                    </h3>
+                                    {activeDeliveryMode && (
+                                        <p className="text-sm text-gray-500">
+                                            Filtered by: {deliveryModes.find(m => m.value === activeDeliveryMode)?.label}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-900">
-                                    {activeCategory}
-                                </h3>
+
+                            {/* Right side - Delivery Mode Radio Buttons */}
+                            <div className="flex flex-wrap items-center gap-4">
+                                {deliveryModes.map((mode) => {
+                                    const isActive = activeDeliveryMode === mode.value
+                                    return (
+                                        <label
+                                            key={mode.label}
+                                            className="flex items-center gap-2 cursor-pointer group"
+                                        >
+                                            <div className="relative flex items-center">
+                                                <input
+                                                    type="radio"
+                                                    name="delivery_mode"
+                                                    checked={isActive}
+                                                    onChange={() => handleDeliveryModeChange(mode.value)}
+                                                    disabled={categoryLoading}
+                                                    className="peer h-4 w-4 cursor-pointer appearance-none rounded-full border-2 border-gray-300 checked:border-[#0066CC] transition-all"
+                                                />
+                                                <span className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0066CC] opacity-0 peer-checked:opacity-100 transition-opacity"></span>
+                                            </div>
+
+                                            <span className={`text-sm transition-colors ${isActive
+                                                ? 'text-[#0066CC] font-medium'
+                                                : 'text-gray-600 group-hover:text-[#0066CC]'
+                                                }`}>
+                                                {mode.label}
+                                            </span>
+                                        </label>
+                                    )
+                                })}
+
+                                {/* Clear Filters Button - Shows when filters are active */}
+                                {(activeCategory !== "Our Courses" || activeDeliveryMode) && (
+                                    <button
+                                        onClick={async () => {
+                                            setActiveCategory("Our Courses")
+                                            setActiveDeliveryMode(null)
+                                            setCategoryLoading(true)
+                                            await fetchCourses()
+                                            setCategoryLoading(false)
+                                        }}
+                                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-all text-sm"
+                                    >
+                                        <RefreshCw className="w-3.5 h-3.5" />
+                                        Clear
+                                    </button>
+                                )}
                             </div>
                         </div>
-
-                        {/* View All Courses Button - Same line, smaller on mobile */}
-                        <Link
-                            to="/courses"
-                            className="inline-flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-1.5 sm:py-2 rounded-xl bg-linear-to-r from-yellow-400 to-yellow-500 text-gray-900 font-bold hover:from-yellow-500 hover:to-yellow-600 transition-all shadow-lg hover:shadow-xl group text-xs sm:text-sm md:text-base"
-                        >
-                            <span className="hidden xs:inline">View All Courses</span>
-                            <span className="xs:hidden">All</span>
-                            <ArrowRight className="w-3 h-3 sm:w-4 sm:h-5 group-hover:translate-x-1 transition-transform" />
-                        </Link>
                     </div>
                 )}
 
@@ -227,12 +313,18 @@ const CourseSection = () => {
                             <div className="bg-gray-50 border-2 border-gray-200 rounded-2xl p-8 text-center max-w-md mx-auto">
                                 <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                                 <h3 className="text-lg font-bold text-gray-700 mb-2">No Courses Found</h3>
-                                <p className="text-gray-500 mb-4">There are no courses available in this category at the moment.</p>
+                                <p className="text-gray-500 mb-4">There are no courses available matching your criteria.</p>
                                 <button
-                                    onClick={() => handleCategoryChange("Our Courses")}
+                                    onClick={async () => {
+                                        setActiveCategory("Our Courses")
+                                        setActiveDeliveryMode(null)
+                                        setCategoryLoading(true)
+                                        await fetchCourses()
+                                        setCategoryLoading(false)
+                                    }}
                                     className="text-blue-600 font-semibold hover:text-blue-700"
                                 >
-                                    View all courses instead
+                                    Clear all filters
                                 </button>
                             </div>
                         </div>
@@ -251,6 +343,7 @@ const CourseSection = () => {
                             category={course.category_name}
                             instructor={course.instructor_name}
                             thumbnail={course.thumbnail}
+                            delivery_mode={course.delivery_mode}
                         />
                     ))}
                 </div>

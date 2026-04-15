@@ -19,6 +19,9 @@ import {
     Trash2,
     Eye,
     PlaySquare,
+    Monitor,
+    WifiOff,
+    Globe,
 } from 'lucide-react'
 import { useAuth } from '../../../../hooks/useAuth'
 import { useCourses } from '../../../../hooks/useCourses'
@@ -43,6 +46,26 @@ function StatusBadge({ status }: { status: string }) {
         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-lg ${cfg.badge}`}>
             <Icon className={`w-3.5 h-3.5 ${cfg.iconColor}`} />
             {status === 'PENDING' ? 'Pending Review' : status}
+        </span>
+    )
+}
+
+// ── Delivery Mode Badge ──────────────────────────────────────────────────────
+function DeliveryModeBadge({ mode }: { mode?: 'ONLINE' | 'OFFLINE' | 'BOTH' }) {
+    if (!mode) return null
+
+    const config = {
+        ONLINE: { icon: Monitor, label: 'Online', color: 'bg-blue-500' },
+        OFFLINE: { icon: WifiOff, label: 'Offline', color: 'bg-purple-500' },
+        BOTH: { icon: Globe, label: 'Both', color: 'bg-green-500' }
+    }
+
+    const { icon: Icon, label, color } = config[mode]
+
+    return (
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-lg text-white ${color}`}>
+            <Icon className="w-3.5 h-3.5" />
+            {label}
         </span>
     )
 }
@@ -215,6 +238,7 @@ export function InstructorCourseDetailPage() {
 
                     {/* Action buttons */}
                     <div className="flex flex-wrap items-center gap-2 shrink-0">
+                        <DeliveryModeBadge mode={course.delivery_mode} />
                         <StatusBadge status={course.status} />
 
                         {course.status !== 'PENDING' && (
