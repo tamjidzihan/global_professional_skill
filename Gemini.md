@@ -10,7 +10,7 @@ The project is divided into two main parts: `client` (frontend) and `server` (ba
 
 The `server` directory contains a Django project that serves as the backend API.
 
--   **Base Directory**: `D:\code_study\Freelance\github\global_professional\server`
+-   **Base Directory**: `D:\Tamzid\github\global_professional_skill\server`
 -   **Dependencies**: Listed in `server/requirements.txt`. Key dependencies include Django, Django Rest Framework, Simple JWT, CORS headers, and Celery (configured for in-memory broker, likely for development).
 -   **Configuration**: Main settings are in `server/config/settings.py`.
     -   Uses `python-decouple` and `python-dotenv` for environment variable management.
@@ -26,82 +26,61 @@ The `server` directory contains a Django project that serves as the backend API.
     -   `/api/v1/accounts/`: Endpoints for the `accounts` app.
     -   `/api/v1/courses/`: Endpoints for the `courses` app.
     -   `/api/v1/enrollments/`: Endpoints for the `enrollments` app.
--   **Apps**: The Django project is modularized into three core applications located in `server/apps/`:
+    -   `/api/v1/payments/`: Endpoints for the `payments` app.
+    -   `/api/v1/analytics/`: Endpoints for the `analytics` app.
+-   **Apps**: The Django project is modularized into core applications located in `server/apps/`:
     -   `accounts`:
-        -   **Models**: `User` (custom, email-based, with roles STUDENT, INSTRUCTOR, ADMIN), `EmailVerificationToken`, `InstructorRequest`, `PasswordResetToken`.
-        -   **Views**: `UserRegistrationView`, `EmailVerificationView`, `UserLoginView` (JWT), `UserProfileView`, `PasswordChangeView`, `PasswordResetRequestView`, `PasswordResetConfirmView`, `InstructorRequestViewSet` (students create, admins review), `UserManagementViewSet` (admin-only user/role management).
+        -   **Models**: `User` (custom, email-based, roles: STUDENT, INSTRUCTOR, ADMIN), `EmailVerificationToken`, `InstructorRequest`, `PasswordResetToken`.
+        -   **Views**: Registration, Email Verification, Login (JWT), Profile, Password Change/Reset, Instructor Request management, User Management (Admin).
     -   `courses`:
-        -   **Models**: `Category`, `Course` (title, instructor, price, status, approval workflow), `Section`, `Lesson` (various types), `Review` (updates course average rating).
-        -   **Views**: `CategoryViewSet` (admin-only CUD), `CourseViewSet` (permission-based access, approval workflow with `review` and `submit_for_review` actions), `SectionViewSet`, `LessonViewSet` (enrollment/instructor permission), `ReviewViewSet` (authenticated users create/update own reviews).
+        -   **Models**: `Category`, `Course` (approval workflow: DRAFT, PENDING, APPROVED, PUBLISHED, REJECTED; delivery modes: ONLINE, OFFLINE, BOTH), `Section`, `Lesson` (various types), `Review`.
+        -   **Views**: Category management (Admin), Course workflow management, Section/Lesson management, Review management.
     -   `enrollments`:
-        -   **Models**: `Enrollment` (student-course, progress), `LessonProgress` (individual lesson tracking), `Certificate` (course completion).
-        -   **Views**: `EnrollmentViewSet` (enroll/prevent duplicates, increments course enrollment count), `LessonProgressViewSet` (track progress, `mark_complete` action updates course progress).
+        -   **Models**: `Enrollment` (student-course, progress tracking), `LessonProgress` (individual lesson tracking), `Certificate` (auto-generated upon completion).
+        -   **Views**: Enrollment management, Progress tracking updates.
+    -   `payments`:
+        -   **Models**: `Payment` (tracks status: PENDING, COMPLETED, FAILED, REFUNDED; stores transaction IDs and sender information).
+        -   **Views**: Payment creation and tracking.
+    -   `analytics`:
+        -   Handles data aggregation for dashboards.
 
 ### 1.2 `client` Directory (React/Vite/TypeScript Frontend)
 
 The `client` directory contains the frontend application built with React, Vite, and TypeScript.
 
--   **Base Directory**: `D:\code_study\Freelance\github\global_professional\client`
+-   **Base Directory**: `D:\Tamzid\github\global_professional_skill\client`
 -   **Technologies**: React, Vite, TypeScript, React Router, Tailwind CSS, Lucide React (for icons).
 -   **Build & Development**:
-    -   `dev`: `vite` (starts development server).
-    -   `build`: `tsc -b && vite build` (builds TypeScript and project).
-    -   `lint`: `eslint .` (runs ESLint).
--   **Routing**: Defined in `client/src/router.tsx` using `react-router-dom`'s `createBrowserRouter`.
-    -   Uses a `Layout` component for common structure.
-    -   Routes include: `/`, `/courses`, `/course/:id`, `/about`, `/login`, `/register`.
+    -   `dev`: `vite`
+    -   `build`: `tsc -b && vite build`
+    -   `lint`: `eslint .`
+-   **Routing**: Defined in `client/src/router.tsx`.
+    -   Uses a `Layout` component and common structure.
+    -   Routes include public (Home, About, Courses, Auth) and protected (Dashboards, Profile, Checkout).
 -   **Source Code Structure (`client/src`)**:
-    -   `main.tsx`: Entry point of the application.
+    -   `main.tsx`: Entry point.
     -   `index.css`: Global styles.
-    -   `Layout.tsx`: Main layout component.
     -   `router.tsx`: Routing configuration.
-    -   `assets/`: Static assets.
-    -   `main/`: Contains core application logic, components, and pages.
-        -   `main/pages/`:
-            -   `AboutPage.tsx`
-            -   `CourseDetailPage.tsx`
-            -   `CoursesPage.tsx`
-            -   `CreateCoursePage.tsx`
-            -   `EmailVerificationPage.tsx`
-            -   `ForgotPasswordPage.tsx`
-            -   `HomePage.tsx`
-            -   `InstructorApplicationPage.tsx`
-            -   `LoginPage.tsx`
-            -   `NotificationsPage.tsx`
-            -   `PrivacyPage.tsx`
-            -   `ProfilePage.tsx`
-            -   `RegisterPage.tsx`
-            -   `TermsPage.tsx`
-            -   `VerifyEmailPromptPage.tsx`
-            -   `dashboard/`
-                -   `admin/`
-                    -   `CourseManagementPage.tsx`
-                    -   `UserManagementPage.tsx`
-                -   `instructor/`
-                    -   `CourseEditDetailPage.tsx`
-                    -   `CurriculumPage.tsx`
-                    -   `InstructorCourseDetailPage.tsx`
-                    -   `MyCoursesPage.tsx`
-                -   `AdminDashboard.tsx`
-                -   `CourseDetailPage.tsx`
-                -   `InstructorDashboard.tsx`
-                -   `MyProfilePage.tsx`
-                -   `StudentDashboard.tsx`
-                -   `UserDetailPage.tsx`
-        -   `main/components/`: Reusable UI components:
-            -   `AboutSection.tsx`
-            -   `AuthLayout.tsx`
-            -   `Breadcrumb.tsx`
-            -   `CourseCard.tsx`
-            -   `CourseSection.tsx`
-            -   `Footer.tsx`
-            -   `Header.tsx`
-            -   `HeroSection.tsx`
-            -   `PartnersSection.tsx`
-            -   `StatsSection.tsx`
--   **Deployment**: `netlify.toml` suggests deployment via Netlify.
+    -   `context/`: `AuthContext.tsx` for authentication state.
+    -   `hooks/`: Custom hooks for API interaction (`useAuth`, `useCourses`, `useEnrollments`, `usePayments`, etc.).
+    -   `lib/`: `api.ts` (Axios configuration), `errorUtils.ts`, `utils.ts`.
+    -   `main/pages/`:
+        -   `AboutPage.tsx`, `CoursesPage.tsx`, `CourseDetailPage.tsx`, `HomePage.tsx`.
+        -   Auth: `LoginPage.tsx`, `RegisterPage.tsx`, `ForgotPasswordPage.tsx`, `ResetPasswordPage.tsx`, `EmailVerificationPage.tsx`.
+        -   `dashboard/`: Subdirectories for `admin`, `instructor`, and `student` dashboards.
+            -   `AdminDashboard.tsx`, `InstructorDashboard.tsx`, `StudentDashboard.tsx`, `MyProfilePage.tsx`.
+        -   Functional: `CheckoutPage.tsx`, `InstructorApplicationPage.tsx`, `CreateCoursePage.tsx`.
+    -   `main/components/`: Reusable UI components categorized by feature (e.g., `courses`, `dashboard`, `ui`).
 
-## 2. Future Reference Plan
+## 2. Key Features and Workflows
 
--   **Testing**: Investigate existing test setups (e.g., `pytest` for Django, client-side testing frameworks) or plan for test creation for new features/bug fixes.
--   **Deployment**: Review `server/DEPLOYMENT.md` and `client/netlify.toml` for deployment strategies.
+-   **User Roles**: Students can browse and enroll; Instructors can create and manage courses; Admins oversee the platform, approve courses, and manage users.
+-   **Course Lifecycle**: Created by Instructor -> Submitted for Review -> Approved by Admin -> Published for Students.
+-   **Enrollment & Learning**: Students enroll (via payment if applicable), track progress per lesson, and receive a certificate upon 100% completion.
+-   **Payment Tracking**: Support for recording payment details, including transaction IDs and sender numbers (likely for manual verification or mobile banking integrations).
+
+## 3. Future Reference Plan
+
+-   **Testing**: Check `server/apps/core/tests.py` for testing patterns.
+-   **Deployment**: Refer to `server/DEPLOYMENT.md` and `client/netlify.toml`.
+-   **API Integration**: `client/src/lib/api.ts` defines how the frontend communicates with the backend.
