@@ -116,12 +116,20 @@ const EmailVerificationPage: React.FC = () => {
                                 </button>
 
                                 {!isSuccess && (
-                                    <button
-                                        onClick={() => navigate('/register')}
-                                        className="w-full py-3 px-4 text-[#0066CC] font-medium border-2 border-[#0066CC] rounded-lg hover:bg-blue-50 transition-colors"
-                                    >
-                                        Create New Account
-                                    </button>
+                                    <>
+                                        <button
+                                            onClick={() => navigate('/verify-email-prompt')}
+                                            className="w-full py-3 px-4 bg-[#0066CC] text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                                        >
+                                            Resend Verification Email
+                                        </button>
+                                        <button
+                                            onClick={() => navigate('/register')}
+                                            className="w-full py-3 px-4 text-[#0066CC] font-medium border-2 border-[#0066CC] rounded-lg hover:bg-blue-50 transition-colors"
+                                        >
+                                            Create New Account
+                                        </button>
+                                    </>
                                 )}
                             </div>
                         </>

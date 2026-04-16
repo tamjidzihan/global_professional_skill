@@ -137,6 +137,7 @@ export const endpoints = {
     auth: {
         register: '/accounts/register/',
         verifyEmail: '/accounts/verify-email/',
+        resendVerification: '/accounts/resend-verification/',
         login: '/accounts/login/',
         refresh: '/accounts/token/refresh/',
         passwordReset: '/accounts/password/reset/',

@@ -23,7 +23,7 @@ export function useAuth() {
                 // Show toast notification
                 toast.error('Please verify your email address to log in.')
                 // Optionally, navigate to a page that prompts email verification
-                navigate('/verify-email-prompt');
+                navigate('/verify-email-prompt', { state: { email } });
                 return false
             }
 
@@ -49,7 +49,7 @@ export function useAuth() {
             if (emailVerificationError === 'Please verify your email address before logging in.') {
                 // Do NOT set form error as we are navigating away
                 toast.error('Please verify your email address to log in.');
-                navigate('/verify-email-prompt');
+                navigate('/verify-email-prompt', { state: { email } });
             } else {
                 setError(
                     err.response?.data?.error?.details?.email?.[0] ||
@@ -89,6 +89,23 @@ export function useAuth() {
         }
     }
 
+    const resendVerification = async (email: string) => {
+        setLoading(true)
+        setError(null)
+        try {
+            await api.post(endpoints.auth.resendVerification, { email })
+            toast.success('Verification email resent successfully.')
+            return true
+        } catch (err: any) {
+            const message = err.response?.data?.error?.message || 'Failed to resend verification email'
+            setError(message)
+            toast.error(message)
+            return false
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const logout = () => {
         contextLogout()
         navigate('/login')
@@ -97,6 +114,7 @@ export function useAuth() {
     return {
         login,
         register,
+        resendVerification,
         logout,
         loading,
         error,

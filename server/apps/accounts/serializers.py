@@ -341,3 +341,32 @@ class UserRoleUpdateSerializer(serializers.ModelSerializer):
         if value not in [UserRole.STUDENT, UserRole.INSTRUCTOR, UserRole.ADMIN]:
             raise serializers.ValidationError("Invalid role.")
         return value
+
+
+class ResendVerificationEmailSerializer(serializers.Serializer):
+    """Serializer for resending verification email."""
+
+    email = serializers.EmailField(required=True)
+
+    def validate_email(self, value):
+        """Validate that user with this email exists and is not verified."""
+        try:
+            user = User.objects.get(email=value)
+            if user.email_verified:
+                raise serializers.ValidationError("This email is already verified.")
+            if not user.is_active:
+                raise serializers.ValidationError("This account is deactivated.")
+            self.context["user"] = user
+        except User.DoesNotExist:
+            # For security, we might not want to reveal if the email exists,
+            # but for a "resend" functionality, it's often better to be explicit
+            # or just return success even if not found.
+            # Here I'll be explicit as it's a specific "resend" action.
+            raise serializers.ValidationError("No account found with this email address.")
+        return value
+
+    def save(self):
+        """Resend verification email."""
+        user = self.context.get("user")
+        if user:
+            send_verification_email(user.id)

@@ -33,6 +33,7 @@ from .serializers import (
     UserRegistrationSerializer,
     UserRoleUpdateSerializer,
     UserSerializer,
+    ResendVerificationEmailSerializer,
 )
 from .tasks import (
     send_instructor_request_decision_email,
@@ -495,4 +496,24 @@ class UserManagementViewSet(viewsets.ModelViewSet):
 
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+
+class ResendVerificationEmailView(generics.GenericAPIView):
+    """Endpoint to resend verification email."""
+
+    serializer_class = ResendVerificationEmailSerializer
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            {
+                "success": True,
+                "message": "Verification email has been resent. Please check your inbox.",
+            },
+            status=status.HTTP_200_OK,
         )
