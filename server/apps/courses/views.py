@@ -100,12 +100,14 @@ class CourseViewSet(viewsets.ModelViewSet):
             )
 
         if user.is_instructor: # type: ignore
-            # Instructors should primarily see their own courses in management views
-            # If they want to see published courses, they can use filters or we can show them on public pages
+            # Allow instructors to see their own courses AND all published courses
             return (
-                Course.objects.filter(instructor=user)
+                Course.objects.filter(
+                    Q(instructor=user) | Q(status=CourseStatus.PUBLISHED)
+                )
                 .select_related("instructor", "category")
                 .prefetch_related("sections__lessons")
+                .distinct()
             )
 
         if user.is_admin_user: # type: ignore

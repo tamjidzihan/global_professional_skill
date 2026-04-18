@@ -14,7 +14,7 @@ import { usePayments } from '../../../../hooks/usePayments';
 import SEO from '../../../components/SEO';
 import PendingPaymentCard from '../../../components/dashboard/student/PendingPaymentCard';
 import EnrollmentCard from '../../../components/dashboard/student/EnrollmentCard';
-import { type FilterStatus, getProgressStatus, statusConfig } from '../../../components/dashboard/student/statusUtils';
+import { getProgressStatus, statusConfig, type FilterStatus } from '../../../../lib/utils';
 
 const STATUS_TABS: FilterStatus[] = ['ALL', 'IN_PROGRESS', 'NOT_STARTED', 'COMPLETED', 'PENDING'];
 

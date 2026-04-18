@@ -77,7 +77,7 @@ export default function CourseProgressPage() {
                                         onClick={() => setSelectedCourseId(c.id)}
                                         className={`w-full text-left p-4 border-b last:border-b-0 border-gray-50 transition-colors ${selectedCourseId === c.id
                                             ? 'bg-violet-50 border-l-4 border-l-violet-600'
-                                            : 'hover:bg-gray-50'
+                                            : 'hover:bg-gray-50 cursor-pointer'
                                             }`}
                                     >
                                         <p className={`text-sm font-bold truncate ${selectedCourseId === c.id ? 'text-violet-700' : 'text-gray-700'}`}>

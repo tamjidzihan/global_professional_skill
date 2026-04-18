@@ -1,4 +1,5 @@
-import { statusConfig } from './statusUtils';
+import { statusConfig } from "../../../../lib/utils";
+
 
 export function StatusBadge({ status }: { status: string }) {
     const key = status as keyof typeof statusConfig;

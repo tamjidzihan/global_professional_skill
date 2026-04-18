@@ -2,8 +2,8 @@
 import { Award, BookOpen, Clock, Layers, PlayCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import ProgressBar from "./ProgressBar";
-import { getProgressStatus } from "./statusUtils";
 import { StatusBadge } from "./StatusBadge";
+import { getProgressStatus } from "../../../../lib/utils";
 
 // ── Enrollment Card ───────────────────────────────────────────────────────────
 function EnrollmentCard({ enrollment }: { enrollment: any }) {
