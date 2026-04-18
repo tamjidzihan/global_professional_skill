@@ -40,6 +40,7 @@ import MyEnrollmentsPage from "./main/pages/dashboard/student/MyEnrollmentsPage"
 import EnrolledCourseDetailPage from "./main/pages/dashboard/student/EnrolledCourseDetailPage";
 import { CertificatesPage } from "./main/pages/dashboard/student/CertificatesPage";
 import { ReportsPage } from "./main/pages/dashboard/instructor/ReportsPage";
+import CourseProgressPage from "./main/pages/dashboard/instructor/CourseProgressPage";
 
 
 export const router = createBrowserRouter([
@@ -193,6 +194,14 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
                                 <ReportsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/course-progress',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+                                <CourseProgressPage />
                             </ProtectedRoute>
                         )
                     },

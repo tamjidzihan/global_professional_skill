@@ -7,6 +7,12 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
 from apps.accounts.models import User
 import uuid
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from django.db.models.manager import RelatedManager
+    from .models import Section
+    from apps.enrollments.models import Enrollment
 
 
 class CourseStatus(models.TextChoices):
@@ -320,6 +326,9 @@ class Lesson(models.Model):
     # Settings
     is_preview = models.BooleanField(
         default=False, help_text="Allow preview without enrollment"
+    )
+    is_completed = models.BooleanField(
+        default=False, help_text="Marked as completed by instructor"
     )
     order = models.PositiveIntegerField(default=0)
 

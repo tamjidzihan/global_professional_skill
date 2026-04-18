@@ -10,6 +10,7 @@ import {
     ChevronRight,
     CreditCard,
     Settings,
+    TrendingUp,
     // ShieldCheck,
 } from 'lucide-react'
 import { useAuthContext } from '../../../context/AuthContext'
@@ -71,6 +72,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
     const instructorLinks = [
         { name: 'Dashboard', path: '/dashboard/instructor', icon: LayoutDashboard, exact: true },
         { name: 'My Courses', path: '/dashboard/instructor/my-courses', icon: BookOpen },
+        { name: 'Course Progress', path: '/dashboard/instructor/course-progress', icon: TrendingUp },
         // { name: 'Students', path: '/dashboard/instructor/students', icon: Users },
         { name: 'Reports', path: '/dashboard/instructor/reports', icon: FileText, badge: 'New' },
     ]

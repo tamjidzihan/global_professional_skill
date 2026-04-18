@@ -52,15 +52,25 @@ class Enrollment(models.Model):
         return f"{self.student.email} enrolled in {self.course.title}"
 
     def update_progress(self):
-        """Calculate and update progress percentage."""
+        """Calculate and update progress percentage based on completed lessons."""
+        course = self.course
         total_lessons = (
-            self.course.sections.aggregate(total=models.Count("lessons"))["total"] or 0  # type: ignore
+            course.sections.aggregate(total=models.Count("lessons"))["total"] or 0  # type: ignore
         )
 
         if total_lessons == 0:
             self.progress_percentage = 0
         else:
-            completed = self.lesson_progress.filter(completed=True).count()  # type: ignore
+            if course.delivery_mode in ['ONLINE', 'BOTH']:
+                # For online/hybrid, progress is driven by instructor-completed lessons
+                completed = Lesson.objects.filter(
+                    section__course=course,
+                    is_completed=True
+                ).count()
+            else:
+                # For others, driven by student completion (per lesson)
+                completed = self.lesson_progress.filter(completed=True).count()  # type: ignore
+                
             self.progress_percentage = (completed / total_lessons) * 100
 
         # Mark as completed if 100%

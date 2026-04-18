@@ -30,6 +30,7 @@ import {
     createLesson,
     updateLesson,
     deleteLesson,
+    toggleLessonCompletion,
 
     // Reviews API Endpoints
     getReviews,
@@ -663,6 +664,53 @@ export function useCourses() {
         }
     }, [lesson, course]);
 
+    const toggleLessonProgress = useCallback(async (
+        courseId: string,
+        sectionId: string,
+        lessonId: string
+    ) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await toggleLessonCompletion(courseId, sectionId, lessonId);
+            const updatedLesson = response.data.data;
+            const is_completed = updatedLesson.is_completed;
+            
+            // Update lessons list
+            setLessons((prev) =>
+                prev.map((l) => (l.id === lessonId ? updatedLesson : l)),
+            );
+
+            // Update section lessons in course detail
+            if (course?.id === courseId) {
+                setCourse(prev => {
+                    if (!prev) return prev;
+                    const updatedSections = prev.sections.map(s =>
+                        s.id === sectionId
+                            ? {
+                                ...s,
+                                lessons: s.lessons.map(l =>
+                                    l.id === lessonId ? updatedLesson : l
+                                )
+                            }
+                            : s
+                    );
+                    return { ...prev, sections: updatedSections };
+                });
+            }
+            
+            toast.success(response.data.message || "Progress updated");
+            return is_completed;
+        } catch (err: any) {
+            const errorMsg = extractErrorMessage(err);
+            setError(errorMsg);
+            toast.error(errorMsg);
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    }, [course]);
+
 
     // ==================== Review Actions ====================
 
@@ -861,6 +909,7 @@ export function useCourses() {
         addLesson,
         editLesson,
         removeLesson,
+        toggleLessonProgress,
 
         // Review Actions
         fetchReviews,

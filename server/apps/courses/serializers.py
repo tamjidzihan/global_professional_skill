@@ -67,6 +67,7 @@ class LessonSerializer(serializers.ModelSerializer):
             "video_duration",
             "resources",
             "is_preview",
+            "is_completed",
             "order",
             "created_at",
             "updated_at",
@@ -79,7 +80,7 @@ class LessonListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        fields = ("id", "title", "lesson_type", "video_duration", "is_preview", "order")
+        fields = ("id", "title", "lesson_type", "video_duration", "is_preview", "is_completed", "order")
 
 
 class SectionSerializer(serializers.ModelSerializer):

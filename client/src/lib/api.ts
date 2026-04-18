@@ -195,6 +195,8 @@ export const endpoints = {
             `/courses/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/`,
         delete: (courseId: string, sectionId: string, lessonId: string) =>
             `/courses/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/`,
+        toggleComplete: (courseId: string, sectionId: string, lessonId: string) =>
+            `/courses/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/toggle-complete/`,
     },
     enrollments: {
         enroll: '/enrollments/enrollments/',
@@ -415,6 +417,9 @@ export const updateLesson = (
 
 export const deleteLesson = (courseId: string, sectionId: string, lessonId: string): Promise<AxiosResponse<void>> =>
     api.delete<void>(endpoints.lessons.delete(courseId, sectionId, lessonId));
+
+export const toggleLessonCompletion = (courseId: string, sectionId: string, lessonId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(endpoints.lessons.toggleComplete(courseId, sectionId, lessonId));
 
 
 // Review API Calls

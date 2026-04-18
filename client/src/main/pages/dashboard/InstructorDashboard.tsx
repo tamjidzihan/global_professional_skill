@@ -37,10 +37,10 @@ export function InstructorDashboard() {
             iconText: 'text-amber-600',
         },
         {
-            to: '#',
+            to: '/dashboard/instructor/course-progress',
             icon: TrendingUp,
-            label: 'View Analytics',
-            sub: 'Insights at a glance',
+            label: 'Update Course Progress',
+            sub: 'Manage class completion',
             iconBg: 'bg-blue-50',
             iconText: 'text-blue-600',
         },

@@ -100,10 +100,10 @@ class CourseViewSet(viewsets.ModelViewSet):
             )
 
         if user.is_instructor: # type: ignore
+            # Instructors should primarily see their own courses in management views
+            # If they want to see published courses, they can use filters or we can show them on public pages
             return (
-                Course.objects.filter(
-                    Q(instructor=user) | Q(status=CourseStatus.PUBLISHED)
-                )
+                Course.objects.filter(instructor=user)
                 .select_related("instructor", "category")
                 .prefetch_related("sections__lessons")
             )
@@ -431,6 +431,36 @@ class LessonViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
+
+    @action(detail=True, methods=["post"], url_path="toggle-complete")
+    @transaction.atomic
+    def toggle_complete(self, request, *args, **kwargs):
+        """Toggle lesson completion status and update student progress."""
+        lesson = self.get_object()
+        course = lesson.section.course
+        
+        # Explicit check: Only course instructor or admin can update progress
+        if course.instructor != request.user and not request.user.is_admin_user:
+            return Response(
+                {"success": False, "message": "Only the course instructor can update class progress."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        lesson.is_completed = not lesson.is_completed
+        lesson.save() # Trigger potential signals or model logic
+        
+        # If it's an online or hybrid course, update student progress
+        if course.delivery_mode in ['ONLINE', 'BOTH']:
+            enrollments = course.enrollments.all()
+            for enrollment in enrollments:
+                enrollment.update_progress()
+                enrollment.save() # Ensure progress_percentage is saved
+                
+        return Response({
+            "success": True, 
+            "message": f"Class marked as {'completed' if lesson.is_completed else 'incomplete'}",
+            "data": LessonSerializer(lesson).data
+        })
 
 class ReviewViewSet(viewsets.ModelViewSet):
     """ViewSet for course reviews."""
