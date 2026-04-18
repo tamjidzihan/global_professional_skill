@@ -1,6 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
-import { X, Video, FileText, HelpCircle, ClipboardList, FolderOpen, AlertCircle, Save, BookOpen, Layers, MonitorPlay } from 'lucide-react';
+import {
+    X, Video, FileText, HelpCircle, ClipboardList,
+    FolderOpen, AlertCircle, Save, BookOpen, MonitorPlay,
+} from 'lucide-react';
 import { useCourses } from '../../hooks/useCourses';
 import { toast } from 'react-hot-toast';
 import type { LessonType } from '../../types';
@@ -10,33 +13,23 @@ interface EditLessonModalProps {
     courseId: string;
     sectionId: string;
     lesson: {
-        id: string;
-        title: string;
-        lesson_type: string;
-        content?: string;
-        video_url?: string;
-        video_duration?: number;
-        is_preview: boolean;
-        order: number;
+        id: string; title: string; lesson_type: string;
+        content?: string; video_url?: string; video_duration?: number;
+        is_preview: boolean; order: number;
     };
     onClose: () => void;
 }
 
-const LESSON_TYPES: { value: LessonType; label: string; icon: React.ReactNode; description: string }[] = [
-    { value: 'VIDEO', label: 'Video', icon: <Video size={16} />, description: 'Video lesson with URL' },
-    { value: 'LIVE', label: 'Live', icon: <MonitorPlay size={16} />, description: 'Live lesson' },
-    { value: 'TEXT', label: 'Text', icon: <FileText size={16} />, description: 'Written content' },
-    { value: 'QUIZ', label: 'Quiz', icon: <HelpCircle size={16} />, description: 'Assessment questions' },
-    { value: 'ASSIGNMENT', label: 'Assignment', icon: <ClipboardList size={16} />, description: 'Student task' },
-    { value: 'RESOURCE', label: 'Resource', icon: <FolderOpen size={16} />, description: 'Downloadable files' },
+const LESSON_TYPES: { value: LessonType; label: string; icon: React.ReactNode }[] = [
+    { value: 'VIDEO', label: 'Video', icon: <Video className="w-3.5 h-3.5" /> },
+    { value: 'LIVE', label: 'Live', icon: <MonitorPlay className="w-3.5 h-3.5" /> },
+    { value: 'TEXT', label: 'Text', icon: <FileText className="w-3.5 h-3.5" /> },
+    { value: 'QUIZ', label: 'Quiz', icon: <HelpCircle className="w-3.5 h-3.5" /> },
+    { value: 'ASSIGNMENT', label: 'Assignment', icon: <ClipboardList className="w-3.5 h-3.5" /> },
+    { value: 'RESOURCE', label: 'Resource', icon: <FolderOpen className="w-3.5 h-3.5" /> },
 ];
 
-const EditLessonModal: React.FC<EditLessonModalProps> = ({
-    courseId,
-    sectionId,
-    lesson,
-    onClose
-}) => {
+const EditLessonModal: React.FC<EditLessonModalProps> = ({ courseId, sectionId, lesson, onClose }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
     const [lessonData, setLessonData] = useState({
@@ -46,58 +39,45 @@ const EditLessonModal: React.FC<EditLessonModalProps> = ({
         video_url: lesson.video_url || '',
         video_duration: lesson.video_duration || 0,
         is_preview: lesson.is_preview,
-        order: lesson.order
+        order: lesson.order,
     });
 
     const { editLesson } = useCourses();
 
-    const inputClassName = "w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent transition-shadow";
-    const labelClassName = "block text-sm font-medium text-gray-600 mb-1.5";
-    const errorClassName = "mt-1.5 text-sm text-red-600 flex items-center gap-1";
+    const inputCls = 'w-full px-3 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-50 transition-all';
+    const labelCls = 'block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5';
 
-    // Handle escape key press
     useEffect(() => {
-        const handleEsc = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && !isSubmitting) onClose();
-        };
-        window.addEventListener('keydown', handleEsc);
-        return () => window.removeEventListener('keydown', handleEsc);
+        const handler = (e: KeyboardEvent) => { if (e.key === 'Escape' && !isSubmitting) onClose(); };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
     }, [onClose, isSubmitting]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
-
         if (type === 'checkbox') {
-            const checkbox = e.target as HTMLInputElement;
-            setLessonData(prev => ({ ...prev, [name]: checkbox.checked }));
+            setLessonData(p => ({ ...p, [name]: (e.target as HTMLInputElement).checked }));
         } else if (name === 'video_duration') {
-            setLessonData(prev => ({ ...prev, [name]: parseInt(value) || 0 }));
+            setLessonData(p => ({ ...p, [name]: parseInt(value) || 0 }));
         } else if (name === 'lesson_type') {
-            setLessonData(prev => ({ ...prev, [name]: value as LessonType }));
+            setLessonData(p => ({ ...p, [name]: value as LessonType }));
         } else {
-            setLessonData(prev => ({ ...prev, [name]: value }));
+            setLessonData(p => ({ ...p, [name]: value }));
         }
     };
+
+    const isValidVideoUrl = (url: string) =>
+        /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be|vimeo\.com)\/.+$/.test(url);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setValidationError(null);
-
-        if (!lessonData.title.trim()) {
-            setValidationError('Please enter a lesson title');
-            toast.error('Please enter a lesson title');
-            return;
-        }
-
-        // Validation for video lessons
+        if (!lessonData.title.trim()) { setValidationError('Please enter a lesson title'); return; }
         if (lessonData.lesson_type === 'VIDEO' && lessonData.video_url && !isValidVideoUrl(lessonData.video_url)) {
             setValidationError('Please enter a valid YouTube or Vimeo URL');
-            toast.error('Please enter a valid YouTube or Vimeo URL');
             return;
         }
-
         setIsSubmitting(true);
-
         try {
             await editLesson(courseId, sectionId, lesson.id, {
                 section: sectionId,
@@ -107,398 +87,179 @@ const EditLessonModal: React.FC<EditLessonModalProps> = ({
                 video_url: lessonData.video_url || undefined,
                 video_duration: lessonData.video_duration || undefined,
                 is_preview: lessonData.is_preview,
-                order: lessonData.order
+                order: lessonData.order,
             });
-
-            toast.success('Lesson updated successfully!');
+            toast.success('Lesson updated!');
             onClose();
         } catch (error: any) {
-            console.error("Full error object:", error);
-            console.error("Error response:", error.response?.data);
-
-            // Try to extract the error message from the response
-            let errorMessage = 'Failed to update lesson. Please try again.';
-
-            if (error.response?.data) {
-                const data = error.response.data;
-
-                // Handle your specific error structure
-                if (data.success === false) {
-                    // Check for non_field_errors in details
-                    if (data.error?.details?.non_field_errors?.length > 0) {
-                        const nonFieldError = data.error.details.non_field_errors[0];
-                        if (nonFieldError.includes('unique set') || nonFieldError.includes('already exists')) {
-                            errorMessage = 'A lesson with this order number already exists. Please choose a different order.';
-                        } else {
-                            errorMessage = nonFieldError;
-                        }
-                    }
-                    // Check for error message
-                    else if (data.error?.message) {
-                        errorMessage = data.error.message;
-                    }
-                }
-                // Handle DRF's non_field_errors at root level
-                else if (data.non_field_errors?.length > 0) {
-                    const nonFieldError = data.non_field_errors[0];
-                    if (nonFieldError.includes('unique set') || nonFieldError.includes('already exists')) {
-                        errorMessage = 'A lesson with this order number already exists. Please choose a different order.';
-                    } else {
-                        errorMessage = nonFieldError;
-                    }
-                }
-                // Handle field errors
-                else if (data.errors) {
-                    // Check for order field errors
-                    if (data.errors.order?.length > 0) {
-                        const orderError = data.errors.order[0];
-                        if (orderError.includes('unique') || orderError.includes('already exists')) {
-                            errorMessage = 'A lesson with this order number already exists. Please choose a different order.';
-                        } else {
-                            errorMessage = `Order error: ${orderError}`;
-                        }
-                    }
-                    // Check for other field errors
-                    else {
-                        const firstField = Object.keys(data.errors)[0];
-                        if (firstField && data.errors[firstField]?.length > 0) {
-                            errorMessage = data.errors[firstField][0];
-                        }
-                    }
-                }
-                // Check for detail field
-                else if (data.detail) {
-                    errorMessage = data.detail;
-                }
+            const data = error.response?.data;
+            let msg = 'Failed to update lesson.';
+            if (data?.error?.details?.non_field_errors?.[0]) {
+                const nfe = data.error.details.non_field_errors[0];
+                msg = nfe.includes('unique') ? 'A lesson with this order already exists.' : nfe;
+            } else if (data?.error?.message) {
+                msg = data.error.message;
             }
-
-            // Check if the error message contains the unique constraint text
-            if (errorMessage.toLowerCase().includes('unique') ||
-                errorMessage.toLowerCase().includes('already exists') ||
-                errorMessage.toLowerCase().includes('unique set')) {
-                toast.error('A lesson with this order number already exists. Please choose a different order.');
-            } else {
-                toast.error(errorMessage);
-            }
-
-            setValidationError(errorMessage);
+            setValidationError(msg);
+            toast.error(msg);
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const isValidVideoUrl = (url: string): boolean => {
-        const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
-        const vimeoRegex = /^(https?:\/\/)?(www\.)?(vimeo\.com)\/.+$/;
-        return youtubeRegex.test(url) || vimeoRegex.test(url);
-    };
-
-    const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (e.target === e.currentTarget && !isSubmitting) {
-            onClose();
-        }
-    };
-
-    // Helper functions for content field
-    const shouldShowContent = (type: LessonType): boolean => {
-        return type === 'TEXT' || type === 'QUIZ';
-    };
-
-    const getContentLabel = (type: LessonType): string => {
-        switch (type) {
-            case 'TEXT':
-                return 'Lesson Content';
-            case 'QUIZ':
-                return 'Quiz Instructions';
-            default:
-                return 'Content';
-        }
-    };
-
-    const getContentPlaceholder = (type: LessonType): string => {
-        switch (type) {
-            case 'TEXT':
-                return 'Enter your lesson content here...';
-            case 'QUIZ':
-                return 'Describe the quiz and provide instructions for students...';
-            default:
-                return '';
-        }
-    };
+    const showContent = lessonData.lesson_type === 'TEXT' || lessonData.lesson_type === 'QUIZ';
 
     return (
-        <div
-            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm"
-            onClick={handleBackdropClick}
-        >
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl transform transition-all max-h-[90vh] overflow-y-auto">
+        <>
+            <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40" onClick={() => !isSubmitting && onClose()} />
+            <div className="fixed right-0 top-0 h-full w-full max-w-lg bg-white border-l border-gray-100 shadow-2xl z-50 flex flex-col">
+
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white rounded-t-xl z-10">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                            <BookOpen className="w-5 h-5 text-[#0066CC]" />
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                            <BookOpen className="w-4 h-4 text-blue-600" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-semibold text-gray-900">Edit Lesson</h2>
-                            <p className="text-sm text-gray-500">Update lesson details and content</p>
+                            <p className="text-sm font-semibold text-gray-900">Edit Lesson</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Update lesson details and content</p>
                         </div>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-lg"
-                        disabled={isSubmitting}
-                    >
-                        <X size={20} />
+                    <button onClick={() => !isSubmitting && onClose()} className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors cursor-pointer">
+                        <X className="w-4 h-4" />
                     </button>
                 </div>
 
-                {/* Error Alert */}
-                {validationError && (
-                    <div className="mx-6 mt-4 flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                        <AlertCircle className="w-4 h-4 shrink-0" />
-                        {validationError}
-                    </div>
-                )}
+                {/* Body */}
+                <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
+                    <div className="flex-1 overflow-y-auto p-5 space-y-5">
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="p-6">
-                    <div className="space-y-6">
-                        {/* Basic Information Section */}
-                        <div className="bg-gray-50 rounded-lg border border-gray-200 p-5">
-                            <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
-                                    <FileText className="w-3.5 h-3.5 text-[#0066CC]" />
-                                </div>
-                                Basic Information
-                            </h3>
+                        {validationError && (
+                            <div className="flex items-center gap-2.5 px-4 py-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-700 text-xs">
+                                <AlertCircle className="w-4 h-4 shrink-0" />
+                                {validationError}
+                            </div>
+                        )}
 
-                            <div className="space-y-4">
-                                {/* Lesson Title */}
-                                <div>
-                                    <label htmlFor="lesson-title" className={labelClassName}>
-                                        Lesson Title <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        id="lesson-title"
-                                        type="text"
-                                        name="title"
-                                        value={lessonData.title}
-                                        onChange={handleInputChange}
-                                        placeholder="e.g., Introduction to React Hooks"
-                                        className={inputClassName}
-                                        disabled={isSubmitting}
-                                        required
-                                        autoFocus
-                                    />
-                                    {!lessonData.title.trim() && (
-                                        <p className={errorClassName}>
-                                            <AlertCircle className="w-4 h-4" />
-                                            Lesson title is required
-                                        </p>
-                                    )}
-                                </div>
+                        {/* Basic info */}
+                        <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-4">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Basic Information</p>
 
-                                {/* Order */}
-                                <div>
-                                    <label htmlFor="lesson-order" className={labelClassName}>
-                                        Display Order
-                                    </label>
-                                    <input
-                                        id="lesson-order"
-                                        type="number"
-                                        name="order"
-                                        value={lessonData.order}
-                                        onChange={handleInputChange}
-                                        min="0"
-                                        className={inputClassName + (validationError && validationError.toLowerCase().includes('order') ? ' border-red-500' : '')}
-                                        disabled={isSubmitting}
-                                    />
-                                    <p className="mt-1.5 text-xs text-gray-500">
-                                        Determines the order in which lessons appear (0 = first)
-                                    </p>
-                                </div>
+                            <div>
+                                <label className={labelCls}>Lesson Title <span className="text-rose-400 normal-case">*</span></label>
+                                <input
+                                    type="text" name="title" value={lessonData.title}
+                                    onChange={handleInputChange}
+                                    placeholder="e.g., Introduction to React Hooks"
+                                    className={inputCls} disabled={isSubmitting} required autoFocus
+                                />
+                            </div>
+
+                            <div>
+                                <label className={labelCls}>Display Order</label>
+                                <input
+                                    type="number" name="order" value={lessonData.order}
+                                    onChange={handleInputChange} min="0"
+                                    className={inputCls} disabled={isSubmitting}
+                                />
+                                <p className="text-[11px] text-gray-400 mt-1">Position in the section (0 = first)</p>
                             </div>
                         </div>
 
-                        {/* Lesson Type Section */}
-                        <div className="bg-gray-50 rounded-lg border border-gray-200 p-5">
-                            <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <div className="w-6 h-6 bg-purple-100 rounded flex items-center justify-center">
-                                    <Layers className="w-3.5 h-3.5 text-purple-600" />
-                                </div>
-                                Lesson Type
-                            </h3>
-
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                                {LESSON_TYPES.map((type) => (
+                        {/* Lesson type */}
+                        <div className="bg-white rounded-xl border border-gray-100 p-4">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">Lesson Type</p>
+                            <div className="flex flex-wrap gap-1.5">
+                                {LESSON_TYPES.map(type => (
                                     <button
-                                        key={type.value}
-                                        type="button"
-                                        onClick={() => setLessonData(prev => ({ ...prev, lesson_type: type.value }))}
-                                        className={`
-                                            flex flex-col items-center gap-2 p-3 rounded-lg text-xs font-medium
-                                            transition-all duration-200 border-2
-                                            ${lessonData.lesson_type === type.value
-                                                ? 'bg-[#0066CC] text-white border-[#0066CC] shadow-md scale-[1.02]'
-                                                : 'bg-white text-gray-700 border-gray-200 hover:border-[#0066CC] hover:bg-blue-50'
-                                            }
-                                            ${isSubmitting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                                        `}
+                                        key={type.value} type="button"
+                                        onClick={() => setLessonData(p => ({ ...p, lesson_type: type.value }))}
                                         disabled={isSubmitting}
-                                        title={type.description}
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-lg transition-all duration-150 cursor-pointer ${lessonData.lesson_type === type.value
+                                                ? 'bg-violet-600 text-white'
+                                                : 'bg-gray-50 border border-gray-200 text-gray-600 hover:border-violet-200 hover:text-violet-600'
+                                            } disabled:opacity-50`}
                                     >
-                                        <div className={`${lessonData.lesson_type === type.value ? 'text-white' : 'text-[#0066CC]'}`}>
-                                            {type.icon}
-                                        </div>
-                                        <span className="text-center">{type.label}</span>
+                                        {type.icon}{type.label}
                                     </button>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Content Section - Conditional based on lesson type */}
-                        <div className="bg-gray-50 rounded-lg border border-gray-200 p-5">
-                            <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <div className="w-6 h-6 bg-green-100 rounded flex items-center justify-center">
-                                    <Video className="w-3.5 h-3.5 text-green-600" />
-                                </div>
-                                Lesson Content
-                            </h3>
+                        {/* Content */}
+                        <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-4">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Content</p>
 
-                            <div className="space-y-4">
-                                {/* Video URL - Only show for VIDEO type */}
-                                {lessonData.lesson_type === 'VIDEO' && (
-                                    <>
-                                        <div>
-                                            <label htmlFor="video-url" className={labelClassName}>
-                                                Video URL
-                                            </label>
-                                            <input
-                                                id="video-url"
-                                                type="url"
-                                                name="video_url"
-                                                value={lessonData.video_url}
-                                                onChange={handleInputChange}
-                                                placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
-                                                className={inputClassName}
-                                                disabled={isSubmitting}
-                                            />
-                                            <p className="mt-1.5 text-xs text-gray-500">
-                                                Supports YouTube and Vimeo URLs
-                                            </p>
-                                        </div>
-
-                                        <div>
-                                            <label htmlFor="video-duration" className={labelClassName}>
-                                                Video Duration (seconds)
-                                            </label>
-                                            <input
-                                                id="video-duration"
-                                                type="number"
-                                                name="video_duration"
-                                                value={lessonData.video_duration}
-                                                onChange={handleInputChange}
-                                                min="0"
-                                                placeholder="e.g., 300 (5 minutes)"
-                                                className={inputClassName}
-                                                disabled={isSubmitting}
-                                            />
-                                            <p className="mt-1.5 text-xs text-gray-500">
-                                                Duration in seconds (e.g., 300 for 5 minutes)
-                                            </p>
-                                        </div>
-                                    </>
-                                )}
-
-                                {/* Content - Show for TEXT and QUIZ types */}
-                                {shouldShowContent(lessonData.lesson_type) && (
+                            {lessonData.lesson_type === 'VIDEO' && (
+                                <>
                                     <div>
-                                        <label htmlFor="content" className={labelClassName}>
-                                            {getContentLabel(lessonData.lesson_type)}
-                                        </label>
-                                        <textarea
-                                            id="content"
-                                            name="content"
-                                            value={lessonData.content}
+                                        <label className={labelCls}>Video URL</label>
+                                        <input type="url" name="video_url" value={lessonData.video_url}
                                             onChange={handleInputChange}
-                                            rows={6}
-                                            placeholder={getContentPlaceholder(lessonData.lesson_type)}
-                                            className={inputClassName}
-                                            disabled={isSubmitting}
+                                            placeholder="https://youtube.com/watch?v=..."
+                                            className={inputCls} disabled={isSubmitting}
                                         />
-                                        <p className="mt-1.5 text-xs text-gray-500">
-                                            {lessonData.lesson_type === 'TEXT'
-                                                ? 'Provide the main content for this text lesson'
-                                                : 'Describe the quiz and provide instructions'
-                                            }
-                                        </p>
+                                        <p className="text-[11px] text-gray-400 mt-1">Supports YouTube and Vimeo</p>
                                     </div>
-                                )}
+                                    <div>
+                                        <label className={labelCls}>Duration (seconds)</label>
+                                        <input type="number" name="video_duration" value={lessonData.video_duration}
+                                            onChange={handleInputChange} min="0"
+                                            placeholder="e.g., 300 for 5 minutes"
+                                            className={inputCls} disabled={isSubmitting}
+                                        />
+                                    </div>
+                                </>
+                            )}
 
-                                {/* Message for other types */}
-                                {!shouldShowContent(lessonData.lesson_type) && lessonData.lesson_type !== 'VIDEO' && (
-                                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                        <p className="text-sm text-blue-800">
-                                            {lessonData.lesson_type === 'ASSIGNMENT' && 'Assignment details can be configured after creation.'}
-                                            {lessonData.lesson_type === 'RESOURCE' && 'Resources can be uploaded after creation.'}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
+                            {showContent && (
+                                <div>
+                                    <label className={labelCls}>{lessonData.lesson_type === 'TEXT' ? 'Lesson Content' : 'Quiz Instructions'}</label>
+                                    <textarea name="content" value={lessonData.content}
+                                        onChange={handleInputChange} rows={6}
+                                        placeholder={lessonData.lesson_type === 'TEXT' ? 'Enter lesson content...' : 'Describe the quiz...'}
+                                        className={`${inputCls} resize-none`} disabled={isSubmitting}
+                                    />
+                                </div>
+                            )}
+
+                            {!showContent && lessonData.lesson_type !== 'VIDEO' && (
+                                <div className="flex items-center gap-2.5 p-3 bg-blue-50 border border-blue-100 rounded-lg">
+                                    <AlertCircle className="w-4 h-4 text-blue-500 shrink-0" />
+                                    <p className="text-xs text-blue-700">
+                                        {lessonData.lesson_type === 'ASSIGNMENT' && 'Assignment details can be configured after saving.'}
+                                        {lessonData.lesson_type === 'RESOURCE' && 'Resources can be uploaded after saving.'}
+                                        {lessonData.lesson_type === 'LIVE' && 'Live session settings can be configured after saving.'}
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Settings Section */}
-                        <div className="bg-gray-50 rounded-lg border border-gray-200 p-5">
-                            <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <div className="w-6 h-6 bg-yellow-100 rounded flex items-center justify-center">
-                                    <AlertCircle className="w-3.5 h-3.5 text-yellow-600" />
-                                </div>
-                                Lesson Settings
-                            </h3>
-
-                            {/* Preview Toggle */}
-                            <div className="flex items-start gap-3 p-4 bg-white rounded-lg border border-gray-200">
-                                <input
-                                    id="is-preview"
-                                    type="checkbox"
-                                    name="is_preview"
-                                    checked={lessonData.is_preview}
-                                    onChange={handleInputChange}
-                                    className="w-4 h-4 mt-0.5 text-[#0066CC] focus:ring-[#0066CC] border-gray-300 rounded cursor-pointer"
-                                    disabled={isSubmitting}
+                        {/* Settings */}
+                        <div className="bg-white rounded-xl border border-gray-100 p-4">
+                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">Settings</p>
+                            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                <input id="is-preview" type="checkbox" name="is_preview"
+                                    checked={lessonData.is_preview} onChange={handleInputChange}
+                                    className="w-4 h-4 mt-0.5 text-violet-600 border-gray-300 rounded cursor-pointer" disabled={isSubmitting}
                                 />
-                                <div className="flex-1">
-                                    <label htmlFor="is-preview" className="text-sm font-medium text-gray-900 cursor-pointer">
-                                        Free Preview Lesson
-                                    </label>
-                                    <p className="text-xs text-gray-500 mt-1">
-                                        Make this lesson available as a free preview to potential students before they enroll
-                                    </p>
+                                <div>
+                                    <label htmlFor="is-preview" className="text-sm font-medium text-gray-800 cursor-pointer">Free Preview</label>
+                                    <p className="text-xs text-gray-400 mt-0.5">Make available to non-enrolled students</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center justify-end gap-3 pt-6 mt-6 border-t border-gray-200">
-                        <LoaderButton
-                            type="button"
-                            variant="secondary"
-                            size="md"
-                            icon={<X className="w-4 h-4" />}
-                            onClick={onClose}
-                            disabled={isSubmitting}
-                        >
+                    {/* Footer */}
+                    <div className="px-5 py-4 border-t border-gray-100 shrink-0 flex items-center justify-end gap-2.5">
+                        <LoaderButton type="button" variant="secondary" size="md" onClick={onClose} disabled={isSubmitting}>
                             Cancel
                         </LoaderButton>
                         <LoaderButton
-                            type="submit"
-                            variant="success"
-                            size="md"
-                            elevation="lg"
-                            icon={<Save className="w-4 h-4" />}
-                            loading={isSubmitting}
-                            loadingText="Saving Changes..."
+                            type="submit" variant="primary" size="md"
+                            icon={<Save className="w-3.5 h-3.5" />}
+                            loading={isSubmitting} loadingText="Saving..."
                             disabled={!lessonData.title.trim()}
                         >
                             Save Changes
@@ -506,7 +267,7 @@ const EditLessonModal: React.FC<EditLessonModalProps> = ({
                     </div>
                 </form>
             </div>
-        </div>
+        </>
     );
 };
 

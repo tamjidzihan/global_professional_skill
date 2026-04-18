@@ -14,59 +14,51 @@ interface AddLessonFormProps {
 }
 
 const LESSON_TYPES: { value: LessonType; label: string; icon: React.ReactNode }[] = [
-    { value: 'VIDEO', label: 'Video Lesson', icon: <Video size={16} /> },
-    { value: 'LIVE', label: 'Live Lesson', icon: <MonitorPlay size={16} /> },
-    { value: 'TEXT', label: 'Text Lesson', icon: <FileText size={16} /> },
-    { value: 'QUIZ', label: 'Quiz', icon: <HelpCircle size={16} /> },
-    { value: 'ASSIGNMENT', label: 'Assignment', icon: <ClipboardList size={16} /> },
-    { value: 'RESOURCE', label: 'Resource', icon: <FolderOpen size={16} /> },
+    { value: 'VIDEO', label: 'Video', icon: <Video className="w-3.5 h-3.5" /> },
+    { value: 'LIVE', label: 'Live', icon: <MonitorPlay className="w-3.5 h-3.5" /> },
+    { value: 'TEXT', label: 'Text', icon: <FileText className="w-3.5 h-3.5" /> },
+    { value: 'QUIZ', label: 'Quiz', icon: <HelpCircle className="w-3.5 h-3.5" /> },
+    { value: 'ASSIGNMENT', label: 'Assignment', icon: <ClipboardList className="w-3.5 h-3.5" /> },
+    { value: 'RESOURCE', label: 'Resource', icon: <FolderOpen className="w-3.5 h-3.5" /> },
 ];
 
 const AddLessonForm: React.FC<AddLessonFormProps> = ({ courseId, sectionId, onSuccess }) => {
-    const [isAddingLesson, setIsAddingLesson] = useState(false);
     const [showForm, setShowForm] = useState(false);
+    const [isAdding, setIsAdding] = useState(false);
     const [lessonData, setLessonData] = useState({
-        title: '',
-        lesson_type: 'VIDEO' as LessonType,
-        content: '',
-        video_url: '',
-        video_duration: 0,
-        is_preview: false,
-        order: 0
+        title: '', lesson_type: 'VIDEO' as LessonType,
+        content: '', video_url: '', video_duration: 0,
+        is_preview: false, order: 0,
     });
 
     const { addLesson } = useCourses();
 
+    const inputCls = 'w-full px-3 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-50 transition-all';
+    const labelCls = 'block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5';
+
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
-
         if (type === 'checkbox') {
-            const checkbox = e.target as HTMLInputElement;
-            setLessonData(prev => ({ ...prev, [name]: checkbox.checked }));
+            setLessonData(p => ({ ...p, [name]: (e.target as HTMLInputElement).checked }));
         } else if (name === 'video_duration') {
-            setLessonData(prev => ({ ...prev, [name]: parseInt(value) || 0 }));
+            setLessonData(p => ({ ...p, [name]: parseInt(value) || 0 }));
         } else {
-            setLessonData(prev => ({ ...prev, [name]: value }));
+            setLessonData(p => ({ ...p, [name]: value }));
         }
     };
 
+    const isValidVideoUrl = (url: string) => {
+        return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be|vimeo\.com)\/.+$/.test(url) || url === '';
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!lessonData.title.trim()) {
-            toast.error('Please enter a lesson title');
-            return;
-        }
-
-        // Validation for video lessons
+        if (!lessonData.title.trim()) { toast.error('Please enter a lesson title'); return; }
         if (lessonData.lesson_type === 'VIDEO' && lessonData.video_url && !isValidVideoUrl(lessonData.video_url)) {
             toast.error('Please enter a valid YouTube or Vimeo URL');
             return;
         }
-
-        setIsAddingLesson(true);
-
+        setIsAdding(true);
         try {
             await addLesson(courseId, sectionId, {
                 section: sectionId,
@@ -76,155 +68,70 @@ const AddLessonForm: React.FC<AddLessonFormProps> = ({ courseId, sectionId, onSu
                 video_url: lessonData.video_url || undefined,
                 video_duration: lessonData.video_duration || undefined,
                 is_preview: lessonData.is_preview,
-                order: lessonData.order
+                order: lessonData.order,
             });
-
-            // Reset form
-            setLessonData({
-                title: '',
-                lesson_type: 'VIDEO',
-                content: '',
-                video_url: '',
-                video_duration: 0,
-                is_preview: false,
-                order: 0
-            });
-
+            setLessonData({ title: '', lesson_type: 'VIDEO', content: '', video_url: '', video_duration: 0, is_preview: false, order: 0 });
             setShowForm(false);
-            toast.success('Lesson added successfully!');
-
-            if (onSuccess) {
-                onSuccess();
-            }
+            if (onSuccess) onSuccess();
         } catch (error: any) {
-            // Parse the error using the utility
-            const parsedError = parseError(error);
-
-            console.error("Failed to add lesson", {
-                originalError: error,
-                parsedError,
-                courseId,
-                sectionId,
-                lessonData
-            });
-
-            // Handle validation errors (like duplicate order)
-            if (parsedError.validationErrors) {
-                const fieldErrors = formatFieldErrors(parsedError.validationErrors);
-
-                // Check for non_field_errors (like unique constraint)
-                if (fieldErrors.non_field_errors) {
-                    if (fieldErrors.non_field_errors.includes('unique set') ||
-                        fieldErrors.non_field_errors.includes('already exists')) {
-                        toast.error('A lesson with this order number already exists. Please choose a different order.');
-                    } else {
-                        toast.error(fieldErrors.non_field_errors);
-                    }
+            const parsed = parseError(error);
+            if (parsed.validationErrors) {
+                const fe = formatFieldErrors(parsed.validationErrors);
+                if (fe.non_field_errors?.includes('unique set') || fe.non_field_errors?.includes('already exists')) {
+                    toast.error('A lesson with this order already exists.');
+                } else if (fe.order) {
+                    toast.error(`Order: ${fe.order}`);
                 }
-                // Check for order field errors
-                else if (fieldErrors.order) {
-                    if (fieldErrors.order.includes('unique') || fieldErrors.order.includes('already exists')) {
-                        toast.error('A lesson with this order number already exists. Please choose a different order.');
-                    } else {
-                        toast.error(`Order error: ${fieldErrors.order}`);
-                    }
-                }
-            }
-
-            // Handle duplicate order (specific message check)
-            else if (parsedError.message.includes('order') &&
-                (parsedError.message.includes('unique') || parsedError.message.includes('already exists'))) {
-                toast.error('A lesson with this order number already exists. Please choose a different order.');
-            }
-            // Handle all other errors
-            else {
-                toast.error(parsedError.message || 'Failed to add lesson. Please try again.');
+            } else {
+                toast.error(parsed.message || 'Failed to add lesson.');
             }
         } finally {
-            setIsAddingLesson(false);
+            setIsAdding(false);
         }
-    };
-
-    const isValidVideoUrl = (url: string): boolean => {
-        const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
-        const vimeoRegex = /^(https?:\/\/)?(www\.)?(vimeo\.com)\/.+$/;
-        return youtubeRegex.test(url) || vimeoRegex.test(url) || url === '';
-    };
-
-    const handleCancel = () => {
-        setShowForm(false);
-        setLessonData({
-            title: '',
-            lesson_type: 'VIDEO',
-            content: '',
-            video_url: '',
-            video_duration: 0,
-            is_preview: false,
-            order: 0
-        });
     };
 
     if (!showForm) {
         return (
-            <LoaderButton
-                variant="secondary"
-                size="sm"
-                icon={<PlusCircle size={16} />}
+            <button
                 onClick={() => setShowForm(true)}
-                className="w-full"
+                className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-gray-50 border border-dashed border-gray-200 text-gray-500 hover:border-violet-300 hover:bg-violet-50/30 hover:text-violet-600 text-xs font-semibold rounded-lg transition-all duration-150 cursor-pointer"
             >
-                Add New Lesson
-            </LoaderButton>
+                <PlusCircle className="w-3.5 h-3.5" /> Add New Lesson
+            </button>
         );
     }
 
     return (
-        <div className="bg-white rounded-lg border p-4">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3">Add New Lesson</h4>
+        <div className="bg-gray-50 rounded-lg border border-gray-100 p-4">
+            <p className="text-xs font-semibold text-gray-700 mb-3">New Lesson</p>
+            <form onSubmit={handleSubmit} className="space-y-3">
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Lesson Title */}
+                {/* Title */}
                 <div>
-                    <label htmlFor="lesson-title" className="block text-xs font-medium text-gray-600 mb-1">
-                        Lesson Title <span className="text-red-500">*</span>
-                    </label>
+                    <label className={labelCls}>Lesson Title <span className="text-rose-400 normal-case">*</span></label>
                     <input
-                        id="lesson-title"
-                        type="text"
-                        name="title"
-                        value={lessonData.title}
+                        type="text" name="title" value={lessonData.title}
                         onChange={handleInputChange}
-                        placeholder="e.g., Introduction to the Course"
-                        className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC]"
-                        disabled={isAddingLesson}
-                        required
-                        autoFocus
+                        placeholder="e.g., Introduction to React"
+                        className={inputCls} disabled={isAdding} required autoFocus
                     />
                 </div>
 
-                {/* Lesson Type */}
+                {/* Type selector */}
                 <div>
-                    <label htmlFor="lesson-type" className="block text-xs font-medium text-gray-600 mb-1">
-                        Lesson Type
-                    </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                        {LESSON_TYPES.map((type) => (
+                    <label className={labelCls}>Lesson Type</label>
+                    <div className="flex flex-wrap gap-1.5">
+                        {LESSON_TYPES.map(t => (
                             <button
-                                key={type.value}
-                                type="button"
-                                onClick={() => setLessonData(prev => ({ ...prev, lesson_type: type.value }))}
-                                className={`
-                                    flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium
-                                    transition-all duration-200
-                                    ${lessonData.lesson_type === type.value
-                                        ? 'bg-[#0066CC] text-white shadow-md scale-[1.02]'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }
-                                `}
-                                disabled={isAddingLesson}
+                                key={t.value} type="button"
+                                onClick={() => setLessonData(p => ({ ...p, lesson_type: t.value }))}
+                                disabled={isAdding}
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold rounded-lg transition-all duration-150 cursor-pointer ${lessonData.lesson_type === t.value
+                                    ? 'bg-violet-600 text-white'
+                                    : 'bg-white border border-gray-200 text-gray-600 hover:border-violet-200 hover:text-violet-600'
+                                    }`}
                             >
-                                {type.icon}
-                                {type.label}
+                                {t.icon}{t.label}
                             </button>
                         ))}
                     </div>
@@ -232,121 +139,60 @@ const AddLessonForm: React.FC<AddLessonFormProps> = ({ courseId, sectionId, onSu
 
                 {/* Order */}
                 <div>
-                    <label htmlFor="lesson-order" className="block text-xs font-medium text-gray-600 mb-1">
-                        Order
-                    </label>
-                    <input
-                        id="lesson-order"
-                        type="number"
-                        name="order"
-                        value={lessonData.order}
-                        onChange={handleInputChange}
-                        min="0"
-                        className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC]"
-                        disabled={isAddingLesson}
-                    />
+                    <label className={labelCls}>Order</label>
+                    <input type="number" name="order" value={lessonData.order} onChange={handleInputChange}
+                        min="0" className={inputCls} disabled={isAdding} />
                 </div>
 
-                {/* Video URL - Only show for VIDEO type */}
+                {/* Video fields */}
                 {lessonData.lesson_type === 'VIDEO' && (
-                    <div>
-                        <label htmlFor="video-url" className="block text-xs font-medium text-gray-600 mb-1">
-                            Video URL
-                        </label>
-                        <input
-                            id="video-url"
-                            type="url"
-                            name="video_url"
-                            value={lessonData.video_url}
-                            onChange={handleInputChange}
-                            placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
-                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC]"
-                            disabled={isAddingLesson}
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                            Supports YouTube and Vimeo URLs
-                        </p>
-                    </div>
+                    <>
+                        <div>
+                            <label className={labelCls}>Video URL</label>
+                            <input type="url" name="video_url" value={lessonData.video_url} onChange={handleInputChange}
+                                placeholder="https://youtube.com/watch?v=..." className={inputCls} disabled={isAdding} />
+                            <p className="text-[11px] text-gray-400 mt-1">Supports YouTube and Vimeo</p>
+                        </div>
+                        <div>
+                            <label className={labelCls}>Duration (seconds)</label>
+                            <input type="number" name="video_duration" value={lessonData.video_duration}
+                                onChange={handleInputChange} min="0" className={inputCls} disabled={isAdding} />
+                        </div>
+                    </>
                 )}
 
-                {/* Video Duration - Only show for VIDEO type */}
-                {lessonData.lesson_type === 'VIDEO' && (
-                    <div>
-                        <label htmlFor="video-duration" className="block text-xs font-medium text-gray-600 mb-1">
-                            Video Duration (seconds)
-                        </label>
-                        <input
-                            id="video-duration"
-                            type="number"
-                            name="video_duration"
-                            value={lessonData.video_duration}
-                            onChange={handleInputChange}
-                            min="0"
-                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC]"
-                            disabled={isAddingLesson}
-                        />
-                    </div>
-                )}
-
-                {/* Content - Show for TEXT and QUIZ types */}
+                {/* Content */}
                 {(lessonData.lesson_type === 'TEXT' || lessonData.lesson_type === 'QUIZ') && (
                     <div>
-                        <label htmlFor="content" className="block text-xs font-medium text-gray-600 mb-1">
-                            {lessonData.lesson_type === 'TEXT' ? 'Content' : 'Quiz Description'}
-                        </label>
-                        <textarea
-                            id="content"
-                            name="content"
-                            value={lessonData.content}
-                            onChange={handleInputChange}
-                            rows={3}
-                            placeholder={lessonData.lesson_type === 'TEXT'
-                                ? 'Enter your lesson content here...'
-                                : 'Describe the quiz...'}
-                            className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC]"
-                            disabled={isAddingLesson}
-                        />
+                        <label className={labelCls}>{lessonData.lesson_type === 'TEXT' ? 'Content' : 'Quiz Description'}</label>
+                        <textarea name="content" value={lessonData.content} onChange={handleInputChange}
+                            rows={3} placeholder={lessonData.lesson_type === 'TEXT' ? 'Lesson content...' : 'Describe the quiz...'}
+                            className={`${inputCls} resize-none`} disabled={isAdding} />
                     </div>
                 )}
 
-                {/* Preview Toggle */}
-                <div className="flex items-center gap-2">
-                    <input
-                        id="is-preview"
-                        type="checkbox"
-                        name="is_preview"
-                        checked={lessonData.is_preview}
-                        onChange={handleInputChange}
-                        className="w-4 h-4 text-[#0066CC] focus:ring-[#0066CC] border-gray-300 rounded"
-                        disabled={isAddingLesson}
+                {/* Preview toggle */}
+                <div className="flex items-center gap-2.5 p-3 bg-white rounded-lg border border-gray-100">
+                    <input id={`preview-${sectionId}`} type="checkbox" name="is_preview"
+                        checked={lessonData.is_preview} onChange={handleInputChange}
+                        className="w-4 h-4 text-violet-600 border-gray-300 rounded cursor-pointer" disabled={isAdding}
                     />
-                    <label htmlFor="is-preview" className="text-sm text-gray-700">
-                        Make this lesson available as a free preview
+                    <label htmlFor={`preview-${sectionId}`} className="text-xs font-medium text-gray-700 cursor-pointer">
+                        Free preview lesson
                     </label>
                 </div>
 
-                {/* Form Actions */}
-                <div className="flex items-center justify-end gap-2 pt-2">
-                    <LoaderButton
-                        type="button"
-                        variant="secondary"
-                        size="sm"
-                        onClick={handleCancel}
-                        disabled={isAddingLesson}
-                    >
-                        Cancel
-                    </LoaderButton>
-                    <LoaderButton
-                        type="submit"
-                        variant="primary"
-                        size="sm"
-                        icon={<PlusCircle size={16} />}
-                        loading={isAddingLesson}
-                        loadingText="Adding..."
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-2 pt-1">
+                    <LoaderButton type="button" variant="secondary" size="sm"
+                        onClick={() => { setShowForm(false); setLessonData({ title: '', lesson_type: 'VIDEO', content: '', video_url: '', video_duration: 0, is_preview: false, order: 0 }); }}
+                        disabled={isAdding}
+                    >Cancel</LoaderButton>
+                    <LoaderButton type="submit" variant="primary" size="sm"
+                        icon={<PlusCircle className="w-3.5 h-3.5" />}
+                        loading={isAdding} loadingText="Adding..."
                         disabled={!lessonData.title.trim()}
-                    >
-                        Add Lesson
-                    </LoaderButton>
+                    >Add Lesson</LoaderButton>
                 </div>
             </form>
         </div>

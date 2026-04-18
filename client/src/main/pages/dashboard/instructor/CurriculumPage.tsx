@@ -6,73 +6,60 @@ import AddLessonForm from '../../../components/AddLessonForm';
 import EditSectionModal from '../../../components/EditSectionModal';
 import EditLessonModal from '../../../components/EditLessonModal';
 import {
-    Edit,
-    Trash2,
-    BookOpen,
-    ChevronDown,
-    ChevronUp,
-    Plus,
-    FolderPlus,
-    Layers,
-    AlertCircle,
-    CheckCircle,
-    X,
-    Video,
-    FileText,
-    MonitorPlay
+    Edit, Trash2, BookOpen, ChevronDown, ChevronRight,
+    Plus, FolderPlus, Layers, AlertCircle, CheckCircle,
+    X, Video, FileText, MonitorPlay, ArrowLeft,
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import type { LessonSummary, Section } from '../../../../types';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
-import DashboardBreadcrumb from '../../../components/dashboard/DashboardBreadcrumb';
 import { extractErrorMessage } from '../../../../lib/errorUtils';
 import SEO from '../../../components/SEO';
 
-interface SectionToEdit {
-    id: string;
-    title: string;
-    description?: string;
-    order: number;
-}
-
+interface SectionToEdit { id: string; title: string; description?: string; order: number }
 interface LessonToEdit {
-    id: string;
-    title: string;
-    lesson_type: string;
-    content?: string;
-    video_url?: string;
-    video_duration?: number;
-    is_preview: boolean;
-    order: number;
+    id: string; title: string; lesson_type: string;
+    content?: string; video_url?: string; video_duration?: number;
+    is_preview: boolean; order: number;
 }
 
+// ── Status badge ─────────────────────────────────────────────────────────────
+function StatusBadge({ status }: { status: string }) {
+    const map: Record<string, string> = {
+        PUBLISHED: 'bg-blue-50 text-blue-700',
+        DRAFT: 'bg-gray-50 text-gray-600',
+        PENDING: 'bg-amber-50 text-amber-700',
+        APPROVED: 'bg-emerald-50 text-emerald-700',
+        REJECTED: 'bg-rose-50 text-rose-700',
+    };
+    return (
+        <span className={`inline-flex items-center px-2 py-0.5 text-[11px] font-bold rounded-md ${map[status] || map['DRAFT']}`}>
+            {status}
+        </span>
+    );
+}
+
+// ── Lesson type icon ──────────────────────────────────────────────────────────
+function LessonIcon({ type }: { type: string }) {
+    if (type === 'VIDEO') return <Video className="w-3.5 h-3.5 text-blue-500 shrink-0" />;
+    if (type === 'TEXT') return <FileText className="w-3.5 h-3.5 text-emerald-500 shrink-0" />;
+    return <MonitorPlay className="w-3.5 h-3.5 text-violet-500 shrink-0" />;
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
 const CurriculumPage: React.FC = () => {
     const { courseId } = useParams<{ courseId: string }>();
     const navigate = useNavigate();
-    const {
-        course,
-        fetchCourseDetail,
-        addSection,
-        removeSection,
-        removeLesson,
-        loading,
-    } = useCourses();
+    const { course, fetchCourseDetail, addSection, removeSection, removeLesson, loading } = useCourses();
 
-    // UI State
     const [openSection, setOpenSection] = useState<string | null>(null);
     const [isAddingSection, setIsAddingSection] = useState(false);
     const [deletingSectionId, setDeletingSectionId] = useState<string | null>(null);
     const [deletingLessonId, setDeletingLessonId] = useState<string | null>(null);
     const [serverError, setServerError] = useState<string | null>(null);
+    const [showAddSection, setShowAddSection] = useState(false);
 
-    // Section Form State
-    const [newSection, setNewSection] = useState({
-        title: '',
-        description: '',
-        order: 0
-    });
-
-    // Modal States
+    const [newSection, setNewSection] = useState({ title: '', description: '', order: 0 });
     const [isEditSectionModalOpen, setIsEditSectionModalOpen] = useState(false);
     const [sectionToEdit, setSectionToEdit] = useState<SectionToEdit | null>(null);
     const [isEditLessonModalOpen, setIsEditLessonModalOpen] = useState(false);
@@ -91,41 +78,24 @@ const CurriculumPage: React.FC = () => {
     const handleAddSection = async (e: React.FormEvent) => {
         e.preventDefault();
         setServerError(null);
-
         if (!courseId || !newSection.title.trim()) {
             setServerError('Please enter a section title');
-            toast.error('Please enter a section title');
             return;
         }
-
         setIsAddingSection(true);
-
         try {
-            await addSection(courseId, {
-                course: courseId,
-                title: newSection.title.trim(),
-                description: newSection.description.trim() || undefined,
-                order: newSection.order
-            });
-
+            await addSection(courseId, { course: courseId, title: newSection.title.trim(), description: newSection.description.trim() || undefined, order: newSection.order });
             setNewSection({ title: '', description: '', order: 0 });
+            setShowAddSection(false);
             await fetchCourseDetail(courseId);
-            toast.success('Section added successfully!');
+            toast.success('Section added!');
         } catch (error) {
-            // Use the updated extractErrorMessage
-            const errorMessage = extractErrorMessage(error);
-
-            // Check if it's the unique constraint error
-            if (errorMessage.includes('unique set') || errorMessage.includes('already exists')) {
-                const friendlyMessage = 'A section with this order number already exists. Please choose a different order.';
-                setServerError(friendlyMessage);
-                toast.error(friendlyMessage);
-            } else {
-                setServerError(errorMessage);
-                toast.error(errorMessage);
-            }
-
-            console.error("Failed to add section", error);
+            const msg = extractErrorMessage(error);
+            const friendly = msg.includes('unique set') || msg.includes('already exists')
+                ? 'A section with this order already exists. Please choose a different order.'
+                : msg;
+            setServerError(friendly);
+            toast.error(friendly);
         } finally {
             setIsAddingSection(false);
         }
@@ -133,12 +103,7 @@ const CurriculumPage: React.FC = () => {
 
     const handleEditSectionClick = (e: React.MouseEvent, section: Section) => {
         e.stopPropagation();
-        setSectionToEdit({
-            id: section.id,
-            title: section.title,
-            description: section.description,
-            order: section.order
-        });
+        setSectionToEdit({ id: section.id, title: section.title, description: section.description, order: section.order });
         setIsEditSectionModalOpen(true);
     };
 
@@ -146,26 +111,13 @@ const CurriculumPage: React.FC = () => {
         setIsEditSectionModalOpen(false);
         setSectionToEdit(null);
         if (courseId) {
-            try {
-                await fetchCourseDetail(courseId);
-                toast.success('Section updated successfully!');
-            } catch {
-                toast.error('Failed to refresh sections');
-            }
+            try { await fetchCourseDetail(courseId); toast.success('Section updated!'); }
+            catch { toast.error('Failed to refresh'); }
         }
     }, [courseId, fetchCourseDetail]);
 
     const handleEditLessonClick = (lesson: LessonSummary, sectionId: string) => {
-        setLessonToEdit({
-            id: lesson.id,
-            title: lesson.title,
-            lesson_type: lesson.lesson_type,
-            video_duration: lesson.video_duration,
-            is_preview: lesson.is_preview,
-            order: lesson.order,
-            content: '',
-            video_url: ''
-        });
+        setLessonToEdit({ id: lesson.id, title: lesson.title, lesson_type: lesson.lesson_type, video_duration: lesson.video_duration, is_preview: lesson.is_preview, order: lesson.order, content: '', video_url: '' });
         setCurrentSectionIdForLesson(sectionId);
         setIsEditLessonModalOpen(true);
     };
@@ -175,49 +127,27 @@ const CurriculumPage: React.FC = () => {
         setLessonToEdit(null);
         setCurrentSectionIdForLesson(null);
         if (courseId) {
-            try {
-                await fetchCourseDetail(courseId);
-                toast.success('Lesson updated successfully!');
-            } catch {
-                toast.error('Failed to refresh lessons');
-            }
+            try { await fetchCourseDetail(courseId); toast.success('Lesson updated!'); }
+            catch { toast.error('Failed to refresh'); }
         }
     }, [courseId, fetchCourseDetail]);
 
     const handleDeleteSection = async (e: React.MouseEvent, sectionId: string) => {
         e.stopPropagation();
         if (!courseId) return;
-
         toast((t) => (
             <div className="flex flex-col gap-2">
-                <p className="font-medium">Delete Section?</p>
-                <p className="text-sm text-gray-600">This will permanently delete this section and all its lessons. This action cannot be undone.</p>
-                <div className="flex gap-2 justify-end mt-2">
-                    <button
-                        onClick={() => toast.dismiss(t.id)}
-                        className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={async () => {
-                            toast.dismiss(t.id);
-                            setDeletingSectionId(sectionId);
-                            try {
-                                await removeSection(courseId, sectionId);
-                                await fetchCourseDetail(courseId);
-                                toast.success('Section deleted successfully');
-                            } catch (error) {
-                                toast.error('Failed to delete section');
-                                console.error("Failed to delete section", error);
-                            } finally {
-                                setDeletingSectionId(null);
-                            }
-                        }}
-                        className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded"
-                    >
-                        Delete
-                    </button>
+                <p className="text-sm font-semibold text-gray-900">Delete this section?</p>
+                <p className="text-xs text-gray-500">All lessons inside will be permanently deleted.</p>
+                <div className="flex gap-2 mt-1">
+                    <button onClick={() => toast.dismiss(t.id)} className="flex-1 px-3 py-1.5 text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">Cancel</button>
+                    <button onClick={async () => {
+                        toast.dismiss(t.id);
+                        setDeletingSectionId(sectionId);
+                        try { await removeSection(courseId, sectionId); await fetchCourseDetail(courseId); toast.success('Section deleted'); }
+                        catch { toast.error('Failed to delete section'); }
+                        finally { setDeletingSectionId(null); }
+                    }} className="flex-1 px-3 py-1.5 text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors">Delete</button>
                 </div>
             </div>
         ), { duration: 10000 });
@@ -225,391 +155,315 @@ const CurriculumPage: React.FC = () => {
 
     const handleDeleteLesson = async (sectionId: string, lessonId: string) => {
         if (!courseId) return;
-
         toast((t) => (
             <div className="flex flex-col gap-2">
-                <p className="font-medium">Delete Lesson?</p>
-                <p className="text-sm text-gray-600">This action cannot be undone.</p>
-                <div className="flex gap-2 justify-end mt-2">
-                    <button
-                        onClick={() => toast.dismiss(t.id)}
-                        className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={async () => {
-                            toast.dismiss(t.id);
-                            setDeletingLessonId(lessonId);
-                            try {
-                                await removeLesson(courseId, sectionId, lessonId);
-                                await fetchCourseDetail(courseId);
-                                toast.success('Lesson deleted successfully');
-                            } catch (error) {
-                                toast.error('Failed to delete lesson');
-                                console.error("Failed to delete lesson", error);
-                            } finally {
-                                setDeletingLessonId(null);
-                            }
-                        }}
-                        className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded"
-                    >
-                        Delete
-                    </button>
+                <p className="text-sm font-semibold text-gray-900">Delete this lesson?</p>
+                <p className="text-xs text-gray-500">This action cannot be undone.</p>
+                <div className="flex gap-2 mt-1">
+                    <button onClick={() => toast.dismiss(t.id)} className="flex-1 px-3 py-1.5 text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors">Cancel</button>
+                    <button onClick={async () => {
+                        toast.dismiss(t.id);
+                        setDeletingLessonId(lessonId);
+                        try { await removeLesson(courseId, sectionId, lessonId); await fetchCourseDetail(courseId); toast.success('Lesson deleted'); }
+                        catch { toast.error('Failed to delete lesson'); }
+                        finally { setDeletingLessonId(null); }
+                    }} className="flex-1 px-3 py-1.5 text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors">Delete</button>
                 </div>
             </div>
         ), { duration: 10000 });
     };
 
-    const toggleSection = (sectionId: string) => {
-        setOpenSection(openSection === sectionId ? null : sectionId);
-    };
+    // ── shared tokens ───────────────────────────────────────────────────────
+    const card = 'bg-white rounded-xl border border-gray-100 shadow-sm';
+    const cardHeader = 'flex items-center justify-between px-5 py-4 border-b border-gray-100';
+    const inputCls = 'w-full px-3 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-50 transition-all';
+    const labelCls = 'block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5';
 
-    const inputClassName = "w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent transition-shadow";
-    const labelClassName = "block text-sm font-medium text-gray-600 mb-1.5";
-
-    if (loading && !course) {
-        return <LoadingSpinner fullscreen text="Loading curriculum..." />;
-    }
+    if (loading && !course) return <LoadingSpinner fullscreen text="Loading curriculum..." />;
 
     if (!course) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                <div className="text-center">
-                    <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Error Loading Course</h2>
-                    <p className="text-gray-600 mb-4">{'The course you are looking for does not exist or an error occurred.'}</p>
-                    <button
-                        onClick={() => navigate('/dashboard/instructor/my-courses')}
-                        className="inline-block bg-[#0066CC] text-white px-6 py-3 rounded-lg hover:bg-[#004c99] transition-colors"
-                    >
+            <div className="min-h-screen bg-gray-50/50 flex items-center justify-center p-6">
+                <div className={`${card} p-10 text-center max-w-sm`}>
+                    <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center mx-auto mb-4">
+                        <AlertCircle className="w-5 h-5 text-rose-500" />
+                    </div>
+                    <p className="text-sm font-semibold text-gray-900 mb-1">Error Loading Course</p>
+                    <p className="text-xs text-gray-400 mb-5">The course doesn't exist or an error occurred.</p>
+                    <LoaderButton variant="primary" size="md" onClick={() => navigate('/dashboard/instructor/my-courses')}>
                         Back to My Courses
-                    </button>
+                    </LoaderButton>
                 </div>
             </div>
         );
     }
 
+    const totalLessons = course.sections.reduce((a, s) => a + (s.lessons?.length || 0), 0);
+
     return (
-        <div className="min-h-screen bg-gray-50">
-            <SEO title={`Manage Curriculum | ${course.title} `} noindex={true} />
-            {/* Breadcrumb */}
-            <DashboardBreadcrumb
-                name="Manage Curriculum"
-                icon={Layers}
-            />
+        <div className="min-h-screen bg-gray-50/50">
+            <SEO title={`Manage Curriculum | ${course.title}`} noindex />
 
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
 
-            <div className="px-4 sm:px-6 lg:px-8">
-                <div className="max-w-7xl mx-auto mt-8">
-                    {/* Error Alert */}
-                    {serverError && (
-                        <div className="mb-6 flex items-center gap-2 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                            <AlertCircle className="w-4 h-4 shrink-0" />
-                            {serverError}
+                {/* ── Page header ── */}
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => navigate(`/dashboard/instructor/my-courses/${course.id}`)}
+                            className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors cursor-pointer"
+                        >
+                            <ArrowLeft className="w-4 h-4" />
+                        </button>
+                        <div>
+                            <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Course Curriculum</h1>
+                            <p className="text-sm text-gray-400 mt-0.5 truncate max-w-sm">{course.title}</p>
+                        </div>
+                    </div>
+                    <StatusBadge status={course.status} />
+                </div>
+
+                {/* Error banner */}
+                {serverError && (
+                    <div className="mb-5 flex items-center gap-3 px-4 py-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-700 text-sm">
+                        <AlertCircle className="w-4 h-4 shrink-0" />
+                        <span className="flex-1 text-xs">{serverError}</span>
+                        <button onClick={() => setServerError(null)} className="text-rose-400 hover:text-rose-600 cursor-pointer"><X className="w-3.5 h-3.5" /></button>
+                    </div>
+                )}
+
+                {/* ── Stats row ── */}
+                <div className="grid grid-cols-3 gap-3 mb-5">
+                    {[
+                        { label: 'Sections', value: course.sections.length, iconBg: 'bg-violet-50', iconText: 'text-violet-600', icon: Layers },
+                        { label: 'Lessons', value: totalLessons, iconBg: 'bg-blue-50', iconText: 'text-blue-600', icon: BookOpen },
+                        { label: 'Status', value: null, iconBg: 'bg-emerald-50', iconText: 'text-emerald-600', icon: CheckCircle },
+                    ].map(({ label, value, iconBg, iconText, icon: Icon }) => (
+                        <div key={label} className={`${card} p-4 flex items-center gap-3`}>
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${iconBg}`}>
+                                <Icon className={`w-4 h-4 ${iconText}`} />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{label}</p>
+                                {value !== null
+                                    ? <p className="text-xl font-bold text-gray-900 leading-none mt-0.5">{value}</p>
+                                    : <StatusBadge status={course.status} />
+                                }
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* ── Add Section Card ── */}
+                <div className={`${card} mb-5`}>
+                    <button
+                        onClick={() => setShowAddSection(!showAddSection)}
+                        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-gray-50/60 transition-colors rounded-xl cursor-pointer"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center">
+                                <FolderPlus className="w-4 h-4 text-violet-600" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-semibold text-gray-900">Add New Section</p>
+                                <p className="text-xs text-gray-400 mt-0.5">Create a new section to group your lessons</p>
+                            </div>
+                        </div>
+                        {showAddSection
+                            ? <ChevronDown className="w-4 h-4 text-gray-400" />
+                            : <ChevronRight className="w-4 h-4 text-gray-400" />
+                        }
+                    </button>
+
+                    {showAddSection && (
+                        <div className="px-5 pb-5 border-t border-gray-100">
+                            <form onSubmit={handleAddSection} className="mt-4 space-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div className="sm:col-span-2">
+                                        <label className={labelCls}>Section Title <span className="text-rose-400 normal-case">*</span></label>
+                                        <input
+                                            type="text"
+                                            value={newSection.title}
+                                            onChange={e => setNewSection(p => ({ ...p, title: e.target.value }))}
+                                            placeholder="e.g., Introduction to the Course"
+                                            className={inputCls}
+                                            disabled={isAddingSection}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className={labelCls}>Order</label>
+                                        <input
+                                            type="number"
+                                            value={newSection.order}
+                                            onChange={e => setNewSection(p => ({ ...p, order: parseInt(e.target.value) || 0 }))}
+                                            min="0"
+                                            className={inputCls}
+                                            disabled={isAddingSection}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className={labelCls}>Description <span className="normal-case font-normal text-gray-400">(optional)</span></label>
+                                    <textarea
+                                        value={newSection.description}
+                                        onChange={e => setNewSection(p => ({ ...p, description: e.target.value }))}
+                                        placeholder="Brief description of this section..."
+                                        rows={3}
+                                        className={`${inputCls} resize-none`}
+                                        disabled={isAddingSection}
+                                    />
+                                </div>
+                                <div className="flex items-center justify-end gap-2.5">
+                                    <LoaderButton
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={() => { setNewSection({ title: '', description: '', order: 0 }); setShowAddSection(false); }}
+                                        disabled={isAddingSection}
+                                    >
+                                        Cancel
+                                    </LoaderButton>
+                                    <LoaderButton
+                                        type="submit"
+                                        variant="primary"
+                                        size="sm"
+                                        icon={<Plus className="w-3.5 h-3.5" />}
+                                        loading={isAddingSection}
+                                        loadingText="Adding..."
+                                        disabled={!newSection.title.trim()}
+                                    >
+                                        Add Section
+                                    </LoaderButton>
+                                </div>
+                            </form>
                         </div>
                     )}
+                </div>
 
-                    {/* Header Card */}
-                    <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6 mb-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h1 className="text-2xl font-bold text-gray-900">Course Curriculum</h1>
-                                <p className="text-sm text-gray-500 mt-1">Build and organize your course content with sections and lessons</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => navigate(`/dashboard/instructor/my-courses/${course.id}`)}
-                                className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
-                            >
-                                <X className="w-4 h-4" />
-                                Close
-                            </button>
+                {/* ── Sections List ── */}
+                <div className={card}>
+                    <div className={cardHeader}>
+                        <div>
+                            <p className="text-sm font-semibold text-gray-900">Course Sections</p>
+                            <p className="text-xs text-gray-400 mt-0.5">{course.sections.length} section{course.sections.length !== 1 ? 's' : ''} · {totalLessons} lesson{totalLessons !== 1 ? 's' : ''}</p>
+                        </div>
+                        <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                            <Layers className="w-4 h-4 text-blue-600" />
                         </div>
                     </div>
 
-                    {/* Curriculum Stats */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-5">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500 mb-1">Total Sections</p>
-                                    <p className="text-3xl font-bold text-gray-900">{course.sections.length}</p>
+                    <div className="p-4">
+                        {course.sections.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-10 text-center">
+                                <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-3">
+                                    <FolderPlus className="w-5 h-5 text-gray-300" />
                                 </div>
-                                <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-                                    <Layers className="w-6 h-6 text-[#0066CC]" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-5">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500 mb-1">Total Lessons</p>
-                                    <p className="text-3xl font-bold text-gray-900">{course.total_classes}</p>
-                                </div>
-                                <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
-                                    <BookOpen className="w-6 h-6 text-green-600" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-5">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500 mb-1">Course Status</p>
-                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold mt-1
-                                        ${course.status === 'PUBLISHED' ? 'bg-green-100 text-green-800' :
-                                            course.status === 'DRAFT' ? 'bg-gray-100 text-gray-800' :
-                                                'bg-yellow-100 text-yellow-800'}`}>
-                                        {course.status}
-                                    </span>
-                                </div>
-                                <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-                                    <CheckCircle className="w-6 h-6 text-purple-600" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Add Section Form */}
-                    <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6 mb-8">
-                        <div className="flex items-center gap-3 mb-5">
-                            <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-                                <FolderPlus className="w-5 h-5 text-green-600" />
-                            </div>
-                            <div>
-                                <h2 className="text-lg font-semibold text-gray-900">Add New Section</h2>
-                                <p className="text-sm text-gray-500">Create a new section to organize your lessons</p>
-                            </div>
-                        </div>
-
-                        <form onSubmit={handleAddSection} className="space-y-5">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                                <div className="md:col-span-2">
-                                    <label htmlFor="section-title" className={labelClassName}>
-                                        Section Title <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        id="section-title"
-                                        type="text"
-                                        value={newSection.title}
-                                        onChange={(e) => setNewSection(prev => ({ ...prev, title: e.target.value }))}
-                                        placeholder="e.g., Introduction to the Course"
-                                        className={inputClassName}
-                                        disabled={isAddingSection}
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label htmlFor="section-order" className={labelClassName}>
-                                        Order
-                                    </label>
-                                    <input
-                                        id="section-order"
-                                        type="number"
-                                        value={newSection.order}
-                                        onChange={(e) => setNewSection(prev => ({ ...prev, order: parseInt(e.target.value) || 0 }))}
-                                        placeholder="0"
-                                        min="0"
-                                        className={inputClassName}
-                                        disabled={isAddingSection}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label htmlFor="section-description" className={labelClassName}>
-                                    Description (Optional)
-                                </label>
-                                <textarea
-                                    id="section-description"
-                                    value={newSection.description}
-                                    onChange={(e) => setNewSection(prev => ({ ...prev, description: e.target.value }))}
-                                    placeholder="Brief description of this section..."
-                                    rows={3}
-                                    className={inputClassName}
-                                    disabled={isAddingSection}
-                                />
-                                <p className="mt-1.5 text-xs text-gray-500">
-                                    Provide context about what students will learn in this section
-                                </p>
-                            </div>
-
-                            <div className="flex justify-end gap-3">
-                                <LoaderButton
-                                    type="button"
-                                    variant="secondary"
-                                    size="md"
-                                    onClick={() => setNewSection({ title: '', description: '', order: 0 })}
-                                    disabled={isAddingSection || !newSection.title}
-                                >
-                                    Clear
-                                </LoaderButton>
-                                <LoaderButton
-                                    type="submit"
-                                    variant="success"
-                                    size="md"
-                                    icon={<Plus size={18} />}
-                                    loading={isAddingSection}
-                                    loadingText="Adding Section..."
-                                    disabled={!newSection.title.trim()}
-                                >
+                                <p className="text-sm font-medium text-gray-500">No sections yet</p>
+                                <p className="text-xs text-gray-400 mt-0.5 mb-4">Add your first section to get started</p>
+                                <LoaderButton variant="primary" size="sm" icon={<Plus className="w-3.5 h-3.5" />} onClick={() => setShowAddSection(true)}>
                                     Add Section
                                 </LoaderButton>
                             </div>
-                        </form>
-                    </div>
-
-                    {/* Sections List */}
-                    <div className="bg-white rounded-lg border border-gray-100 shadow-sm p-6 mb-6">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                                <Layers className="w-5 h-5 text-[#0066CC]" />
-                            </div>
-                            <div>
-                                <h2 className="text-lg font-semibold text-gray-900">Course Sections</h2>
-                                <p className="text-sm text-gray-500">Organize your lessons into logical sections</p>
-                            </div>
-                        </div>
-
-                        {course.sections.length === 0 ? (
-                            <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                                <FolderPlus className="mx-auto h-12 w-12 text-gray-400" />
-                                <h3 className="mt-3 text-sm font-medium text-gray-900">No sections yet</h3>
-                                <p className="mt-1 text-sm text-gray-500">
-                                    Get started by creating your first section below
-                                </p>
-                            </div>
                         ) : (
-                            <div className="space-y-4">
+                            <div className="space-y-2">
                                 {course.sections.map((section, index) => (
-                                    <div
-                                        key={section.id}
-                                        className="bg-gray-50 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow"
-                                    >
-                                        {/* Section Header */}
+                                    <div key={section.id} className="border border-gray-100 rounded-lg overflow-hidden">
+
+                                        {/* Section header row */}
                                         <div
-                                            className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-100 transition-colors rounded-t-lg"
-                                            onClick={() => toggleSection(section.id)}
+                                            className="flex items-center gap-3 px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer"
+                                            onClick={() => setOpenSection(openSection === section.id ? null : section.id)}
                                         >
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-3">
-                                                    <span className="flex items-center justify-center w-8 h-8 bg-[#0066CC] text-white rounded-lg text-sm font-bold">
-                                                        {index + 1}
-                                                    </span>
-                                                    <div>
-                                                        <h3 className="text-base font-semibold text-gray-900">
-                                                            {section.title}
-                                                        </h3>
-                                                        {section.description && (
-                                                            <p className="text-sm text-gray-600 mt-1 line-clamp-1">
-                                                                {section.description}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-4 mt-3 ml-11 text-sm text-gray-500">
-                                                    <span className="flex items-center gap-1.5">
-                                                        <BookOpen size={16} className="text-gray-400" />
-                                                        {section.lesson_count} {section.lesson_count === 1 ? 'lesson' : 'lessons'}
-                                                    </span>
-                                                    <span className="flex items-center gap-1.5">
-                                                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
-                                                        Order: {section.order}
-                                                    </span>
-                                                </div>
+                                            {/* Index */}
+                                            <div className="w-7 h-7 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 shrink-0">
+                                                {index + 1}
                                             </div>
 
-                                            <div className="flex items-center gap-2">
+                                            {/* Title */}
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-semibold text-gray-800 truncate">{section.title}</p>
+                                                <p className="text-[11px] text-gray-400 mt-0.5">
+                                                    {section.lesson_count} lesson{section.lesson_count !== 1 ? 's' : ''} · Order: {section.order}
+                                                </p>
+                                            </div>
+
+                                            {/* Actions */}
+                                            <div className="flex items-center gap-1.5 shrink-0" onClick={e => e.stopPropagation()}>
                                                 <LoaderButton
                                                     size="sm"
                                                     variant="secondary"
-                                                    icon={<Edit size={16} />}
+                                                    icon={<Edit className="w-3 h-3" />}
                                                     onClick={(e) => handleEditSectionClick(e, section)}
                                                     disabled={deletingSectionId === section.id}
-                                                    className="px-3 py-1.5"
+                                                    className="px-2.5 py-1.5"
                                                 >
                                                     Edit
                                                 </LoaderButton>
                                                 <LoaderButton
                                                     size="sm"
                                                     variant="danger"
-                                                    icon={<Trash2 size={16} />}
+                                                    icon={<Trash2 className="w-3 h-3" />}
                                                     onClick={(e) => handleDeleteSection(e, section.id)}
                                                     loading={deletingSectionId === section.id}
                                                     loadingText="..."
-                                                    className="px-3 py-1.5"
+                                                    className="px-2.5 py-1.5"
                                                 >
                                                     Delete
                                                 </LoaderButton>
-                                                {openSection === section.id ? (
-                                                    <ChevronUp size={20} className="text-gray-500 ml-2" />
-                                                ) : (
-                                                    <ChevronDown size={20} className="text-gray-500 ml-2" />
-                                                )}
                                             </div>
+
+                                            {/* Chevron */}
+                                            {openSection === section.id
+                                                ? <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" />
+                                                : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />
+                                            }
                                         </div>
 
-                                        {/* Section Content (Lessons) */}
+                                        {/* Expanded: lessons + add form */}
                                         {openSection === section.id && (
-                                            <div className="border-t border-gray-200 bg-white p-5 rounded-b-lg">
+                                            <div className="bg-white px-4 py-4">
+                                                {/* Lessons */}
                                                 {section.lessons.length === 0 ? (
-                                                    <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
-                                                        <BookOpen className="w-10 h-10 text-gray-400 mx-auto mb-2" />
-                                                        <p className="text-sm text-gray-500">
-                                                            No lessons yet. Add your first lesson below.
-                                                        </p>
+                                                    <div className="flex flex-col items-center justify-center py-6 text-center mb-4">
+                                                        <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center mb-2">
+                                                            <BookOpen className="w-4 h-4 text-gray-300" />
+                                                        </div>
+                                                        <p className="text-xs text-gray-400">No lessons yet — add your first one below</p>
                                                     </div>
                                                 ) : (
-                                                    <div className="space-y-3 mb-5">
-                                                        {section.lessons.map((lesson, lessonIndex) => (
+                                                    <div className="space-y-1.5 mb-4">
+                                                        {section.lessons.map((lesson, lIdx) => (
                                                             <div
                                                                 key={lesson.id}
-                                                                className="flex items-center justify-between bg-gray-50 p-4 rounded-lg border border-gray-200 hover:border-[#0066CC] transition-colors"
+                                                                className="group flex items-center gap-3 px-3 py-2.5 bg-gray-50 rounded-lg border border-gray-100 hover:border-gray-200 hover:bg-white transition-all duration-150"
                                                             >
-                                                                <div className="flex items-center gap-3 flex-1">
-                                                                    <span className="flex items-center justify-center w-7 h-7 bg-white border-2 border-gray-300 rounded-lg text-xs font-semibold text-gray-600">
-                                                                        {lessonIndex + 1}
-                                                                    </span>
-                                                                    <div className="flex items-center gap-2">
-                                                                        {lesson.lesson_type === 'VIDEO' ? (
-                                                                            <Video size={16} className="text-[#0066CC]" />
-                                                                        ) : lesson.lesson_type === 'TEXT' ? (
-                                                                            <FileText size={16} className="text-[#0066CC]" />
-                                                                        ) : (
-                                                                            <MonitorPlay size={16} className="text-[#0066CC]" />
-                                                                        )}
+                                                                {/* Lesson number */}
+                                                                <span className="text-[11px] text-gray-300 font-mono w-5 shrink-0">{lIdx + 1}.</span>
 
-                                                                        <div>
-                                                                            <span className="font-medium text-gray-900 text-sm">
-                                                                                {lesson.title}
-                                                                            </span>
-                                                                            <div className="flex items-center gap-2 mt-1">
-                                                                                <span className="text-xs px-2 py-0.5 bg-white border border-gray-200 rounded-full text-gray-600">
-                                                                                    {lesson.lesson_type}
-                                                                                </span>
-                                                                                {lesson.is_preview && (
-                                                                                    <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-medium">
-                                                                                        Free Preview
-                                                                                    </span>
-                                                                                )}
-                                                                                {lesson.video_duration && (
-                                                                                    <span className="text-xs text-gray-500">
-                                                                                        {Math.floor(lesson.video_duration / 60)} min
-                                                                                    </span>
-                                                                                )}
-                                                                            </div>
-                                                                        </div>
+                                                                {/* Icon */}
+                                                                <LessonIcon type={lesson.lesson_type} />
+
+                                                                {/* Info */}
+                                                                <div className="flex-1 min-w-0">
+                                                                    <p className="text-sm font-medium text-gray-800 truncate">{lesson.title}</p>
+                                                                    <div className="flex items-center gap-2 mt-0.5">
+                                                                        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{lesson.lesson_type}</span>
+                                                                        {lesson.is_preview && (
+                                                                            <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded-md">Free Preview</span>
+                                                                        )}
+                                                                        {lesson.video_duration && (
+                                                                            <span className="text-[11px] text-gray-400">{Math.floor(lesson.video_duration / 60)} min</span>
+                                                                        )}
                                                                     </div>
                                                                 </div>
 
-                                                                <div className="flex items-center gap-2">
+                                                                {/* Actions */}
+                                                                <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                                                                     <LoaderButton
                                                                         size="sm"
                                                                         variant="secondary"
-                                                                        icon={<Edit size={14} />}
+                                                                        icon={<Edit className="w-3 h-3" />}
                                                                         onClick={() => handleEditLessonClick(lesson, section.id)}
                                                                         disabled={deletingLessonId === lesson.id}
                                                                         className="px-2 py-1"
@@ -619,7 +473,7 @@ const CurriculumPage: React.FC = () => {
                                                                     <LoaderButton
                                                                         size="sm"
                                                                         variant="danger"
-                                                                        icon={<Trash2 size={14} />}
+                                                                        icon={<Trash2 className="w-3 h-3" />}
                                                                         onClick={() => handleDeleteLesson(section.id, lesson.id)}
                                                                         loading={deletingLessonId === lesson.id}
                                                                         loadingText="..."
@@ -633,18 +487,14 @@ const CurriculumPage: React.FC = () => {
                                                     </div>
                                                 )}
 
-                                                {/* Add Lesson Form */}
-                                                <div className="mt-5 pt-5 border-t border-gray-200">
-                                                    <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                                        <Plus size={16} className="text-[#0066CC]" />
-                                                        Add New Lesson
-                                                    </h4>
+                                                {/* Add lesson */}
+                                                <div className="border-t border-gray-100 pt-4">
                                                     <AddLessonForm
                                                         courseId={course.id}
                                                         sectionId={section.id}
                                                         onSuccess={() => {
                                                             fetchCourseDetail(courseId!);
-                                                            toast.success('Lesson added successfully!');
+                                                            toast.success('Lesson added!');
                                                         }}
                                                     />
                                                 </div>
@@ -660,20 +510,10 @@ const CurriculumPage: React.FC = () => {
 
             {/* Modals */}
             {isEditSectionModalOpen && sectionToEdit && courseId && (
-                <EditSectionModal
-                    courseId={courseId}
-                    section={sectionToEdit}
-                    onClose={handleCloseEditSectionModal}
-                />
+                <EditSectionModal courseId={courseId} section={sectionToEdit} onClose={handleCloseEditSectionModal} />
             )}
-
             {isEditLessonModalOpen && lessonToEdit && currentSectionIdForLesson && courseId && (
-                <EditLessonModal
-                    courseId={courseId}
-                    sectionId={currentSectionIdForLesson}
-                    lesson={lessonToEdit}
-                    onClose={handleCloseEditLessonModal}
-                />
+                <EditLessonModal courseId={courseId} sectionId={currentSectionIdForLesson} lesson={lessonToEdit} onClose={handleCloseEditLessonModal} />
             )}
         </div>
     );
