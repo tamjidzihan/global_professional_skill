@@ -68,7 +68,7 @@ const Header = () => {
     ]
 
     return (
-        <header className=' z-40'>
+        <header className=' z-16'>
             {/* Top Bar */}
             <div className="py-2 text-sm bg-white/70 backdrop-blur border-b border-gray-200">
                 <div className="container mx-auto px-4 flex justify-between items-center">

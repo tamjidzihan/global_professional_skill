@@ -37,19 +37,21 @@ const CheckoutPage: React.FC = () => {
         if (id) {
             fetchCourseDetail(id);
         }
-        fetchSettings();
     }, [id, fetchCourseDetail]);
 
-    const fetchSettings = async () => {
-        try {
-            const response = await getSiteSettings();
-            if (response.data.success) {
-                setSiteSettings(response.data.data);
+    useEffect(() => {
+        const loadSettings = async () => {
+            try {
+                const response = await getSiteSettings();
+                if (response.data.success) {
+                    setSiteSettings(response.data.data);
+                }
+            } catch (error) {
+                console.error('Failed to fetch site settings', error);
             }
-        } catch (error) {
-            console.error('Failed to fetch site settings', error);
-        }
-    };
+        };
+        loadSettings();
+    }, []);
 
     // If already enrolled, redirect to course detail
     useEffect(() => {

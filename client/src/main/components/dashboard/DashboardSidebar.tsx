@@ -102,7 +102,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
 
     // Reusable tooltip for collapsed state
     const CollapsedTooltip = ({ label, badge }: { label: string; badge?: string | number }) => (
-        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-50 pointer-events-none
+        <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3  pointer-events-none
                         opacity-0 invisible group-hover:opacity-100 group-hover:visible
                         transition-all duration-150">
             <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg shadow-xl whitespace-nowrap">
@@ -123,14 +123,14 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
             {/* Mobile overlay */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"
+                    className="fixed inset-0 bg-black/30 backdrop-blur-sm  lg:hidden"
                     onClick={onClose}
                 />
             )}
 
             <aside
                 className={cn(
-                    'fixed top-0 left-0 z-50 h-screen flex flex-col',
+                    'fixed top-0 left-0 z-20 h-screen flex flex-col',
                     'transform transition-all duration-300 ease-in-out',
                     'bg-white border-r border-gray-100',
                     'lg:static lg:translate-x-0',

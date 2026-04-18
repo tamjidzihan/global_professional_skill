@@ -199,6 +199,7 @@ export const endpoints = {
     enrollments: {
         enroll: '/enrollments/enrollments/',
         list: '/enrollments/enrollments/',
+        detail: (id: string) => `/enrollments/enrollments/${id}/`,
         markComplete: (progressId: string) =>
             `/enrollments/progress/${progressId}/mark_complete/`,
     },

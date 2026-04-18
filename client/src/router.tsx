@@ -37,6 +37,7 @@ import SiteSettingsPage from "./main/pages/dashboard/admin/SiteSettingsPage";
 import AdminCourseDetailPage from "./main/pages/dashboard/admin/AdminCourseDetailPage";
 import CheckoutPage from "./main/pages/CheckoutPage";
 import MyEnrollmentsPage from "./main/pages/dashboard/student/MyEnrollmentsPage";
+import EnrolledCourseDetailPage from "./main/pages/dashboard/student/EnrolledCourseDetailPage";
 import { CertificatesPage } from "./main/pages/dashboard/student/CertificatesPage";
 import { ReportsPage } from "./main/pages/dashboard/instructor/ReportsPage";
 
@@ -117,6 +118,14 @@ export const router = createBrowserRouter([
                                 element: (
                                     <ProtectedRoute allowedRoles={['STUDENT']}>
                                         <MyEnrollmentsPage />
+                                    </ProtectedRoute>
+                                )
+                            },
+                            {
+                                path: 'my-courses/:id',
+                                element: (
+                                    <ProtectedRoute allowedRoles={['STUDENT']}>
+                                        <EnrolledCourseDetailPage />
                                     </ProtectedRoute>
                                 )
                             },

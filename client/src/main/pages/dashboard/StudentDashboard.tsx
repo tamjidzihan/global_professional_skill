@@ -1,6 +1,10 @@
 import { useEffect } from 'react'
 import { StatsCard } from '../../components/dashboard/StatsCard'
-import { BookOpen, CheckCircle, Clock, Award, Briefcase, Sparkles, AlertCircle, PlayCircle, CreditCard } from 'lucide-react'
+import {
+    BookOpen, CheckCircle, Clock, Award, Briefcase,
+    Sparkles, AlertCircle, PlayCircle, CreditCard,
+    ArrowRight, Hash,
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuthContext } from '../../../context/AuthContext'
 import { useEnrollments } from '../../../hooks/useEnrollments'
@@ -20,292 +24,286 @@ export function StudentDashboard() {
         fetchPayments({ status: 'PENDING' })
     }, [getMyEnrollments, fetchPayments])
 
-    // Safely calculate stats
     const totalEnrolled = enrollments?.length || 0
-    const completed = enrollments?.filter(
-        (e) => Number(e?.progress_percentage) === 100,
-    ).length || 0
+    const completed = enrollments?.filter(e => Number(e?.progress_percentage) === 100).length || 0
     const inProgress = totalEnrolled - completed
     const pendingPayments = payments?.filter(p => p.status === 'PENDING').length || 0
 
+    // Instructor request status config
+    const requestStatusConfig: Record<string, { badge: string; iconBg: string; iconText: string; icon: typeof Clock; label: string }> = {
+        PENDING: { badge: 'bg-amber-50 text-amber-700', iconBg: 'bg-amber-50', iconText: 'text-amber-500', icon: Clock, label: 'Pending Review' },
+        APPROVED: { badge: 'bg-emerald-50 text-emerald-700', iconBg: 'bg-emerald-50', iconText: 'text-emerald-600', icon: CheckCircle, label: 'Approved' },
+        REJECTED: { badge: 'bg-rose-50 text-rose-700', iconBg: 'bg-rose-50', iconText: 'text-rose-500', icon: AlertCircle, label: 'Rejected' },
+    }
+
+    // ── shared tokens ──────────────────────────────────────────────────────
+    const card = 'bg-white rounded-xl border border-gray-100 shadow-sm'
+    const cardHeader = 'flex items-center justify-between px-5 py-4 border-b border-gray-100'
+    const cardBody = 'p-5'
+
+    const latestRequest = requests
+        ?.slice()
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+
     return (
-        <div className="p-4 grid grid-cols-1 lg:grid-cols-4 gap-6"> {/* Added grid layout */}
+        <div className="py-6 px-4 md:px-6 grid grid-cols-1 lg:grid-cols-4 gap-5">
             <SEO title="Student Dashboard" noindex />
-            <div className="lg:col-span-3"> {/* Main content takes 2/3 width on large screens */}
-                <div className="mb-8">
-                    <h1 className="text-2xl font-bold text-gray-900">
+
+            {/* ════════════════════════════
+                MAIN COLUMN
+            ════════════════════════════ */}
+            <div className="lg:col-span-3 space-y-6">
+
+                {/* Page header */}
+                <div>
+                    <h1 className="text-xl font-semibold text-gray-900 tracking-tight">
                         Welcome back, {user?.first_name || 'Student'}!
                     </h1>
-                    <p className="text-gray-600 mt-1">
+                    <p className="text-sm text-gray-400 mt-0.5">
                         Here's an overview of your learning progress.
                     </p>
                 </div>
 
-
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 mb-8">
-                    <StatsCard
-                        title="Enrolled Courses"
-                        value={totalEnrolled}
-                        icon={BookOpen}
-                        color="blue"
-                    />
-                    <StatsCard
-                        title="In Progress"
-                        value={inProgress}
-                        icon={Clock}
-                        color="orange"
-                    />
-                    <StatsCard
-                        title="Pending Payments"
-                        value={pendingPayments}
-                        icon={CreditCard}
-                        color="orange"
-                    />
-                    <StatsCard
-                        title="Certificates"
-                        value={completed}
-                        icon={Award}
-                        color="blue"
-                    />
+                {/* Stats */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    <StatsCard title="Enrolled" value={totalEnrolled} icon={BookOpen} color="blue" />
+                    <StatsCard title="In Progress" value={inProgress} icon={Clock} color="orange" />
+                    <StatsCard title="Pending Payments" value={pendingPayments} icon={CreditCard} color="orange" />
+                    <StatsCard title="Certificates" value={completed} icon={Award} color="blue" />
                 </div>
 
-                {/* Pending Payments Section */}
+                {/* ── Pending Payments ── */}
                 {payments && payments.length > 0 && (
-                    <div className="mb-8">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                <Clock className="w-5 h-5 text-yellow-500" /> Pending Enrollments
-                            </h2>
+                    <div className={card}>
+                        <div className={cardHeader}>
+                            <div>
+                                <p className="text-sm font-semibold text-gray-900">Pending Enrollments</p>
+                                <p className="text-xs text-gray-400 mt-0.5">Awaiting payment verification</p>
+                            </div>
+                            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-bold bg-amber-50 text-amber-700 rounded-md">
+                                <Clock className="w-3 h-3" /> {payments.length}
+                            </span>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {payments.map((payment) => (
-                                <div
-                                    key={payment.id}
-                                    className="bg-white rounded-lg border border-yellow-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow relative"
-                                >
-                                    <div className="absolute top-2 right-2 z-10">
-                                        <span className="bg-yellow-100 text-yellow-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border border-yellow-200">
-                                            Verification Pending
+                        <div className={cardBody}>
+                            <div className="space-y-2">
+                                {payments.map(payment => (
+                                    <div
+                                        key={payment.id}
+                                        className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-amber-200 hover:bg-amber-50/20 transition-all duration-150"
+                                    >
+                                        {/* Thumbnail */}
+                                        <div className="w-10 h-10 rounded-lg bg-amber-50 overflow-hidden shrink-0">
+                                            {payment.course_thumbnail ? (
+                                                <img src={payment.course_thumbnail} alt={payment.course_title} className="w-full h-full object-cover opacity-80" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <BookOpen className="w-4 h-4 text-amber-500" />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Info */}
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-semibold text-gray-800 truncate">{payment.course_title}</p>
+                                            <div className="flex items-center gap-3 mt-0.5">
+                                                <span className="text-xs text-gray-400">{payment.currency} {payment.amount}</span>
+                                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-white border border-gray-100 px-1.5 py-0.5 rounded-md font-mono">
+                                                    <Hash className="w-2.5 h-2.5" />{payment.transaction_id}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Badge */}
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100 rounded-md shrink-0">
+                                            <Clock className="w-2.5 h-2.5" /> Pending
                                         </span>
                                     </div>
-                                    <div className="h-32 bg-gray-50 relative">
-                                        {payment.course_thumbnail ? (
-                                            <img
-                                                src={payment.course_thumbnail}
-                                                alt={payment.course_title}
-                                                className="w-full h-full object-cover opacity-60"
-                                            />
-                                        ) : (
-                                            <div className="absolute inset-0 flex items-center justify-center text-gray-300">
-                                                <BookOpen className="w-8 h-8" />
-                                            </div>
-                                        )}
-                                        <div className="absolute inset-0 bg-white/40 flex items-center justify-center">
-                                            <Clock className="w-10 h-10 text-yellow-600 opacity-80" />
-                                        </div>
-                                    </div>
-                                    <div className="p-4">
-                                        <h3 className="font-bold text-gray-900 mb-2 line-clamp-1">
-                                            {payment.course_title}
-                                        </h3>
-                                        <div className="space-y-1.5 mb-4">
-                                            <div className="flex items-center justify-between text-xs text-gray-500">
-                                                <span>Amount Paid:</span>
-                                                <span className="font-semibold text-gray-700">{payment.currency} {payment.amount}</span>
-                                            </div>
-                                            <div className="flex items-center justify-between text-xs text-gray-500">
-                                                <span>TrxID:</span>
-                                                <span className="font-mono text-gray-700">{payment.transaction_id}</span>
-                                            </div>
-                                        </div>
-                                        <div className="p-2 bg-yellow-50 rounded text-[11px] text-yellow-800 border border-yellow-100">
-                                            Our team is verifying your payment. You'll get access once approved.
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+
+                            <div className="mt-3 pt-3 border-t border-gray-100">
+                                <p className="text-xs text-gray-400 flex items-start gap-1.5">
+                                    <span className="shrink-0 mt-px">ℹ️</span>
+                                    Our team is verifying your payment. You'll get access once approved.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 )}
 
-                {/* Recent Enrollments */}
-                <div className="mb-8">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-bold text-gray-900">Recent Courses</h2>
+                {/* ── Recent Courses ── */}
+                <div className={card}>
+                    <div className={cardHeader}>
+                        <div>
+                            <p className="text-sm font-semibold text-gray-900">Recent Courses</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Pick up where you left off</p>
+                        </div>
                         <Link
                             to="/dashboard/student/my-courses"
-                            className="text-sm text-[#0066CC] hover:underline flex items-center gap-1 font-medium"
+                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors"
                         >
-                            View All My Courses
-                            <PlayCircle className="w-4 h-4" />
+                            View All <ArrowRight className="w-3.5 h-3.5" />
                         </Link>
                     </div>
-
-                    {loading ? (
-                        <div className="text-center py-12 bg-white rounded-lg border border-gray-100">
-                            <p className="text-gray-500">Loading your courses...</p>
-                        </div>
-                    ) : enrollments && enrollments.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {enrollments.slice(0, 3).map((enrollment) => (
-                                <div
-                                    key={enrollment?.id}
-                                    className="bg-white rounded-lg border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
-                                >
-                                    <div className="h-32 bg-gray-200 relative">
-                                        {/* Placeholder for course image */}
-                                        <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-                                            <BookOpen className="w-8 h-8" />
-                                        </div>
-                                        {enrollment.course.thumbnail ? (
-                                            <img
-                                                src={enrollment.course.thumbnail}
-                                                alt={enrollment.course.title}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="absolute inset-0 flex items-center justify-center text-gray-300">
-                                                <BookOpen className="w-8 h-8" />
+                    <div className={cardBody}>
+                        {loading ? (
+                            <div className="space-y-2.5">
+                                {[1, 2, 3].map(i => (
+                                    <div key={i} className="animate-pulse h-18 bg-gray-50 rounded-lg border border-gray-100" />
+                                ))}
+                            </div>
+                        ) : enrollments && enrollments.length > 0 ? (
+                            <div className="space-y-2.5">
+                                {enrollments.slice(0, 3).map(enrollment => {
+                                    const pct = Math.round(Number(enrollment?.progress_percentage) || 0)
+                                    return (
+                                        <div
+                                            key={enrollment?.id}
+                                            className="group flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 hover:border-violet-200 hover:bg-violet-50/20 transition-all duration-150"
+                                        >
+                                            {/* Thumbnail */}
+                                            <div className="w-12 h-12 rounded-lg bg-gray-200 overflow-hidden shrink-0">
+                                                {enrollment.course.thumbnail ? (
+                                                    <img src={enrollment.course.thumbnail} alt={enrollment.course.title} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full bg-violet-50 flex items-center justify-center">
+                                                        <BookOpen className="w-5 h-5 text-violet-400" />
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
-                                    <div className="p-4">
-                                        <h3 className="font-bold text-gray-900 mb-2 line-clamp-1">
-                                            {enrollment?.course?.title || 'Course Title'}
-                                        </h3>
-                                        <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
-                                            <span>Progress</span>
-                                            <span>{Math.round(Number(enrollment?.progress_percentage) || 0)}%</span>
+
+                                            {/* Info + progress */}
+                                            <div className="flex-1 min-w-0">
+                                                <Link to={`/dashboard/student/my-courses/${enrollment.course.id}`}>
+                                                    <p className="text-sm font-semibold text-gray-800 truncate group-hover:text-violet-700 transition-colors">
+                                                        {enrollment?.course?.title || 'Course Title'}
+                                                    </p>
+                                                </Link>
+                                                <div className="flex items-center gap-2 mt-1.5">
+                                                    <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                                        <div
+                                                            className="h-full bg-violet-500 rounded-full transition-all duration-500"
+                                                            style={{ width: `${pct}%` }}
+                                                        />
+                                                    </div>
+                                                    <span className="text-[11px] font-bold text-gray-500 shrink-0">{pct}%</span>
+                                                </div>
+                                            </div>
+
+                                            {/* CTA */}
+                                            <Link
+                                                to={`/dashboard/student/my-courses/${enrollment.course.id}`}
+                                                className="shrink-0 inline-flex items-center gap-1 px-3 py-1.5 bg-violet-600 text-white text-xs font-semibold rounded-lg hover:bg-violet-700 transition-colors opacity-0 group-hover:opacity-100"
+                                            >
+                                                <PlayCircle className="w-3.5 h-3.5" /> Continue
+                                            </Link>
                                         </div>
-                                        <div className="w-full bg-gray-100 rounded-full h-2 mb-4">
-                                            <div
-                                                className="bg-[#76C043] h-2 rounded-full transition-all duration-500"
-                                                style={{
-                                                    width: `${enrollment?.progress_percentage || 0}%`,
-                                                }}
-                                            />
-                                        </div>
-                                        <button className="w-full py-2 bg-[#0066CC] text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-                                            Continue Learning
-                                        </button>
-                                    </div>
+                                    )
+                                })}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-10 text-center">
+                                <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-3">
+                                    <BookOpen className="w-5 h-5 text-gray-300" />
                                 </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-12 bg-white rounded-lg border border-gray-100">
-                            <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                            <h3 className="text-lg font-medium text-gray-900">
-                                No courses yet
-                            </h3>
-                            <p className="text-gray-500 mb-4">
-                                Start your learning journey today!
-                            </p>
-                            <Link
-                                to="/courses"
-                                className="inline-block px-6 py-2 bg-[#76C043] text-white rounded-full font-medium hover:bg-[#65a838] transition-colors"
-                            >
-                                Browse Courses
-                            </Link>
-                        </div>
-                    )}
+                                <p className="text-sm font-medium text-gray-500">No courses yet</p>
+                                <p className="text-xs text-gray-400 mt-0.5 mb-4">Start your learning journey today!</p>
+                                <Link
+                                    to="/courses"
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 text-white text-xs font-semibold rounded-lg hover:bg-violet-700 transition-colors"
+                                >
+                                    Browse Courses <ArrowRight className="w-3.5 h-3.5" />
+                                </Link>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
-            <div className="lg:col-span-1"> {/* Calendar takes 1/3 width on large screens */}
-                <div className=' pb-4' >
-                    <CalendarCard />
-                </div>
-                {/* Instructor Application Status Section */}
-                <div className="mb-8 p-6 bg-white rounded-lg border border-gray-100 shadow-sm hover:shadow-lg">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <Briefcase className="w-5 h-5 text-gray-600" /> Instructor Application Status
-                        </h2>
+
+            {/* ════════════════════════════
+                SIDEBAR COLUMN
+            ════════════════════════════ */}
+            <div className="lg:col-span-1 space-y-5">
+                <CalendarCard />
+
+                {/* Instructor application status */}
+                <div className={card}>
+                    <div className={cardHeader}>
+                        <div>
+                            <p className="text-sm font-semibold text-gray-900">Instructor Status</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Application overview</p>
+                        </div>
+                        <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
+                            <Briefcase className="w-4 h-4 text-violet-600" />
+                        </div>
                     </div>
-
-                    {requestsLoading ? (
-                        <p className="text-gray-600">Loading your application status...</p>
-                    ) : requestsError ? (
-                        <p className="text-red-600">Error: {requestsError}</p>
-                    ) : (
-                        (function () { // Correctly wrapped IIFE in curly braces
-                            const latestRequest = requests.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
-
-                            if (latestRequest) {
-                                let statusColor = '';
-                                let statusText = '';
-                                let statusIcon = null;
-
-                                switch (latestRequest.status) {
-                                    case 'PENDING':
-                                        statusColor = 'bg-yellow-100 text-yellow-800';
-                                        statusText = 'Pending Review';
-                                        statusIcon = <Clock className="w-4 h-4" />;
-                                        break;
-                                    case 'APPROVED':
-                                        statusColor = 'bg-green-100 text-green-800';
-                                        statusText = 'Approved!';
-                                        statusIcon = <CheckCircle className="w-4 h-4" />;
-                                        break;
-                                    case 'REJECTED':
-                                        statusColor = 'bg-red-100 text-red-800';
-                                        statusText = 'Rejected';
-                                        statusIcon = <AlertCircle className="w-4 h-4" />;
-                                        break;
-                                    default:
-                                        statusColor = 'bg-gray-100 text-gray-800';
-                                        statusText = 'Unknown Status';
-                                        break;
-                                }
-
-                                return (
-                                    <div>
-                                        <p className="text-gray-600 mb-2">
-                                            Your latest instructor application is:
-                                        </p>
-                                        <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusColor}`}>
-                                            {statusIcon}
-                                            <span className="ml-2">{statusText}</span>
+                    <div className={cardBody}>
+                        {requestsLoading ? (
+                            <div className="space-y-2">
+                                {[1, 2].map(i => (
+                                    <div key={i} className="animate-pulse h-10 bg-gray-50 rounded-lg border border-gray-100" />
+                                ))}
+                            </div>
+                        ) : requestsError ? (
+                            <div className="flex items-center gap-2 p-3 bg-rose-50 rounded-lg border border-rose-100">
+                                <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+                                <p className="text-xs text-rose-700">Failed to load status</p>
+                            </div>
+                        ) : latestRequest ? (() => {
+                            const cfg = requestStatusConfig[latestRequest.status] || requestStatusConfig['PENDING']
+                            const Icon = cfg.icon
+                            return (
+                                <div className="space-y-3">
+                                    {/* Status row */}
+                                    <div className={`flex items-center gap-3 p-3 rounded-lg border ${cfg.badge}`}>
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${cfg.iconBg}`}>
+                                            <Icon className={`w-4 h-4 ${cfg.iconText}`} />
                                         </div>
-                                        {latestRequest.status === 'REJECTED' && (
-                                            <div className="mt-2 text-sm text-gray-500">
-                                                <p>Reason: {latestRequest.review_notes || 'N/A'}</p>
-                                                <Link to="/apply-as-instructor" className="text-[#0066CC] hover:underline mt-1 block">
-                                                    Re-apply as Instructor
-                                                </Link>
-                                            </div>
-                                        )}
-                                        {/* More details about the request could be added here */}
-                                        <p className="text-sm text-gray-500 mt-2">
-                                            Submitted on: {new Date(latestRequest.created_at).toLocaleDateString()}
-                                        </p>
+                                        <div className="min-w-0">
+                                            <p className="text-[10px] font-semibold uppercase tracking-widest opacity-60">Status</p>
+                                            <p className="text-sm font-bold">{cfg.label}</p>
+                                        </div>
                                     </div>
-                                );
-                            } else {
-                                return (
-                                    <div className="text-center">
-                                        <Sparkles className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                                        <h3 className="text-lg font-medium text-gray-900">
-                                            Become an Instructor
-                                        </h3>
-                                        <p className="text-gray-500 mb-4">
-                                            Share your knowledge and earn by teaching.
-                                        </p>
-                                        <Link
-                                            to="/apply-as-instructor"
-                                            className="inline-block px-6 py-2 bg-[#0066CC] text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
-                                        >
-                                            Apply as Instructor
-                                        </Link>
-                                    </div>
-                                );
-                            }
-                        })() // Correctly wrapped IIFE closing
-                    )}
+
+                                    <p className="text-[11px] text-gray-400">
+                                        Submitted {new Date(latestRequest.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                    </p>
+
+                                    {latestRequest.status === 'REJECTED' && (
+                                        <div className="space-y-2">
+                                            {latestRequest.review_notes && (
+                                                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                                                    <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">Reason</p>
+                                                    <p className="text-xs text-gray-600">{latestRequest.review_notes}</p>
+                                                </div>
+                                            )}
+                                            <Link
+                                                to="/apply-as-instructor"
+                                                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-violet-600 text-white text-xs font-semibold rounded-lg hover:bg-violet-700 transition-colors"
+                                            >
+                                                Re-apply as Instructor <ArrowRight className="w-3.5 h-3.5" />
+                                            </Link>
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })() : (
+                            <div className="flex flex-col items-center text-center py-4">
+                                <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center mb-3">
+                                    <Sparkles className="w-5 h-5 text-violet-500" />
+                                </div>
+                                <p className="text-sm font-semibold text-gray-800 mb-0.5">Become an Instructor</p>
+                                <p className="text-xs text-gray-400 mb-4">Share your knowledge and earn by teaching.</p>
+                                <Link
+                                    to="/apply-as-instructor"
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-violet-600 text-white text-xs font-semibold rounded-lg hover:bg-violet-700 transition-colors"
+                                >
+                                    Apply as Instructor <ArrowRight className="w-3.5 h-3.5" />
+                                </Link>
+                            </div>
+                        )}
+                    </div>
                 </div>
-
-
             </div>
         </div>
     )

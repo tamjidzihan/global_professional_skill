@@ -1,11 +1,12 @@
 import { useState, useCallback } from 'react'
-import { enrollInCourse, getEnrollments } from '../lib/api'
-import type { Enrollment } from '../types'
+import { enrollInCourse, getEnrollments, api, endpoints } from '../lib/api'
+import type { Enrollment, ApiResponse } from '../types'
 import { isAxiosError } from 'axios'
 import { toast } from 'react-hot-toast'
 
 export function useEnrollments() {
     const [enrollments, setEnrollments] = useState<Enrollment[]>([])
+    const [enrollment, setEnrollment] = useState<Enrollment | null>(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
@@ -22,6 +23,27 @@ export function useEnrollments() {
             } else {
                 setError('An unknown error occurred.')
             }
+        } finally {
+            setLoading(false)
+        }
+    }, [])
+
+    const fetchEnrollmentDetail = useCallback(async (id: string) => {
+        setLoading(true)
+        setError(null)
+        try {
+            const response = await api.get<ApiResponse<Enrollment>>(endpoints.enrollments.detail(id))
+            setEnrollment(response.data.data)
+            return response.data.data
+        } catch (err: unknown) {
+            let msg = 'Failed to fetch enrollment details'
+            if (isAxiosError(err)) {
+                msg = err.response?.data?.error?.message || msg
+            } else if (err instanceof Error) {
+                msg = err.message || msg
+            }
+            setError(msg)
+            return null
         } finally {
             setLoading(false)
         }
@@ -50,9 +72,11 @@ export function useEnrollments() {
 
     return {
         enrollments,
+        enrollment,
         loading,
         error,
         getMyEnrollments,
+        fetchEnrollmentDetail,
         enroll,
     }
 }

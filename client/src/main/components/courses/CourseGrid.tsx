@@ -84,7 +84,7 @@ const CourseGrid = ({
 
                             {/* Page Indicator */}
                             <span className="text-sm font-medium text-gray-600 px-2">
-                                Page {currentPage} of {pagination.total_pages || 1}
+                                Page {currentPage}
                             </span>
 
                             {/* Next Button */}
@@ -187,7 +187,7 @@ const Pagination = ({ pagination, currentPage, onPageChange }: PaginationProps) 
 
         {/* Page Indicator for Desktop */}
         <span className="hidden sm:block text-sm font-medium text-gray-600">
-            Page {currentPage} of {pagination.total_pages || 1}
+            Page {currentPage}
         </span>
 
         <button

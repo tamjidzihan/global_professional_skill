@@ -347,12 +347,12 @@ const PaymentManagementPage: React.FC = () => {
                                             {/* Student + Course */}
                                             <td className="px-5 py-3 whitespace-nowrap">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600 font-bold text-sm shrink-0">
+                                                    <div onClick={() => setSelectedPayment(payment)} className="w-9 h-9 cursor-pointer rounded-xl hover:bg-violet-100 bg-violet-50 flex items-center justify-center text-violet-600 font-bold text-sm shrink-0">
                                                         {payment.user_email.charAt(0).toUpperCase()}
                                                     </div>
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-semibold text-gray-800 truncate">{payment.user_email}</p>
-                                                        <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5 truncate">
+                                                    <div onClick={() => setSelectedPayment(payment)} className="min-w-0 cursor-pointer">
+                                                        <p className="text-sm font-semibold text-gray-700 hover:text-gray-900 truncate">{payment.user_email}</p>
+                                                        <p className="text-xs text-gray-400 hover:text-gray-500 flex items-center gap-1 mt-0.5 truncate">
                                                             <BookOpen className="w-3 h-3 shrink-0" />
                                                             {payment.course_title}
                                                         </p>
