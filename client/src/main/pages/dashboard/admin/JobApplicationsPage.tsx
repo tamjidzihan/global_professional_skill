@@ -154,13 +154,22 @@ const JobApplicationsPage = () => {
                                     onClick={() => openApplicationModal(app)}
                                 >
                                     {/* Avatar */}
-                                    <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600 font-bold text-sm shrink-0">
-                                        {app.user_email.charAt(0).toUpperCase()}
+                                    <div className="w-13 h-13 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600 font-bold text-sm shrink-0 overflow-hidden border border-gray-100">
+                                        {app.user_picture ? (
+                                            <img src={app.user_picture} alt={app.user_full_name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            (app.user_full_name || app.user_email).charAt(0).toUpperCase()
+                                        )}
                                     </div>
 
                                     {/* Info */}
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold text-gray-800 truncate">{app.user_email}</p>
+                                        <p className="text-sm font-semibold text-gray-800 truncate">
+                                            {app.user_full_name || 'No Name Provided'}
+                                        </p>
+                                        <p className="text-[11px] text-gray-500 truncate mb-1">
+                                            {app.user_email} {app.user_phone && `• ${app.user_phone}`}
+                                        </p>
                                         <div className="flex flex-wrap items-center gap-2 mt-0.5">
                                             <span className="text-[11px] text-gray-400 flex items-center gap-1">
                                                 <Clock className="w-3 h-3" />

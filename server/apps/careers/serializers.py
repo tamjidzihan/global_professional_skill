@@ -18,11 +18,22 @@ class JobSerializer(serializers.ModelSerializer):
 class JobApplicationSerializer(serializers.ModelSerializer):
     job_title = serializers.CharField(source='job.title', read_only=True)
     user_email = serializers.EmailField(source='user.email', read_only=True)
+    user_full_name = serializers.CharField(source='user.get_full_name', read_only=True)
+    user_phone = serializers.CharField(source='user.phone_number', read_only=True)
+    user_picture = serializers.SerializerMethodField()
 
     class Meta:
         model = JobApplication
         fields = '__all__'
         read_only_fields = ('user', 'applied_at', 'status')
+
+    def get_user_picture(self, obj):
+        if obj.user.profile_picture:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.user.profile_picture.url)
+            return obj.user.profile_picture.url
+        return None
 
     def validate_cv_file(self, value):
         ext = os.path.splitext(value.name)[1]
@@ -36,9 +47,9 @@ class JobApplicationSerializer(serializers.ModelSerializer):
             
         return value
 
-    def validate(self, data):
+    def validate(self, attrs):
         user = self.context['request'].user
-        job = data.get('job')
+        job = attrs.get('job')
         if JobApplication.objects.filter(user=user, job=job).exists():
             raise serializers.ValidationError("You have already applied for this job.")
-        return data
+        return attrs

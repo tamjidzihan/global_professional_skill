@@ -441,6 +441,9 @@ export interface JobApplication {
     job_title: string;
     user: string;
     user_email: string;
+    user_full_name?: string;
+    user_phone?: string;
+    user_picture?: string;
     cv_file: string;
     cover_letter: string;
     status: JobApplicationStatus;

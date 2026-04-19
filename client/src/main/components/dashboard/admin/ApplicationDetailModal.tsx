@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// components/ApplicationDetailModal.tsx
-import { X, FileText, Briefcase, Clock, ExternalLink, Phone, MapPin } from 'lucide-react';
+import { X, FileText, Briefcase, Clock, ExternalLink, Phone } from 'lucide-react';
 import { format } from 'date-fns';
 import type { JobApplication, JobApplicationStatus } from '../../../../types';
 import StatusBadge from './StatusBadge';
@@ -46,14 +44,21 @@ const ApplicationDetailModal = ({
                     <div className="p-6 space-y-6">
                         {/* Candidate Header */}
                         <div className="flex items-start gap-4 pb-4 border-b border-gray-100">
-                            <div className="w-14 h-14 rounded-xl bg-linear-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
-                                {application.user_email.charAt(0).toUpperCase()}
+                            <div className="w-16 h-16 rounded-xl bg-linear-to-br from-violet-500 to-violet-600 flex items-center justify-center text-white font-bold text-xl shadow-sm overflow-hidden shrink-0 border border-gray-100">
+                                {application.user_picture ? (
+                                    <img src={application.user_picture} alt={application.user_full_name} className="w-full h-full object-cover" />
+                                ) : (
+                                    (application.user_full_name || application.user_email).charAt(0).toUpperCase()
+                                )}
                             </div>
-                            <div className="flex-1">
-                                <h3 className="text-lg font-semibold text-gray-900">{application.user_email}</h3>
-                                <div className="flex flex-wrap items-center gap-3 mt-1">
-                                    <span className="text-xs text-gray-500 flex items-center gap-1">
-                                        <Clock className="w-3 h-3" />
+                            <div className="flex-1 min-w-0">
+                                <h3 className="text-xl font-bold text-gray-900 truncate">
+                                    {application.user_full_name || 'No Name Provided'}
+                                </h3>
+                                <p className="text-sm text-gray-500 font-medium">{application.user_email} {application.user_phone && `• ${application.user_phone}`}</p>
+                                <div className="flex flex-wrap items-center gap-3 mt-2">
+                                    <span className="text-xs text-gray-400 flex items-center gap-1">
+                                        <Clock className="w-3.5 h-3.5" />
                                         Applied {format(new Date(application.applied_at), 'MMMM d, yyyy h:mm a')}
                                     </span>
                                     <StatusBadge status={application.status} />
@@ -61,16 +66,27 @@ const ApplicationDetailModal = ({
                             </div>
                         </div>
 
-                        {/* Job Info */}
-                        {application.job_title && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Job Info */}
+                            {application.job_title && (
+                                <div className="bg-gray-50 rounded-xl p-4">
+                                    <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <Briefcase className="w-3.5 h-3.5" />
+                                        Position Applied For
+                                    </h4>
+                                    <p className="text-gray-900 font-semibold">{application.job_title}</p>
+                                </div>
+                            )}
+
+                            {/* Contact Info */}
                             <div className="bg-gray-50 rounded-xl p-4">
-                                <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                    <Briefcase className="w-4 h-4" />
-                                    Position Applied For
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                    <Phone className="w-3.5 h-3.5" />
+                                    Contact Number
                                 </h4>
-                                <p className="text-gray-900 font-medium">{application.job_title}</p>
+                                <p className="text-gray-900 font-semibold">{application.user_phone || 'Not provided'}</p>
                             </div>
-                        )}
+                        </div>
 
                         {/* Cover Letter */}
                         <div>
@@ -101,27 +117,6 @@ const ApplicationDetailModal = ({
                                 View Full CV
                             </a>
                         </div>
-
-                        {/* Additional Info (if available in your type) */}
-                        {(application as any).phone && (
-                            <div>
-                                <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                    <Phone className="w-4 h-4" />
-                                    Phone Number
-                                </h4>
-                                <p className="text-sm text-gray-600">{(application as any).phone}</p>
-                            </div>
-                        )}
-
-                        {(application as any).location && (
-                            <div>
-                                <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                                    <MapPin className="w-4 h-4" />
-                                    Location
-                                </h4>
-                                <p className="text-sm text-gray-600">{(application as any).location}</p>
-                            </div>
-                        )}
 
                         {/* Action Buttons */}
                         <div className="pt-4 border-t border-gray-100">
