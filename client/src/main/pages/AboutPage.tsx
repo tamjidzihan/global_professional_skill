@@ -6,12 +6,12 @@ import {
     Award,
     Monitor,
     CheckCircle,
-    TrendingUp,
     Globe,
     Sparkles,
     Rocket,
     Shield,
-    BookOpen,
+    // TrendingUp,
+    // BookOpen,
     Zap,
     Heart,
     Star,
@@ -52,12 +52,12 @@ const AboutPage = () => {
         },
     ]
 
-    const stats = [
-        { number: "10,000+", label: "Students Trained", icon: Users },
-        { number: "50+", label: "Professional Courses", icon: BookOpen },
-        { number: "95%", label: "Success Rate", icon: TrendingUp },
-        { number: "15+", label: "Years Experience", icon: Award },
-    ]
+    // const stats = [
+    //     { number: "10,000+", label: "Students Trained", icon: Users },
+    //     { number: "50+", label: "Professional Courses", icon: BookOpen },
+    //     { number: "95%", label: "Success Rate", icon: TrendingUp },
+    //     { number: "15+", label: "Years Experience", icon: Award },
+    // ]
 
     const achievements = [
         { text: "Industry-Focused Curriculum", icon: CheckCircle },
@@ -78,7 +78,7 @@ const AboutPage = () => {
 
     return (
         <div className="bg-[#FCF8F1]">
-            <SEO 
+            <SEO
                 title="About Us"
                 description="Global Professional Institute (GPI) is a modern skill development and professional training institute committed to empowering individuals."
                 keywords="about GPI, professional training institute, skill development, GPI mission"
@@ -118,7 +118,7 @@ const AboutPage = () => {
                     </div>
 
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-16">
+                    {/* <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-16">
                         {stats.map((stat, index) => {
                             const Icon = stat.icon
                             const colors = ['blue', 'green', 'purple', 'orange']
@@ -143,7 +143,7 @@ const AboutPage = () => {
                                 </div>
                             )
                         })}
-                    </div>
+                    </div> */}
 
                     {/* Programs Section */}
                     <div className="max-w-4xl mx-auto text-center">
