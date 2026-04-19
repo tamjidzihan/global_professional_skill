@@ -1,30 +1,47 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react';
-import { Plus, Search, MapPin, Edit, Trash2, Eye } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Plus, Search, MapPin, Edit, Trash2, Eye, Filter, Briefcase } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { getJobs, deleteJob } from '../../../../lib/api';
 import type { Job } from '../../../../types';
-import { formatDate } from 'date-fns';
+import { format } from 'date-fns';
 import { toast } from 'react-hot-toast';
 import JobFormModal from '../../../../main/components/dashboard/admin/JobFormModal';
+import SEO from '../../../components/SEO';
+
+const JOB_TYPES: { value: string; label: string }[] = [
+    { value: '', label: 'All Types' },
+    { value: 'FULL_TIME', label: 'Full-time' },
+    { value: 'PART_TIME', label: 'Part-time' },
+    { value: 'CONTRACT', label: 'Contract' },
+    { value: 'INTERNSHIP', label: 'Internship' },
+];
+
+const jobTypeBadge: Record<string, string> = {
+    FULL_TIME: 'bg-blue-50 text-blue-700',
+    PART_TIME: 'bg-violet-50 text-violet-700',
+    CONTRACT: 'bg-amber-50 text-amber-700',
+    INTERNSHIP: 'bg-emerald-50 text-emerald-700',
+};
+
+function getJobTypeLabel(type: string) {
+    return JOB_TYPES.find(t => t.value === type)?.label || type;
+}
 
 const JobManagementPage = () => {
     const [jobs, setJobs] = useState<Job[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedType, setSelectedType] = useState<string>('');
+    const [selectedType, setSelectedType] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedJob, setSelectedJob] = useState<Job | null>(null);
 
     const fetchJobs = async () => {
         try {
             setLoading(true);
-            const response = await getJobs({
-                search: searchTerm,
-                job_type: selectedType,
-            });
+            const response = await getJobs({ search: searchTerm, job_type: selectedType });
             setJobs(response.data.results);
-        } catch (error) {
-            console.error('Failed to fetch jobs:', error);
+        } catch {
             toast.error('Failed to load job postings.');
         } finally {
             setLoading(false);
@@ -32,154 +49,165 @@ const JobManagementPage = () => {
     };
 
     useEffect(() => {
-        const timer = setTimeout(fetchJobs, 500);
+        const timer = setTimeout(fetchJobs, 400);
         return () => clearTimeout(timer);
     }, [searchTerm, selectedType]);
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure you want to delete this job posting?')) return;
-
+        if (!window.confirm('Delete this job posting?')) return;
         try {
             await deleteJob(id);
-            toast.success('Job posting deleted successfully.');
+            toast.success('Job deleted.');
             fetchJobs();
-        } catch (error) {
-            console.error('Delete failed:', error);
-            toast.error('Failed to delete job posting.');
+        } catch {
+            toast.error('Failed to delete.');
         }
     };
 
-    const handleEdit = (job: Job) => {
-        setSelectedJob(job);
-        setIsModalOpen(true);
-    };
-
-    const handleCreate = () => {
-        setSelectedJob(null);
-        setIsModalOpen(true);
-    };
-
-    const getJobTypeLabel = (type: string) => {
-        switch (type) {
-            case 'FULL_TIME': return 'Full-time';
-            case 'PART_TIME': return 'Part-time';
-            case 'CONTRACT': return 'Contract';
-            case 'INTERNSHIP': return 'Internship';
-            default: return type;
-        }
-    };
+    // ── shared tokens ──────────────────────────────────────────────────────
+    const card = 'bg-white rounded-xl border border-gray-100 shadow-sm';
+    const cardHeader = 'flex items-center justify-between px-5 py-4 border-b border-gray-100';
 
     return (
-        <div className="p-6 max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div className="py-6 px-4 md:px-6">
+            <SEO title="Job Management" />
+
+            {/* Page header */}
+            <div className="flex items-center justify-between mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Job Management</h1>
-                    <p className="text-gray-600">Post and manage career opportunities.</p>
+                    <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Job Management</h1>
+                    <p className="text-sm text-gray-400 mt-0.5">Post and manage career opportunities</p>
                 </div>
-                <button 
-                    onClick={handleCreate}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                <button
+                    onClick={() => { setSelectedJob(null); setIsModalOpen(true); }}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-violet-600 text-white text-sm font-semibold rounded-lg hover:bg-violet-700 transition-colors cursor-pointer shadow-sm"
                 >
-                    <Plus className="h-5 w-5" />
-                    Create New Job
+                    <Plus className="w-4 h-4" /> Create Job
                 </button>
             </div>
 
-            {/* Filters */}
-            <div className="bg-white p-4 rounded-xl shadow-sm mb-6 flex flex-col md:flex-row gap-4">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                    <input
-                        type="text"
-                        placeholder="Search jobs..."
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+            {/* Table card */}
+            <div className={card}>
+                {/* Header */}
+                <div className={`${cardHeader} flex-col sm:flex-row gap-3`}>
+                    <div>
+                        <p className="text-sm font-semibold text-gray-900">Job Postings</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{jobs.length} total</p>
+                    </div>
+                    <div className="flex items-center gap-2 sm:ml-auto">
+                        {/* Search */}
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                            <input
+                                type="text"
+                                placeholder="Search jobs..."
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                className="pl-8 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700 placeholder-gray-400 outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-50 transition-all w-44"
+                            />
+                        </div>
+                        {/* Type filter */}
+                        <div className="relative">
+                            <select
+                                value={selectedType}
+                                onChange={e => setSelectedType(e.target.value)}
+                                className="appearance-none pl-3 pr-8 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700 outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-50 transition-all cursor-pointer"
+                            >
+                                {JOB_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                            </select>
+                            <Filter className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                        </div>
+                    </div>
                 </div>
-                <div className="flex gap-4">
-                    <select
-                        className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
-                        value={selectedType}
-                        onChange={(e) => setSelectedType(e.target.value)}
-                    >
-                        <option value="">All Types</option>
-                        <option value="FULL_TIME">Full-time</option>
-                        <option value="PART_TIME">Part-time</option>
-                        <option value="CONTRACT">Contract</option>
-                        <option value="INTERNSHIP">Internship</option>
-                    </select>
-                </div>
-            </div>
 
-            {/* Job Table */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                {/* Table */}
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-50 border-b border-gray-100 text-gray-600 uppercase text-xs font-bold">
-                            <tr>
-                                <th className="px-6 py-4">Job Title</th>
-                                <th className="px-6 py-4">Location</th>
-                                <th className="px-6 py-4">Type</th>
-                                <th className="px-6 py-4">Created</th>
-                                <th className="px-6 py-4">Status</th>
-                                <th className="px-6 py-4 text-right">Actions</th>
+                    <table className="min-w-full">
+                        <thead>
+                            <tr className="border-b border-gray-100">
+                                {['Job Title', 'Location', 'Type', 'Created', 'Status', ''].map(h => (
+                                    <th key={h} className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-gray-400">{h}</th>
+                                ))}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-gray-50">
                             {loading ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-10 text-center">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                                    </td>
-                                </tr>
-                            ) : jobs.length > 0 ? (
-                                jobs.map((job) => (
-                                    <tr key={job.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="font-semibold text-gray-900">{job.title}</div>
+                                [...Array(4)].map((_, i) => (
+                                    <tr key={i}>
+                                        <td colSpan={6} className="px-5 py-3">
+                                            <div className="animate-pulse h-10 bg-gray-50 rounded-lg" />
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-1.5 text-gray-600">
-                                                <MapPin className="h-4 w-4" />
-                                                <span>{job.location}</span>
+                                    </tr>
+                                ))
+                            ) : jobs.length > 0 ? (
+                                jobs.map(job => (
+                                    <tr key={job.id} className="group hover:bg-gray-50/60 transition-colors duration-100">
+
+                                        {/* Title */}
+                                        <td className="px-5 py-3 whitespace-nowrap">
+                                            <Link
+                                                to={`/dashboard/admin/careers/${job.id}/applications`}
+                                                title="View Applications">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
+                                                        <Briefcase className="w-4 h-4 text-violet-600" />
+                                                    </div>
+                                                    <p className="text-sm font-semibold text-gray-800">{job.title}</p>
+                                                </div>
+                                            </Link>
+                                        </td>
+
+                                        {/* Location */}
+                                        <td className="px-5 py-3 whitespace-nowrap">
+                                            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                                <MapPin className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+                                                {job.location}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-gray-600">{getJobTypeLabel(job.job_type)}</span>
+
+                                        {/* Type */}
+                                        <td className="px-5 py-3 whitespace-nowrap">
+                                            <span className={`inline-flex px-2 py-0.5 text-[11px] font-bold rounded-md ${jobTypeBadge[job.job_type] || 'bg-gray-50 text-gray-600'}`}>
+                                                {getJobTypeLabel(job.job_type)}
+                                            </span>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-gray-600">{formatDate(new Date(job.created_at), 'MMM d, yyyy')}</span>
+
+                                        {/* Created */}
+                                        <td className="px-5 py-3 whitespace-nowrap">
+                                            <p className="text-xs text-gray-500">{format(new Date(job.created_at), 'MMM d, yyyy')}</p>
                                         </td>
-                                        <td className="px-6 py-4">
-                                            {job.is_active ? (
-                                                <span className="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold uppercase tracking-wider">Active</span>
-                                            ) : (
-                                                <span className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-bold uppercase tracking-wider">Inactive</span>
-                                            )}
+
+                                        {/* Status */}
+                                        <td className="px-5 py-3 whitespace-nowrap">
+                                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold rounded-md ${job.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full ${job.is_active ? 'bg-emerald-500' : 'bg-gray-400'}`} />
+                                                {job.is_active ? 'Active' : 'Inactive'}
+                                            </span>
                                         </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <Link 
+
+                                        {/* Actions */}
+                                        <td className="px-5 py-3 whitespace-nowrap text-right">
+                                            <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Link
                                                     to={`/dashboard/admin/careers/${job.id}/applications`}
-                                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" 
                                                     title="View Applications"
+                                                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-50 border border-gray-100 text-gray-400 hover:bg-violet-50 hover:border-violet-200 hover:text-violet-600 transition-colors"
                                                 >
-                                                    <Eye className="h-5 w-5" />
+                                                    <Eye className="w-3.5 h-3.5" />
                                                 </Link>
-                                                <button 
-                                                    onClick={() => handleEdit(job)}
-                                                    className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors" 
-                                                    title="Edit Job"
+                                                <button
+                                                    onClick={() => { setSelectedJob(job); setIsModalOpen(true); }}
+                                                    title="Edit"
+                                                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-50 border border-gray-100 text-gray-400 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-600 transition-colors cursor-pointer"
                                                 >
-                                                    <Edit className="h-5 w-5" />
+                                                    <Edit className="w-3.5 h-3.5" />
                                                 </button>
-                                                <button 
+                                                <button
                                                     onClick={() => handleDelete(job.id)}
-                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
-                                                    title="Delete Job"
+                                                    title="Delete"
+                                                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-50 border border-gray-100 text-gray-400 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-500 transition-colors cursor-pointer"
                                                 >
-                                                    <Trash2 className="h-5 w-5" />
+                                                    <Trash2 className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>
                                         </td>
@@ -187,8 +215,18 @@ const JobManagementPage = () => {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
-                                        No job postings found.
+                                    <td colSpan={6} className="py-14 text-center">
+                                        <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center mx-auto mb-3">
+                                            <Briefcase className="w-5 h-5 text-gray-300" />
+                                        </div>
+                                        <p className="text-sm font-medium text-gray-500">No job postings found</p>
+                                        <p className="text-xs text-gray-400 mt-0.5 mb-4">Create your first job posting to get started</p>
+                                        <button
+                                            onClick={() => { setSelectedJob(null); setIsModalOpen(true); }}
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 text-white text-xs font-semibold rounded-lg hover:bg-violet-700 transition-colors cursor-pointer"
+                                        >
+                                            <Plus className="w-3.5 h-3.5" /> Create Job
+                                        </button>
                                     </td>
                                 </tr>
                             )}
