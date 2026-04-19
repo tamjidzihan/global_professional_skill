@@ -72,7 +72,7 @@ const CareerPage = () => {
                         <div className="relative flex-1 md:flex-none">
                             <Filter className="absolute left-3 top-1/2 -transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                             <select
-                                className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg appearance-none bg-white focus:ring-2 focus:ring-blue-500 outline-none min-w-[150px]"
+                                className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg appearance-none bg-white focus:ring-2 focus:ring-blue-500 outline-none min-w-37.5"
                                 value={selectedType}
                                 onChange={(e) => setSelectedType(e.target.value)}
                             >

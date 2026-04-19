@@ -1,14 +1,15 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { 
-    FileText, 
-    Download, 
-    ExternalLink, 
-    User, 
-    Mail, 
-    Clock, 
-    CheckCircle, 
-    XCircle, 
+import {
+    FileText,
+    Download,
+    ExternalLink,
+    User,
+    Clock,
+    CheckCircle,
+    XCircle,
     Loader2,
     ArrowLeft,
     Filter
@@ -100,7 +101,7 @@ const JobApplicationsPage = () => {
                     <div className="relative flex-1 md:flex-none">
                         <Filter className="absolute left-3 top-1/2 -transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                         <select
-                            className="pl-9 pr-8 py-2 border border-gray-200 rounded-lg appearance-none bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm min-w-[150px]"
+                            className="pl-9 pr-8 py-2 border border-gray-200 rounded-lg appearance-none bg-white focus:ring-2 focus:ring-blue-500 outline-none text-sm min-w-37.5"
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                         >
@@ -174,7 +175,7 @@ const JobApplicationsPage = () => {
                                                 <Download className="h-4 w-4" />
                                                 Download CV
                                             </a>
-                                            
+
                                             <div className="flex gap-1">
                                                 <button
                                                     onClick={() => handleStatusUpdate(app.id, 'ACCEPTED')}
