@@ -382,6 +382,7 @@ export interface PaymentCreateData {
 
 export interface ApiResponse<T> {
     success: boolean;
+    message?: string;
     data: T;
     error?: {
         code: string;
@@ -413,4 +414,46 @@ export interface SiteSettings {
     bkash_merchant_number: string;
     bkash_qr_code: string | null;
     updated_at: string;
+}
+
+// Career Management Types
+export type JobType = 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERNSHIP';
+export type JobApplicationStatus = 'PENDING' | 'REVIEWED' | 'ACCEPTED' | 'REJECTED';
+
+export interface Job {
+    id: string;
+    title: string;
+    description: string;
+    requirements: string;
+    location: string;
+    job_type: JobType;
+    salary_range: string;
+    closing_date: string | null;
+    is_active: boolean;
+    is_expired: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface JobApplication {
+    id: string;
+    job: string;
+    job_title: string;
+    user: string;
+    user_email: string;
+    cv_file: string;
+    cover_letter: string;
+    status: JobApplicationStatus;
+    applied_at: string;
+}
+
+export interface JobCreateUpdateData {
+    title: string;
+    description: string;
+    requirements: string;
+    location: string;
+    job_type: JobType;
+    salary_range?: string;
+    closing_date?: string | null;
+    is_active: boolean;
 }

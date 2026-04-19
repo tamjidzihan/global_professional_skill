@@ -24,6 +24,10 @@ import type {
     PaginatedResponse,
     PasswordResetRequestData,
     PasswordResetConfirmData,
+    Job,
+    JobApplication,
+    JobCreateUpdateData,
+    JobApplicationStatus,
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
@@ -229,7 +233,40 @@ export const endpoints = {
     core: {
         settings: '/core/settings/',
     },
+    careers: {
+        jobs: '/careers/jobs/',
+        jobDetail: (id: string) => `/careers/jobs/${id}/`,
+        applications: '/careers/applications/',
+        applicationDetail: (id: string) => `/careers/applications/${id}/`,
+        updateStatus: (id: string) => `/careers/applications/${id}/update_status/`,
+    },
 };
+
+// Career API Calls
+export const getJobs = (params?: Record<string, any>): Promise<AxiosResponse<PaginatedResponse<Job[]>>> =>
+    api.get<PaginatedResponse<Job[]>>(endpoints.careers.jobs, { params });
+
+export const getJobDetail = (id: string): Promise<AxiosResponse<Job>> =>
+    api.get<Job>(endpoints.careers.jobDetail(id));
+
+export const createJob = (data: JobCreateUpdateData): Promise<AxiosResponse<Job>> =>
+    api.post<Job>(endpoints.careers.jobs, data);
+
+export const updateJob = (id: string, data: Partial<JobCreateUpdateData>): Promise<AxiosResponse<Job>> =>
+    api.put<Job>(endpoints.careers.jobDetail(id), data);
+
+export const deleteJob = (id: string): Promise<AxiosResponse<void>> =>
+    api.delete<void>(endpoints.careers.jobDetail(id));
+
+export const applyForJob = (data: FormData): Promise<AxiosResponse<JobApplication>> =>
+    api.post<JobApplication>(endpoints.careers.applications, data);
+
+export const getApplications = (params?: Record<string, any>): Promise<AxiosResponse<PaginatedResponse<JobApplication[]>>> =>
+    api.get<PaginatedResponse<JobApplication[]>>(endpoints.careers.applications, { params });
+
+export const updateApplicationStatus = (id: string, status: JobApplicationStatus): Promise<AxiosResponse<any>> =>
+    api.patch(endpoints.careers.updateStatus(id), { status });
+
 
 // Site Settings API Calls
 export const getSiteSettings = (): Promise<AxiosResponse<ApiResponse<any>>> =>

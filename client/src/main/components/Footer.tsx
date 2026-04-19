@@ -16,6 +16,7 @@ import {
     GraduationCap,
     Building2,
     Users,
+    Briefcase,
 } from 'lucide-react'
 import { FaWhatsapp } from "react-icons/fa";
 import { Link } from 'react-router-dom'
@@ -41,7 +42,7 @@ export function Footer() {
         { label: 'All Courses', path: '/courses', icon: BookOpen },
         { label: 'Become an Instructor', path: '/apply-as-instructor', icon: GraduationCap },
         { label: 'Student Portal', path: '/dashboard/student', icon: Users },
-        { label: 'Career Support', path: '/career', icon: Award },
+        { label: 'Careers', path: '/careers', icon: Briefcase },
         { label: 'Contact Us', path: '/contact', icon: Mail },
     ]
 

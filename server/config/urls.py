@@ -49,6 +49,7 @@ urlpatterns = [
     path("api/v1/analytics/", include("apps.analytics.urls")),
     path("api/v1/payments/", include("apps.payments.urls")),
     path("api/v1/core/", include("apps.core.urls")),
+    path("api/v1/careers/", include("apps.careers.urls")),
 ]
 
 

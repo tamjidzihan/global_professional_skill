@@ -23,6 +23,8 @@ import PrivacyPage from "./main/pages/PrivacyPage";
 import { RegisterPage } from "./main/pages/RegisterPage";
 import TermsPage from "./main/pages/TermsPage";
 import ContactPage from "./main/pages/ContactPage";
+import CareerPage from "./main/pages/CareerPage";
+import JobDetailPage from "./main/pages/JobDetailPage";
 import VerifyEmailPromptPage from "./main/pages/VerifyEmailPromptPage";
 import ProtectedRoute from "./ProtectedRoute";
 import { PublicRoute } from "./PublicRoute";
@@ -35,6 +37,8 @@ import { CategoryManagementPage } from "./main/pages/dashboard/admin/CategoryMan
 import PaymentManagementPage from "./main/pages/dashboard/admin/PaymentManagementPage";
 import SiteSettingsPage from "./main/pages/dashboard/admin/SiteSettingsPage";
 import AdminCourseDetailPage from "./main/pages/dashboard/admin/AdminCourseDetailPage";
+import JobManagementPage from "./main/pages/dashboard/admin/JobManagementPage";
+import JobApplicationsPage from "./main/pages/dashboard/admin/JobApplicationsPage";
 import CheckoutPage from "./main/pages/CheckoutPage";
 import MyEnrollmentsPage from "./main/pages/dashboard/student/MyEnrollmentsPage";
 import EnrolledCourseDetailPage from "./main/pages/dashboard/student/EnrolledCourseDetailPage";
@@ -60,6 +64,8 @@ export const router = createBrowserRouter([
             { path: '/terms', element: <TermsPage /> },
             { path: '/privacy', element: <PrivacyPage /> },
             { path: '/contact', element: <ContactPage /> },
+            { path: '/careers', element: <CareerPage /> },
+            { path: '/careers/:id', element: <JobDetailPage /> },
 
             // Auth routes
             {
@@ -259,6 +265,30 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['ADMIN']}>
                                 <SiteSettingsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/careers',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <JobManagementPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/careers/:jobId/applications',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <JobApplicationsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/careers/applications',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <JobApplicationsPage />
                             </ProtectedRoute>
                         )
                     },

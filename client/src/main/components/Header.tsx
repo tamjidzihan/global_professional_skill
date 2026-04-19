@@ -64,6 +64,7 @@ const Header = () => {
         },
         // { path: '#', label: 'PGD' },
         // { path: '#', label: 'RPL' },
+        { path: '/careers', label: 'Careers' },
         { path: '/about', label: 'About Us' }
     ]
 
