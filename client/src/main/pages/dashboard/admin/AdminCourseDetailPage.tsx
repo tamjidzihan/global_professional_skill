@@ -126,7 +126,7 @@ const AdminCourseDetailPage = () => {
             ADVANCED: 'bg-rose-50 text-rose-700',
         };
         return (
-            <span className={`inline-flex px-2 py-0.5 rounded-md text-xs font-semibold ${map[level] || 'bg-gray-50 text-gray-600'}`}>
+            <span className={`inline-flex px-3 py-1.5 rounded-md text-xs font-semibold ${map[level] || 'bg-gray-50 text-gray-600'}`}>
                 {level}
             </span>
         );
@@ -159,7 +159,7 @@ const AdminCourseDetailPage = () => {
         doc.setFontSize(22);
         doc.setTextColor(124, 58, 237); // Violet 600
         doc.text("Course Detailed Report", 14, 20);
-        
+
         doc.setFontSize(14);
         doc.setTextColor(100);
         doc.text(selectedCourse.title, 14, 30);
@@ -336,14 +336,7 @@ const AdminCourseDetailPage = () => {
                             <ArrowLeft className="w-4 h-4" /> Back to Courses
                         </button>
                     </div>
-                    <div className=' space-x-3'>
-                        <button
-                            onClick={() => navigate(`/dashboard/admin/courses/${id}/students`)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-violet-700 bg-violet-50 border border-violet-100 rounded-lg hover:bg-violet-100 transition-colors cursor-pointer"
-                        >
-                            <Users className="w-3.5 h-3.5" />View Enrolled Students
-                        </button>
-                    </div>
+
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -360,7 +353,15 @@ const AdminCourseDetailPage = () => {
                                     <h1 className="text-base font-semibold text-gray-900 leading-snug">{selectedCourse.title}</h1>
                                     <p className={sectionSub}>Course Overview</p>
                                 </div>
-                                {getDifficultyBadge(selectedCourse.difficulty_level)}
+                                <div className=' space-x-3'>
+                                    <button
+                                        onClick={() => navigate(`/dashboard/admin/courses/${id}/students`)}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-violet-700 bg-violet-50 border border-violet-100 rounded-lg hover:bg-violet-100 transition-colors cursor-pointer"
+                                    >
+                                        <Users className="w-3.5 h-3.5" />View Enrolled Students
+                                    </button>
+                                    {getDifficultyBadge(selectedCourse.difficulty_level)}
+                                </div>
                             </div>
                             <div className={cardBody}>
                                 {/* Quick meta row */}
