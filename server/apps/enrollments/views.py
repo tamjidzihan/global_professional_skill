@@ -2,7 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.db import transaction
+from django.db import transaction, models
 from .models import Enrollment, LessonProgress, Certificate
 from .serializers import (
     EnrollmentSerializer,
@@ -15,12 +15,22 @@ from apps.courses.models import Course
 class EnrollmentViewSet(viewsets.ModelViewSet):
     serializer_class = EnrollmentSerializer
     permission_classes = [IsAuthenticated]
-    filterset_fields = []
+    filterset_fields = ["course"]
 
     def get_queryset(self):  # type: ignore
-        if not self.request.user.is_authenticated:
+        user = self.request.user
+        if not user.is_authenticated:
             return Enrollment.objects.none()
-        return Enrollment.objects.filter(student=self.request.user).select_related(
+
+        if user.is_admin_user: # type: ignore
+            return Enrollment.objects.all().select_related("course", "student")
+
+        if user.is_instructor: # type: ignore
+            return Enrollment.objects.filter(
+                models.Q(course__instructor=user) | models.Q(student=user)
+            ).select_related("course", "student").distinct()
+
+        return Enrollment.objects.filter(student=user).select_related(
             "course", "student"
         )
 

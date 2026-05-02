@@ -1,10 +1,12 @@
 from rest_framework import serializers
 from .models import Enrollment, LessonProgress, Certificate
 from apps.courses.serializers import CourseListSerializer
+from apps.accounts.serializers import UserSerializer
 
 
 class EnrollmentSerializer(serializers.ModelSerializer):
     course = CourseListSerializer(read_only=True)
+    student = UserSerializer(read_only=True)
     student_name = serializers.CharField(source='student.get_full_name', read_only=True)
     
     class Meta:

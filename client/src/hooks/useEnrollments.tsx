@@ -28,6 +28,27 @@ export function useEnrollments() {
         }
     }, [])
 
+    const fetchAllEnrollments = useCallback(async (params?: Record<string, string | number | boolean>) => {
+        setLoading(true)
+        setError(null)
+        try {
+            const response = await getEnrollments(params)
+            setEnrollments(response.data.results)
+            return response.data
+        } catch (err: unknown) {
+            let msg = 'Failed to fetch enrollments'
+            if (isAxiosError(err)) {
+                msg = err.response?.data?.error?.message || msg
+            } else if (err instanceof Error) {
+                msg = err.message || msg
+            }
+            setError(msg)
+            return null
+        } finally {
+            setLoading(false)
+        }
+    }, [])
+
     const fetchEnrollmentDetail = useCallback(async (id: string) => {
         setLoading(true)
         setError(null)
@@ -76,6 +97,7 @@ export function useEnrollments() {
         loading,
         error,
         getMyEnrollments,
+        fetchAllEnrollments,
         fetchEnrollmentDetail,
         enroll,
     }

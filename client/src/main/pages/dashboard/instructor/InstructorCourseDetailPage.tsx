@@ -241,14 +241,19 @@ export function InstructorCourseDetailPage() {
                         <DeliveryModeBadge mode={course.delivery_mode} />
                         <StatusBadge status={course.status} />
 
-                        {course.status !== 'PENDING' && (
-                            <Link
-                                to={`/dashboard/instructor/edit-course/${course.id}`}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:border-violet-300 hover:text-violet-700 transition-colors"
-                            >
-                                <Edit className="w-3.5 h-3.5" /> Edit
-                            </Link>
-                        )}
+                        <Link
+                            to={`/dashboard/instructor/my-courses/${id}/students`}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg hover:bg-emerald-100 transition-colors"
+                        >
+                            <Users className="w-3.5 h-3.5" /> Enrolled Students
+                        </Link>
+
+                        <Link
+                            to={`/dashboard/instructor/edit-course/${course.id}`}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:border-violet-300 hover:text-violet-700 transition-colors"
+                        >
+                            <Edit className="w-3.5 h-3.5" /> Edit
+                        </Link>
                         {course.status === 'DRAFT' && (
                             <button
                                 onClick={() => setShowSubmitModal(true)}
@@ -365,27 +370,35 @@ export function InstructorCourseDetailPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                         onClick={handleManageCurriculum}
-                        className={`flex items-center gap-3 px-4 py-3.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-violet-200 hover:shadow-md transition-all text-left group cursor-pointer ${course.status === 'PENDING' ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        className={`group flex items-center gap-4 px-5 py-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-violet-200 hover:shadow-md transition-all duration-150 text-left cursor-pointer ${course.status === 'PENDING' ? 'opacity-60 cursor-not-allowed' : ''}`}
                     >
-                        <div className="w-9 h-9 rounded-lg bg-violet-50 flex items-center justify-center shrink-0 group-hover:bg-violet-100 transition-colors">
-                            <BookOpen className="w-4.5 h-4.5 text-violet-500" />
+                        <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center shrink-0 group-hover:bg-violet-100 transition-colors">
+                            <BookOpen className="w-5 h-5 text-violet-600" />
                         </div>
-                        <div>
-                            <p className="text-sm font-semibold text-gray-800">Manage Curriculum</p>
-                            <p className="text-xs text-gray-400">Update lessons & modules</p>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900">Manage Curriculum</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Update lessons & modules</p>
+                        </div>
+                        <div className="w-6 h-6 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:bg-violet-50 group-hover:border-violet-200 transition-colors">
+                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 group-hover:text-violet-500 -rotate-90 transition-colors" />
                         </div>
                     </button>
 
                     <button
-                        onClick={() => navigate(`#`)}
-                        className="flex items-center gap-3 px-4 py-3.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-violet-200 hover:shadow-md transition-all text-left group cursor-pointer"
+                        onClick={() => navigate(`/dashboard/instructor/my-courses/${id}/students`)}
+                        className="group flex items-center gap-4 px-5 py-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-emerald-200 hover:shadow-md transition-all duration-150 text-left cursor-pointer"
                     >
-                        <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
-                            <Users className="w-4.5 h-4.5 text-emerald-500" />
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
+                            <Users className="w-5 h-5 text-emerald-600" />
                         </div>
-                        <div>
-                            <p className="text-sm font-semibold text-gray-800">View Students</p>
-                            <p className="text-xs text-gray-400">{course.enrollment_count || 0} enrolled</p>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900">View Students</p>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                                <span className="font-semibold text-emerald-600">{course.enrollment_count || 0}</span> enrolled
+                            </p>
+                        </div>
+                        <div className="w-6 h-6 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-colors">
+                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 group-hover:text-emerald-500 -rotate-90 transition-colors" />
                         </div>
                     </button>
                 </div>

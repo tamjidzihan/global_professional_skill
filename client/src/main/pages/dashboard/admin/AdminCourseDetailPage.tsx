@@ -37,6 +37,8 @@ import {
     MonitorPlay,
     Layers,
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import SEO from '../../../components/SEO';
 
 const AdminCourseDetailPage = () => {
@@ -148,6 +150,70 @@ const AdminCourseDetailPage = () => {
         return h > 0 ? `${h}h ${m}m` : `${m}m`;
     };
 
+    const handleExportPDF = () => {
+        if (!selectedCourse) return;
+
+        const doc = new jsPDF();
+
+        // Title
+        doc.setFontSize(22);
+        doc.setTextColor(124, 58, 237); // Violet 600
+        doc.text("Course Detailed Report", 14, 20);
+        
+        doc.setFontSize(14);
+        doc.setTextColor(100);
+        doc.text(selectedCourse.title, 14, 30);
+
+        // General Information
+        autoTable(doc, {
+            startY: 40,
+            head: [['Field', 'Details']],
+            body: [
+                ['Instructor', selectedCourse.instructor?.full_name || 'N/A'],
+                ['Category', selectedCourse.category?.name || 'N/A'],
+                ['Status', selectedCourse.status],
+                ['Difficulty', selectedCourse.difficulty_level],
+                ['Delivery Mode', selectedCourse.delivery_mode],
+                ['Price', selectedCourse.is_free ? 'Free' : `TK ${selectedCourse.price}`],
+                ['Duration', `${selectedCourse.duration_hours} Hours`],
+                ['Total Classes', selectedCourse.total_classes],
+                ['Enrollments', selectedCourse.enrollment_count || 0],
+            ],
+            theme: 'striped',
+            headStyles: { fillColor: [124, 58, 237] }
+        });
+
+        // Curriculum
+        if (selectedCourse.sections && selectedCourse.sections.length > 0) {
+            const lastY = (doc as any).lastAutoTable.finalY;
+            doc.setFontSize(18);
+            doc.setTextColor(124, 58, 237);
+            doc.text("Curriculum", 14, lastY + 15);
+
+            const curriculumBody: any[] = [];
+            selectedCourse.sections.sort((a: any, b: any) => a.order - b.order).forEach((section: any) => {
+                curriculumBody.push([{ content: `Section ${section.order}: ${section.title}`, colSpan: 3, styles: { fillColor: [243, 244, 246], fontStyle: 'bold' } }]);
+                section.lessons?.sort((a: any, b: any) => a.order - b.order).forEach((lesson: any) => {
+                    curriculumBody.push([
+                        `Lesson ${lesson.order}`,
+                        lesson.title,
+                        lesson.lesson_type
+                    ]);
+                });
+            });
+
+            autoTable(doc, {
+                startY: lastY + 20,
+                head: [['Order', 'Title', 'Type']],
+                body: curriculumBody,
+                theme: 'grid',
+                headStyles: { fillColor: [124, 58, 237] }
+            });
+        }
+
+        doc.save(`${selectedCourse.slug || 'course'}_report.pdf`);
+    };
+
     // ── Shared card styles ───────────────────────────────────────────────────
     const card = 'bg-white rounded-xl border border-gray-100 shadow-sm';
     const cardHeader = 'flex items-center justify-between px-5 py-4 border-b border-gray-100';
@@ -162,7 +228,7 @@ const AdminCourseDetailPage = () => {
         return (
             <div className="min-h-screen bg-gray-50/50 p-6">
                 <SEO title="Course Details" noindex={true} />
-                <div className="max-w-7xl mx-auto">
+                <div className="mx-auto">
                     <button
                         onClick={() => navigate('/dashboard/admin/courses')}
                         className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 mb-6 transition-colors"
@@ -258,17 +324,26 @@ const AdminCourseDetailPage = () => {
                 </div>
             )}
 
-            <div className="max-w-7xl mx-auto p-4 md:p-6">
+            <div className="mx-auto p-4 md:p-6">
 
                 {/* ── Top nav bar ── */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                    <button
-                        onClick={() => navigate('/dashboard/admin/courses')}
-                        className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors w-fit cursor-pointer"
-                    >
-                        <ArrowLeft className="w-4 h-4" /> Back to Courses
-                    </button>
-                    {getStatusBadge(selectedCourse.status)}
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => navigate('/dashboard/admin/courses')}
+                            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors w-fit cursor-pointer"
+                        >
+                            <ArrowLeft className="w-4 h-4" /> Back to Courses
+                        </button>
+                    </div>
+                    <div className=' space-x-3'>
+                        <button
+                            onClick={() => navigate(`/dashboard/admin/courses/${id}/students`)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-violet-700 bg-violet-50 border border-violet-100 rounded-lg hover:bg-violet-100 transition-colors cursor-pointer"
+                        >
+                            <Users className="w-3.5 h-3.5" />View Enrolled Students
+                        </button>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -797,6 +872,12 @@ const AdminCourseDetailPage = () => {
                                         </div>
 
                                         <div className="mt-3 space-y-1.5">
+                                            <button
+                                                onClick={() => navigate(`/dashboard/admin/courses/${id}/students`)}
+                                                className="w-full flex items-center justify-center gap-2 p-2.5 bg-violet-50 text-violet-700 hover:bg-violet-100 rounded-lg transition-colors font-semibold text-xs cursor-pointer"
+                                            >
+                                                <Users className="w-3.5 h-3.5" /> View Enrolled Students
+                                            </button>
                                             {selectedCourse.is_full && (
                                                 <div className="flex items-center gap-2 p-2.5 bg-amber-50 rounded-lg">
                                                     <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
@@ -819,8 +900,8 @@ const AdminCourseDetailPage = () => {
                         <div className={card}>
                             <div className={cardBody}>
                                 <button
-                                    disabled
-                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-50 text-gray-400 text-sm font-semibold rounded-lg border border-gray-100 cursor-not-allowed"
+                                    onClick={handleExportPDF}
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-violet-600 text-white text-sm font-semibold rounded-lg hover:bg-violet-700 transition-colors cursor-pointer"
                                 >
                                     <Download className="w-4 h-4" /> Export Course Data
                                 </button>

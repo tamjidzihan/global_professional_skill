@@ -336,11 +336,11 @@ export interface Enrollment {
     id: string;
     course: CoursesSummary;
     student_name: string;
-    student: string;
+    student: User;
     progress_percentage?: string;
     enrolled_at: string;
     last_accessed: string;
-    completed_at: boolean;
+    completed_at: string | null;
     completed_lessons: number;
 }
 

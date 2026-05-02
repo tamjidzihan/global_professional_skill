@@ -45,6 +45,7 @@ import EnrolledCourseDetailPage from "./main/pages/dashboard/student/EnrolledCou
 import { CertificatesPage } from "./main/pages/dashboard/student/CertificatesPage";
 import { ReportsPage } from "./main/pages/dashboard/instructor/ReportsPage";
 import CourseProgressPage from "./main/pages/dashboard/instructor/CourseProgressPage";
+import EnrolledStudentsPage from "./main/pages/dashboard/EnrolledStudentsPage";
 
 
 export const router = createBrowserRouter([
@@ -196,6 +197,14 @@ export const router = createBrowserRouter([
                         )
                     },
                     {
+                        path: 'instructor/my-courses/:id/students',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+                                <EnrolledStudentsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
                         path: 'instructor/reports',
                         element: (
                             <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
@@ -233,6 +242,14 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['ADMIN']}>
                                 <AdminCourseDetailPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/courses/:id/students',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <EnrolledStudentsPage />
                             </ProtectedRoute>
                         )
                     },
