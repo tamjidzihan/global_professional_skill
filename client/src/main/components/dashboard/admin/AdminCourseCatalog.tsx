@@ -211,7 +211,7 @@ export function AdminCourseCatalog(): JSX.Element {
                 <table className="min-w-full">
                     <thead>
                         <tr className="border-b border-gray-100">
-                            {['Course', 'Instructor', 'Status', 'Price', ''].map(h => (
+                            {['Course', 'Instructor', 'Enrollments', 'Status', 'Price', ''].map(h => (
                                 <th key={h} className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-gray-400">
                                     {h}
                                 </th>
@@ -250,6 +250,13 @@ export function AdminCourseCatalog(): JSX.Element {
                                     {/* Instructor */}
                                     <td className="px-5 py-3 whitespace-nowrap">
                                         <p className="text-sm text-gray-600 font-medium">{course.instructor_name}</p>
+                                    </td>
+
+                                    {/* Enrollments */}
+                                    <td className="px-5 py-3 whitespace-nowrap">
+                                        <Link to={`/dashboard/admin/courses/${course.id}/students`}>
+                                            <p className="text-sm hover:text-violet-600 text-gray-600 font-medium">{course.enrollment_count}</p>
+                                        </Link>
                                     </td>
 
                                     {/* Status */}
