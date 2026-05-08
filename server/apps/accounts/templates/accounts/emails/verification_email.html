@@ -1,45 +1,42 @@
 {% extends 'accounts/emails/base.html' %}
 
 {% block content %}
-<h2 style="color: #333; margin-top: 0;">Hello {{ user.get_full_name }},</h2>
+<p>Hello {{ user.get_full_name }},</p>
 
-<p style="font-size: 16px; color: #555;">
-    Thank you for joining <strong>{{ site_name }}</strong>! We're excited to have you on board.
+<p>
+    Welcome to <strong>{{ site_name }}</strong>! We're glad to have you here.
 </p>
 
-<p style="font-size: 16px; color: #555;">
-    To complete your registration and start your learning journey, please verify your email address
-    by clicking the button below:
+<p>
+    Please verify your email address to complete your registration by clicking the button below:
 </p>
 
-<div style="text-align: center; margin: 30px 0;">
+<div style="text-align: center;">
     <a href="{{ verification_url }}" class="button">
         Verify Email Address
     </a>
 </div>
 
-<p style="font-size: 16px; color: #555; text-align: center;">
-    Or copy and paste this link in your browser:<br>
-    <a href="{{ verification_url }}" style="color: #667eea; word-break: break-all;">
+<p style="font-size: 14px; color: #666; margin-top: 30px;">
+    If you're having trouble with the button, copy and paste this link into your browser:<br>
+    <a href="{{ verification_url }}" style="color: #2563eb; word-break: break-all;">
         {{ verification_url }}
     </a>
 </p>
 
 <div class="divider"></div>
 
-<p style="font-size: 14px; color: #777;">
-    <strong>Important:</strong> This verification link will expire in <strong>24 hours</strong>.
-    If you don't verify within this time, you'll need to request a new verification email.
+<p style="font-size: 13px; color: #888;">
+    This link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.
 </p>
 
-<p style="font-size: 14px; color: #777;">
-    Need help? <a href="{{ site_url }}/contact" style="color: #667eea;">Contact our support team</a>
-    and we'll be happy to assist you.
+<p style="font-size: 13px; color: #888;">
+    Questions? Just reply to this email or visit our <a href="{{ site_url }}/contact" style="color: #2563eb;">support page</a>.
 </p>
 {% endblock %}
 
 {% block extra_context %}
-{% with email_subtitle="Verify Your Email Address" %}
+{% with email_subtitle="Complete your registration" %}
 {{ block.super }}
 {% endwith %}
 {% endblock %}
