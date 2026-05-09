@@ -28,6 +28,8 @@ def send_verification_email(user_id):
         "site_url": settings.FRONTEND_URL,
         "verification_url": verification_url,
         "user_email": user.email,
+        "email_subtitle": "Email verification Request",
+        "subject": f"Verify your email - {settings.SITE_NAME}"
     }
 
     # Render templates
