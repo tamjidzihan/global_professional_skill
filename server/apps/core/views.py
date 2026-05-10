@@ -1,7 +1,9 @@
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.response import Response
-from .models import SiteSettings
-from .serializers import SiteSettingsSerializer
+from django.utils import timezone
+from django.db import models
+from .models import SiteSettings, Announcement
+from .serializers import SiteSettingsSerializer, AnnouncementSerializer
 from apps.accounts.permissions import IsAdmin
 
 class SiteSettingsView(generics.RetrieveUpdateAPIView) :
@@ -38,5 +40,49 @@ class SiteSettingsView(generics.RetrieveUpdateAPIView) :
         return Response({
             "success": True,
             "message": "Settings updated successfully.",
+            "data": serializer.data
+        })
+
+class AnnouncementViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for site-wide announcements.
+    Admins have full CRUD access.
+    Others can only list/retrieve visible and timely announcements.
+    """
+    queryset = Announcement.objects.all()
+    serializer_class = AnnouncementSerializer
+    pagination_class = None
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.IsAuthenticated()]
+        return [IsAdmin()]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if not self.request.user.role == 'ADMIN':
+            now = timezone.now()
+            # Show visible announcements that haven't ended yet
+            queryset = queryset.filter(is_visible=True).filter(
+                models.Q(end_date__isnull=True) | models.Q(end_date__gte=now)
+            )
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            "success": True,
+            "data": serializer.data
+        })
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response({
+            "success": True,
             "data": serializer.data
         })

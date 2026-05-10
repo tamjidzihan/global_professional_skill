@@ -48,6 +48,10 @@ import CourseProgressPage from "./main/pages/dashboard/instructor/CourseProgress
 import EnrolledStudentsPage from "./main/pages/dashboard/EnrolledStudentsPage";
 
 
+import AnnouncementDetailPage from "./main/pages/dashboard/common/AnnouncementDetailPage";
+import AnnouncementListPage from "./main/pages/dashboard/common/AnnouncementListPage";
+import AnnouncementManagementPage from "./main/pages/dashboard/admin/AnnouncementManagementPage";
+
 export const router = createBrowserRouter([
     {
         path: '/',
@@ -67,6 +71,8 @@ export const router = createBrowserRouter([
             { path: '/contact', element: <ContactPage /> },
             { path: '/careers', element: <CareerPage /> },
             { path: '/careers/:id', element: <JobDetailPage /> },
+            { path: '/announcements', element: <AnnouncementListPage /> },
+            { path: '/announcements/:id', element: <AnnouncementDetailPage /> },
 
             // Auth routes
             {
@@ -278,6 +284,14 @@ export const router = createBrowserRouter([
                         )
                     },
                     {
+                        path: 'admin/announcements',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <AnnouncementManagementPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
                         path: 'admin/settings',
                         element: (
                             <ProtectedRoute allowedRoles={['ADMIN']}>
@@ -310,6 +324,22 @@ export const router = createBrowserRouter([
                         )
                     },
 
+                    {
+                        path: 'announcements',
+                        element: (
+                            <ProtectedRoute allowedRoles={['STUDENT', 'INSTRUCTOR', 'ADMIN']}>
+                                <AnnouncementListPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'announcements/:id',
+                        element: (
+                            <ProtectedRoute allowedRoles={['STUDENT', 'INSTRUCTOR', 'ADMIN']}>
+                                <AnnouncementDetailPage />
+                            </ProtectedRoute>
+                        )
+                    },
                     // User Profile Route
                     {
                         path: 'my-profile',

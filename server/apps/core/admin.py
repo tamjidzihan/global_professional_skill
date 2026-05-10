@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SiteSettings
+from .models import SiteSettings, Announcement
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
@@ -13,3 +13,15 @@ class SiteSettingsAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+@admin.register(Announcement)
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = ('title', 'is_visible', 'start_date', 'end_date', 'created_at', 'created_by')
+    list_filter = ('is_visible', 'created_at', 'created_by')
+    search_fields = ('title', 'content')
+    ordering = ('-created_at',)
+    
+    def save_model(self, request, obj, form, change):
+        if not obj.created_by:
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)

@@ -232,6 +232,8 @@ export const endpoints = {
     },
     core: {
         settings: '/core/settings/',
+        announcements: '/core/announcements/',
+        announcementDetail: (id: string) => `/core/announcements/${id}/`,
     },
     careers: {
         jobs: '/careers/jobs/',
@@ -505,6 +507,30 @@ export const getEnrollments = <T = PaginatedResponse<Enrollment[]>>(
     }
     return api.get<T>(endpoints.enrollments.list, { params });
 };
+
+// Announcement API Calls
+export const getAnnouncements = <T = ApiResponse<any[]>>(
+    params?: Record<string, any>,
+    pageUrl?: string | null,
+): Promise<AxiosResponse<T>> => {
+    if (pageUrl) {
+        return api.get<T>(pageUrl);
+    }
+    return api.get<T>(endpoints.core.announcements, { params });
+};
+
+export const getAnnouncementDetail = (id: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get<ApiResponse<any>>(endpoints.core.announcementDetail(id));
+
+export const createAnnouncement = (data: any): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(endpoints.core.announcements, data);
+
+export const updateAnnouncement = (id: string, data: any): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.put<ApiResponse<any>>(endpoints.core.announcementDetail(id), data);
+
+export const deleteAnnouncement = (id: string): Promise<AxiosResponse<void>> =>
+    api.delete<void>(endpoints.core.announcementDetail(id));
+
 
 // Password Reset API Calls
 export const requestPasswordReset = (data: PasswordResetRequestData): Promise<AxiosResponse<ApiResponse<any>>> =>

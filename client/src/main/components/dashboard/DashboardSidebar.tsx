@@ -12,6 +12,7 @@ import {
     Settings,
     TrendingUp,
     Briefcase,
+    Bell,
     // ShieldCheck,
 } from 'lucide-react'
 import { useAuthContext } from '../../../context/AuthContext'
@@ -68,6 +69,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
         { name: 'Dashboard', path: '/dashboard/student', icon: LayoutDashboard, exact: true },
         { name: 'My Enrollments', path: '/dashboard/student/my-courses', icon: BookOpen },
         { name: 'Certificates', path: '/dashboard/student/certificates', icon: FileText, badge: 'New' },
+        { name: 'Announcements', path: '/dashboard/announcements', icon: Bell },
     ]
 
     const instructorLinks = [
@@ -76,6 +78,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
         { name: 'Course Progress', path: '/dashboard/instructor/course-progress', icon: TrendingUp },
         // { name: 'Students', path: '/dashboard/instructor/students', icon: Users },
         { name: 'Reports', path: '/dashboard/instructor/reports', icon: FileText, badge: 'New' },
+        { name: 'Announcements', path: '/dashboard/announcements', icon: Bell },
     ]
 
     const adminLinks = [
@@ -85,6 +88,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
         { name: 'Category Management', path: '/dashboard/admin/categories', icon: Tag },
         { name: 'Course Catalog', path: '/dashboard/admin/courses', icon: BookOpen },
         { name: 'Payment Management', path: '/dashboard/admin/payments', icon: CreditCard, badge: 'Review' },
+        { name: 'Announcements', path: '/dashboard/admin/announcements', icon: Bell },
         { name: 'Platform Settings', path: '/dashboard/admin/settings', icon: Settings },
         // { name: 'Permissions', path: '/dashboard/admin/permissions', icon: ShieldCheck },
         // { name: 'Settings', path: '/dashboard/admin/settings', icon: Settings },

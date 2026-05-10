@@ -460,3 +460,24 @@ export interface JobCreateUpdateData {
     closing_date?: string | null;
     is_active: boolean;
 }
+
+export interface Announcement {
+    id: string;
+    title: string;
+    content: string;
+    is_visible: boolean;
+    start_date: string | null;
+    end_date: string | null;
+    created_at: string;
+    updated_at: string;
+    created_by: string;
+    created_by_detail?: User;
+}
+
+export interface AnnouncementCreateUpdateData {
+    title: string;
+    content: string;
+    is_visible: boolean;
+    start_date: string | null;
+    end_date: string | null;
+}
