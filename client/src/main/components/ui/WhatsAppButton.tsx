@@ -11,19 +11,19 @@ const WhatsAppButton = () => {
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="fixed bottom-6 left-6 z-[9999] bg-[#25D366] text-white p-4 rounded-full shadow-2xl flex items-center justify-center transition-transform cursor-pointer"
+            className="fixed bottom-6 left-6 z-9999 bg-[#25D366] text-white p-4 rounded-full shadow-2xl flex items-center justify-center transition-transform cursor-pointer"
             initial={{ scale: 0, opacity: 0 }}
-            animate={{ 
-                scale: 1, 
+            animate={{
+                scale: 1,
                 opacity: 1,
-                transition: { 
+                transition: {
                     type: "spring",
                     stiffness: 260,
                     damping: 20,
-                    delay: 1.5 
+                    delay: 1.5
                 }
             }}
-            whileHover={{ 
+            whileHover={{
                 scale: 1.15,
                 rotate: 5,
                 transition: { duration: 0.2 }
@@ -49,7 +49,7 @@ const WhatsAppButton = () => {
             >
                 <FaWhatsapp size={32} />
             </motion.div>
-            
+
             {/* Tooltip for better UX */}
             <span className="sr-only">Contact us on WhatsApp</span>
         </motion.a>
