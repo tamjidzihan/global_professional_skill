@@ -41,8 +41,13 @@ The `server` directory contains a Django project that serves as the backend API.
     -   `payments`:
         -   **Models**: `Payment` (tracks status: PENDING, COMPLETED, FAILED, REFUNDED; stores transaction IDs and sender information).
         -   **Views**: Payment creation and tracking.
+    -   `careers`:
+        -   **Models**: `Job` (title, description, requirements, job type, salary range), `JobApplication` (user, job, cv file, cover letter, status).
+        -   **Views**: Job listing management and application processing.
     -   `analytics`:
         -   Handles data aggregation for dashboards.
+    -   `core`:
+        -   Handles site settings and announcements.
 
 ### 1.2 `client` Directory (React/Vite/TypeScript Frontend)
 
@@ -63,9 +68,12 @@ The `client` directory contains the frontend application built with React, Vite,
     -   `router.tsx`: Routing configuration.
     -   `context/`: `AuthContext.tsx` for authentication state.
     -   `hooks/`: Custom hooks for API interaction (`useAuth`, `useCourses`, `useEnrollments`, `usePayments`, etc.).
-    -   `lib/`: `api.ts` (Axios configuration), `errorUtils.ts`, `utils.ts`.
+    -   `lib/`: 
+        -   `api.ts`: Axios configuration, interceptors for token refresh, and a centralized `endpoints` object with corresponding API call functions.
+        -   `errorUtils.ts`: Utilities for handling API errors.
+        -   `utils.ts`: General utility functions.
     -   `main/pages/`:
-        -   `AboutPage.tsx`, `CoursesPage.tsx`, `CourseDetailPage.tsx`, `HomePage.tsx`.
+        -   `AboutPage.tsx`, `CoursesPage.tsx`, `CourseDetailPage.tsx`, `HomePage.tsx`, `CareerPage.tsx`.
         -   Auth: `LoginPage.tsx`, `RegisterPage.tsx`, `ForgotPasswordPage.tsx`, `ResetPasswordPage.tsx`, `EmailVerificationPage.tsx`.
         -   `dashboard/`: Subdirectories for `admin`, `instructor`, and `student` dashboards.
             -   `AdminDashboard.tsx`, `InstructorDashboard.tsx`, `StudentDashboard.tsx`, `MyProfilePage.tsx`.
@@ -77,7 +85,10 @@ The `client` directory contains the frontend application built with React, Vite,
 -   **User Roles**: Students can browse and enroll; Instructors can create and manage courses; Admins oversee the platform, approve courses, and manage users.
 -   **Course Lifecycle**: Created by Instructor -> Submitted for Review -> Approved by Admin -> Published for Students.
 -   **Enrollment & Learning**: Students enroll (via payment if applicable), track progress per lesson, and receive a certificate upon 100% completion.
--   **Payment Tracking**: Support for recording payment details, including transaction IDs and sender numbers (likely for manual verification or mobile banking integrations).
+-   **Payment Tracking**: Support for recording payment details, including transaction IDs and sender numbers (likely for manual verification or mobile banking integrations like bKash).
+-   **Career Management**: Admin can post job openings; users can apply by uploading CVs.
+-   **Announcements**: Admin can post platform-wide announcements.
+-   **Site Settings**: Dynamic configuration for platform-wide settings.
 
 ## 3. Future Reference Plan
 
