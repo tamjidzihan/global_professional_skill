@@ -134,12 +134,16 @@ const AnnouncementListPage: React.FC = () => {
                                 <div className="flex flex-col sm:flex-row gap-4 items-start">
                                     {/* Date Badge */}
                                     <div className="shrink-0 w-14 h-14 bg-violet-50 rounded-xl flex flex-col items-center justify-center group-hover:bg-violet-100 transition-colors">
-                                        <span className="text-[10px] font-bold uppercase text-violet-600">
-                                            {format(parseISO(ann.created_at), 'MMM')}
-                                        </span>
-                                        <span className="text-base font-extrabold text-violet-600">
-                                            {format(parseISO(ann.created_at), 'dd')}
-                                        </span>
+                                        {ann.start_date && (
+                                            <>
+                                                <span className="text-[10px] font-bold uppercase text-violet-600">
+                                                    {format(parseISO(ann.start_date), 'MMM')}
+                                                </span>
+                                                <span className="text-base font-extrabold text-violet-600">
+                                                    {format(parseISO(ann.start_date), 'dd')}
+                                                </span>
+                                            </>
+                                        )}
                                     </div>
 
                                     {/* Content */}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Plus, Edit2, Trash2, Eye, EyeOff, Clock, ChevronRight, X, Megaphone } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { useAnnouncements } from '../../../../hooks/useAnnouncements';
@@ -6,7 +6,6 @@ import type { Announcement, AnnouncementCreateUpdateData } from '../../../../typ
 import RichTextEditor from '../../../components/RichTextEditor';
 import SEO from '../../../components/SEO';
 import AnnouncementDetailModal from '../../../components/dashboard/admin/AnnouncementDetailModal';
-import { Link } from 'react-router-dom';
 
 const AnnouncementManagementPage: React.FC = () => {
     const {
@@ -31,9 +30,71 @@ const AnnouncementManagementPage: React.FC = () => {
         end_date: ''
     });
 
+    // Refs for click outside handling
+    const formModalRef = useRef<HTMLDivElement>(null);
+    const detailModalRef = useRef<HTMLDivElement>(null);
+
     useEffect(() => {
         fetchAnnouncements();
     }, [fetchAnnouncements]);
+
+    // Handle click outside for form modal
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (formModalRef.current && !formModalRef.current.contains(event.target as Node)) {
+                setIsModalOpen(false);
+            }
+        };
+
+        if (isModalOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isModalOpen]);
+
+    // Handle click outside for detail modal
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (detailModalRef.current && !detailModalRef.current.contains(event.target as Node)) {
+                setIsDetailModalOpen(false);
+                setViewingAnnouncement(null);
+            }
+        };
+
+        if (isDetailModalOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isDetailModalOpen]);
+
+    // Handle ESC key press for both modals
+    useEffect(() => {
+        const handleEscKey = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                if (isModalOpen) {
+                    setIsModalOpen(false);
+                }
+                if (isDetailModalOpen) {
+                    setIsDetailModalOpen(false);
+                    setViewingAnnouncement(null);
+                }
+            }
+        };
+
+        if (isModalOpen || isDetailModalOpen) {
+            document.addEventListener('keydown', handleEscKey);
+        }
+
+        return () => {
+            document.removeEventListener('keydown', handleEscKey);
+        };
+    }, [isModalOpen, isDetailModalOpen]);
 
     const handleOpenModal = (ann?: Announcement) => {
         if (ann) {
@@ -73,7 +134,6 @@ const AnnouncementManagementPage: React.FC = () => {
         } else {
             success = await addAnnouncement(data);
         }
-
         if (success) {
             setIsModalOpen(false);
         }
@@ -228,12 +288,15 @@ const AnnouncementManagementPage: React.FC = () => {
                                         <tr key={ann.id} className="group hover:bg-gray-50/60 transition-colors duration-100">
                                             <td className="px-5 py-3">
                                                 <div className="min-w-50">
-                                                    <Link
-                                                        to={`/dashboard/announcements/${ann.id}`}
+                                                    <div
+                                                        onClick={() => {
+                                                            setIsDetailModalOpen(true);
+                                                            setViewingAnnouncement(ann);
+                                                        }}
                                                         className="text-sm cursor-pointer font-semibold text-gray-800 hover:text-violet-600 transition-colors text-left"
                                                     >
                                                         {ann.title}
-                                                    </Link>
+                                                    </div>
                                                     <p className="text-xs text-gray-400 line-clamp-1 mt-0.5">
                                                         {ann.content.replace(/<[^>]*>/g, '').substring(0, 80)}
                                                         {ann.content.replace(/<[^>]*>/g, '').length > 80 ? '...' : ''}
@@ -324,13 +387,14 @@ const AnnouncementManagementPage: React.FC = () => {
                         setIsDetailModalOpen(false);
                         setViewingAnnouncement(null);
                     }}
+                    onEdit={handleOpenModal}
                 />
             )}
 
             {/* Form Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-xl animate-in fade-in zoom-in duration-200">
+                    <div ref={formModalRef} className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-xl animate-in fade-in zoom-in duration-200">
                         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white">
                             <div>
                                 <h2 className="text-sm font-semibold text-gray-900">
@@ -342,7 +406,7 @@ const AnnouncementManagementPage: React.FC = () => {
                             </div>
                             <button
                                 onClick={() => setIsModalOpen(false)}
-                                className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                                className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors cursor-pointer"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -423,13 +487,13 @@ const AnnouncementManagementPage: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={() => setIsModalOpen(false)}
-                                    className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                                    className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="px-4 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors shadow-sm"
+                                    className="px-4 py-2 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors shadow-sm cursor-pointer"
                                 >
                                     {editingAnnouncement ? 'Save Changes' : 'Create Announcement'}
                                 </button>
