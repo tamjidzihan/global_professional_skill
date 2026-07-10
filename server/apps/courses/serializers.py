@@ -5,8 +5,57 @@ Serializers for courses app.
 from rest_framework import serializers
 from django.utils.text import slugify
 from django.utils import timezone
-from .models import Category, Course, Section, Lesson, Review, CourseStatus
+from .models import (
+    Category,
+    Course,
+    Section,
+    Lesson,
+    LessonType,
+    QuizQuestion,
+    QuizOption,
+    Review,
+    CourseStatus,
+)
 from apps.accounts.serializers import UserSerializer
+
+
+class QuizOptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuizOption
+        fields = ("id", "text", "order")
+        read_only_fields = ("id",)
+
+
+class QuizQuestionSerializer(serializers.ModelSerializer):
+    options = QuizOptionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = QuizQuestion
+        fields = ("id", "prompt", "order", "options")
+        read_only_fields = ("id",)
+
+
+def can_view_lesson(lesson, request):
+    """Return whether the current user can see a lesson."""
+    if lesson.lesson_type != LessonType.QUIZ:
+        return True
+
+    if lesson.is_published:
+        return True
+
+    if (
+        not request
+        or not getattr(request, "user", None)
+        or not request.user.is_authenticated
+    ):
+        return False
+
+    user = request.user
+    return (
+        getattr(user, "is_admin_user", False)
+        or user == lesson.section.course.instructor
+        or getattr(user, "is_instructor", False)
+    )
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -34,17 +83,25 @@ class CategorySerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """Auto-generate slug from name if not provided."""
-        if 'name' in attrs:
-            attrs['slug'] = slugify(attrs['name'])
-            
+        if "name" in attrs:
+            attrs["slug"] = slugify(attrs["name"])
+
             # Check for slug uniqueness
-            slug = attrs['slug']
+            slug = attrs["slug"]
             if self.instance:
-                if Category.objects.filter(slug=slug).exclude(id=self.instance.id).exists():
-                    raise serializers.ValidationError({"name": "Category with this name already exists."})
+                if (
+                    Category.objects.filter(slug=slug)
+                    .exclude(id=self.instance.id)
+                    .exists()
+                ):
+                    raise serializers.ValidationError(
+                        {"name": "Category with this name already exists."}
+                    )
             else:
                 if Category.objects.filter(slug=slug).exists():
-                    raise serializers.ValidationError({"name": "Category with this name already exists."})
+                    raise serializers.ValidationError(
+                        {"name": "Category with this name already exists."}
+                    )
         return attrs
 
     def create(self, validated_data):
@@ -54,6 +111,9 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class LessonSerializer(serializers.ModelSerializer):
     """Serializer for Lesson model."""
+
+    quiz_data = serializers.JSONField(required=False, write_only=True, allow_null=True)
+    quiz_questions = QuizQuestionSerializer(many=True, read_only=True)
 
     class Meta:
         model = Lesson
@@ -68,11 +128,49 @@ class LessonSerializer(serializers.ModelSerializer):
             "resources",
             "is_preview",
             "is_completed",
+            "is_published",
+            "quiz_data",
+            "quiz_questions",
             "order",
             "created_at",
             "updated_at",
         )
         read_only_fields = ("id", "created_at", "updated_at")
+
+    def _create_quiz_structure(self, lesson, quiz_data):
+        questions = (
+            quiz_data.get("questions", []) if isinstance(quiz_data, dict) else []
+        )
+        for index, question_data in enumerate(questions):
+            question = QuizQuestion.objects.create(
+                lesson=lesson,
+                prompt=question_data.get("prompt", ""),
+                order=question_data.get("order", index),
+            )
+            for option_index, option_data in enumerate(
+                question_data.get("options", [])
+            ):
+                QuizOption.objects.create(
+                    question=question,
+                    text=option_data.get("text", ""),
+                    is_correct=option_data.get("is_correct", False),
+                    order=option_data.get("order", option_index),
+                )
+
+    def create(self, validated_data):
+        quiz_data = validated_data.pop("quiz_data", None)
+        lesson = super().create(validated_data)
+        if lesson.lesson_type == LessonType.QUIZ and quiz_data:
+            self._create_quiz_structure(lesson, quiz_data)
+        return lesson
+
+    def update(self, instance, validated_data):
+        quiz_data = validated_data.pop("quiz_data", None)
+        lesson = super().update(instance, validated_data)
+        if lesson.lesson_type == LessonType.QUIZ and quiz_data is not None:
+            lesson.quiz_questions.all().delete()
+            self._create_quiz_structure(lesson, quiz_data)
+        return lesson
 
 
 class LessonListSerializer(serializers.ModelSerializer):
@@ -80,13 +178,22 @@ class LessonListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        fields = ("id", "title", "lesson_type", "video_duration", "is_preview", "is_completed", "order")
+        fields = (
+            "id",
+            "title",
+            "lesson_type",
+            "video_duration",
+            "is_preview",
+            "is_completed",
+            "is_published",
+            "order",
+        )
 
 
 class SectionSerializer(serializers.ModelSerializer):
     """Serializer for Section model with lessons."""
 
-    lessons = LessonListSerializer(many=True, read_only=True)
+    lessons = serializers.SerializerMethodField()
     lesson_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -103,8 +210,23 @@ class SectionSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "created_at")
 
+    def get_lessons(self, obj):
+        request = self.context.get("request")
+        lessons = list(obj.lessons.all())
+        visible_lessons = [
+            lesson for lesson in lessons if can_view_lesson(lesson, request)
+        ]
+        return LessonListSerializer(
+            visible_lessons, many=True, context=self.context
+        ).data
+
     def get_lesson_count(self, obj):
-        return obj.lessons.count()
+        request = self.context.get("request")
+        lessons = list(obj.lessons.all())
+        visible_lessons = [
+            lesson for lesson in lessons if can_view_lesson(lesson, request)
+        ]
+        return len(visible_lessons)
 
 
 class SectionCreateSerializer(serializers.ModelSerializer):
@@ -349,7 +471,7 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
 
     def validate_available_seats(self, value):
         """Validate available seats."""
-        total_seats = self.initial_data.get('total_seats')
+        total_seats = self.initial_data.get("total_seats")
         if total_seats is not None:
             try:
                 total_seats = int(total_seats)
@@ -407,11 +529,11 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
         validated_data["instructor"] = self.context["request"].user
         validated_data["slug"] = slugify(validated_data["title"])
         validated_data["status"] = CourseStatus.DRAFT
-        
+
         # If available_seats not provided, set it to total_seats
         if "available_seats" not in validated_data:
             validated_data["available_seats"] = validated_data.get("total_seats", 30)
-            
+
         return super().create(validated_data)
 
     def update(self, instance, validated_data):

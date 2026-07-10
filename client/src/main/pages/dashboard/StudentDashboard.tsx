@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { useCourses } from '../../../hooks/useCourses'
 import { StatsCard } from '../../components/dashboard/StatsCard'
 import {
     BookOpen, CheckCircle, Clock, Award, Briefcase,
@@ -18,11 +19,13 @@ export function StudentDashboard() {
     const { enrollments, getMyEnrollments, loading } = useEnrollments()
     const { payments, fetchPayments } = usePayments()
     const { requests, loading: requestsLoading, error: requestsError } = useInstructorRequests()
+    const { quizSubmissions, fetchQuizSubmissions } = useCourses()
 
     useEffect(() => {
         getMyEnrollments()
         fetchPayments({ status: 'PENDING' })
-    }, [getMyEnrollments, fetchPayments])
+        fetchQuizSubmissions()
+    }, [getMyEnrollments, fetchPayments, fetchQuizSubmissions])
 
     const totalEnrolled = enrollments?.length || 0
     const completed = enrollments?.filter(e => Number(e?.progress_percentage) === 100).length || 0
@@ -130,6 +133,50 @@ export function StudentDashboard() {
                         </div>
                     </div>
                 )}
+
+                {/* ── Quiz Results ── */}
+                <div className={card}>
+                    <div className={cardHeader}>
+                        <div>
+                            <p className="text-sm font-semibold text-gray-900">Quiz Results</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Your latest quiz scores</p>
+                        </div>
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[11px] font-bold bg-violet-50 text-violet-700 rounded-md">
+                            <Award className="w-3 h-3" /> {quizSubmissions.length}
+                        </span>
+                    </div>
+                    <div className={cardBody}>
+                        {quizSubmissions.length > 0 ? (
+                            <div className="space-y-2.5">
+                                {quizSubmissions.slice(0, 3).map((submission: any) => {
+                                    const percentage = submission.total_questions
+                                        ? Math.round((submission.score / submission.total_questions) * 100)
+                                        : 0;
+                                    return (
+                                        <div key={submission.id} className="flex items-center justify-between rounded-lg border border-gray-100 bg-gray-50 p-3">
+                                            <div>
+                                                <p className="text-sm font-semibold text-gray-800">{submission.lesson_title}</p>
+                                                <p className="text-xs text-gray-400">{submission.course_title}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-sm font-semibold text-violet-700">{submission.score}/{submission.total_questions}</p>
+                                                <p className="text-[11px] text-gray-500">{percentage}%</p>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-8 text-center">
+                                <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center mb-3">
+                                    <Award className="w-5 h-5 text-violet-500" />
+                                </div>
+                                <p className="text-sm font-medium text-gray-500">No quiz results yet</p>
+                                <p className="text-xs text-gray-400 mt-0.5">Published quizzes will appear here after you submit them.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
 
                 {/* ── Recent Courses ── */}
                 <div className={card}>

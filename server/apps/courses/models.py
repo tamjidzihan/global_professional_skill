@@ -73,7 +73,7 @@ class Course(models.Model):
     slug = models.SlugField(max_length=200, unique=True, db_index=True)
     description = models.TextField()
     short_description = models.CharField(max_length=500)
-    
+
     # Instructor
     instructor = models.ForeignKey(
         User,
@@ -330,6 +330,9 @@ class Lesson(models.Model):
     is_completed = models.BooleanField(
         default=False, help_text="Marked as completed by instructor"
     )
+    is_published = models.BooleanField(
+        default=False, help_text="Whether students can access this lesson"
+    )
     order = models.PositiveIntegerField(default=0)
 
     # Timestamps
@@ -350,6 +353,83 @@ class Lesson(models.Model):
     def course(self):
         """Get the course this lesson belongs to."""
         return self.section.course
+
+
+class QuizQuestion(models.Model):
+    """A multiple-choice question for a quiz lesson."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.CASCADE,
+        related_name="quiz_questions",
+        db_constraint=False,
+    )
+    prompt = models.TextField()
+    order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "quiz_questions"
+        ordering = ["order", "created_at"]
+
+    def __str__(self):
+        return self.prompt[:80]
+
+
+class QuizOption(models.Model):
+    """A possible answer for a quiz question."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    question = models.ForeignKey(
+        QuizQuestion,
+        on_delete=models.CASCADE,
+        related_name="options",
+        db_constraint=False,
+    )
+    text = models.CharField(max_length=255)
+    is_correct = models.BooleanField(default=False)
+    order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "quiz_options"
+        ordering = ["order", "created_at"]
+
+    def __str__(self):
+        return self.text[:80]
+
+
+class QuizSubmission(models.Model):
+    """A student's submission for a quiz lesson."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    lesson = models.ForeignKey(
+        Lesson,
+        on_delete=models.CASCADE,
+        related_name="quiz_submissions",
+        db_constraint=False,
+    )
+    student = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="quiz_submissions",
+        db_constraint=False,
+    )
+    score = models.PositiveIntegerField(default=0)
+    total_questions = models.PositiveIntegerField(default=0)
+    answers = models.JSONField(default=list, blank=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "quiz_submissions"
+        ordering = ["-submitted_at"]
+        unique_together = ["student", "lesson"]
+
+    def __str__(self):
+        return f"{self.student.email} - {self.lesson.title}"
 
 
 class Review(models.Model):

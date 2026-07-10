@@ -234,6 +234,24 @@ export interface CourseCapacity {
 }
 
 // Lesson Management Types
+export interface QuizOptionData {
+    id?: string;
+    text: string;
+    is_correct?: boolean;
+    order?: number;
+}
+
+export interface QuizQuestionData {
+    id?: string;
+    prompt: string;
+    options: QuizOptionData[];
+    order?: number;
+}
+
+export interface QuizData {
+    questions: QuizQuestionData[];
+}
+
 export interface Lesson {
     id: string;
     section: string;
@@ -245,9 +263,11 @@ export interface Lesson {
     video_duration?: number;
     content?: string;
     resources?: string | null;
-    quiz_data?: any;
+    quiz_data?: QuizData;
+    quiz_questions?: QuizQuestionData[];
     is_preview: boolean;
     is_completed: boolean;
+    is_published?: boolean;
     order: number;
     created_at: string;
     updated_at: string;
@@ -262,6 +282,8 @@ export interface LessonCreateUpdateData {
     video_duration?: number;
     resources?: File | string | null;
     is_preview: boolean;
+    is_published?: boolean;
+    quiz_data?: QuizData;
     order: number;
 }
 

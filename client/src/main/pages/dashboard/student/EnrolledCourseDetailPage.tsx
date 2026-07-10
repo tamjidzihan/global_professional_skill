@@ -23,6 +23,7 @@ import { useEnrollments } from '../../../../hooks/useEnrollments';
 import { useCourses } from '../../../../hooks/useCourses';
 import SEO from '../../../components/SEO';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
+import QuizLessonViewer from '../../../components/QuizLessonViewer';
 
 export default function EnrolledCourseDetailPage() {
     const { id } = useParams<{ id: string }>(); // This is the COURSE ID
@@ -256,14 +257,21 @@ export default function EnrolledCourseDetailPage() {
                                                 <div className="p-0 animate-in fade-in slide-in-from-top-1 duration-200">
                                                     {section.lessons.length > 0 ? (
                                                         section.lessons.map((lesson) => (
-                                                            <div key={lesson.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors border-b last:border-b-0 border-gray-50 group">
-                                                                <div className="flex items-center gap-3">
-                                                                    <PlayCircle className="w-4 h-4 text-gray-400 group-hover:text-violet-600 transition-colors shrink-0" />
-                                                                    <span className="text-sm text-gray-700">{lesson.title}</span>
+                                                            <div key={lesson.id} className="border-b last:border-b-0 border-gray-50">
+                                                                <div className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors group">
+                                                                    <div className="flex items-center gap-3">
+                                                                        <PlayCircle className="w-4 h-4 text-gray-400 group-hover:text-violet-600 transition-colors shrink-0" />
+                                                                        <span className="text-sm text-gray-700">{lesson.title}</span>
+                                                                    </div>
+                                                                    <button className="p-1 rounded-full hover:bg-violet-50 text-gray-300 hover:text-violet-600 transition-all shrink-0">
+                                                                        <CheckCircle className="w-5 h-5" />
+                                                                    </button>
                                                                 </div>
-                                                                <button className="p-1 rounded-full hover:bg-violet-50 text-gray-300 hover:text-violet-600 transition-all shrink-0">
-                                                                    <CheckCircle className="w-5 h-5" />
-                                                                </button>
+                                                                {lesson.lesson_type === 'QUIZ' && lesson.is_published ? (
+                                                                    <div className="px-4 pb-4">
+                                                                        <QuizLessonViewer courseId={course.id} sectionId={section.id} lesson={lesson as any} />
+                                                                    </div>
+                                                                ) : null}
                                                             </div>
                                                         ))
                                                     ) : (

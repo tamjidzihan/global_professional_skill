@@ -31,6 +31,8 @@ import {
     updateLesson,
     deleteLesson,
     toggleLessonCompletion,
+    submitQuizLesson,
+    getMyQuizSubmissions,
 
     // Reviews API Endpoints
     getReviews,
@@ -66,6 +68,7 @@ export function useCourses() {
     const [section, setSection] = useState<Section | null>(null);
     const [lessons, setLessons] = useState<Lesson[]>([]);
     const [lesson, setLesson] = useState<Lesson | null>(null);
+    const [quizSubmissions, setQuizSubmissions] = useState<any[]>([]);
     const [reviews, setReviews] = useState<Review[]>([]);
     const [review, setReview] = useState<Review | null>(null);
 
@@ -664,6 +667,42 @@ export function useCourses() {
         }
     }, [lesson, course]);
 
+    const fetchQuizSubmissions = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await getMyQuizSubmissions();
+            setQuizSubmissions(response.data?.data || []);
+            return response.data?.data || [];
+        } catch (err: any) {
+            const errorMsg = extractErrorMessage(err);
+            setError(errorMsg);
+            return [];
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    const submitQuiz = useCallback(async (
+        courseId: string,
+        sectionId: string,
+        lessonId: string,
+        answers: Array<{ question_id: string; option_id: string }> = []
+    ) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await submitQuizLesson(courseId, sectionId, lessonId, { answers });
+            return response.data;
+        } catch (err: any) {
+            const errorMsg = extractErrorMessage(err);
+            setError(errorMsg);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
     const toggleLessonProgress = useCallback(async (
         courseId: string,
         sectionId: string,
@@ -675,7 +714,7 @@ export function useCourses() {
             const response = await toggleLessonCompletion(courseId, sectionId, lessonId);
             const updatedLesson = response.data.data;
             const is_completed = updatedLesson.is_completed;
-            
+
             // Update lessons list
             setLessons((prev) =>
                 prev.map((l) => (l.id === lessonId ? updatedLesson : l)),
@@ -698,7 +737,7 @@ export function useCourses() {
                     return { ...prev, sections: updatedSections };
                 });
             }
-            
+
             toast.success(response.data.message || "Progress updated");
             return is_completed;
         } catch (err: any) {
@@ -875,6 +914,7 @@ export function useCourses() {
         section,
         lessons,
         lesson,
+        quizSubmissions,
         reviews,
         review,
         loading,
@@ -910,6 +950,8 @@ export function useCourses() {
         editLesson,
         removeLesson,
         toggleLessonProgress,
+        submitQuiz,
+        fetchQuizSubmissions,
 
         // Review Actions
         fetchReviews,
