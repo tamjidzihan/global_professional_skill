@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { PlusCircle, Video, FileText, HelpCircle, ClipboardList, FolderOpen, MonitorPlay } from 'lucide-react';
 import { useCourses } from '../../hooks/useCourses';
 import { toast } from 'react-hot-toast';
-import type { LessonType, QuizData, QuizQuestionData, QuizOptionData } from '../../types';
+import type { LessonType } from '../../types';
 import { LoaderButton } from './ui/LoaderButton';
 import { formatFieldErrors, parseError } from '../../lib/errorUtils';
 
@@ -28,9 +28,8 @@ const AddLessonForm: React.FC<AddLessonFormProps> = ({ courseId, sectionId, onSu
     const [lessonData, setLessonData] = useState({
         title: '', lesson_type: 'VIDEO' as LessonType,
         content: '', video_url: '', video_duration: 0,
-        is_preview: false, is_published: false, order: 0,
+        is_preview: false, order: 0,
     });
-    const [quizData, setQuizData] = useState<QuizData>({ questions: [] });
 
     const { addLesson } = useCourses();
 
@@ -69,12 +68,9 @@ const AddLessonForm: React.FC<AddLessonFormProps> = ({ courseId, sectionId, onSu
                 video_url: lessonData.video_url || undefined,
                 video_duration: lessonData.video_duration || undefined,
                 is_preview: lessonData.is_preview,
-                is_published: lessonData.is_published,
-                quiz_data: lessonData.lesson_type === 'QUIZ' ? quizData : undefined,
                 order: lessonData.order,
             });
-            setLessonData({ title: '', lesson_type: 'VIDEO', content: '', video_url: '', video_duration: 0, is_preview: false, is_published: false, order: 0 });
-            setQuizData({ questions: [] });
+            setLessonData({ title: '', lesson_type: 'VIDEO', content: '', video_url: '', video_duration: 0, is_preview: false, order: 0 });
             setShowForm(false);
             if (onSuccess) onSuccess();
         } catch (error: any) {
@@ -92,40 +88,6 @@ const AddLessonForm: React.FC<AddLessonFormProps> = ({ courseId, sectionId, onSu
         } finally {
             setIsAdding(false);
         }
-    };
-
-    const updateQuestion = (index: number, patch: Partial<QuizQuestionData>) => {
-        setQuizData(prev => ({
-            ...prev,
-            questions: prev.questions.map((question, questionIndex) => questionIndex === index ? { ...question, ...patch } : question),
-        }));
-    };
-
-    const updateOption = (questionIndex: number, optionIndex: number, patch: Partial<QuizOptionData>) => {
-        setQuizData(prev => ({
-            ...prev,
-            questions: prev.questions.map((question, currentQuestionIndex) => currentQuestionIndex === questionIndex ? {
-                ...question,
-                options: question.options.map((option, currentOptionIndex) => currentOptionIndex === optionIndex ? { ...option, ...patch } : option),
-            } : question),
-        }));
-    };
-
-    const addQuestion = () => {
-        setQuizData(prev => ({
-            ...prev,
-            questions: [...prev.questions, { prompt: '', options: [{ text: '', is_correct: false }, { text: '', is_correct: false }] }],
-        }));
-    };
-
-    const addOption = (questionIndex: number) => {
-        setQuizData(prev => ({
-            ...prev,
-            questions: prev.questions.map((question, currentQuestionIndex) => currentQuestionIndex === questionIndex ? {
-                ...question,
-                options: [...question.options, { text: '', is_correct: false }],
-            } : question),
-        }));
     };
 
     if (!showForm) {
@@ -209,47 +171,6 @@ const AddLessonForm: React.FC<AddLessonFormProps> = ({ courseId, sectionId, onSu
                     </div>
                 )}
 
-                {lessonData.lesson_type === 'QUIZ' && (
-                    <div className="space-y-3 rounded-lg border border-dashed border-violet-200 bg-violet-50/40 p-3">
-                        <div className="flex items-center justify-between">
-                            <p className="text-xs font-semibold text-violet-700">Quiz Builder</p>
-                            <button type="button" onClick={addQuestion} className="text-[11px] font-semibold text-violet-600">+ Add Question</button>
-                        </div>
-                        {quizData.questions.map((question, questionIndex) => (
-                            <div key={questionIndex} className="rounded-lg border border-violet-100 bg-white p-3 space-y-2">
-                                <input
-                                    value={question.prompt}
-                                    onChange={(e) => updateQuestion(questionIndex, { prompt: e.target.value })}
-                                    placeholder="Question prompt"
-                                    className={inputCls}
-                                />
-                                {question.options.map((option, optionIndex) => (
-                                    <div key={optionIndex} className="flex items-center gap-2">
-                                        <input
-                                            value={option.text}
-                                            onChange={(e) => updateOption(questionIndex, optionIndex, { text: e.target.value })}
-                                            placeholder={`Option ${optionIndex + 1}`}
-                                            className={`${inputCls} flex-1`}
-                                        />
-                                        <label className="text-[11px] text-gray-500 flex items-center gap-1 whitespace-nowrap">
-                                            <input
-                                                type="checkbox"
-                                                checked={Boolean(option.is_correct)}
-                                                onChange={(e) => updateOption(questionIndex, optionIndex, { is_correct: e.target.checked })}
-                                            />
-                                            Correct
-                                        </label>
-                                    </div>
-                                ))}
-                                <div className="flex items-center justify-between">
-                                    <button type="button" onClick={() => addOption(questionIndex)} className="text-[11px] font-semibold text-violet-600">+ Add Option</button>
-                                    <span className="text-[10px] text-gray-400">Students will see this after you publish the quiz.</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
                 {/* Preview toggle */}
                 <div className="flex items-center gap-2.5 p-3 bg-white rounded-lg border border-gray-100">
                     <input id={`preview-${sectionId}`} type="checkbox" name="is_preview"
@@ -261,20 +182,10 @@ const AddLessonForm: React.FC<AddLessonFormProps> = ({ courseId, sectionId, onSu
                     </label>
                 </div>
 
-                <div className="flex items-center gap-2.5 p-3 bg-white rounded-lg border border-gray-100">
-                    <input id={`publish-${sectionId}`} type="checkbox" name="is_published"
-                        checked={lessonData.is_published} onChange={handleInputChange}
-                        className="w-4 h-4 text-violet-600 border-gray-300 rounded cursor-pointer" disabled={isAdding}
-                    />
-                    <label htmlFor={`publish-${sectionId}`} className="text-xs font-medium text-gray-700 cursor-pointer">
-                        Publish quiz for students
-                    </label>
-                </div>
-
                 {/* Actions */}
                 <div className="flex items-center justify-end gap-2 pt-1">
                     <LoaderButton type="button" variant="secondary" size="sm"
-                        onClick={() => { setShowForm(false); setLessonData({ title: '', lesson_type: 'VIDEO', content: '', video_url: '', video_duration: 0, is_preview: false, is_published: false, order: 0 }); setQuizData({ questions: [] }); }}
+                        onClick={() => { setShowForm(false); setLessonData({ title: '', lesson_type: 'VIDEO', content: '', video_url: '', video_duration: 0, is_preview: false, order: 0 }); }}
                         disabled={isAdding}
                     >Cancel</LoaderButton>
                     <LoaderButton type="submit" variant="primary" size="sm"

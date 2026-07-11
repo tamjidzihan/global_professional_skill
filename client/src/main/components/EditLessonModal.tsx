@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useCourses } from '../../hooks/useCourses';
 import { toast } from 'react-hot-toast';
-import type { LessonType, QuizData, QuizQuestionData, QuizOptionData } from '../../types';
+import type { LessonType } from '../../types';
 import { LoaderButton } from './ui/LoaderButton';
 
 interface EditLessonModalProps {
@@ -39,17 +39,7 @@ const EditLessonModal: React.FC<EditLessonModalProps> = ({ courseId, sectionId, 
         video_url: lesson.video_url || '',
         video_duration: lesson.video_duration || 0,
         is_preview: lesson.is_preview,
-        is_published: Boolean(lesson.is_published),
         order: lesson.order,
-    });
-    const [quizData, setQuizData] = useState<QuizData>({
-        questions: (lesson.quiz_questions || []).map((question) => ({
-            ...question,
-            options: (question.options || []).map((option) => ({
-                ...option,
-                is_correct: Boolean(option.is_correct),
-            })),
-        })),
     });
 
     const { editLesson } = useCourses();
@@ -97,8 +87,6 @@ const EditLessonModal: React.FC<EditLessonModalProps> = ({ courseId, sectionId, 
                 video_url: lessonData.video_url || undefined,
                 video_duration: lessonData.video_duration || undefined,
                 is_preview: lessonData.is_preview,
-                is_published: lessonData.is_published,
-                quiz_data: lessonData.lesson_type === 'QUIZ' ? quizData : undefined,
                 order: lessonData.order,
             });
             toast.success('Lesson updated!');
@@ -120,40 +108,6 @@ const EditLessonModal: React.FC<EditLessonModalProps> = ({ courseId, sectionId, 
     };
 
     const showContent = lessonData.lesson_type === 'TEXT' || lessonData.lesson_type === 'QUIZ';
-
-    const updateQuestion = (index: number, patch: Partial<QuizQuestionData>) => {
-        setQuizData(prev => ({
-            ...prev,
-            questions: prev.questions.map((question, questionIndex) => questionIndex === index ? { ...question, ...patch } : question),
-        }));
-    };
-
-    const updateOption = (questionIndex: number, optionIndex: number, patch: Partial<QuizOptionData>) => {
-        setQuizData(prev => ({
-            ...prev,
-            questions: prev.questions.map((question, currentQuestionIndex) => currentQuestionIndex === questionIndex ? {
-                ...question,
-                options: question.options.map((option, currentOptionIndex) => currentOptionIndex === optionIndex ? { ...option, ...patch } : option),
-            } : question),
-        }));
-    };
-
-    const addQuestion = () => {
-        setQuizData(prev => ({
-            ...prev,
-            questions: [...prev.questions, { prompt: '', options: [{ text: '', is_correct: false }, { text: '', is_correct: false }] }],
-        }));
-    };
-
-    const addOption = (questionIndex: number) => {
-        setQuizData(prev => ({
-            ...prev,
-            questions: prev.questions.map((question, currentQuestionIndex) => currentQuestionIndex === questionIndex ? {
-                ...question,
-                options: [...question.options, { text: '', is_correct: false }],
-            } : question),
-        }));
-    };
 
     return (
         <>
@@ -223,8 +177,8 @@ const EditLessonModal: React.FC<EditLessonModalProps> = ({ courseId, sectionId, 
                                             onClick={() => setLessonData(p => ({ ...p, lesson_type: type.value }))}
                                             disabled={isSubmitting}
                                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-semibold rounded-lg transition-all duration-150 cursor-pointer ${lessonData.lesson_type === type.value
-                                                ? 'bg-violet-600 text-white'
-                                                : 'bg-gray-50 border border-gray-200 text-gray-600 hover:border-violet-200 hover:text-violet-600'
+                                                    ? 'bg-violet-600 text-white'
+                                                    : 'bg-gray-50 border border-gray-200 text-gray-600 hover:border-violet-200 hover:text-violet-600'
                                                 } disabled:opacity-50`}
                                         >
                                             {type.icon}{type.label}
@@ -270,47 +224,6 @@ const EditLessonModal: React.FC<EditLessonModalProps> = ({ courseId, sectionId, 
                                     </div>
                                 )}
 
-                                {lessonData.lesson_type === 'QUIZ' && (
-                                    <div className="space-y-3 rounded-lg border border-dashed border-violet-200 bg-violet-50/40 p-3">
-                                        <div className="flex items-center justify-between">
-                                            <p className="text-xs font-semibold text-violet-700">Quiz Builder</p>
-                                            <button type="button" onClick={addQuestion} className="text-[11px] font-semibold text-violet-600">+ Add Question</button>
-                                        </div>
-                                        {quizData.questions.map((question, questionIndex) => (
-                                            <div key={questionIndex} className="rounded-lg border border-violet-100 bg-white p-3 space-y-2">
-                                                <input
-                                                    value={question.prompt}
-                                                    onChange={(e) => updateQuestion(questionIndex, { prompt: e.target.value })}
-                                                    placeholder="Question prompt"
-                                                    className={inputCls}
-                                                />
-                                                {question.options.map((option, optionIndex) => (
-                                                    <div key={optionIndex} className="flex items-center gap-2">
-                                                        <input
-                                                            value={option.text}
-                                                            onChange={(e) => updateOption(questionIndex, optionIndex, { text: e.target.value })}
-                                                            placeholder={`Option ${optionIndex + 1}`}
-                                                            className={`${inputCls} flex-1`}
-                                                        />
-                                                        <label className="text-[11px] text-gray-500 flex items-center gap-1 whitespace-nowrap">
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={Boolean(option.is_correct)}
-                                                                onChange={(e) => updateOption(questionIndex, optionIndex, { is_correct: e.target.checked })}
-                                                            />
-                                                            Correct
-                                                        </label>
-                                                    </div>
-                                                ))}
-                                                <div className="flex items-center justify-between">
-                                                    <button type="button" onClick={() => addOption(questionIndex)} className="text-[11px] font-semibold text-violet-600">+ Add Option</button>
-                                                    <span className="text-[10px] text-gray-400">Students see this after you publish the quiz.</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
                                 {!showContent && lessonData.lesson_type !== 'VIDEO' && (
                                     <div className="flex items-center gap-2.5 p-3 bg-blue-50 border border-blue-100 rounded-lg">
                                         <AlertCircle className="w-4 h-4 text-blue-500 shrink-0" />
@@ -334,16 +247,6 @@ const EditLessonModal: React.FC<EditLessonModalProps> = ({ courseId, sectionId, 
                                     <div>
                                         <label htmlFor="is-preview" className="text-sm font-medium text-gray-800 cursor-pointer">Free Preview</label>
                                         <p className="text-xs text-gray-400 mt-0.5">Make available to non-enrolled students</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
-                                    <input id="is-published" type="checkbox" name="is_published"
-                                        checked={lessonData.is_published} onChange={handleInputChange}
-                                        className="w-4 h-4 mt-0.5 text-violet-600 border-gray-300 rounded cursor-pointer" disabled={isSubmitting}
-                                    />
-                                    <div>
-                                        <label htmlFor="is-published" className="text-sm font-medium text-gray-800 cursor-pointer">Publish quiz for students</label>
-                                        <p className="text-xs text-gray-400 mt-0.5">Hide this lesson until you are ready to publish it</p>
                                     </div>
                                 </div>
                             </div>

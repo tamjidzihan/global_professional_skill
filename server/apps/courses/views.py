@@ -12,18 +12,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
-from .models import (
-    Category,
-    Course,
-    Section,
-    Lesson,
-    LessonType,
-    QuizOption,
-    QuizQuestion,
-    QuizSubmission,
-    Review,
-    CourseStatus,
-)
+from .models import Category, Course, Section, Lesson, Review, CourseStatus
 from .serializers import (
     CategorySerializer,
     CourseListSerializer,
@@ -34,7 +23,6 @@ from .serializers import (
     LessonSerializer,
     ReviewSerializer,
     CourseReviewSerializer,
-    can_view_lesson,
 )
 from apps.accounts.permissions import IsInstructor, IsAdmin, IsInstructorOrAdmin
 from .permissions import IsCourseInstructorOrAdmin, IsEnrolledOrInstructor
@@ -64,13 +52,7 @@ class CourseViewSet(viewsets.ModelViewSet):
     """ViewSet for courses with approval workflow."""
 
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = [
-        "category",
-        "difficulty_level",
-        "delivery_mode",
-        "is_free",
-        "status",
-    ]
+    filterset_fields = ["category", "difficulty_level", "delivery_mode", "is_free", "status"]
     search_fields = [
         "title",
         "description",
@@ -110,14 +92,14 @@ class CourseViewSet(viewsets.ModelViewSet):
         """
         user = self.request.user
 
-        if not user.is_authenticated or user.is_student:  # type: ignore
+        if not user.is_authenticated or user.is_student: # type: ignore
             return (
                 Course.objects.filter(status=CourseStatus.PUBLISHED)
                 .select_related("instructor", "category")
                 .prefetch_related("sections__lessons")
             )
 
-        if user.is_instructor:  # type: ignore
+        if user.is_instructor: # type: ignore
             # Allow instructors to see their own courses AND all published courses
             return (
                 Course.objects.filter(
@@ -128,7 +110,7 @@ class CourseViewSet(viewsets.ModelViewSet):
                 .distinct()
             )
 
-        if user.is_admin_user:  # type: ignore
+        if user.is_admin_user: # type: ignore
             return Course.objects.select_related(
                 "instructor", "category", "reviewed_by"
             ).prefetch_related("sections__lessons")
@@ -298,13 +280,7 @@ class MyCoursesViewSet(viewsets.ModelViewSet):
 
     permission_classes = [IsInstructor]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = [
-        "category",
-        "difficulty_level",
-        "delivery_mode",
-        "is_free",
-        "status",
-    ]
+    filterset_fields = ["category", "difficulty_level", "delivery_mode", "is_free", "status"]
     search_fields = [
         "title",
         "description",
@@ -319,7 +295,7 @@ class MyCoursesViewSet(viewsets.ModelViewSet):
     ]
     ordering = ["-created_at"]
 
-    def get_queryset(self):  # type: ignore
+    def get_queryset(self): # type: ignore
         """
         This view should only return courses for the currently authenticated
         instructor.
@@ -330,7 +306,7 @@ class MyCoursesViewSet(viewsets.ModelViewSet):
             .prefetch_related("sections__lessons")
         )
 
-    def get_serializer_class(self):  # type: ignore
+    def get_serializer_class(self): # type: ignore
         """Return appropriate serializer based on action."""
         if self.action == "list":
             return CourseListSerializer
@@ -430,39 +406,16 @@ class LessonViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         """Check enrollment for retrieve, or instructor/admin for CUD."""
-        if self.action in ["retrieve", "submit_quiz", "my_quiz_submissions"]:
-            return [IsAuthenticated()]
+        if self.action == "retrieve":
+            return [IsEnrolledOrInstructor()]
         return [IsCourseInstructorOrAdmin()]
 
     def get_queryset(self):  # type: ignore
         """Filter lessons by section."""
         section_id = self.kwargs.get("section_pk")
-        queryset = Lesson.objects.filter(section_id=section_id).select_related(
+        return Lesson.objects.filter(section_id=section_id).select_related(
             "section__course"
         )
-
-        if self.action == "list" and self.request.user.is_authenticated:
-            if not getattr(self.request.user, "is_admin_user", False) and not getattr(
-                self.request.user, "is_instructor", False
-            ):
-                return queryset.filter(
-                    Q(lesson_type__ne=LessonType.QUIZ) | Q(is_published=True)
-                )
-
-        return queryset
-
-    def retrieve(self, request, *args, **kwargs):
-        lesson = self.get_object()
-        if not can_view_lesson(lesson, request):
-            return Response(
-                {
-                    "success": False,
-                    "error": {"message": "This quiz is not available yet."},
-                },
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        serializer = self.get_serializer(lesson)
-        return Response({"success": True, "data": serializer.data})
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -480,117 +433,6 @@ class LessonViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-    @action(detail=True, methods=["post"], url_path="submit-quiz")
-    @transaction.atomic
-    def submit_quiz(self, request, *args, **kwargs):
-        """Submit quiz answers and return the computed score."""
-        lesson = self.get_object()
-        if lesson.lesson_type != LessonType.QUIZ:
-            return Response(
-                {"success": False, "error": {"message": "This lesson is not a quiz."}},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if not lesson.is_published:
-            return Response(
-                {
-                    "success": False,
-                    "error": {"message": "This quiz is not published yet."},
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        from apps.enrollments.models import Enrollment
-
-        if not Enrollment.objects.filter(
-            student=request.user, course=lesson.section.course
-        ).exists():
-            return Response(
-                {
-                    "success": False,
-                    "error": {
-                        "message": "You must be enrolled in the course to submit this quiz."
-                    },
-                },
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        answers = request.data.get("answers", [])
-        score = 0
-        detailed_answers = []
-        question_ids = [str(q.id) for q in lesson.quiz_questions.all()]
-
-        for answer in answers:
-            question_id = answer.get("question_id")
-            option_id = answer.get("option_id")
-            if not question_id or not option_id:
-                continue
-
-            question = lesson.quiz_questions.filter(id=question_id).first()
-            option = (
-                QuizOption.objects.filter(id=option_id, question=question).first()
-                if question
-                else None
-            )
-            is_correct = bool(option and option.is_correct)
-            detailed_answers.append(
-                {
-                    "question_id": question_id,
-                    "option_id": option_id,
-                    "is_correct": is_correct,
-                }
-            )
-            if is_correct:
-                score += 1
-
-        submission, created = QuizSubmission.objects.update_or_create(
-            lesson=lesson,
-            student=request.user,
-            defaults={
-                "score": score,
-                "total_questions": len(question_ids),
-                "answers": detailed_answers,
-            },
-        )
-
-        return Response(
-            {
-                "success": True,
-                "message": (
-                    "Quiz submitted successfully."
-                    if created
-                    else "Quiz updated successfully."
-                ),
-                "data": {
-                    "id": str(submission.id),
-                    "score": submission.score,
-                    "total_questions": submission.total_questions,
-                    "submitted_at": submission.submitted_at.isoformat(),
-                },
-            }
-        )
-
-    @action(detail=False, methods=["get"], url_path="my-quiz-submissions")
-    def my_quiz_submissions(self, request, *args, **kwargs):
-        """Return quiz submissions for the authenticated student."""
-        submissions = QuizSubmission.objects.filter(
-            student=request.user
-        ).select_related("lesson", "lesson__section__course")
-        payload = []
-        for submission in submissions:
-            payload.append(
-                {
-                    "id": str(submission.id),
-                    "lesson_id": str(submission.lesson.id),
-                    "lesson_title": submission.lesson.title,
-                    "course_title": submission.lesson.section.course.title,
-                    "score": submission.score,
-                    "total_questions": submission.total_questions,
-                    "submitted_at": submission.submitted_at.isoformat(),
-                }
-            )
-
-        return Response({"success": True, "data": payload})
 
     @action(detail=True, methods=["post"], url_path="toggle-complete")
     @transaction.atomic
@@ -598,35 +440,29 @@ class LessonViewSet(viewsets.ModelViewSet):
         """Toggle lesson completion status and update student progress."""
         lesson = self.get_object()
         course = lesson.section.course
-
+        
         # Explicit check: Only course instructor or admin can update progress
         if course.instructor != request.user and not request.user.is_admin_user:
             return Response(
-                {
-                    "success": False,
-                    "message": "Only the course instructor can update class progress.",
-                },
-                status=status.HTTP_403_FORBIDDEN,
+                {"success": False, "message": "Only the course instructor can update class progress."},
+                status=status.HTTP_403_FORBIDDEN
             )
-
+        
         lesson.is_completed = not lesson.is_completed
-        lesson.save()  # Trigger potential signals or model logic
-
+        lesson.save() # Trigger potential signals or model logic
+        
         # If it's an online or hybrid course, update student progress
-        if course.delivery_mode in ["ONLINE", "BOTH"]:
+        if course.delivery_mode in ['ONLINE', 'BOTH']:
             enrollments = course.enrollments.all()
             for enrollment in enrollments:
                 enrollment.update_progress()
-                enrollment.save()  # Ensure progress_percentage is saved
-
-        return Response(
-            {
-                "success": True,
-                "message": f"Class marked as {'completed' if lesson.is_completed else 'incomplete'}",
-                "data": LessonSerializer(lesson).data,
-            }
-        )
-
+                enrollment.save() # Ensure progress_percentage is saved
+                
+        return Response({
+            "success": True, 
+            "message": f"Class marked as {'completed' if lesson.is_completed else 'incomplete'}",
+            "data": LessonSerializer(lesson).data
+        })
 
 class ReviewViewSet(viewsets.ModelViewSet):
     """ViewSet for course reviews."""
@@ -641,7 +477,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         - Allow anyone to view reviews (list, retrieve)
         - Require authentication for creating, updating, deleting reviews
         """
-        if self.action in ["list", "retrieve"]:
+        if self.action in ['list', 'retrieve']:
             return [AllowAny()]
         return [IsAuthenticated()]
 
@@ -700,7 +536,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         """Delete review."""
         instance = self.get_object()
-
+        
         # Only review owner or admin can delete
         if instance.student != request.user and not request.user.is_admin_user:
             return Response(
@@ -710,7 +546,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_403_FORBIDDEN,
             )
-
+            
         self.perform_destroy(instance)
         return Response(
             {

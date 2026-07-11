@@ -170,7 +170,6 @@ export const endpoints = {
         delete: (id: string) => `/courses/courses/${id}/`,
         submit: (id: string) => `/courses/courses/${id}/submit_for_review/`,
         review: (id: string) => `/courses/courses/${id}/review/`,
-        quizSubmissions: '/courses/courses/my-quiz-submissions/',
     },
     categories: {
         list: '/courses/categories/',
@@ -202,8 +201,6 @@ export const endpoints = {
             `/courses/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/`,
         toggleComplete: (courseId: string, sectionId: string, lessonId: string) =>
             `/courses/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/toggle-complete/`,
-        submitQuiz: (courseId: string, sectionId: string, lessonId: string) =>
-            `/courses/courses/${courseId}/sections/${sectionId}/lessons/${lessonId}/submit-quiz/`,
     },
     enrollments: {
         enroll: '/enrollments/enrollments/',
@@ -463,16 +460,6 @@ export const deleteLesson = (courseId: string, sectionId: string, lessonId: stri
 export const toggleLessonCompletion = (courseId: string, sectionId: string, lessonId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.post<ApiResponse<any>>(endpoints.lessons.toggleComplete(courseId, sectionId, lessonId));
 
-export const submitQuizLesson = (
-    courseId: string,
-    sectionId: string,
-    lessonId: string,
-    data: { answers: Array<{ question_id: string; option_id: string }> }
-): Promise<AxiosResponse<ApiResponse<any>>> =>
-    api.post<ApiResponse<any>>(endpoints.lessons.submitQuiz(courseId, sectionId, lessonId), data);
-
-export const getMyQuizSubmissions = (): Promise<AxiosResponse<ApiResponse<any[]>>> =>
-    api.get<ApiResponse<any[]>>(endpoints.courses.quizSubmissions);
 
 // Review API Calls
 export const getReviews = <T = ApiResponse<Review[]>>(
