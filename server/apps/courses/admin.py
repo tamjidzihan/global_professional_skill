@@ -5,7 +5,7 @@ Django admin for courses app.
 from django.contrib import admin
 from django.utils.html import format_html
 from django.utils import timezone
-from .models import Category, Course, Section, Lesson, Review, CourseStatus
+from .models import Category, Course, Section, Lesson, Review, CourseStatus, Quiz, QuizQuestion, QuizSubmission
 
 
 @admin.register(Category)
@@ -435,3 +435,29 @@ class ReviewAdmin(admin.ModelAdmin):
             return "#fd7e14"  # Orange
         else:
             return "#dc3545"  # Red
+
+
+@admin.register(Quiz)
+class QuizAdmin(admin.ModelAdmin):
+    list_display = ("title", "course", "pin_code", "duration_minutes", "created_at")
+    list_filter = ("created_at", "course")
+    search_fields = ("title", "course__title")
+
+
+@admin.register(QuizQuestion)
+class QuizQuestionAdmin(admin.ModelAdmin):
+    list_display = ("question_text_preview", "quiz", "correct_option", "created_at")
+    list_filter = ("created_at", "quiz")
+    search_fields = ("question_text", "quiz__title")
+
+    def question_text_preview(self, obj):
+        return obj.question_text[:50] + "..." if len(obj.question_text) > 50 else obj.question_text
+    question_text_preview.short_description = "Question"
+
+
+@admin.register(QuizSubmission)
+class QuizSubmissionAdmin(admin.ModelAdmin):
+    list_display = ("student", "quiz", "score", "total_questions", "warnings_count", "completed_at")
+    list_filter = ("completed_at", "quiz")
+    search_fields = ("student__email", "quiz__title")
+

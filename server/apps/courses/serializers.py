@@ -5,7 +5,7 @@ Serializers for courses app.
 from rest_framework import serializers
 from django.utils.text import slugify
 from django.utils import timezone
-from .models import Category, Course, Section, Lesson, Review, CourseStatus
+from .models import Category, Course, Section, Lesson, Review, CourseStatus, Quiz, QuizQuestion, QuizSubmission
 from apps.accounts.serializers import UserSerializer
 
 
@@ -349,7 +349,7 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
 
     def validate_available_seats(self, value):
         """Validate available seats."""
-        total_seats = self.initial_data.get('total_seats')
+        total_seats = self.initial_data.get('total_seats') # type: ignore
         if total_seats is not None:
             try:
                 total_seats = int(total_seats)
@@ -455,3 +455,58 @@ class CourseReviewSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+
+class QuizQuestionSerializer(serializers.ModelSerializer):
+    """Full question serializer for instructors/admins."""
+    class Meta:
+        model = QuizQuestion
+        fields = ("id", "quiz", "question_text", "option_a", "option_b", "option_c", "option_d", "correct_option", "created_at")
+        read_only_fields = ("id", "created_at")
+
+
+class QuizStudentQuestionSerializer(serializers.ModelSerializer):
+    """Stripped question serializer for students (omits correct_option)."""
+    class Meta:
+        model = QuizQuestion
+        fields = ("id", "question_text", "option_a", "option_b", "option_c", "option_d")
+        read_only_fields = ("id",)
+
+
+class QuizSerializer(serializers.ModelSerializer):
+    """Serializer for Quiz metadata."""
+    question_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Quiz
+        fields = ("id", "course", "title", "pin_code", "duration_minutes", "question_count", "created_at", "updated_at")
+        read_only_fields = ("id", "created_at", "updated_at")
+
+    def get_question_count(self, obj):
+        return obj.questions.count()
+
+
+class QuizSubmissionSerializer(serializers.ModelSerializer):
+    """Serializer for quiz submissions/attempts."""
+    student_name = serializers.CharField(source="student.get_full_name", read_only=True)
+    student_email = serializers.EmailField(source="student.email", read_only=True)
+    quiz_title = serializers.CharField(source="quiz.title", read_only=True)
+    course_title = serializers.CharField(source="quiz.course.title", read_only=True)
+
+    class Meta:
+        model = QuizSubmission
+        fields = (
+            "id",
+            "quiz",
+            "quiz_title",
+            "course_title",
+            "student",
+            "student_name",
+            "student_email",
+            "score",
+            "total_questions",
+            "warnings_count",
+            "started_at",
+            "completed_at",
+        )
+        read_only_fields = ("id", "started_at", "completed_at", "student", "quiz")

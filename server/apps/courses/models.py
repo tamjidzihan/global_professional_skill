@@ -404,3 +404,76 @@ class Review(models.Model):
         self.course.average_rating = stats["avg_rating"] or 0
         self.course.total_reviews = stats["total_reviews"] or 0
         self.course.save(update_fields=["average_rating", "total_reviews"])
+
+
+class Quiz(models.Model):
+    """MCQ Quiz model."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="quizzes")
+    title = models.CharField(max_length=200)
+    pin_code = models.CharField(max_length=10)
+    duration_minutes = models.PositiveIntegerField(help_text="Duration in minutes")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "quizzes"
+        verbose_name = "Quiz"
+        verbose_name_plural = "Quizzes"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.course.title} - {self.title}"
+
+
+class QuizQuestion(models.Model):
+    """MCQ Quiz Question model."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="questions")
+    question_text = models.TextField()
+    option_a = models.CharField(max_length=255)
+    option_b = models.CharField(max_length=255)
+    option_c = models.CharField(max_length=255)
+    option_d = models.CharField(max_length=255)
+    
+    class CorrectOption(models.TextChoices):
+        A = "A", "Option A"
+        B = "B", "Option B"
+        C = "C", "Option C"
+        D = "D", "Option D"
+        
+    correct_option = models.CharField(max_length=1, choices=CorrectOption.choices)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "quiz_questions"
+        verbose_name = "Quiz Question"
+        verbose_name_plural = "Quiz Questions"
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"Quiz: {self.quiz.title} - Question: {self.question_text[:50]}"
+
+
+class QuizSubmission(models.Model):
+    """Student submission/attempt for a Quiz."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="submissions")
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="quiz_submissions")
+    score = models.IntegerField(default=0)
+    total_questions = models.IntegerField(default=0)
+    warnings_count = models.IntegerField(default=0)
+    started_at = models.DateTimeField(default=timezone.now)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = "quiz_submissions"
+        verbose_name = "Quiz Submission"
+        verbose_name_plural = "Quiz Submissions"
+        unique_together = ["student", "quiz"]
+        ordering = ["-completed_at"]
+
+    def __str__(self):
+        return f"{self.student.email} - Quiz: {self.quiz.title} - Score: {self.score}/{self.total_questions}"
+

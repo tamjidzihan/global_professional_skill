@@ -242,6 +242,34 @@ export const endpoints = {
         applicationDetail: (id: string) => `/careers/applications/${id}/`,
         updateStatus: (id: string) => `/careers/applications/${id}/update_status/`,
     },
+    quizzes: {
+        list: (courseId: string) => `/courses/courses/${courseId}/quizzes/`,
+        create: (courseId: string) => `/courses/courses/${courseId}/quizzes/`,
+        detail: (courseId: string, quizId: string) =>
+            `/courses/courses/${courseId}/quizzes/${quizId}/`,
+        update: (courseId: string, quizId: string) =>
+            `/courses/courses/${courseId}/quizzes/${quizId}/`,
+        delete: (courseId: string, quizId: string) =>
+            `/courses/courses/${courseId}/quizzes/${quizId}/`,
+        start: (courseId: string, quizId: string) =>
+            `/courses/courses/${courseId}/quizzes/${quizId}/start/`,
+        submit: (courseId: string, quizId: string) =>
+            `/courses/courses/${courseId}/quizzes/${quizId}/submit/`,
+        mySubmissions: '/courses/my-quiz-submissions/',
+        lookup: (quizId: string) => `/courses/quizzes/${quizId}/`,
+    },
+    quizQuestions: {
+        list: (courseId: string, quizId: string) =>
+            `/courses/courses/${courseId}/quizzes/${quizId}/questions/`,
+        create: (courseId: string, quizId: string) =>
+            `/courses/courses/${courseId}/quizzes/${quizId}/questions/`,
+        detail: (courseId: string, quizId: string, questionId: string) =>
+            `/courses/courses/${courseId}/quizzes/${quizId}/questions/${questionId}/`,
+        update: (courseId: string, quizId: string, questionId: string) =>
+            `/courses/courses/${courseId}/quizzes/${quizId}/questions/${questionId}/`,
+        delete: (courseId: string, quizId: string, questionId: string) =>
+            `/courses/courses/${courseId}/quizzes/${quizId}/questions/${questionId}/`,
+    },
 };
 
 // Career API Calls
@@ -538,3 +566,45 @@ export const requestPasswordReset = (data: PasswordResetRequestData): Promise<Ax
 
 export const confirmPasswordReset = (data: PasswordResetConfirmData): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.post<ApiResponse<any>>(endpoints.auth.passwordResetConfirm, data);
+
+
+// Quiz API Calls
+export const getQuizzes = (courseId: string): Promise<AxiosResponse<ApiResponse<any[]>>> =>
+    api.get<ApiResponse<any[]>>(endpoints.quizzes.list(courseId));
+
+export const getQuizDetail = (courseId: string, quizId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get<ApiResponse<any>>(endpoints.quizzes.detail(courseId, quizId));
+
+export const createQuiz = (courseId: string, data: { title: string; duration_minutes: number; pin_code: string }): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(endpoints.quizzes.list(courseId), data);
+
+export const updateQuiz = (courseId: string, quizId: string, data: any): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.put<ApiResponse<any>>(endpoints.quizzes.detail(courseId, quizId), data);
+
+export const deleteQuiz = (courseId: string, quizId: string): Promise<AxiosResponse<ApiResponse<void>>> =>
+    api.delete<ApiResponse<void>>(endpoints.quizzes.detail(courseId, quizId));
+
+export const startQuiz = (courseId: string, quizId: string, data: { pin_code: string }): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(endpoints.quizzes.start(courseId, quizId), data);
+
+export const submitQuiz = (courseId: string, quizId: string, data: { answers: any[]; warnings_count: number }): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(endpoints.quizzes.submit(courseId, quizId), data);
+
+export const getMyQuizSubmissions = (): Promise<AxiosResponse<ApiResponse<any[]>>> =>
+    api.get<ApiResponse<any[]>>(endpoints.quizzes.mySubmissions);
+
+export const lookupQuiz = (quizId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get<ApiResponse<any>>(endpoints.quizzes.lookup(quizId));
+
+// Quiz Question API Calls
+export const getQuizQuestions = (courseId: string, quizId: string): Promise<AxiosResponse<ApiResponse<any[]>>> =>
+    api.get<ApiResponse<any[]>>(endpoints.quizQuestions.list(courseId, quizId));
+
+export const createQuizQuestion = (courseId: string, quizId: string, data: any): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(endpoints.quizQuestions.list(courseId, quizId), data);
+
+export const updateQuizQuestion = (courseId: string, quizId: string, questionId: string, data: any): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.put<ApiResponse<any>>(endpoints.quizQuestions.detail(courseId, quizId, questionId), data);
+
+export const deleteQuizQuestion = (courseId: string, quizId: string, questionId: string): Promise<AxiosResponse<ApiResponse<void>>> =>
+    api.delete<ApiResponse<void>>(endpoints.quizQuestions.detail(courseId, quizId, questionId));

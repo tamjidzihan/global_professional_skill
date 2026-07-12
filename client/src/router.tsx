@@ -51,6 +51,9 @@ import EnrolledStudentsPage from "./main/pages/dashboard/EnrolledStudentsPage";
 import AnnouncementDetailPage from "./main/pages/dashboard/common/AnnouncementDetailPage";
 import AnnouncementListPage from "./main/pages/dashboard/common/AnnouncementListPage";
 import AnnouncementManagementPage from "./main/pages/dashboard/admin/AnnouncementManagementPage";
+import QuizListPage from "./main/pages/dashboard/instructor/QuizListPage";
+import QuizQuestionsPage from "./main/pages/dashboard/instructor/QuizQuestionsPage";
+import TakeQuizPage from "./main/pages/TakeQuizPage";
 
 export const router = createBrowserRouter([
     {
@@ -73,6 +76,7 @@ export const router = createBrowserRouter([
             { path: '/careers/:id', element: <JobDetailPage /> },
             { path: '/announcements', element: <AnnouncementListPage /> },
             { path: '/announcements/:id', element: <AnnouncementDetailPage /> },
+            { path: '/quiz/:quizId/take', element: <ProtectedRoute allowedRoles={['STUDENT']}><TakeQuizPage /></ProtectedRoute> },
 
             // Auth routes
             {
@@ -199,6 +203,22 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
                                 <CurriculumPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/my-courses/:courseId/quizzes',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+                                <QuizListPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/my-courses/:courseId/quizzes/:quizId/questions',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+                                <QuizQuestionsPage />
                             </ProtectedRoute>
                         )
                     },

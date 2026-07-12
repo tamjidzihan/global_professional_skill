@@ -12,7 +12,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
-from .models import Category, Course, Section, Lesson, Review, CourseStatus
+from .models import Category, Course, Section, Lesson, Review, CourseStatus, Quiz, QuizQuestion, QuizSubmission
 from .serializers import (
     CategorySerializer,
     CourseListSerializer,
@@ -23,6 +23,10 @@ from .serializers import (
     LessonSerializer,
     ReviewSerializer,
     CourseReviewSerializer,
+    QuizSerializer,
+    QuizQuestionSerializer,
+    QuizStudentQuestionSerializer,
+    QuizSubmissionSerializer,
 )
 from apps.accounts.permissions import IsInstructor, IsAdmin, IsInstructorOrAdmin
 from .permissions import IsCourseInstructorOrAdmin, IsEnrolledOrInstructor
@@ -555,3 +559,314 @@ class ReviewViewSet(viewsets.ModelViewSet):
             },
             status=status.HTTP_204_NO_CONTENT,
         )
+
+
+from rest_framework.views import APIView
+
+class QuizLookupView(APIView):
+    """View to lookup basic quiz details by quiz ID alone (for student redirection/init)."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk=None):
+        try:
+            quiz = Quiz.objects.get(pk=pk)
+        except Quiz.DoesNotExist:
+            return Response(
+                {"success": False, "error": {"message": "Quiz not found."}},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Verify enrollment for student
+        user = request.user
+        if not user.is_admin_user and not user.is_instructor:
+            from apps.enrollments.models import Enrollment
+            if not Enrollment.objects.filter(student=user, course=quiz.course).exists():
+                return Response(
+                    {"success": False, "error": {"message": "You must be enrolled in this course to access the quiz."}},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+        return Response({
+            "success": True,
+            "data": {
+                "id": str(quiz.id),
+                "course": str(quiz.course.id),
+                "title": quiz.title,
+                "duration_minutes": quiz.duration_minutes,
+                "question_count": quiz.questions.count(),
+            }
+        })
+
+
+class QuizViewSet(viewsets.ModelViewSet):
+    """ViewSet for Course Quizzes."""
+    serializer_class = QuizSerializer
+    pagination_class = None
+
+    def get_permissions(self):
+        if self.action in ["list", "retrieve", "start", "submit"]:
+            return [IsAuthenticated()]
+        return [IsCourseInstructorOrAdmin()]
+
+    def get_queryset(self): # type: ignore
+        course_id = self.kwargs.get("course_pk")
+        user = self.request.user
+        if not user.is_authenticated:
+            return Quiz.objects.none()
+
+        if user.is_instructor or user.is_admin_user:
+            return Quiz.objects.filter(course_id=course_id)
+
+        # For students: they can retrieve, start, or submit a specific quiz detail, but list is empty/hidden
+        if self.action in ["retrieve", "start", "submit"]:
+            return Quiz.objects.filter(course_id=course_id)
+        return Quiz.objects.none()
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"success": True, "data": serializer.data})
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response({"success": True, "data": serializer.data})
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=kwargs.get('partial', False))
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            "success": True,
+            "message": "Quiz updated successfully.",
+            "data": serializer.data
+        })
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        course_id = self.kwargs.get("course_pk")
+        data = request.data.copy()
+        data["course"] = course_id
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {
+                "success": True,
+                "message": "Quiz created successfully.",
+                "data": serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    @transaction.atomic
+    def start(self, request, course_pk=None, pk=None):
+        quiz = self.get_object()
+        user = request.user
+        pin_code = request.data.get("pin_code")
+
+        # 1. Verify enrollment if student
+        if not user.is_admin_user and not user.is_instructor:
+            from apps.enrollments.models import Enrollment
+            if not Enrollment.objects.filter(student=user, course=quiz.course).exists():
+                return Response(
+                    {"success": False, "error": {"message": "You must be enrolled in this course to take the quiz."}},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+        # 2. Verify PIN
+        if quiz.pin_code != pin_code:
+            return Response(
+                {"success": False, "error": {"message": "Invalid PIN code."}},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 3. Check for existing submission
+        submission, created = QuizSubmission.objects.get_or_create(
+            quiz=quiz,
+            student=user,
+            defaults={"started_at": timezone.now()}
+        )
+
+        if not created:
+            if submission.completed_at is not None:
+                return Response(
+                    {
+                        "success": False,
+                        "error": {"message": "You have already completed this quiz."},
+                        "data": QuizSubmissionSerializer(submission).data
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Check time limit
+            elapsed_time = timezone.now() - submission.started_at
+            allowed_time = elapsed_time.total_seconds() / 60.0
+            if allowed_time >= quiz.duration_minutes:
+                submission.completed_at = submission.started_at + timezone.timedelta(minutes=quiz.duration_minutes)
+                submission.score = 0
+                submission.total_questions = quiz.questions.count()
+                submission.save()
+                return Response(
+                    {
+                        "success": False,
+                        "error": {"message": "Time has expired for this quiz attempt."},
+                        "data": QuizSubmissionSerializer(submission).data
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        # Return student question data (no correct options)
+        questions = quiz.questions.all()
+        serializer = QuizStudentQuestionSerializer(questions, many=True)
+        
+        # Calculate remaining seconds
+        elapsed_seconds = (timezone.now() - submission.started_at).total_seconds()
+        remaining_seconds = max(0, int((quiz.duration_minutes * 60) - elapsed_seconds))
+
+        return Response({
+            "success": True,
+            "data": {
+                "quiz": QuizSerializer(quiz).data,
+                "questions": serializer.data,
+                "remaining_seconds": remaining_seconds,
+                "submission_id": submission.id
+            }
+        })
+
+    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
+    @transaction.atomic
+    def submit(self, request, course_pk=None, pk=None):
+        quiz = self.get_object()
+        user = request.user
+        answers = request.data.get("answers", [])
+        warnings_count = request.data.get("warnings_count", 0)
+
+        try:
+            submission = QuizSubmission.objects.get(quiz=quiz, student=user)
+        except QuizSubmission.DoesNotExist:
+            return Response(
+                {"success": False, "error": {"message": "Quiz attempt has not been started."}},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if submission.completed_at is not None:
+            return Response(
+                {
+                    "success": False,
+                    "error": {"message": "You have already submitted this quiz."},
+                    "data": QuizSubmissionSerializer(submission).data
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Check time limit
+        elapsed_time = timezone.now() - submission.started_at
+        allowed_time = elapsed_time.total_seconds() / 60.0
+        if allowed_time > (quiz.duration_minutes + 1):  # 1 min grace
+            pass # We still process what they submit, or enforce strict limits. Let's process.
+
+        # Calculate score
+        score = 0
+        questions = {q.id: q for q in quiz.questions.all()}
+        
+        for ans in answers:
+            q_id = ans.get("question_id")
+            selected = ans.get("selected_option")
+            try:
+                import uuid
+                q_uuid = uuid.UUID(q_id) if isinstance(q_id, str) else q_id
+            except (ValueError, TypeError):
+                continue
+
+            if q_uuid in questions:
+                correct = questions[q_uuid].correct_option
+                if correct == selected:
+                    score += 1
+
+        submission.score = score
+        submission.total_questions = len(questions)
+        submission.warnings_count = warnings_count
+        submission.completed_at = timezone.now()
+        submission.save()
+
+        return Response({
+            "success": True,
+            "message": "Quiz submitted successfully.",
+            "data": QuizSubmissionSerializer(submission).data
+        })
+
+
+class QuizQuestionViewSet(viewsets.ModelViewSet):
+    """ViewSet for Quiz Questions."""
+    serializer_class = QuizQuestionSerializer
+    permission_classes = [IsCourseInstructorOrAdmin]
+    pagination_class = None
+
+    def get_queryset(self): # type: ignore
+        quiz_id = self.kwargs.get("quiz_pk")
+        return QuizQuestion.objects.filter(quiz_id=quiz_id)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"success": True, "data": serializer.data})
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response({"success": True, "data": serializer.data})
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=kwargs.get('partial', False))
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            "success": True,
+            "message": "Question updated successfully.",
+            "data": serializer.data
+        })
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        quiz_id = self.kwargs.get("quiz_pk")
+        data = request.data.copy()
+        data["quiz"] = quiz_id
+
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {
+                "success": True,
+                "message": "Question created successfully.",
+                "data": serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class MyQuizSubmissionsViewSet(viewsets.ReadOnlyModelViewSet):
+    """ViewSet for students to fetch their own quiz submissions."""
+    serializer_class = QuizSubmissionSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = None
+
+    def get_queryset(self): # type: ignore
+        return QuizSubmission.objects.filter(student=self.request.user).select_related("quiz", "quiz__course")
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"success": True, "data": serializer.data})
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response({"success": True, "data": serializer.data})

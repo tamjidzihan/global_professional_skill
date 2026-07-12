@@ -25,6 +25,10 @@ class IsCourseInstructorOrAdmin(permissions.BasePermission):
         if hasattr(obj, "section"):
             return obj.section.course.instructor == request.user
 
+        # For QuizQuestion/QuizSubmission objects (through quiz)
+        if hasattr(obj, "quiz"):
+            return obj.quiz.course.instructor == request.user
+
         return False
 
 

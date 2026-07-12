@@ -199,7 +199,7 @@ export default function EnrolledStudentsPage() {
                     <table className="min-w-full">
                         <thead>
                             <tr className="border-b border-gray-100">
-                                {['Student', 'Enrolled', 'Progress', 'Status', ''].map(h => (
+                                {['Student', 'Enrolled', 'Progress', 'Quiz Scores', 'Status', ''].map(h => (
                                     <th key={h} className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-gray-400">{h}</th>
                                 ))}
                             </tr>
@@ -208,7 +208,7 @@ export default function EnrolledStudentsPage() {
                             {loading ? (
                                 [...Array(4)].map((_, i) => (
                                     <tr key={i}>
-                                        <td colSpan={5} className="px-5 py-3">
+                                        <td colSpan={6} className="px-5 py-3">
                                             <div className="animate-pulse h-10 bg-gray-50 rounded-lg" />
                                         </td>
                                     </tr>
@@ -279,6 +279,30 @@ export default function EnrolledStudentsPage() {
                                                 </div>
                                             </td>
 
+                                            {/* Quiz Scores */}
+                                            <td className="px-5 py-3 text-xs text-gray-700">
+                                                {enrollment.quiz_submissions && enrollment.quiz_submissions.length > 0 ? (
+                                                    <div className="space-y-1">
+                                                        {enrollment.quiz_submissions.map(sub => (
+                                                            <div key={sub.id} className="flex items-center gap-1.5 font-medium">
+                                                                <span className="text-gray-900 font-bold shrink-0">{sub.score} / {sub.total_questions}</span>
+                                                                <span className="text-[10px] text-gray-400 truncate max-w-24" title={sub.quiz_title}>({sub.quiz_title})</span>
+                                                                {sub.warnings_count > 0 && (
+                                                                    <span
+                                                                        className="inline-flex items-center gap-0.5 px-1 bg-amber-50 text-amber-700 border border-amber-100 rounded text-[9px] font-bold"
+                                                                        title={`${sub.warnings_count} window focus warning(s)`}
+                                                                    >
+                                                                        ⚠️{sub.warnings_count}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-gray-400">—</span>
+                                                )}
+                                            </td>
+
                                             {/* Status */}
                                             <td className="px-5 py-3 whitespace-nowrap">
                                                 {isComplete ? (
@@ -314,7 +338,7 @@ export default function EnrolledStudentsPage() {
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan={5} className="py-14 text-center">
+                                    <td colSpan={6} className="py-14 text-center">
                                         <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center mx-auto mb-3">
                                             <Users className="w-5 h-5 text-gray-300" />
                                         </div>

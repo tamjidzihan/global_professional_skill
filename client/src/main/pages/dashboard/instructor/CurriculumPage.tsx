@@ -220,7 +220,15 @@ const CurriculumPage: React.FC = () => {
                             <p className="text-sm text-gray-400 mt-0.5 truncate max-w-sm">{course.title}</p>
                         </div>
                     </div>
-                    <StatusBadge status={course.status} />
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => navigate(`/dashboard/instructor/my-courses/${course.id}/quizzes`)}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 border border-violet-100 rounded-lg transition-colors cursor-pointer shrink-0"
+                        >
+                            Manage Course Quizzes
+                        </button>
+                        <StatusBadge status={course.status} />
+                    </div>
                 </div>
 
                 {/* Error banner */}

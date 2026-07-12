@@ -1,9 +1,9 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { StatsCard } from '../../components/dashboard/StatsCard'
 import {
     BookOpen, CheckCircle, Clock, Award, Briefcase,
     Sparkles, AlertCircle, PlayCircle, CreditCard,
-    ArrowRight, Hash,
+    ArrowRight, Hash, ShieldAlert
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuthContext } from '../../../context/AuthContext'
@@ -12,6 +12,8 @@ import { usePayments } from '../../../hooks/usePayments'
 import { useInstructorRequests } from '../../../hooks/useInstructorRequests'
 import CalendarCard from '../../components/dashboard/CalendarCard'
 import SEO from '../../components/SEO'
+import { getMyQuizSubmissions } from '../../../lib/api'
+import type { QuizSubmission } from '../../../types'
 
 export function StudentDashboard() {
     const { user } = useAuthContext()
@@ -19,9 +21,26 @@ export function StudentDashboard() {
     const { payments, fetchPayments } = usePayments()
     const { requests, loading: requestsLoading, error: requestsError } = useInstructorRequests()
 
+    const [submissions, setSubmissions] = useState<QuizSubmission[]>([])
+    const [loadingSubmissions, setLoadingSubmissions] = useState(true)
+
     useEffect(() => {
         getMyEnrollments()
         fetchPayments({ status: 'PENDING' })
+
+        const fetchSubmissions = async () => {
+            try {
+                const res = await getMyQuizSubmissions();
+                if (res.data.success && Array.isArray(res.data.data)) {
+                    setSubmissions(res.data.data);
+                }
+            } catch (error) {
+                console.error("Failed to load submissions", error);
+            } finally {
+                setLoadingSubmissions(false);
+            }
+        };
+        fetchSubmissions();
     }, [getMyEnrollments, fetchPayments])
 
     const totalEnrolled = enrollments?.length || 0
@@ -214,6 +233,69 @@ export function StudentDashboard() {
                                 >
                                     Browse Courses <ArrowRight className="w-3.5 h-3.5" />
                                 </Link>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* ── Recent Quiz Submissions ── */}
+                <div className={card}>
+                    <div className={cardHeader}>
+                        <div>
+                            <p className="text-sm font-semibold text-gray-900">Recent Quiz Results</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Your exam performances and grades</p>
+                        </div>
+                        <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
+                            <Award className="w-4 h-4 text-violet-600" />
+                        </div>
+                    </div>
+                    <div className={cardBody}>
+                        {loadingSubmissions ? (
+                            <div className="space-y-2.5">
+                                {[1, 2].map(i => (
+                                    <div key={i} className="animate-pulse h-16 bg-gray-50 rounded-lg border border-gray-100" />
+                                ))}
+                            </div>
+                        ) : submissions && submissions.length > 0 ? (
+                            <div className="space-y-2.5">
+                                {submissions.slice(0, 5).map(sub => {
+                                    const scorePct = sub.total_questions > 0 ? (sub.score / sub.total_questions) * 100 : 0;
+                                    const passed = scorePct >= 50;
+
+                                    return (
+                                        <div
+                                            key={sub.id}
+                                            className="flex items-center justify-between gap-4 p-3 bg-gray-50 rounded-lg border border-gray-100"
+                                        >
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-semibold text-gray-800 truncate">{sub.quiz_title}</p>
+                                                <p className="text-xs text-gray-400 truncate mt-0.5">{sub.course_title}</p>
+                                            </div>
+
+                                            <div className="flex items-center gap-3 shrink-0">
+                                                {sub.warnings_count > 0 && (
+                                                    <span
+                                                        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100 rounded-md"
+                                                        title={`${sub.warnings_count} window focus warnings during quiz`}
+                                                    >
+                                                        <ShieldAlert className="w-2.5 h-2.5" />
+                                                        {sub.warnings_count}
+                                                    </span>
+                                                )}
+
+                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-lg ${
+                                                    passed ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+                                                }`}>
+                                                    Score: {sub.score} / {sub.total_questions}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-6 text-center">
+                                <p className="text-xs font-medium text-gray-400">No quizzes completed yet</p>
                             </div>
                         )}
                     </div>

@@ -342,7 +342,9 @@ export interface Enrollment {
     last_accessed: string;
     completed_at: string | null;
     completed_lessons: number;
+    quiz_submissions?: QuizSubmission[];
 }
+
 
 export interface PaginatedResponse<T> {
     count: number;
@@ -481,3 +483,43 @@ export interface AnnouncementCreateUpdateData {
     start_date: string | null;
     end_date: string | null;
 }
+
+
+// Quiz Types
+export interface Quiz {
+    id: string;
+    course: string;
+    title: string;
+    pin_code: string;
+    duration_minutes: number;
+    question_count: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface QuizQuestion {
+    id: string;
+    quiz: string;
+    question_text: string;
+    option_a: string;
+    option_b: string;
+    option_c: string;
+    option_d: string;
+    correct_option: 'A' | 'B' | 'C' | 'D';
+    created_at: string;
+}
+
+export interface QuizSubmission {
+    id: string;
+    quiz: string;
+    quiz_title: string;
+    course_title: string;
+    student: string;
+    student_name: string;
+    student_email: string;
+    score: number;
+    total_questions: number;
+    warnings_count: number;
+    started_at: string;
+    completed_at: string | null;
+}
