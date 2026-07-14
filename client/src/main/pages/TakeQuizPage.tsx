@@ -5,7 +5,7 @@ import {
     startQuiz,
     submitQuiz
 } from '../../lib/api';
-import type { Quiz, QuizQuestion } from '../../types';
+import type { QuizQuestion } from '../../types';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { extractErrorMessage } from '../../lib/errorUtils';
 import { toast } from 'react-hot-toast';
@@ -417,17 +417,15 @@ const TakeQuizPage: React.FC = () => {
                                     <button
                                         key={opt.label}
                                         onClick={() => handleAnswerSelect(currentQuestion.id, opt.label as 'A' | 'B' | 'C' | 'D')}
-                                        className={`w-full text-left px-5 py-4 border rounded-2xl transition-all cursor-pointer flex items-center gap-3.5 ${
-                                            isSelected
+                                        className={`w-full text-left px-5 py-4 border rounded-2xl transition-all cursor-pointer flex items-center gap-3.5 ${isSelected
                                                 ? 'border-violet-600 bg-violet-50/50 ring-2 ring-violet-600/10'
                                                 : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50/30'
-                                        }`}
+                                            }`}
                                     >
-                                        <span className={`w-6 h-6 flex items-center justify-center font-bold text-xs rounded-lg shrink-0 ${
-                                            isSelected
+                                        <span className={`w-6 h-6 flex items-center justify-center font-bold text-xs rounded-lg shrink-0 ${isSelected
                                                 ? 'bg-violet-600 text-white'
                                                 : 'bg-gray-100 text-gray-500'
-                                        }`}>
+                                            }`}>
                                             {opt.label}
                                         </span>
                                         <span className={`text-sm font-medium ${isSelected ? 'text-violet-900 font-semibold' : 'text-gray-700'}`}>

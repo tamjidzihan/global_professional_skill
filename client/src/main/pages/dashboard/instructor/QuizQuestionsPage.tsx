@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-    ArrowLeft, Plus, Edit2, Trash2, HelpCircle, AlertCircle, CheckCircle2, ChevronRight
+    ArrowLeft, Edit2, Trash2, HelpCircle, AlertCircle, CheckCircle2, ChevronRight
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import {
@@ -319,11 +319,10 @@ const QuizQuestionsPage: React.FC = () => {
                             {questions.map((q, index) => (
                                 <div
                                     key={q.id}
-                                    className={`bg-white border rounded-2xl p-5 shadow-sm transition-all ${
-                                        editingQuestion?.id === q.id
+                                    className={`bg-white border rounded-2xl p-5 shadow-sm transition-all ${editingQuestion?.id === q.id
                                             ? 'border-violet-500 ring-2 ring-violet-500/10'
                                             : 'border-gray-150 hover:border-gray-200'
-                                    }`}
+                                        }`}
                                 >
                                     {/* Question Text */}
                                     <div className="flex items-start justify-between gap-4 mb-4">
@@ -367,17 +366,15 @@ const QuizQuestionsPage: React.FC = () => {
                                             return (
                                                 <div
                                                     key={opt.label}
-                                                    className={`flex items-center gap-2 px-3 py-2 border rounded-xl text-xs font-medium transition-colors ${
-                                                        isCorrect
+                                                    className={`flex items-center gap-2 px-3 py-2 border rounded-xl text-xs font-medium transition-colors ${isCorrect
                                                             ? 'border-emerald-250 bg-emerald-50/50 text-emerald-800'
                                                             : 'border-gray-150 bg-white text-gray-600'
-                                                    }`}
+                                                        }`}
                                                 >
-                                                    <span className={`w-5 h-5 flex items-center justify-center font-bold text-[10px] rounded-lg shrink-0 ${
-                                                        isCorrect
+                                                    <span className={`w-5 h-5 flex items-center justify-center font-bold text-[10px] rounded-lg shrink-0 ${isCorrect
                                                             ? 'bg-emerald-100 text-emerald-700'
                                                             : 'bg-gray-100 text-gray-500'
-                                                    }`}>
+                                                        }`}>
                                                         {opt.label}
                                                     </span>
                                                     <span className="truncate">{opt.text}</span>
