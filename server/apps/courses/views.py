@@ -647,12 +647,9 @@ class QuizViewSet(viewsets.ModelViewSet):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         course_id = self.kwargs.get("course_pk")
-        data = request.data.copy()
-        data["course"] = course_id
-
-        serializer = self.get_serializer(data=data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(course_id=course_id)
         return Response(
             {
                 "success": True,
@@ -836,12 +833,9 @@ class QuizQuestionViewSet(viewsets.ModelViewSet):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         quiz_id = self.kwargs.get("quiz_pk")
-        data = request.data.copy()
-        data["quiz"] = quiz_id
-
-        serializer = self.get_serializer(data=data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        serializer.save(quiz_id=quiz_id)
         return Response(
             {
                 "success": True,

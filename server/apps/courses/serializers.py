@@ -6,6 +6,7 @@ from rest_framework import serializers
 from django.utils.text import slugify
 from django.utils import timezone
 from .models import Category, Course, Section, Lesson, Review, CourseStatus, Quiz, QuizQuestion, QuizSubmission
+# pyrefly: ignore [missing-import]
 from apps.accounts.serializers import UserSerializer
 
 
@@ -462,7 +463,7 @@ class QuizQuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuizQuestion
         fields = ("id", "quiz", "question_text", "option_a", "option_b", "option_c", "option_d", "correct_option", "created_at")
-        read_only_fields = ("id", "created_at")
+        read_only_fields = ("id", "quiz", "created_at")
 
 
 class QuizStudentQuestionSerializer(serializers.ModelSerializer):
@@ -480,7 +481,7 @@ class QuizSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quiz
         fields = ("id", "course", "title", "pin_code", "duration_minutes", "question_count", "created_at", "updated_at")
-        read_only_fields = ("id", "created_at", "updated_at")
+        read_only_fields = ("id", "course", "created_at", "updated_at")
 
     def get_question_count(self, obj):
         return obj.questions.count()
