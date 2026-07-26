@@ -14,6 +14,9 @@ import {
     AlertCircle,
     BookOpen,
     Award,
+    Lock,
+    FileText,
+    Download,
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { useAuth } from '../../hooks/useAuth'
@@ -465,6 +468,12 @@ export function CourseDetailPage() {
                             >
                                 Curriculum
                             </button>
+                            <button
+                                onClick={() => setActiveTab('materials')}
+                                className={`px-6 py-3 font-medium transition-colors whitespace-nowrap ${activeTab === 'materials' ? 'border-b-2 border-[#76C043] text-[#76C043]' : 'text-gray-600 hover:text-gray-800 cursor-pointer'}`}
+                            >
+                                Materials
+                            </button>
                         </div>
 
                         {/* Tab Content */}
@@ -658,6 +667,80 @@ export function CourseDetailPage() {
                                         <div className="text-center py-12 bg-gray-50 rounded-lg">
                                             <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                                             <p className="text-gray-600">No curriculum available yet.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {activeTab === 'materials' && (
+                                <div className="space-y-6">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                        <div>
+                                            <h3 className="text-lg font-bold text-gray-800">Course Materials</h3>
+                                            <p className="text-xs text-gray-500 mt-1">Study materials, templates, and downloadable resources for this course.</p>
+                                        </div>
+                                        {course.is_enrolled && (
+                                            <Link
+                                                to={`/dashboard/student/my-courses/${course.id}/materials`}
+                                                className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors shadow-sm"
+                                            >
+                                                <FileText className="w-4 h-4" /> Go to Materials Viewer
+                                            </Link>
+                                        )}
+                                    </div>
+
+                                    {course.materials && course.materials.length > 0 ? (
+                                        <div className="divide-y divide-gray-150 border border-gray-200 rounded-lg overflow-hidden shadow-sm bg-white">
+                                            {course.materials.map((mat) => (
+                                                <div key={mat.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                                                    <div className="flex items-center gap-3 min-w-0">
+                                                        <FileText className="w-5 h-5 text-gray-400 shrink-0" />
+                                                        <div className="min-w-0">
+                                                            <span className="text-sm font-semibold text-gray-700 truncate block">{mat.title}</span>
+                                                            <span className="text-[10px] text-gray-400 font-semibold uppercase">{mat.file_type} · {mat.file_size_formatted}</span>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        {course.is_enrolled ? (
+                                                            <div className="flex items-center gap-2">
+                                                                <Link
+                                                                    to={`/dashboard/student/my-courses/${course.id}/materials?id=${mat.id}`}
+                                                                    className="text-xs font-bold text-[#0066CC] hover:text-[#004c99] hover:underline px-2.5 py-1 hover:bg-blue-50 rounded"
+                                                                >
+                                                                    Preview
+                                                                </Link>
+                                                                {mat.file && (
+                                                                    <a
+                                                                        href={mat.file}
+                                                                        download
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="p-1 text-gray-400 hover:text-violet-600 rounded-full hover:bg-violet-50"
+                                                                    >
+                                                                        <Download className="w-4 h-4" />
+                                                                    </a>
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => {
+                                                                    toast.error("Please enroll in this course to download materials.");
+                                                                    handleEnrollNow();
+                                                                }}
+                                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-gray-400 bg-gray-50 border border-gray-200 rounded hover:bg-gray-100 hover:text-gray-600 transition-all cursor-pointer"
+                                                            >
+                                                                <Lock className="w-3.5 h-3.5" />
+                                                                <span>Lock</span>
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-10 border border-dashed border-gray-200 rounded-lg bg-gray-50/50">
+                                            <FileText className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                                            <p className="text-xs text-gray-400 font-medium">No study materials uploaded for this course yet.</p>
                                         </div>
                                     )}
                                 </div>

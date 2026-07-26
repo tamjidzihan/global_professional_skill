@@ -477,3 +477,25 @@ class QuizSubmission(models.Model):
     def __str__(self):
         return f"{self.student.email} - Quiz: {self.quiz.title} - Score: {self.score}/{self.total_questions}"
 
+
+class CourseMaterial(models.Model):
+    """Course materials uploaded by instructors."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="materials")
+    title = models.CharField(max_length=255)
+    file = models.FileField(upload_to="courses/materials/")
+    file_size = models.PositiveIntegerField(help_text="File size in bytes")
+    file_type = models.CharField(max_length=50, blank=True, help_text="e.g. PDF, IMAGE, WORD, EXCEL, etc.")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="uploaded_materials")
+
+    class Meta:
+        db_table = "course_materials"
+        verbose_name = "Course Material"
+        verbose_name_plural = "Course Materials"
+        ordering = ["-uploaded_at"]
+
+    def __str__(self):
+        return f"{self.course.title} - {self.title}"
+
+

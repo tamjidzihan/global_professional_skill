@@ -174,6 +174,7 @@ export interface CourseDetail {
     who_can_join: string;
     status: CourseStatus;
     sections: Section[];
+    materials?: CourseMaterial[];
     enrollment_count: number;
     average_rating: string;
     total_reviews: number;
@@ -522,4 +523,17 @@ export interface QuizSubmission {
     warnings_count: number;
     started_at: string;
     completed_at: string | null;
+}
+
+export interface CourseMaterial {
+    id: string;
+    course: string;
+    title: string;
+    file: string | null;
+    file_size: number;
+    file_size_formatted: string;
+    file_type: 'PDF' | 'IMAGE' | 'WORD' | 'EXCEL' | 'POWERPOINT' | 'TEXT' | 'ARCHIVE' | 'OTHER';
+    uploaded_at: string;
+    uploaded_by: string;
+    uploaded_by_name: string;
 }

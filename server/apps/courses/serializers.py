@@ -5,7 +5,7 @@ Serializers for courses app.
 from rest_framework import serializers
 from django.utils.text import slugify
 from django.utils import timezone
-from .models import Category, Course, Section, Lesson, Review, CourseStatus, Quiz, QuizQuestion, QuizSubmission
+from .models import Category, Course, Section, Lesson, Review, CourseStatus, Quiz, QuizQuestion, QuizSubmission, CourseMaterial
 # pyrefly: ignore [missing-import]
 from apps.accounts.serializers import UserSerializer
 
@@ -221,6 +221,73 @@ class CourseListSerializer(serializers.ModelSerializer):
         return obj.is_full
 
 
+class CourseMaterialSerializer(serializers.ModelSerializer):
+    uploaded_by_name = serializers.CharField(source="uploaded_by.get_full_name", read_only=True)
+    file_size_formatted = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CourseMaterial
+        fields = (
+            "id",
+            "course",
+            "title",
+            "file",
+            "file_size",
+            "file_size_formatted",
+            "file_type",
+            "uploaded_at",
+            "uploaded_by",
+            "uploaded_by_name",
+        )
+        read_only_fields = ("id", "course", "file_size", "file_type", "uploaded_at", "uploaded_by")
+
+    def get_file_size_formatted(self, obj):
+        size = obj.file_size
+        if size < 1024:
+            return f"{size} B"
+        elif size < 1024 * 1024:
+            return f"{size / 1024:.2f} KB"
+        else:
+            return f"{size / (1024 * 1024):.2f} MB"
+
+    def validate_file(self, value):
+        # Limit size to 10MB
+        if value.size > 10 * 1024 * 1024:
+            raise serializers.ValidationError("File size cannot exceed 10MB.")
+        
+        import os
+        ext = os.path.splitext(value.name)[1].lower()
+        valid_extensions = [
+            '.pdf', 
+            '.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp',
+            '.doc', '.docx', '.odt',
+            '.xls', '.xlsx', '.ods',
+            '.ppt', '.pptx', '.txt',
+            '.zip', '.rar'
+        ]
+        if ext not in valid_extensions:
+            raise serializers.ValidationError(
+                "Unsupported file format. Allowed formats: PDF, Word, Excel, PowerPoint, Text, Images, or Archives."
+            )
+        return value
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        request = self.context.get('request')
+        if request and request.user and request.user.is_authenticated:
+            user = request.user
+            # Check if user is course instructor, admin, or enrolled student
+            from apps.enrollments.models import Enrollment
+            is_enrolled = Enrollment.objects.filter(student=user, course=instance.course).exists()
+            is_instructor = instance.course.instructor == user
+            is_admin = user.role == 'ADMIN'
+            if not (is_enrolled or is_instructor or is_admin):
+                rep['file'] = None
+        else:
+            rep['file'] = None
+        return rep
+
+
 class CourseDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for course."""
 
@@ -228,6 +295,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     sections = SectionSerializer(many=True, read_only=True)
     reviews = ReviewSerializer(many=True, read_only=True)
+    materials = CourseMaterialSerializer(many=True, read_only=True)
     is_enrolled = serializers.SerializerMethodField()
     total_sections = serializers.SerializerMethodField()
     is_admission_open = serializers.SerializerMethodField()
@@ -257,6 +325,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "who_can_join",
             "status",
             "sections",
+            "materials",
             "enrollment_count",
             "average_rating",
             "total_reviews",

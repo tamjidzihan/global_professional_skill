@@ -33,8 +33,8 @@ The `server` directory contains a Django project that serves as the backend API.
         -   **Models**: `User` (custom, email-based, roles: STUDENT, INSTRUCTOR, ADMIN), `EmailVerificationToken`, `InstructorRequest`, `PasswordResetToken`.
         -   **Views**: Registration, Email Verification, Login (JWT), Profile, Password Change/Reset, Instructor Request management, User Management (Admin).
     -   `courses`:
-        -   **Models**: `Category`, `Course` (approval workflow: DRAFT, PENDING, APPROVED, PUBLISHED, REJECTED; delivery modes: ONLINE, OFFLINE, BOTH), `Section`, `Lesson` (various types), `Review`.
-        -   **Views**: Category management (Admin), Course workflow management, Section/Lesson management, Review management.
+        -   **Models**: `Category`, `Course` (approval workflow: DRAFT, PENDING, APPROVED, PUBLISHED, REJECTED; delivery modes: ONLINE, OFFLINE, BOTH), `Section`, `Lesson` (various types), `Review`, `Quiz` (duration, PIN code, course relations), `QuizQuestion` (MCQ options, correct answer), `QuizSubmission` (attempts, scores, warnings for proctoring), `CourseMaterial` (uploaded files, types, sizes).
+        -   **Views**: Category management (Admin), Course workflow management, Section/Lesson management, Review management, Quiz management & submission (`start` and `submit` actions with automated grading), Quiz Lookup (retrieve meta by quiz UUID).
     -   `enrollments`:
         -   **Models**: `Enrollment` (student-course, progress tracking), `LessonProgress` (individual lesson tracking), `Certificate` (auto-generated upon completion).
         -   **Views**: Enrollment management, Progress tracking updates.
@@ -54,14 +54,14 @@ The `server` directory contains a Django project that serves as the backend API.
 The `client` directory contains the frontend application built with React, Vite, and TypeScript.
 
 -   **Base Directory**: `D:\Tamzid\github\global_professional_skill\client`
--   **Technologies**: React, Vite, TypeScript, React Router, Tailwind CSS, Lucide React (for icons).
+-   **Technologies**: React 19, Vite, TypeScript, React Router 7, Tailwind CSS 4, Lucide React (for icons).
 -   **Build & Development**:
     -   `dev`: `vite`
     -   `build`: `tsc -b && vite build`
     -   `lint`: `eslint .`
 -   **Routing**: Defined in `client/src/router.tsx`.
     -   Uses a `Layout` component and common structure.
-    -   Routes include public (Home, About, Courses, Auth) and protected (Dashboards, Profile, Checkout).
+    -   Routes include public (Home, About, Courses, Auth, Careers, Announcements) and protected (Dashboards, Profile, Checkout, Take Quiz).
 -   **Source Code Structure (`client/src`)**:
     -   `main.tsx`: Entry point.
     -   `index.css`: Global styles.
@@ -73,19 +73,22 @@ The `client` directory contains the frontend application built with React, Vite,
         -   `errorUtils.ts`: Utilities for handling API errors.
         -   `utils.ts`: General utility functions.
     -   `main/pages/`:
-        -   `AboutPage.tsx`, `CoursesPage.tsx`, `CourseDetailPage.tsx`, `HomePage.tsx`, `CareerPage.tsx`.
-        -   Auth: `LoginPage.tsx`, `RegisterPage.tsx`, `ForgotPasswordPage.tsx`, `ResetPasswordPage.tsx`, `EmailVerificationPage.tsx`.
+        -   Public/Functional Pages: `AboutPage.tsx`, `CoursesPage.tsx`, `CourseDetailPage.tsx`, `HomePage.tsx`, `CareerPage.tsx`, `ContactPage.tsx`, `TakeQuizPage.tsx` (PIN gate, timer, single-question flow, strict tab focus/blur/copy proctoring).
+        -   Auth: `LoginPage.tsx`, `RegisterPage.tsx`, `ForgotPasswordPage.tsx`, `ResetPasswordPage.tsx`, `EmailVerificationPage.tsx`, `VerifyEmailPromptPage.tsx`.
         -   `dashboard/`: Subdirectories for `admin`, `instructor`, and `student` dashboards.
-            -   `AdminDashboard.tsx`, `InstructorDashboard.tsx`, `StudentDashboard.tsx`, `MyProfilePage.tsx`.
-        -   Functional: `CheckoutPage.tsx`, `InstructorApplicationPage.tsx`, `CreateCoursePage.tsx`.
+            -   `AdminDashboard.tsx`, `InstructorDashboard.tsx`, `StudentDashboard.tsx`, `MyProfilePage.tsx`, `EnrolledStudentsPage.tsx`.
+            -   `admin/`: `AdminCourseDetailPage.tsx`, `AnnouncementManagementPage.tsx`, `CategoryManagementPage.tsx`, `CourseManagementPage.tsx`, `JobApplicationsPage.tsx`, `JobManagementPage.tsx`, `PaymentManagementPage.tsx`, `SiteSettingsPage.tsx`, `UserManagementPage.tsx`.
+            -   `instructor/`: `CourseEditDetailPage.tsx`, `CourseMaterialsPage.tsx` (manage course files), `CourseProgressPage.tsx`, `CurriculumPage.tsx`, `InstructorCourseDetailPage.tsx`, `MyCoursesPage.tsx`, `QuizListPage.tsx` (manage course quizzes), `QuizQuestionsPage.tsx` (manage quiz questions), `ReportsPage.tsx`.
+            -   `student/`: `CertificatesPage.tsx`, `EnrolledCourseDetailPage.tsx`, `MyEnrollmentsPage.tsx`, `StudentMaterialsPage.tsx` (view/download course files).
     -   `main/components/`: Reusable UI components categorized by feature (e.g., `courses`, `dashboard`, `ui`).
 
 ## 2. Key Features and Workflows
 
 -   **User Roles**: Students can browse and enroll; Instructors can create and manage courses; Admins oversee the platform, approve courses, and manage users.
 -   **Course Lifecycle**: Created by Instructor -> Submitted for Review -> Approved by Admin -> Published for Students.
--   **Enrollment & Learning**: Students enroll (via payment if applicable), track progress per lesson, and receive a certificate upon 100% completion.
--   **Payment Tracking**: Support for recording payment details, including transaction IDs and sender numbers (likely for manual verification or mobile banking integrations like bKash).
+-   **Enrollment & Learning**: Students enroll (via payment if applicable), track progress per lesson, download materials, and receive a certificate upon 100% completion.
+-   **MCQ Quiz Proctoring**: Instructors can set PIN-protected MCQ quizzes with strict limits and anti-cheat tracking (blur/tab change warnings). Results are automatically graded and reported to both student and instructor.
+-   **Payment Tracking**: Support for recording payment details, including transaction IDs and sender numbers (for manual verification of mobile banking integrations like bKash).
 -   **Career Management**: Admin can post job openings; users can apply by uploading CVs.
 -   **Announcements**: Admin can post platform-wide announcements.
 -   **Site Settings**: Dynamic configuration for platform-wide settings.

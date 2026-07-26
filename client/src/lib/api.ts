@@ -28,6 +28,7 @@ import type {
     JobApplication,
     JobCreateUpdateData,
     JobApplicationStatus,
+    CourseMaterial,
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
@@ -269,6 +270,15 @@ export const endpoints = {
             `/courses/courses/${courseId}/quizzes/${quizId}/questions/${questionId}/`,
         delete: (courseId: string, quizId: string, questionId: string) =>
             `/courses/courses/${courseId}/quizzes/${quizId}/questions/${questionId}/`,
+    },
+    courseMaterials: {
+        list: (courseId: string) => `/courses/courses/${courseId}/materials/`,
+        create: (courseId: string) => `/courses/courses/${courseId}/materials/`,
+        detail: (courseId: string, materialId: string) =>
+            `/courses/courses/${courseId}/materials/${materialId}/`,
+        delete: (courseId: string, materialId: string) =>
+            `/courses/courses/${courseId}/materials/${materialId}/`,
+        deleteBulk: (courseId: string) => `/courses/courses/${courseId}/materials/bulk-delete/`,
     },
 };
 
@@ -608,3 +618,26 @@ export const updateQuizQuestion = (courseId: string, quizId: string, questionId:
 
 export const deleteQuizQuestion = (courseId: string, quizId: string, questionId: string): Promise<AxiosResponse<ApiResponse<void>>> =>
     api.delete<ApiResponse<void>>(endpoints.quizQuestions.detail(courseId, quizId, questionId));
+
+// Course Materials API Calls
+export const getCourseMaterials = (courseId: string): Promise<AxiosResponse<ApiResponse<CourseMaterial[]>>> =>
+    api.get<ApiResponse<CourseMaterial[]>>(endpoints.courseMaterials.list(courseId));
+
+export const uploadCourseMaterial = (
+    courseId: string,
+    formData: FormData,
+    onUploadProgress?: (progressEvent: any) => void
+): Promise<AxiosResponse<ApiResponse<CourseMaterial>>> =>
+    api.post<ApiResponse<CourseMaterial>>(endpoints.courseMaterials.create(courseId), formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress,
+    });
+
+export const deleteCourseMaterial = (courseId: string, materialId: string): Promise<AxiosResponse<ApiResponse<void>>> =>
+    api.delete<ApiResponse<void>>(endpoints.courseMaterials.detail(courseId, materialId));
+
+export const deleteCourseMaterialsBulk = (courseId: string, materialIds: string[]): Promise<AxiosResponse<ApiResponse<void>>> =>
+    api.post<ApiResponse<void>>(endpoints.courseMaterials.deleteBulk(courseId), { ids: materialIds });
+

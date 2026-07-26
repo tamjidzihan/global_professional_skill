@@ -7,7 +7,7 @@ from .views import (
     CategoryViewSet, CourseViewSet, SectionViewSet,
     LessonViewSet, ReviewViewSet, MyCoursesViewSet,
     QuizViewSet, QuizQuestionViewSet, MyQuizSubmissionsViewSet,
-    QuizLookupView
+    QuizLookupView, CourseMaterialViewSet
 )
 
 router = routers.DefaultRouter()
@@ -21,6 +21,7 @@ courses_router = routers.NestedDefaultRouter(router, r'courses', lookup='course'
 courses_router.register(r'sections', SectionViewSet, basename='course-section')
 courses_router.register(r'reviews', ReviewViewSet, basename='course-review')
 courses_router.register(r'quizzes', QuizViewSet, basename='course-quiz')
+courses_router.register(r'materials', CourseMaterialViewSet, basename='course-material')
 
 # Nested routes for quiz questions
 quizzes_router = routers.NestedDefaultRouter(courses_router, r'quizzes', lookup='quiz')

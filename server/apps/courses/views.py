@@ -12,7 +12,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
-from .models import Category, Course, Section, Lesson, Review, CourseStatus, Quiz, QuizQuestion, QuizSubmission
+from .models import Category, Course, Section, Lesson, Review, CourseStatus, Quiz, QuizQuestion, QuizSubmission, CourseMaterial
 from .serializers import (
     CategorySerializer,
     CourseListSerializer,
@@ -27,6 +27,7 @@ from .serializers import (
     QuizQuestionSerializer,
     QuizStudentQuestionSerializer,
     QuizSubmissionSerializer,
+    CourseMaterialSerializer,
 )
 from apps.accounts.permissions import IsInstructor, IsAdmin, IsInstructorOrAdmin
 from .permissions import IsCourseInstructorOrAdmin, IsEnrolledOrInstructor
@@ -864,3 +865,176 @@ class MyQuizSubmissionsViewSet(viewsets.ReadOnlyModelViewSet):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response({"success": True, "data": serializer.data})
+
+
+from rest_framework.exceptions import PermissionDenied
+import os
+
+class CourseMaterialViewSet(viewsets.ModelViewSet):
+    """ViewSet for Course Materials."""
+    serializer_class = CourseMaterialSerializer
+    pagination_class = None
+
+    def get_permissions(self):
+        if self.action in ["create", "update", "partial_update", "destroy", "bulk_delete"]:
+            return [IsAuthenticated(), IsCourseInstructorOrAdmin()]
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        course_id = self.kwargs.get("course_pk")
+        user = self.request.user
+        
+        from apps.enrollments.models import Enrollment
+        from django.shortcuts import get_object_or_404
+        
+        course = get_object_or_404(Course, id=course_id)
+        
+        is_enrolled = Enrollment.objects.filter(student=user, course=course).exists()
+        is_instructor = course.instructor == user
+        is_admin = user.role == 'ADMIN'
+        
+        if not (is_enrolled or is_instructor or is_admin):
+            raise PermissionDenied("You must be enrolled in this course to access materials.")
+            
+        return CourseMaterial.objects.filter(course=course)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"success": True, "data": serializer.data})
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response({"success": True, "data": serializer.data})
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        course_id = self.kwargs.get("course_pk")
+        from django.shortcuts import get_object_or_404
+        course = get_object_or_404(Course, id=course_id)
+        
+        # Verify permissions
+        if course.instructor != request.user and not request.user.is_admin_user:
+            raise PermissionDenied("You do not have permission to upload materials to this course.")
+            
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Calculate size & type
+        file_obj = request.data.get('file')
+        file_size = file_obj.size
+        ext = os.path.splitext(file_obj.name)[1].lower()
+        
+        if ext in ['.pdf']:
+            file_type = 'PDF'
+        elif ext in ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp']:
+            file_type = 'IMAGE'
+        elif ext in ['.doc', '.docx', '.odt']:
+            file_type = 'WORD'
+        elif ext in ['.xls', '.xlsx', '.ods']:
+            file_type = 'EXCEL'
+        elif ext in ['.ppt', '.pptx']:
+            file_type = 'POWERPOINT'
+        elif ext in ['.txt']:
+            file_type = 'TEXT'
+        elif ext in ['.zip', '.rar']:
+            file_type = 'ARCHIVE'
+        else:
+            file_type = 'OTHER'
+
+        serializer.save(
+            course=course,
+            uploaded_by=request.user,
+            file_size=file_size,
+            file_type=file_type
+        )
+        return Response(
+            {
+                "success": True,
+                "message": "Material uploaded successfully.",
+                "data": serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=kwargs.get('partial', False))
+        serializer.is_valid(raise_exception=True)
+        
+        # Calculate size & type if file changed
+        file_obj = request.data.get('file')
+        if file_obj:
+            file_size = file_obj.size
+            ext = os.path.splitext(file_obj.name)[1].lower()
+            
+            if ext in ['.pdf']:
+                file_type = 'PDF'
+            elif ext in ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp']:
+                file_type = 'IMAGE'
+            elif ext in ['.doc', '.docx', '.odt']:
+                file_type = 'WORD'
+            elif ext in ['.xls', '.xlsx', '.ods']:
+                file_type = 'EXCEL'
+            elif ext in ['.ppt', '.pptx']:
+                file_type = 'POWERPOINT'
+            elif ext in ['.txt']:
+                file_type = 'TEXT'
+            elif ext in ['.zip', '.rar']:
+                file_type = 'ARCHIVE'
+            else:
+                file_type = 'OTHER'
+                
+            # Delete old file
+            if instance.file:
+                instance.file.delete(save=False)
+                
+            serializer.save(file_size=file_size, file_type=file_type)
+        else:
+            serializer.save()
+            
+        return Response({
+            "success": True,
+            "message": "Material updated successfully.",
+            "data": serializer.data
+        })
+
+    def perform_destroy(self, instance):
+        # Delete file from storage
+        if instance.file:
+            instance.file.delete(save=False)
+        instance.delete()
+
+    @action(detail=False, methods=['post'], url_path='bulk-delete')
+    @transaction.atomic
+    def bulk_delete(self, request, *args, **kwargs):
+        course_id = self.kwargs.get("course_pk")
+        from django.shortcuts import get_object_or_404
+        course = get_object_or_404(Course, id=course_id)
+        
+        # Manually verify permissions
+        if course.instructor != request.user and not request.user.is_admin_user:
+            raise PermissionDenied("You do not have permission to delete materials for this course.")
+            
+        material_ids = request.data.get("ids", [])
+        if not material_ids:
+            return Response(
+                {"success": False, "message": "No material IDs provided."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        materials = CourseMaterial.objects.filter(course=course, id__in=material_ids)
+        deleted_count = 0
+        for mat in materials:
+            if mat.file:
+                mat.file.delete(save=False)
+            mat.delete()
+            deleted_count += 1
+            
+        return Response({
+            "success": True,
+            "message": f"Successfully deleted {deleted_count} materials."
+        })
+
