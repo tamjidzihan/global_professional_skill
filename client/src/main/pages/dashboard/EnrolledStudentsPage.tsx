@@ -3,10 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom'
 import {
     Users, ArrowLeft, Search, Download, Mail, Phone,
     Calendar, CheckCircle, Clock, Filter, AlertCircle,
+    ShieldOff, ShieldCheck, Loader2, Trash2,
 } from 'lucide-react'
 import { useEnrollments } from '../../../hooks/useEnrollments'
 import { useCourses } from '../../../hooks/useCourses'
 import { useAuth } from '../../../hooks/useAuth'
+import { undisqualifyStudent, deleteQuizSubmission } from '../../../lib/api'
 import SEO from '../../components/SEO'
 import LoadingSpinner from '../../components/ui/LoadingSpinner'
 
@@ -27,6 +29,8 @@ export default function EnrolledStudentsPage() {
 
     const [searchTerm, setSearchTerm] = useState('')
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL')
+    const [undisqualifyingId, setUndisqualifyingId] = useState<string | null>(null)
+    const [deletingSubmissionId, setDeletingSubmissionId] = useState<string | null>(null)
 
     useEffect(() => {
         if (id) { fetchCourseDetail(id); fetchAllEnrollments({ course: id }) }
@@ -67,6 +71,34 @@ export default function EnrolledStudentsPage() {
             style: 'visibility:hidden',
         })
         document.body.appendChild(link); link.click(); document.body.removeChild(link)
+    }
+
+    const handleUndisqualify = async (submissionId: string, studentName: string) => {
+        if (!window.confirm(`Un-disqualify ${studentName}? This will reset their warnings and allow them to retake the quiz.`)) return
+        setUndisqualifyingId(submissionId)
+        try {
+            await undisqualifyStudent(submissionId)
+            if (id) { fetchAllEnrollments({ course: id }) }
+        } catch (err) {
+            console.error('Failed to un-disqualify student', err)
+            alert('Failed to un-disqualify. Please try again.')
+        } finally {
+            setUndisqualifyingId(null)
+        }
+    }
+
+    const handleDeleteSubmission = async (submissionId: string, studentName: string, quizTitle: string) => {
+        if (!window.confirm(`Delete the quiz result for "${quizTitle}" by ${studentName}? This cannot be undone.`)) return
+        setDeletingSubmissionId(submissionId)
+        try {
+            await deleteQuizSubmission(submissionId)
+            if (id) { fetchAllEnrollments({ course: id }) }
+        } catch (err) {
+            console.error('Failed to delete submission', err)
+            alert('Failed to delete submission. Please try again.')
+        } finally {
+            setDeletingSubmissionId(null)
+        }
     }
 
     const completedCount = enrollments.filter(e => parseFloat(e.progress_percentage || '0') >= 100).length
@@ -282,18 +314,58 @@ export default function EnrolledStudentsPage() {
                                             {/* Quiz Scores */}
                                             <td className="px-5 py-3 text-xs text-gray-700">
                                                 {enrollment.quiz_submissions && enrollment.quiz_submissions.length > 0 ? (
-                                                    <div className="space-y-1">
+                                                    <div className="space-y-2">
                                                         {enrollment.quiz_submissions.map(sub => (
-                                                            <div key={sub.id} className="flex items-center gap-1.5 font-medium">
-                                                                <span className="text-gray-900 font-bold shrink-0">{sub.score} / {sub.total_questions}</span>
-                                                                <span className="text-[10px] text-gray-400 truncate max-w-24" title={sub.quiz_title}>({sub.quiz_title})</span>
-                                                                {sub.warnings_count > 0 && (
-                                                                    <span
-                                                                        className="inline-flex items-center gap-0.5 px-1 bg-amber-50 text-amber-700 border border-amber-100 rounded text-[9px] font-bold"
-                                                                        title={`${sub.warnings_count} window focus warning(s)`}
+                                                            <div key={sub.id} className="space-y-1">
+                                                                <div className="flex items-center gap-1.5 font-medium flex-wrap">
+                                                                    <span className="text-gray-900 font-bold shrink-0">{sub.score} / {sub.total_questions}</span>
+                                                                    <span className="text-[10px] text-gray-400 truncate max-w-24" title={sub.quiz_title}>({sub.quiz_title})</span>
+                                                                    {sub.warnings_count > 0 && (
+                                                                        <span
+                                                                            className="inline-flex items-center gap-0.5 px-1 bg-amber-50 text-amber-700 border border-amber-100 rounded text-[9px] font-bold"
+                                                                            title={`${sub.warnings_count} window focus warning(s)`}
+                                                                        >
+                                                                            ⚠️{sub.warnings_count}
+                                                                        </span>
+                                                                    )}
+                                                                    {sub.is_disqualified && (
+                                                                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-rose-50 text-rose-700 border border-rose-100 rounded text-[9px] font-bold">
+                                                                            <ShieldOff className="w-2.5 h-2.5" /> DQ
+                                                                        </span>
+                                                                    )}
+                                                                    {/* Delete button */}
+                                                                    <button
+                                                                        onClick={() => handleDeleteSubmission(String(sub.id), enrollment.student_name, sub.quiz_title)}
+                                                                        disabled={deletingSubmissionId === String(sub.id)}
+                                                                        title="Permanently delete this quiz result"
+                                                                        className="ml-auto inline-flex items-center justify-center w-5 h-5 rounded bg-transparent text-gray-300 hover:bg-rose-50 hover:text-rose-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
                                                                     >
-                                                                        ⚠️{sub.warnings_count}
-                                                                    </span>
+                                                                        {deletingSubmissionId === String(sub.id)
+                                                                            ? <Loader2 className="w-3 h-3 animate-spin" />
+                                                                            : <Trash2 className="w-3 h-3" />
+                                                                        }
+                                                                    </button>
+                                                                </div>
+                                                                {sub.is_disqualified && (
+                                                                    <div className="pl-0">
+                                                                        <button
+                                                                            onClick={() => handleUndisqualify(String(sub.id), enrollment.student_name)}
+                                                                            disabled={undisqualifyingId === String(sub.id)}
+                                                                            title="Remove disqualification and reset warnings so student can retake"
+                                                                            className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300 disabled:opacity-60 disabled:cursor-not-allowed transition-all cursor-pointer"
+                                                                        >
+                                                                            {undisqualifyingId === String(sub.id) ? (
+                                                                                <><Loader2 className="w-2.5 h-2.5 animate-spin" /> Resetting…</>
+                                                                            ) : (
+                                                                                <><ShieldCheck className="w-2.5 h-2.5" /> Un-disqualify</>
+                                                                            )}
+                                                                        </button>
+                                                                        {sub.disqualification_reason && (
+                                                                            <p className="text-[9px] text-rose-500 mt-0.5 leading-tight max-w-36" title={sub.disqualification_reason}>
+                                                                                {sub.disqualification_reason}
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
                                                                 )}
                                                             </div>
                                                         ))}

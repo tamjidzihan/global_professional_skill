@@ -521,6 +521,9 @@ export interface QuizSubmission {
     score: number;
     total_questions: number;
     warnings_count: number;
+    is_disqualified: boolean;
+    disqualification_reason: string;
+    disqualified_at: string | null;
     started_at: string;
     completed_at: string | null;
 }

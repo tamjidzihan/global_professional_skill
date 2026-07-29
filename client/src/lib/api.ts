@@ -258,6 +258,9 @@ export const endpoints = {
             `/courses/courses/${courseId}/quizzes/${quizId}/submit/`,
         mySubmissions: '/courses/my-quiz-submissions/',
         lookup: (quizId: string) => `/courses/quizzes/${quizId}/`,
+        logWarning: '/courses/quizzes/log-warning/',
+        undisqualify: (submissionId: string) => `/courses/submissions/${submissionId}/undisqualify/`,
+        deleteSubmission: (submissionId: string) => `/courses/submissions/${submissionId}/`,
     },
     quizQuestions: {
         list: (courseId: string, quizId: string) =>
@@ -605,6 +608,16 @@ export const getMyQuizSubmissions = (): Promise<AxiosResponse<ApiResponse<any[]>
 
 export const lookupQuiz = (quizId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.get<ApiResponse<any>>(endpoints.quizzes.lookup(quizId));
+
+export const logWarning = (submissionId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(endpoints.quizzes.logWarning, { submission_id: submissionId });
+
+export const undisqualifyStudent = (submissionId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(endpoints.quizzes.undisqualify(submissionId));
+
+export const deleteQuizSubmission = (submissionId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.delete<ApiResponse<any>>(endpoints.quizzes.deleteSubmission(submissionId));
+
 
 // Quiz Question API Calls
 export const getQuizQuestions = (courseId: string, quizId: string): Promise<AxiosResponse<ApiResponse<any[]>>> =>

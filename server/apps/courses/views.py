@@ -594,9 +594,167 @@ class QuizLookupView(APIView):
                 "course": str(quiz.course.id),
                 "title": quiz.title,
                 "duration_minutes": quiz.duration_minutes,
-                "question_count": quiz.questions.count(),
+                "question_count": quiz.questions.count(), # type: ignore
             }
         })
+
+
+class LogWarningView(APIView):
+    """View to log anti-cheat warnings and handle auto-disqualification."""
+    permission_classes = [IsAuthenticated]
+
+    @transaction.atomic
+    def post(self, request):
+        submission_id = request.data.get("submission_id")
+        if not submission_id:
+            return Response(
+                {"success": False, "error": {"message": "submission_id is required."}},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            submission = QuizSubmission.objects.get(pk=submission_id)
+        except QuizSubmission.DoesNotExist:
+            return Response(
+                {"success": False, "error": {"message": "Quiz submission not found."}},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Check if student is authorized for this submission
+        if submission.student != request.user and not request.user.is_admin_user and not request.user.is_instructor:
+            return Response(
+                {"success": False, "error": {"message": "Unauthorized."}},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if submission.completed_at is not None or submission.is_disqualified:
+            return Response(
+                {
+                    "success": True,
+                    "data": {
+                        "status": "disqualified" if submission.is_disqualified else "completed",
+                        "warnings_count": submission.warnings_count,
+                        "warnings_remaining": 0,
+                        "message": "Submission is already closed or student is disqualified."
+                    }
+                }
+            )
+
+        # Increment warning count
+        submission.warnings_count += 1
+        
+        # Check threshold
+        if submission.warnings_count >= 3:
+            submission.is_disqualified = True
+            submission.disqualification_reason = QuizSubmission.DisqualificationReason.EXCESSIVE_WARNINGS
+            submission.disqualified_at = timezone.now()
+            submission.score = 0
+            submission.completed_at = timezone.now()
+            submission.save()
+
+            # Notify instructor
+            from .notifications import send_disqualification_email
+            send_disqualification_email(submission)
+
+            return Response({
+                "success": True,
+                "data": {
+                    "status": "disqualified",
+                    "warnings_count": submission.warnings_count,
+                    "warnings_remaining": 0,
+                    "message": "Disqualified due to excessive proctoring violations."
+                }
+            })
+        else:
+            submission.save()
+            return Response({
+                "success": True,
+                "data": {
+                    "status": "warning_logged",
+                    "warnings_count": submission.warnings_count,
+                    "warnings_remaining": 3 - submission.warnings_count,
+                    "message": f"Warning logged. {3 - submission.warnings_count} warning(s) remaining."
+                }
+            })
+
+
+class UndisqualifyStudentView(APIView):
+    """View for instructors/admins to un-disqualify a student's quiz submission."""
+    permission_classes = [IsAuthenticated]
+
+    @transaction.atomic
+    def post(self, request, pk=None):
+        try:
+            submission = QuizSubmission.objects.get(pk=pk)
+        except QuizSubmission.DoesNotExist:
+            return Response(
+                {"success": False, "error": {"message": "Submission not found."}},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Check if the requesting user is the instructor of this course or an admin
+        user = request.user
+        is_instructor = submission.quiz.course.instructor == user
+        is_admin = user.is_admin_user
+
+        if not (is_instructor or is_admin):
+            return Response(
+                {"success": False, "error": {"message": "Only the course instructor or an admin can un-disqualify a student."}},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # Reset proctoring/disqualification fields
+        submission.is_disqualified = False
+        submission.disqualification_reason = ""
+        submission.disqualified_at = None
+        submission.warnings_count = 0
+        submission.completed_at = None
+        submission.score = 0
+        submission.save()
+
+        return Response({
+            "success": True,
+            "message": "Student has been successfully un-disqualified and warnings reset.",
+            "data": QuizSubmissionSerializer(submission).data
+        })
+
+
+class DeleteQuizSubmissionView(APIView):
+    """Allow an instructor or admin to permanently delete a quiz submission."""
+    permission_classes = [IsAuthenticated]
+
+    @transaction.atomic
+    def delete(self, request, pk=None):
+        try:
+            submission = QuizSubmission.objects.select_related(
+                "quiz__course"
+            ).get(pk=pk)
+        except QuizSubmission.DoesNotExist:
+            return Response(
+                {"success": False, "error": {"message": "Submission not found."}},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        user = request.user
+        is_instructor = submission.quiz.course.instructor == user
+        is_admin = user.is_admin_user
+
+        if not (is_instructor or is_admin):
+            return Response(
+                {
+                    "success": False,
+                    "error": {
+                        "message": "Only the course instructor or an admin can delete a quiz submission."
+                    },
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        submission.delete()
+        return Response(
+            {"success": True, "message": "Quiz submission deleted successfully."},
+            status=status.HTTP_200_OK,
+        )
 
 
 class QuizViewSet(viewsets.ModelViewSet):
@@ -615,7 +773,7 @@ class QuizViewSet(viewsets.ModelViewSet):
         if not user.is_authenticated:
             return Quiz.objects.none()
 
-        if user.is_instructor or user.is_admin_user:
+        if user.is_instructor or user.is_admin_user: # type: ignore
             return Quiz.objects.filter(course_id=course_id)
 
         # For students: they can retrieve, start, or submit a specific quiz detail, but list is empty/hidden
@@ -690,37 +848,84 @@ class QuizViewSet(viewsets.ModelViewSet):
             defaults={"started_at": timezone.now()}
         )
 
-        if not created:
-            if submission.completed_at is not None:
-                return Response(
-                    {
-                        "success": False,
-                        "error": {"message": "You have already completed this quiz."},
-                        "data": QuizSubmissionSerializer(submission).data
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-            # Check time limit
-            elapsed_time = timezone.now() - submission.started_at
-            allowed_time = elapsed_time.total_seconds() / 60.0
-            if allowed_time >= quiz.duration_minutes:
-                submission.completed_at = submission.started_at + timezone.timedelta(minutes=quiz.duration_minutes)
-                submission.score = 0
-                submission.total_questions = quiz.questions.count()
-                submission.save()
-                return Response(
-                    {
-                        "success": False,
-                        "error": {"message": "Time has expired for this quiz attempt."},
-                        "data": QuizSubmissionSerializer(submission).data
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        is_preview = user.is_admin_user or user.is_instructor
 
-        # Return student question data (no correct options)
+        if not created:
+            if not is_preview:
+                if submission.is_disqualified:
+                    return Response(
+                        {
+                            "success": False,
+                            "error": {"message": "You have been disqualified from this quiz."},
+                            "data": QuizSubmissionSerializer(submission).data
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                if submission.completed_at is not None:
+                    return Response(
+                        {
+                            "success": False,
+                            "error": {"message": "You have already completed this quiz."},
+                            "data": QuizSubmissionSerializer(submission).data
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                
+                # Check time limit
+                elapsed_time = timezone.now() - submission.started_at
+                allowed_time = elapsed_time.total_seconds() / 60.0
+                if allowed_time >= quiz.duration_minutes:
+                    submission.completed_at = submission.started_at + timezone.timedelta(minutes=quiz.duration_minutes)
+                    submission.score = 0
+                    submission.total_questions = quiz.questions.count()
+                    submission.save()
+                    return Response(
+                        {
+                            "success": False,
+                            "error": {"message": "Time has expired for this quiz attempt."},
+                            "data": QuizSubmissionSerializer(submission).data
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            else:
+                if submission.completed_at is not None:
+                    # Instructors can preview repeatedly
+                    submission.completed_at = None
+                    submission.started_at = timezone.now()
+                    submission.save()
+
+        # Shuffling logic
         questions = quiz.questions.all()
-        serializer = QuizStudentQuestionSerializer(questions, many=True)
+        q_ids = [str(q.id) for q in questions]
+
+        if not is_preview:
+            # Generate deterministic shuffle if not set
+            if not submission.shuffled_question_ids:
+                import random
+                seed = f"{user.id}_{quiz.id}"
+                r = random.Random(seed)
+                shuffled_ids = q_ids.copy()
+                r.shuffle(shuffled_ids)
+                submission.shuffled_question_ids = shuffled_ids
+                submission.save()
+
+            # Map actual questions to shuffled sequence
+            q_map = {str(q.id): q for q in questions}
+            ordered_questions = []
+            if submission.shuffled_question_ids:
+                for q_id in submission.shuffled_question_ids:
+                    if q_id in q_map:
+                        ordered_questions.append(q_map[q_id])
+                # Append any questions that might have been added to the database since quiz start
+                for q in questions:
+                    if str(q.id) not in submission.shuffled_question_ids:
+                        ordered_questions.append(q)
+            else:
+                ordered_questions = list(questions)
+        else:
+            ordered_questions = list(questions)
+
+        serializer = QuizStudentQuestionSerializer(ordered_questions, many=True)
         
         # Calculate remaining seconds
         elapsed_seconds = (timezone.now() - submission.started_at).total_seconds()
@@ -732,7 +937,9 @@ class QuizViewSet(viewsets.ModelViewSet):
                 "quiz": QuizSerializer(quiz).data,
                 "questions": serializer.data,
                 "remaining_seconds": remaining_seconds,
-                "submission_id": submission.id
+                "submission_id": submission.id,
+                "warnings_count": submission.warnings_count if not is_preview else 0,
+                "is_disqualified": submission.is_disqualified if not is_preview else False
             }
         })
 
@@ -752,6 +959,16 @@ class QuizViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        if submission.is_disqualified:
+            return Response(
+                {
+                    "success": False,
+                    "error": {"message": "You are disqualified and cannot submit this quiz."},
+                    "data": QuizSubmissionSerializer(submission).data
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         if submission.completed_at is not None:
             return Response(
                 {
@@ -762,22 +979,43 @@ class QuizViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Check time limit
-        elapsed_time = timezone.now() - submission.started_at
-        allowed_time = elapsed_time.total_seconds() / 60.0
-        if allowed_time > (quiz.duration_minutes + 1):  # 1 min grace
-            pass # We still process what they submit, or enforce strict limits. Let's process.
-
         # Calculate score
         score = 0
         questions = {q.id: q for q in quiz.questions.all()}
+        shuffled_ids = submission.shuffled_question_ids or []
         
         for ans in answers:
-            q_id = ans.get("question_id")
+            q_id_or_index = ans.get("question_id")
+            q_index = ans.get("question_index")
             selected = ans.get("selected_option")
+
+            actual_q_uuid = None
+
+            # 1. Try mapping by index if question_index is specified
+            if q_index is not None:
+                try:
+                    idx = int(q_index)
+                    if 0 <= idx < len(shuffled_ids):
+                        actual_q_uuid = shuffled_ids[idx]
+                except (ValueError, TypeError):
+                    pass
+
+            # 2. Try converting question_id to index if it's an integer, otherwise treat it as UUID
+            if not actual_q_uuid and q_id_or_index is not None:
+                try:
+                    idx = int(q_id_or_index)
+                    if 0 <= idx < len(shuffled_ids):
+                        actual_q_uuid = shuffled_ids[idx]
+                except (ValueError, TypeError):
+                    # Not an integer index, must be the direct question ID/UUID string
+                    actual_q_uuid = q_id_or_index
+
+            if not actual_q_uuid:
+                continue
+
             try:
                 import uuid
-                q_uuid = uuid.UUID(q_id) if isinstance(q_id, str) else q_id
+                q_uuid = uuid.UUID(str(actual_q_uuid)) if isinstance(actual_q_uuid, str) else actual_q_uuid
             except (ValueError, TypeError):
                 continue
 
@@ -792,11 +1030,22 @@ class QuizViewSet(viewsets.ModelViewSet):
         submission.completed_at = timezone.now()
         submission.save()
 
+        # Prepare and send response with required fields
+        data = QuizSubmissionSerializer(submission).data
+        data.update({
+            "score": submission.score,
+            "correct_count": submission.score,
+            "total_questions": submission.total_questions,
+            "warnings_count": submission.warnings_count,
+            "is_disqualified": submission.is_disqualified
+        })
+
         return Response({
             "success": True,
             "message": "Quiz submitted successfully.",
-            "data": QuizSubmissionSerializer(submission).data
+            "data": data
         })
+
 
 
 class QuizQuestionViewSet(viewsets.ModelViewSet):
@@ -880,7 +1129,7 @@ class CourseMaterialViewSet(viewsets.ModelViewSet):
             return [IsAuthenticated(), IsCourseInstructorOrAdmin()]
         return [IsAuthenticated()]
 
-    def get_queryset(self):
+    def get_queryset(self): # type: ignore
         course_id = self.kwargs.get("course_pk")
         user = self.request.user
         
@@ -891,7 +1140,7 @@ class CourseMaterialViewSet(viewsets.ModelViewSet):
         
         is_enrolled = Enrollment.objects.filter(student=user, course=course).exists()
         is_instructor = course.instructor == user
-        is_admin = user.role == 'ADMIN'
+        is_admin = user.role == 'ADMIN' # type: ignore
         
         if not (is_enrolled or is_instructor or is_admin):
             raise PermissionDenied("You must be enrolled in this course to access materials.")

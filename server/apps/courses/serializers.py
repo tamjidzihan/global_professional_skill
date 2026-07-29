@@ -578,5 +578,20 @@ class QuizSubmissionSerializer(serializers.ModelSerializer):
             "warnings_count",
             "started_at",
             "completed_at",
+            "is_disqualified",
+            "disqualification_reason",
+            "disqualified_at",
+            "shuffled_question_ids",
         )
-        read_only_fields = ("id", "started_at", "completed_at", "student", "quiz")
+        read_only_fields = (
+            "id",
+            "started_at",
+            "completed_at",
+            "student",
+            "quiz",
+            "is_disqualified",
+            "disqualification_reason",
+            "disqualified_at",
+            "shuffled_question_ids",
+        )
+

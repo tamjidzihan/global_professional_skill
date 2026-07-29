@@ -7,7 +7,8 @@ from .views import (
     CategoryViewSet, CourseViewSet, SectionViewSet,
     LessonViewSet, ReviewViewSet, MyCoursesViewSet,
     QuizViewSet, QuizQuestionViewSet, MyQuizSubmissionsViewSet,
-    QuizLookupView, CourseMaterialViewSet
+    QuizLookupView, LogWarningView, CourseMaterialViewSet,
+    UndisqualifyStudentView, DeleteQuizSubmissionView
 )
 
 router = routers.DefaultRouter()
@@ -36,6 +37,10 @@ urlpatterns = [
     path('', include(courses_router.urls)),
     path('', include(quizzes_router.urls)),
     path('', include(sections_router.urls)),
+    path('quizzes/log-warning/', LogWarningView.as_view(), name='quiz-log-warning'),
     path('quizzes/<uuid:pk>/', QuizLookupView.as_view(), name='quiz-lookup'),
+    path('submissions/<uuid:pk>/undisqualify/', UndisqualifyStudentView.as_view(), name='submission-undisqualify'),
+    path('submissions/<uuid:pk>/', DeleteQuizSubmissionView.as_view(), name='submission-delete'),
 ]
+
 

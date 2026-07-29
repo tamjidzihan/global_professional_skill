@@ -458,6 +458,12 @@ class QuizQuestion(models.Model):
 
 class QuizSubmission(models.Model):
     """Student submission/attempt for a Quiz."""
+    
+    class DisqualificationReason(models.TextChoices):
+        EXCESSIVE_WARNINGS = "excessive_warnings", "Excessive Warnings"
+        MANUAL = "manual", "Manual Override"
+        TIME_EXPIRED = "time_expired", "Time Expired"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="submissions")
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="quiz_submissions")
@@ -466,6 +472,15 @@ class QuizSubmission(models.Model):
     warnings_count = models.IntegerField(default=0)
     started_at = models.DateTimeField(default=timezone.now)
     completed_at = models.DateTimeField(null=True, blank=True)
+    
+    shuffled_question_ids = models.JSONField(default=list, blank=True)
+    is_disqualified = models.BooleanField(default=False)
+    disqualification_reason = models.CharField(
+        max_length=50,
+        blank=True,
+        choices=DisqualificationReason.choices
+    )
+    disqualified_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         db_table = "quiz_submissions"
@@ -473,9 +488,14 @@ class QuizSubmission(models.Model):
         verbose_name_plural = "Quiz Submissions"
         unique_together = ["student", "quiz"]
         ordering = ["-completed_at"]
+        indexes = [
+            models.Index(fields=["is_disqualified"]),
+            models.Index(fields=["warnings_count"]),
+        ]
 
     def __str__(self):
         return f"{self.student.email} - Quiz: {self.quiz.title} - Score: {self.score}/{self.total_questions}"
+
 
 
 class CourseMaterial(models.Model):

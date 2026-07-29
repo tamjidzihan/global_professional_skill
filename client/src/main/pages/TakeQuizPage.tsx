@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
     lookupQuiz,
     startQuiz,
-    submitQuiz
+    submitQuiz,
+    logWarning
 } from '../../lib/api';
 import type { QuizQuestion } from '../../types';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -37,8 +38,13 @@ const TakeQuizPage: React.FC = () => {
     const [submissionResult, setSubmissionResult] = useState<any | null>(null);
 
     // Proctoring & Anti-Cheat State
+    const [submissionId, setSubmissionId] = useState<string | null>(null);
     const [warningsCount, setWarningsCount] = useState(0);
+    const [isDisqualified, setIsDisqualified] = useState(false);
     const [showWarningModal, setShowWarningModal] = useState(false);
+    const [showDisqualificationModal, setShowDisqualificationModal] = useState(false);
+    const [warningLevel, setWarningLevel] = useState<number>(0);
+    const [disqualificationCountdown, setDisqualificationCountdown] = useState(5);
     const lastWarningTime = useRef<number>(0);
 
     // Fetch basic quiz info to unlock
@@ -62,7 +68,7 @@ const TakeQuizPage: React.FC = () => {
 
     // Timer countdown
     useEffect(() => {
-        if (!isUnlocked || remainingSeconds <= 0 || submissionResult) return;
+        if (!isUnlocked || remainingSeconds <= 0 || submissionResult || isDisqualified) return;
 
         const interval = setInterval(() => {
             setRemainingSeconds((prev) => {
@@ -77,27 +83,65 @@ const TakeQuizPage: React.FC = () => {
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [isUnlocked, remainingSeconds, submissionResult]);
+    }, [isUnlocked, remainingSeconds, submissionResult, isDisqualified]);
+
+    // Disqualification countdown and redirect
+    useEffect(() => {
+        if (!isDisqualified || !showDisqualificationModal) return;
+
+        const interval = setInterval(() => {
+            setDisqualificationCountdown((prev) => {
+                if (prev <= 1) {
+                    clearInterval(interval);
+                    navigate('/dashboard');
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [isDisqualified, showDisqualificationModal, navigate]);
 
     // Anti-cheat: blur and visibility change handlers
     useEffect(() => {
-        if (!isUnlocked || submissionResult) return;
+        if (!isUnlocked || submissionResult || isDisqualified) return;
 
-        const handleViolation = () => {
+        const handleViolation = async () => {
             const now = Date.now();
             // Prevent duplicate warnings within 2 seconds
             if (now - lastWarningTime.current < 2000) return;
+            if (isSubmitting || submissionResult || isDisqualified) return;
             lastWarningTime.current = now;
 
-            setWarningsCount((prev) => {
-                const next = prev + 1;
-                setShowWarningModal(true);
-                toast.error(`Anti-Cheat Warning: Tab/Window switch detected! Warning ${next}`, {
-                    duration: 4000,
-                    icon: '⚠️'
-                });
-                return next;
-            });
+            if (!submissionId) return;
+
+            try {
+                const res = await logWarning(submissionId);
+                if (res.data.success) {
+                    const data = res.data.data;
+                    setWarningsCount(data.warnings_count);
+                    
+                    if (data.status === 'disqualified') {
+                        setIsDisqualified(true);
+                        setShowDisqualificationModal(true);
+                        setShowWarningModal(false);
+                        toast.error('You have been disqualified from the quiz!', { duration: 5000 });
+                    } else {
+                        setWarningLevel(data.warnings_count);
+                        setShowWarningModal(true);
+                        const warningMsg = data.warnings_count === 1 
+                            ? "Warning 1/3 - Please stay on quiz tab" 
+                            : "Warning 2/3 - Final warning!";
+                        toast.error(warningMsg, {
+                            duration: 4000,
+                            icon: '⚠️'
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to log warning', error);
+            }
         };
 
         const handleVisibilityChange = () => {
@@ -129,7 +173,7 @@ const TakeQuizPage: React.FC = () => {
             document.removeEventListener('copy', preventDefaultActions);
             document.removeEventListener('cut', preventDefaultActions);
         };
-    }, [isUnlocked, submissionResult]);
+    }, [isUnlocked, submissionResult, isDisqualified, submissionId, isSubmitting]);
 
     const handleUnlock = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -146,8 +190,16 @@ const TakeQuizPage: React.FC = () => {
                 const data = res.data.data;
                 setQuestions(data.questions);
                 setRemainingSeconds(data.remaining_seconds);
-                setIsUnlocked(true);
-                toast.success('Quiz unlocked and started successfully!');
+                setSubmissionId(data.submission_id);
+                setWarningsCount(data.warnings_count || 0);
+                
+                if (data.is_disqualified) {
+                    setIsDisqualified(true);
+                    setShowDisqualificationModal(true);
+                } else {
+                    setIsUnlocked(true);
+                    toast.success('Quiz unlocked and started successfully!');
+                }
             }
         } catch (error) {
             toast.error(extractErrorMessage(error) || 'Incorrect PIN code or enrollment issue');
@@ -169,6 +221,7 @@ const TakeQuizPage: React.FC = () => {
         return `${m}:${s.toString().padStart(2, '0')}`;
     };
 
+    // Submits actual question IDs matched to options
     const getSubmissionPayload = () => {
         const answersList = Object.entries(selectedAnswers).map(([qId, val]) => ({
             question_id: qId,
@@ -239,15 +292,22 @@ const TakeQuizPage: React.FC = () => {
 
     // 1. Completion & Result Screen
     if (submissionResult) {
+        const isDisq = submissionResult.is_disqualified;
         return (
             <div className="max-w-xl mx-auto px-4 py-16 text-center animate-in fade-in duration-200">
                 <SEO title={`Quiz Result - ${quizInfo.title}`} description="Quiz attempt completed" />
                 <div className="bg-white border border-gray-150 rounded-3xl p-8 shadow-md">
                     <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                        <ShieldCheck className="w-10 h-10 text-emerald-600" />
+                        {isDisq ? (
+                            <XCircle className="w-10 h-10 text-rose-500 animate-pulse" />
+                        ) : (
+                            <ShieldCheck className="w-10 h-10 text-emerald-600" />
+                        )}
                     </div>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Quiz Completed!</h2>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                        {isDisq ? 'Exam Disqualified' : 'Quiz Completed!'}
+                    </h2>
                     <p className="text-sm text-gray-400 mb-8">{quizInfo.title}</p>
 
                     <div className="grid grid-cols-2 gap-4 mb-8">
@@ -266,7 +326,17 @@ const TakeQuizPage: React.FC = () => {
                         </div>
                     </div>
 
-                    {submissionResult.warnings_count > 2 && (
+                    {isDisq ? (
+                        <div className="bg-rose-50 border border-rose-100 rounded-xl p-4 text-left mb-8 flex items-start gap-3">
+                            <XCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                            <div>
+                                <h4 className="text-xs font-bold text-rose-800">Disqualification Active</h4>
+                                <p className="text-xs text-rose-700 mt-1">
+                                    This exam attempt was auto-disqualified due to exceeding the limit of 3 tab/window proctoring warnings. Score has been set to 0. <strong>Instructor notified.</strong>
+                                </p>
+                            </div>
+                        </div>
+                    ) : submissionResult.warnings_count > 2 ? (
                         <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-left mb-8 flex items-start gap-3">
                             <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                             <div>
@@ -276,7 +346,7 @@ const TakeQuizPage: React.FC = () => {
                                 </p>
                             </div>
                         </div>
-                    )}
+                    ) : null}
 
                     <div className="flex items-center gap-3">
                         <button
@@ -302,7 +372,7 @@ const TakeQuizPage: React.FC = () => {
                     </div>
 
                     <h2 className="text-xl font-bold text-gray-900 mb-1">{quizInfo.title}</h2>
-                    <p className="text-xs text-gray-450 mb-6">Course Quiz Access Gate</p>
+                    <p className="text-xs text-gray-455 mb-6">Course Quiz Access Gate</p>
 
                     <div className="space-y-4 text-left mb-6 text-sm text-gray-650 bg-gray-50 p-4 rounded-2xl">
                         <div className="flex items-center gap-2">
@@ -491,10 +561,12 @@ const TakeQuizPage: React.FC = () => {
                         </div>
                         <h3 className="text-lg font-bold text-gray-900">Anti-Cheat Triggered</h3>
                         <p className="text-xs text-gray-500 mt-2 leading-relaxed">
-                            You switched away from the active exam screen. Navigating to other tabs/windows is forbidden during this test.
+                            {warningLevel === 1 
+                                ? "Warning 1/3 - Please stay on quiz tab" 
+                                : "Warning 2/3 - Final warning!"}
                         </p>
                         <div className="bg-red-50 border border-red-100 rounded-xl p-3 text-red-800 text-sm font-semibold mt-4">
-                            Active Violations: {warningsCount}
+                            Active Violations: {warningsCount}/3
                         </div>
                         <button
                             onClick={() => setShowWarningModal(false)}
@@ -502,6 +574,27 @@ const TakeQuizPage: React.FC = () => {
                         >
                             I Understand &amp; Resume Quiz
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Disqualification Modal */}
+            {showDisqualificationModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl border border-gray-100 p-6 text-center animate-in fade-in zoom-in-95 duration-200">
+                        <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <XCircle className="w-6 h-6 animate-pulse" />
+                        </div>
+                        <h3 className="text-lg font-bold text-rose-950">Exam Disqualified</h3>
+                        <p className="text-xs text-rose-600 mt-2 leading-relaxed font-semibold">
+                            You have been auto-disqualified due to excessive proctoring violations (3 strikes).
+                        </p>
+                        <div className="bg-red-50 border border-red-100 rounded-xl p-3 text-red-800 text-sm font-semibold mt-4">
+                            Instructor Notified
+                        </div>
+                        <p className="text-[10px] text-gray-400 mt-4">
+                            Redirecting to dashboard in {disqualificationCountdown} seconds...
+                        </p>
                     </div>
                 </div>
             )}
