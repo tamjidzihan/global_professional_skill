@@ -51,6 +51,7 @@ import EnrolledStudentsPage from "./main/pages/dashboard/EnrolledStudentsPage";
 import AnnouncementDetailPage from "./main/pages/dashboard/common/AnnouncementDetailPage";
 import AnnouncementListPage from "./main/pages/dashboard/common/AnnouncementListPage";
 import AnnouncementManagementPage from "./main/pages/dashboard/admin/AnnouncementManagementPage";
+import NewsTickerManagementPage from "./main/pages/dashboard/admin/NewsTickerManagementPage";
 import QuizListPage from "./main/pages/dashboard/instructor/QuizListPage";
 import QuizQuestionsPage from "./main/pages/dashboard/instructor/QuizQuestionsPage";
 import TakeQuizPage from "./main/pages/TakeQuizPage";
@@ -326,6 +327,14 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['ADMIN']}>
                                 <AnnouncementManagementPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/news-ticker',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <NewsTickerManagementPage />
                             </ProtectedRoute>
                         )
                     },

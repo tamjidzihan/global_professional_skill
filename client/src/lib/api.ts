@@ -235,6 +235,8 @@ export const endpoints = {
         settings: '/core/settings/',
         announcements: '/core/announcements/',
         announcementDetail: (id: string) => `/core/announcements/${id}/`,
+        newsTicker: '/core/news-ticker/',
+        newsTickerDetail: (id: string) => `/core/news-ticker/${id}/`,
     },
     careers: {
         jobs: '/careers/jobs/',
@@ -571,6 +573,30 @@ export const updateAnnouncement = (id: string, data: any): Promise<AxiosResponse
 
 export const deleteAnnouncement = (id: string): Promise<AxiosResponse<void>> =>
     api.delete<void>(endpoints.core.announcementDetail(id));
+
+
+// News Ticker API Calls
+export const getNewsTickerItems = <T = ApiResponse<any[]>>(
+    params?: Record<string, any>,
+    pageUrl?: string | null,
+): Promise<AxiosResponse<T>> => {
+    if (pageUrl) {
+        return api.get<T>(pageUrl);
+    }
+    return api.get<T>(endpoints.core.newsTicker, { params });
+};
+
+export const getNewsTickerItemDetail = (id: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get<ApiResponse<any>>(endpoints.core.newsTickerDetail(id));
+
+export const createNewsTickerItem = (data: any): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(endpoints.core.newsTicker, data);
+
+export const updateNewsTickerItem = (id: string, data: any): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.put<ApiResponse<any>>(endpoints.core.newsTickerDetail(id), data);
+
+export const deleteNewsTickerItem = (id: string): Promise<AxiosResponse<void>> =>
+    api.delete<void>(endpoints.core.newsTickerDetail(id));
 
 
 // Password Reset API Calls

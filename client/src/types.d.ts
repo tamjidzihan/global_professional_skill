@@ -485,6 +485,30 @@ export interface AnnouncementCreateUpdateData {
     end_date: string | null;
 }
 
+export interface NewsTickerItem {
+    id: string;
+    text: string;
+    link?: string | null;
+    color: string;
+    is_visible: boolean;
+    order: number;
+    start_date: string | null;
+    end_date: string | null;
+    created_at: string;
+    updated_at: string;
+    created_by: string;
+    created_by_detail?: User;
+}
+
+export interface NewsTickerItemCreateUpdateData {
+    text: string;
+    link?: string | null;
+    color: string;
+    is_visible: boolean;
+    order: number;
+    start_date: string | null;
+    end_date: string | null;
+}
 
 // Quiz Types
 export interface Quiz {
@@ -539,4 +563,4 @@ export interface CourseMaterial {
     uploaded_at: string;
     uploaded_by: string;
     uploaded_by_name: string;
-}
+}

@@ -3,7 +3,7 @@ import {
     LayoutDashboard,
     BookOpen,
     Users,
-    Tag,
+    User,
     FileText,
     GraduationCap,
     LogOut,
@@ -14,6 +14,8 @@ import {
     TrendingUp,
     Briefcase,
     Bell,
+    Megaphone,
+    Tag,
 } from 'lucide-react'
 import { useAuthContext } from '../../../context/AuthContext'
 import { useMyProfile } from '../../../hooks/useMyProfile'
@@ -122,10 +124,9 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
                 { name: 'User Management', path: '/dashboard/admin/users', icon: Users },
                 { name: 'Career Management', path: '/dashboard/admin/careers', icon: Briefcase },
                 { name: 'Announcements', path: '/dashboard/admin/announcements', icon: Bell },
+                { name: 'News Ticker', path: '/dashboard/admin/news-ticker', icon: Megaphone },
             ],
         },
-
-        // ── Courses group ──
         {
             key: 'courses',
             name: 'Courses',
@@ -140,18 +141,16 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
         { name: 'Platform Settings', path: '/dashboard/admin/settings', icon: Settings },
     ]
 
-    const links: NavItem[] =
-        profile?.role === 'ADMIN'
-            ? adminLinks
-            : profile?.role === 'INSTRUCTOR'
-                ? instructorLinks
-                : studentLinks
+    const links: NavItem[] = profile?.role === 'ADMIN'
+        ? adminLinks
+        : profile?.role === 'INSTRUCTOR'
+            ? instructorLinks
+            : studentLinks
 
     const myLinks: NavLink[] = [
-        { name: 'My Profile', path: '/dashboard/my-profile', icon: Users },
+        { name: 'My Profile', path: '/dashboard/my-profile', icon: User },
     ]
 
-    // ── Tooltip ──────────────────────────────────────────────────────────────
     const CollapsedTooltip = ({ label, badge }: { label: string; badge?: string | number }) => (
         <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 pointer-events-none z-50
                         opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150">

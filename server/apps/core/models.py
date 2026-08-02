@@ -50,3 +50,35 @@ class Announcement(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class NewsTickerItem(models.Model):
+    """Model for site-wide news ticker items."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    text = models.CharField(max_length=255)
+    link = models.URLField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text="Optional URL to open when the ticker item is clicked.",
+    )
+    color = models.CharField(
+        max_length=20,
+        default="bg-[#3B5EF5]",
+        help_text="Tailwind background color class for the ticker bullet",
+    )
+    is_visible = models.BooleanField(default=True)
+    order = models.PositiveIntegerField(default=0)
+    start_date = models.DateTimeField(null=True, blank=True, help_text="When to start showing the ticker item")
+    end_date = models.DateTimeField(null=True, blank=True, help_text="When to stop showing the ticker item")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        'accounts.User', on_delete=models.SET_NULL, null=True, related_name='news_ticker_items'
+    )
+
+    class Meta:
+        ordering = ['order', '-created_at']
+
+    def __str__(self):
+        return self.text

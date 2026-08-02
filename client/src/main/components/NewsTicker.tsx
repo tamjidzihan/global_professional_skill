@@ -1,16 +1,46 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Megaphone } from "lucide-react"
+import type { ApiResponse } from "../../types"
+import { getNewsTickerItems } from "../../lib/api"
 
-const NEWS_ITEMS = [
-    { text: "New batch for Full Stack Development starts August 15", color: "bg-[#3B5EF5]" },
-    { text: "GPI ranked #1 IT Training Institute in Bangladesh", color: "bg-[#FBBF24]" },
-    { text: "100% Job Placement Support for all certified students", color: "bg-[#86EFAC]" },
-    { text: "World Bank Supported Training Programs now open", color: "bg-[#C084FC]" },
-    { text: "Early bird discount: 20% off on all courses this month", color: "bg-[#FF5252]" },
-]
+type NewsTickerDataItem = {
+    text: string
+    color?: string
+    link?: string | null
+}
 
 const NewsTicker = () => {
     const [isPaused, setIsPaused] = useState(false)
+    const [newsItems, setNewsItems] = useState<NewsTickerDataItem[]>([])
+    const [isLoading, setIsLoading] = useState(true)
+
+    useEffect(() => {
+        let isMounted = true
+        getNewsTickerItems<ApiResponse<NewsTickerDataItem[]>>()
+            .then((response) => {
+                if (!isMounted) return
+                if (response.data.success) {
+                    const items = response.data.data.map((item) => ({
+                        text: item.text,
+                        link: item.link ?? null,
+                        color: item.color || "bg-[#3B5EF5]",
+                    }))
+                    if (items.length > 0) {
+                        setNewsItems(items)
+                    }
+                }
+            })
+            .catch(() => {
+                // silently use fallback items
+            })
+            .finally(() => {
+                if (isMounted) setIsLoading(false)
+            })
+
+        return () => {
+            isMounted = false
+        }
+    }, [])
 
     return (
         <div className="w-full bg-[#FCF8F1] border-b border-gray-200">
@@ -27,19 +57,47 @@ const NewsTicker = () => {
                     onMouseEnter={() => setIsPaused(true)}
                     onMouseLeave={() => setIsPaused(false)}
                 >
-                    <div
-                        className="inline-flex items-center gap-8 animate-marquee"
-                        style={{ animationPlayState: isPaused ? "paused" : "running" }}
-                    >
-                        {[...NEWS_ITEMS, ...NEWS_ITEMS].map((item, i) => (
-                            <span key={i} className="inline-flex items-center gap-2 px-2">
-                                <span className={`w-1.5 h-1.5 rounded-full ${item.color} shrink-0`} />
-                                <span className="text-sm font-medium hover:text-gray-800 transition-colors duration-300 text-gray-600">
-                                    {item.text}
-                                </span>
-                            </span>
-                        ))}
-                    </div>
+                    {isLoading ? (
+                        <div className="inline-flex items-center gap-4 animate-pulse">
+                            <span className="w-3 h-3 rounded-full bg-gray-300" />
+                            <span className="h-4 w-48 rounded-full bg-gray-300" />
+                            <span className="h-4 w-40 rounded-full bg-gray-300" />
+                        </div>
+                    ) : newsItems.length > 0 ? (
+                        <div
+                            className="inline-flex items-center gap-8 animate-marquee"
+                            style={{ animationPlayState: isPaused ? "paused" : "running" }}
+                        >
+                            {(
+                                newsItems.length > 1 ? [...newsItems, ...newsItems] : newsItems
+                            ).map((item, i) => {
+                                const content = (
+                                    <span className="inline-flex items-center gap-2 px-2">
+                                        <span className={`w-1.5 h-1.5 rounded-full ${item.color} shrink-0`} />
+                                        <span className="text-sm font-medium hover:text-gray-800 transition-colors duration-300 text-gray-600">
+                                            {item.text}
+                                        </span>
+                                    </span>
+                                )
+
+                                return item.link ? (
+                                    <a
+                                        key={`${item.text}-${i}`}
+                                        href={item.link}
+                                        target={item.link.startsWith('/') ? undefined : '_blank'}
+                                        rel={item.link.startsWith('/') ? undefined : 'noreferrer'}
+                                        className="inline-flex"
+                                    >
+                                        {content}
+                                    </a>
+                                ) : (
+                                    <span key={`${item.text}-${i}`}>{content}</span>
+                                )
+                            })}
+                        </div>
+                    ) : (
+                        <div className="text-sm text-gray-500">No updates available.</div>
+                    )}
                 </div>
 
             </div>

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import SiteSettings, Announcement
+from .models import SiteSettings, Announcement, NewsTickerItem
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
@@ -21,6 +21,20 @@ class AnnouncementAdmin(admin.ModelAdmin):
     search_fields = ('title', 'content')
     ordering = ('-created_at',)
     
+    def save_model(self, request, obj, form, change):
+        if not obj.created_by:
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(NewsTickerItem)
+class NewsTickerItemAdmin(admin.ModelAdmin):
+    list_display = ('text', 'color', 'is_visible', 'order', 'start_date', 'end_date', 'created_at', 'created_by')
+    list_filter = ('is_visible', 'created_at', 'created_by')
+    search_fields = ('text',)
+    ordering = ('order', '-created_at')
+    list_editable = ('is_visible', 'order')
+
     def save_model(self, request, obj, form, change):
         if not obj.created_by:
             obj.created_by = request.user
