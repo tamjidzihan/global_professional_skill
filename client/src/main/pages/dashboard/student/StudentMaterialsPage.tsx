@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import {
@@ -168,7 +168,7 @@ export default function StudentMaterialsPage() {
             {materials.length > 0 ? (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Pane: Materials List */}
-                    <div className="lg:col-span-1 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3 h-[600px] overflow-y-auto">
+                    <div className="lg:col-span-1 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 space-y-3 h-150 overflow-y-auto">
                         <div className="flex items-center justify-between border-b border-gray-50 pb-2 mb-2">
                             <div className="flex items-center gap-2">
                                 {materials.length > 0 && (
@@ -204,11 +204,10 @@ export default function StudentMaterialsPage() {
                                     <button
                                         key={mat.id}
                                         onClick={() => setSelectedMaterialId(mat.id)}
-                                        className={`w-full flex items-start gap-3 p-3 rounded-xl transition-all border text-left cursor-pointer ${
-                                            isSelected
-                                                ? 'bg-violet-50/70 border-violet-100 text-violet-900 shadow-sm'
-                                                : 'bg-white hover:bg-gray-50/70 border-transparent text-gray-700'
-                                        }`}
+                                        className={`w-full flex items-start gap-3 p-3 rounded-xl transition-all border text-left cursor-pointer ${isSelected
+                                            ? 'bg-violet-50/70 border-violet-100 text-violet-900 shadow-sm'
+                                            : 'bg-white hover:bg-gray-50/70 border-transparent text-gray-700'
+                                            }`}
                                     >
                                         <input
                                             type="checkbox"
@@ -292,7 +291,7 @@ export default function StudentMaterialsPage() {
                                         <h3>Document Preview</h3>
                                     </div>
 
-                                    <div className="border border-gray-100 rounded-2xl overflow-hidden bg-gray-50/50 flex flex-col items-center justify-center min-h-[350px]">
+                                    <div className="border border-gray-100 rounded-2xl overflow-hidden bg-gray-50/50 flex flex-col items-center justify-center min-h-87.5">
                                         {selectedMaterial.file ? (
                                             <>
                                                 {selectedMaterial.file_type === 'IMAGE' && (
@@ -300,7 +299,7 @@ export default function StudentMaterialsPage() {
                                                         <img
                                                             src={selectedMaterial.file}
                                                             alt={selectedMaterial.title}
-                                                            className="max-w-full max-h-[450px] object-contain rounded-xl shadow-sm border border-white"
+                                                            className="max-w-full max-h-112.5 object-contain rounded-xl shadow-sm border border-white"
                                                         />
                                                     </div>
                                                 )}
@@ -309,7 +308,7 @@ export default function StudentMaterialsPage() {
                                                     <iframe
                                                         src={`${selectedMaterial.file}#toolbar=0`}
                                                         title={selectedMaterial.title}
-                                                        className="w-full h-[450px] border-none"
+                                                        className="w-full h-112.5 border-none"
                                                     />
                                                 )}
 
@@ -338,7 +337,7 @@ export default function StudentMaterialsPage() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center justify-center min-h-[400px] text-center text-gray-400">
+                            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 flex flex-col items-center justify-center min-h-100 text-center text-gray-400">
                                 <Info className="w-8 h-8 mb-2" />
                                 <p className="text-sm font-medium">Select a file from the list to display details and download.</p>
                             </div>

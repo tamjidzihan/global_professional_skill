@@ -5,7 +5,7 @@ Django admin for courses app.
 from django.contrib import admin
 from django.utils.html import format_html
 from django.utils import timezone
-from .models import Category, Course, Section, Lesson, Review, CourseStatus, Quiz, QuizQuestion, QuizSubmission
+from .models import Category, Course,CourseAnnouncement, Section, Lesson, Review, CourseStatus, Quiz, QuizQuestion, QuizSubmission
 
 
 @admin.register(Category)
@@ -71,7 +71,6 @@ class CourseAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ["title"]}
     readonly_fields = (
         "enrollment_count",
-        "average_rating",
         "total_reviews",
         "total_sections_display",
         "created_at",
@@ -302,6 +301,222 @@ class CourseAdmin(admin.ModelAdmin):
     reset_available_seats.short_description = "🔄 Reset available seats"  # type: ignore
 
 
+class CourseAnnouncementAdmin(admin.ModelAdmin):
+    """Admin configuration for CourseAnnouncement model."""
+    
+    # List display
+    list_display = (
+        'title', 
+        'course', 
+        'created_by',
+        'is_visible', 
+        'is_active_display',
+        'start_date', 
+        'end_date',
+        'created_at',
+        'announcement_status'
+    )
+    
+    # List filter
+    list_filter = (
+        'course',
+        'is_visible',
+        'created_by',
+        ('start_date', admin.DateFieldListFilter),
+        ('end_date', admin.DateFieldListFilter),
+        ('created_at', admin.DateFieldListFilter),
+        ('updated_at', admin.DateFieldListFilter),
+    )
+    
+    # Search fields
+    search_fields = (
+        'title',
+        'content',
+        'course__title',
+        'course__code',
+        'created_by__email',
+        'created_by__first_name',
+        'created_by__last_name',
+    )
+    
+    # Read-only fields
+    readonly_fields = (
+        'id',
+        'created_at',
+        'updated_at',
+        'is_active_display',
+        'announcement_status',
+        'status_badge',
+    )
+    
+    # Fieldsets for detail view
+    fieldsets = (
+        ('Announcement Information', {
+            'fields': (
+                'id',
+                'title',
+                'content',
+                'course',
+                'created_by',
+            )
+        }),
+        ('Visibility Settings', {
+            'fields': (
+                'is_visible',
+                'start_date',
+                'end_date',
+                'is_active_display',
+                'status_badge',
+            ),
+            'classes': ('collapse',),
+        }),
+        ('Timestamps', {
+            'fields': (
+                'created_at',
+                'updated_at',
+            ),
+            'classes': ('collapse',),
+        }),
+    )
+    
+    # Default ordering
+    ordering = ('-created_at',)
+    
+    # Actions
+    actions = [
+        'make_visible',
+        'make_hidden',
+        'extend_end_date',
+        'set_today_start_date',
+    ]
+    
+    # Inlines (if needed)
+    # inlines = []
+    
+    # List per page
+    list_per_page = 25
+    
+    # Date hierarchy
+    date_hierarchy = 'created_at'
+    
+    # Preserve filters
+    preserve_filters = True
+    
+    def get_queryset(self, request):
+        """Optimize queryset with select_related."""
+        queryset = super().get_queryset(request)
+        return queryset.select_related('course', 'created_by')
+    
+    def is_active_display(self, obj):
+        """Display if announcement is currently active."""
+        now = timezone.now()
+        is_active = obj.is_visible and (
+            (not obj.start_date or obj.start_date <= now) and
+            (not obj.end_date or obj.end_date >= now)
+        )
+        status = "✅ Active" if is_active else "❌ Inactive"
+        return format_html(
+            '<span style="color: {};">{}</span>',
+            'green' if is_active else 'red',
+            status
+        )
+    is_active_display.short_description = "Active Status" # type: ignore
+    
+    def announcement_status(self, obj):
+        """Display status with color coding."""
+        now = timezone.now()
+        
+        if not obj.is_visible:
+            return format_html(
+                '<span style="color: gray;">🔒 Hidden</span>'
+            )
+        
+        if obj.end_date and obj.end_date < now:
+            return format_html(
+                '<span style="color: orange;">⏰ Expired</span>'
+            )
+        
+        if obj.start_date and obj.start_date > now:
+            return format_html(
+                '<span style="color: blue;">📅 Scheduled</span>'
+            )
+        
+        return format_html(
+            '<span style="color: green;">✅ Published</span>'
+        )
+    announcement_status.short_description = "Status" # type: ignore
+    
+    def status_badge(self, obj):
+        """Show status badge in detail view."""
+        return self.announcement_status(obj)
+    status_badge.short_description = "Current Status" # type: ignore
+    
+    # Custom actions
+    def make_visible(self, request, queryset):
+        """Make selected announcements visible."""
+        updated = queryset.update(is_visible=True)
+        self.message_user(request, f"{updated} announcement(s) made visible.")
+    make_visible.short_description = "Make selected announcements visible" # type: ignore
+    
+    def make_hidden(self, request, queryset):
+        """Make selected announcements hidden."""
+        updated = queryset.update(is_visible=False)
+        self.message_user(request, f"{updated} announcement(s) hidden.")
+    make_hidden.short_description = "Hide selected announcements" # type: ignore
+    
+    def extend_end_date(self, request, queryset):
+        """Extend end date by 7 days for selected announcements."""
+        from django.db.models import F
+        from django.db.models.functions import Now
+        updated = queryset.update(end_date=F('end_date') + timezone.timedelta(days=7))
+        self.message_user(request, f"{updated} announcement(s) extended by 7 days.")
+    extend_end_date.short_description = "Extend end date by 7 days" # type: ignore
+    
+    def set_today_start_date(self, request, queryset):
+        """Set start date to today for selected announcements."""
+        now = timezone.now()
+        updated = queryset.update(start_date=now)
+        self.message_user(request, f"{updated} announcement(s) start date set to today.")
+    set_today_start_date.short_description = "Set start date to today" # type: ignore
+    
+    # Save method override (if needed)
+    def save_model(self, request, obj, form, change):
+        """Set created_by automatically on creation."""
+        if not change:  # New object
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
+    
+    # Custom form validation
+    def get_form(self, request, obj=None, **kwargs): # type: ignore
+        form = super().get_form(request, obj, **kwargs)
+        return form
+
+
+# Register the admin class
+admin.site.register(CourseAnnouncement, CourseAnnouncementAdmin)
+
+
+# Optional: Tabular inline for Course admin
+class CourseAnnouncementInline(admin.TabularInline):
+    """Inline admin for Course announcements."""
+    
+    model = CourseAnnouncement
+    extra = 1
+    fields = (
+        'title',
+        'is_visible',
+        'start_date',
+        'end_date',
+        'created_at',
+    )
+    readonly_fields = ('created_at',)
+    ordering = ('-created_at',)
+    
+    def get_queryset(self, request):
+        """Optimize queryset."""
+        queryset = super().get_queryset(request)
+        return queryset.select_related('created_by')
+
 @admin.register(Section)
 class SectionAdmin(admin.ModelAdmin):
     list_display = ("title", "course_link", "order", "lesson_count", "created_at")
@@ -452,7 +667,7 @@ class QuizQuestionAdmin(admin.ModelAdmin):
 
     def question_text_preview(self, obj):
         return obj.question_text[:50] + "..." if len(obj.question_text) > 50 else obj.question_text
-    question_text_preview.short_description = "Question"
+    question_text_preview.short_description = "Question" # type: ignore
 
 
 @admin.register(QuizSubmission)
