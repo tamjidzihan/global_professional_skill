@@ -20,9 +20,12 @@ import {
     AlertCircle,
     FileText,
     Download,
+    Megaphone,
+    Link2,
 } from 'lucide-react';
 import { useEnrollments } from '../../../../hooks/useEnrollments';
 import { useCourses } from '../../../../hooks/useCourses';
+import { useCourseAnnouncements } from '../../../../hooks/useCourseAnnouncements';
 import SEO from '../../../components/SEO';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 
@@ -30,6 +33,7 @@ export default function EnrolledCourseDetailPage() {
     const { id } = useParams<{ id: string }>(); // This is the COURSE ID
     const { enrollments, getMyEnrollments, loading: enrollmentsLoading } = useEnrollments();
     const { course, fetchCourseDetail, loading: courseLoading } = useCourses();
+    const { announcements, fetchCourseAnnouncementsByCourse, loading: announcementsLoading } = useCourseAnnouncements();
     const [activeTab, setActiveTab] = useState('overview');
     const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
@@ -37,8 +41,9 @@ export default function EnrolledCourseDetailPage() {
         getMyEnrollments();
         if (id) {
             fetchCourseDetail(id);
+            fetchCourseAnnouncementsByCourse(id);
         }
-    }, [id, getMyEnrollments, fetchCourseDetail]);
+    }, [id, getMyEnrollments, fetchCourseDetail, fetchCourseAnnouncementsByCourse]);
 
     // Initialize expanded sections when course data is loaded
     useEffect(() => {
@@ -59,6 +64,12 @@ export default function EnrolledCourseDetailPage() {
     const enrollment = enrollments.find(e => e.course.id === id);
 
     const loading = enrollmentsLoading || courseLoading;
+
+    // Helper to truncate URL for display
+    const truncateUrl = (url: string) => {
+        if (!url) return '';
+        return url.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, '');
+    };
 
     if (loading) {
         return (
@@ -87,7 +98,6 @@ export default function EnrolledCourseDetailPage() {
     }
 
     const progress = Math.round(Number(enrollment.progress_percentage || 0));
-
 
     return (
         <div className="py-6 px-4 md:px-6 space-y-6">
@@ -423,6 +433,73 @@ export default function EnrolledCourseDetailPage() {
                                 <MessageSquare className="w-3.5 h-3.5" /> Contact Support
                             </button>
                         </div>
+                    </div>
+
+                    {/* ── Course Announcements ── */}
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                                <Megaphone className="w-4 h-4 text-violet-500" /> Course Notifications
+                            </h3>
+                            {announcements && announcements.length > 0 && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold bg-violet-50 text-violet-600 rounded-md border border-violet-100">
+                                    {announcements.length} new
+                                </span>
+                            )}
+                        </div>
+
+                        {announcementsLoading ? (
+                            <div className="space-y-3">
+                                {[1, 2].map(i => (
+                                    <div key={i} className="animate-pulse h-16 bg-gray-50 rounded-lg border border-gray-100" />
+                                ))}
+                            </div>
+                        ) : announcements && announcements.length > 0 ? (
+                            <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+                                {announcements.slice(0, 5).map((announcement) => (
+                                    <div key={announcement.id} className="rounded-xl border border-gray-100 bg-gray-50 p-3 hover:border-violet-200 hover:bg-violet-50/20 transition-all duration-150">
+                                        <div className="flex items-start justify-between gap-2">
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-sm font-semibold text-gray-900 truncate">{announcement.title}</p>
+
+                                                {/* Link */}
+                                                {announcement.content && (
+                                                    <div className="mt-1">
+                                                        <a
+                                                            href={announcement.content}
+                                                            target={announcement.content.startsWith('/') ? undefined : '_blank'}
+                                                            rel={announcement.content.startsWith('/') ? undefined : 'noreferrer'}
+                                                            className="inline-flex items-center gap-1.5 text-xs text-violet-600 hover:text-violet-700 hover:underline transition-colors truncate max-w-full"
+                                                        >
+                                                            <Link2 className="w-3 h-3 shrink-0" />
+                                                            <span className="truncate">{truncateUrl(announcement.content)}</span>
+                                                        </a>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <span className="text-[10px] font-medium text-gray-400 whitespace-nowrap shrink-0">
+                                                {announcement.start_date ? new Date(announcement.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Now'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-4">
+                                <Megaphone className="w-8 h-8 text-gray-200 mx-auto mb-2" />
+                                <p className="text-xs text-gray-400 font-medium">No Course Notifications yet</p>
+                                <p className="text-[10px] text-gray-300 mt-0.5">Check back for updates</p>
+                            </div>
+                        )}
+
+                        {announcements && announcements.length > 5 && (
+                            <Link
+                                to={`/dashboard/student/announcements?course=${course.id}`}
+                                className="mt-2 text-[11px] font-semibold text-violet-600 hover:text-violet-700 flex items-center justify-center gap-1 pt-2 border-t border-gray-100"
+                            >
+                                View all announcements <ChevronRight className="w-3 h-3" />
+                            </Link>
+                        )}
                     </div>
 
                     {/* Instructor Card */}

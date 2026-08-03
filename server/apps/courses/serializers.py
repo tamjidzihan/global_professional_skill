@@ -5,7 +5,21 @@ Serializers for courses app.
 from rest_framework import serializers
 from django.utils.text import slugify
 from django.utils import timezone
-from .models import Category, Course, Section, Lesson, Review, CourseStatus, Quiz, QuizQuestion, QuizSubmission, CourseMaterial
+from django.db.models import Q
+from .models import (
+    Category,
+    Course,
+    Section,
+    Lesson,
+    Review,
+    CourseStatus,
+    Quiz,
+    QuizQuestion,
+    QuizSubmission,
+    CourseMaterial,
+    CourseAnnouncement,
+)
+
 # pyrefly: ignore [missing-import]
 from apps.accounts.serializers import UserSerializer
 
@@ -35,17 +49,25 @@ class CategorySerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """Auto-generate slug from name if not provided."""
-        if 'name' in attrs:
-            attrs['slug'] = slugify(attrs['name'])
-            
+        if "name" in attrs:
+            attrs["slug"] = slugify(attrs["name"])
+
             # Check for slug uniqueness
-            slug = attrs['slug']
+            slug = attrs["slug"]
             if self.instance:
-                if Category.objects.filter(slug=slug).exclude(id=self.instance.id).exists():
-                    raise serializers.ValidationError({"name": "Category with this name already exists."})
+                if (
+                    Category.objects.filter(slug=slug)
+                    .exclude(id=self.instance.id)
+                    .exists()
+                ):
+                    raise serializers.ValidationError(
+                        {"name": "Category with this name already exists."}
+                    )
             else:
                 if Category.objects.filter(slug=slug).exists():
-                    raise serializers.ValidationError({"name": "Category with this name already exists."})
+                    raise serializers.ValidationError(
+                        {"name": "Category with this name already exists."}
+                    )
         return attrs
 
     def create(self, validated_data):
@@ -81,7 +103,15 @@ class LessonListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Lesson
-        fields = ("id", "title", "lesson_type", "video_duration", "is_preview", "is_completed", "order")
+        fields = (
+            "id",
+            "title",
+            "lesson_type",
+            "video_duration",
+            "is_preview",
+            "is_completed",
+            "order",
+        )
 
 
 class SectionSerializer(serializers.ModelSerializer):
@@ -222,7 +252,9 @@ class CourseListSerializer(serializers.ModelSerializer):
 
 
 class CourseMaterialSerializer(serializers.ModelSerializer):
-    uploaded_by_name = serializers.CharField(source="uploaded_by.get_full_name", read_only=True)
+    uploaded_by_name = serializers.CharField(
+        source="uploaded_by.get_full_name", read_only=True
+    )
     file_size_formatted = serializers.SerializerMethodField()
 
     class Meta:
@@ -239,7 +271,14 @@ class CourseMaterialSerializer(serializers.ModelSerializer):
             "uploaded_by",
             "uploaded_by_name",
         )
-        read_only_fields = ("id", "course", "file_size", "file_type", "uploaded_at", "uploaded_by")
+        read_only_fields = (
+            "id",
+            "course",
+            "file_size",
+            "file_type",
+            "uploaded_at",
+            "uploaded_by",
+        )
 
     def get_file_size_formatted(self, obj):
         size = obj.file_size
@@ -254,16 +293,29 @@ class CourseMaterialSerializer(serializers.ModelSerializer):
         # Limit size to 10MB
         if value.size > 10 * 1024 * 1024:
             raise serializers.ValidationError("File size cannot exceed 10MB.")
-        
+
         import os
+
         ext = os.path.splitext(value.name)[1].lower()
         valid_extensions = [
-            '.pdf', 
-            '.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp',
-            '.doc', '.docx', '.odt',
-            '.xls', '.xlsx', '.ods',
-            '.ppt', '.pptx', '.txt',
-            '.zip', '.rar'
+            ".pdf",
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".gif",
+            ".svg",
+            ".webp",
+            ".doc",
+            ".docx",
+            ".odt",
+            ".xls",
+            ".xlsx",
+            ".ods",
+            ".ppt",
+            ".pptx",
+            ".txt",
+            ".zip",
+            ".rar",
         ]
         if ext not in valid_extensions:
             raise serializers.ValidationError(
@@ -273,19 +325,47 @@ class CourseMaterialSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
-        request = self.context.get('request')
+        request = self.context.get("request")
         if request and request.user and request.user.is_authenticated:
             user = request.user
             # Check if user is course instructor, admin, or enrolled student
             from apps.enrollments.models import Enrollment
-            is_enrolled = Enrollment.objects.filter(student=user, course=instance.course).exists()
+
+            is_enrolled = Enrollment.objects.filter(
+                student=user, course=instance.course
+            ).exists()
             is_instructor = instance.course.instructor == user
-            is_admin = user.role == 'ADMIN'
+            is_admin = user.role == "ADMIN"
             if not (is_enrolled or is_instructor or is_admin):
-                rep['file'] = None
+                rep["file"] = None
         else:
-            rep['file'] = None
+            rep["file"] = None
         return rep
+
+
+class CourseAnnouncementSerializer(serializers.ModelSerializer):
+    """Serializer for course-specific announcements."""
+
+    created_by_detail = UserSerializer(source="created_by", read_only=True)
+    course_title = serializers.CharField(source="course.title", read_only=True)
+
+    class Meta:
+        model = CourseAnnouncement
+        fields = (
+            "id",
+            "course",
+            "course_title",
+            "title",
+            "content",
+            "is_visible",
+            "start_date",
+            "end_date",
+            "created_at",
+            "updated_at",
+            "created_by",
+            "created_by_detail",
+        )
+        read_only_fields = ("id", "created_by", "course")
 
 
 class CourseDetailSerializer(serializers.ModelSerializer):
@@ -296,6 +376,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     sections = SectionSerializer(many=True, read_only=True)
     reviews = ReviewSerializer(many=True, read_only=True)
     materials = CourseMaterialSerializer(many=True, read_only=True)
+    announcements = serializers.SerializerMethodField()
     is_enrolled = serializers.SerializerMethodField()
     total_sections = serializers.SerializerMethodField()
     is_admission_open = serializers.SerializerMethodField()
@@ -338,6 +419,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "admission_deadline",
             "schedule",
             "venue",
+            "announcements",
             "is_admission_open",
             "is_full",
             "created_at",
@@ -353,6 +435,30 @@ class CourseDetailSerializer(serializers.ModelSerializer):
 
             return Enrollment.objects.filter(student=request.user, course=obj).exists()
         return False
+
+    def get_announcements(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return []
+
+        from apps.enrollments.models import Enrollment
+
+        now = timezone.now()
+
+        if request.user.is_admin_user or obj.instructor == request.user:
+            announcements = obj.announcements.all()
+        else:
+            if not Enrollment.objects.filter(student=request.user, course=obj).exists():
+                return []
+            announcements = obj.announcements.filter(
+                is_visible=True,
+            ).filter(Q(end_date__isnull=True) | Q(end_date__gte=now))
+
+        return CourseAnnouncementSerializer(
+            announcements.order_by("-created_at"),
+            many=True,
+            context={"request": request},
+        ).data
 
     def get_total_sections(self, obj):
         return obj.total_sections
@@ -419,7 +525,7 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
 
     def validate_available_seats(self, value):
         """Validate available seats."""
-        total_seats = self.initial_data.get('total_seats') # type: ignore
+        total_seats = self.initial_data.get("total_seats")  # type: ignore
         if total_seats is not None:
             try:
                 total_seats = int(total_seats)
@@ -477,11 +583,11 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
         validated_data["instructor"] = self.context["request"].user
         validated_data["slug"] = slugify(validated_data["title"])
         validated_data["status"] = CourseStatus.DRAFT
-        
+
         # If available_seats not provided, set it to total_seats
         if "available_seats" not in validated_data:
             validated_data["available_seats"] = validated_data.get("total_seats", 30)
-            
+
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
@@ -529,14 +635,26 @@ class CourseReviewSerializer(serializers.ModelSerializer):
 
 class QuizQuestionSerializer(serializers.ModelSerializer):
     """Full question serializer for instructors/admins."""
+
     class Meta:
         model = QuizQuestion
-        fields = ("id", "quiz", "question_text", "option_a", "option_b", "option_c", "option_d", "correct_option", "created_at")
+        fields = (
+            "id",
+            "quiz",
+            "question_text",
+            "option_a",
+            "option_b",
+            "option_c",
+            "option_d",
+            "correct_option",
+            "created_at",
+        )
         read_only_fields = ("id", "quiz", "created_at")
 
 
 class QuizStudentQuestionSerializer(serializers.ModelSerializer):
     """Stripped question serializer for students (omits correct_option)."""
+
     class Meta:
         model = QuizQuestion
         fields = ("id", "question_text", "option_a", "option_b", "option_c", "option_d")
@@ -545,11 +663,21 @@ class QuizStudentQuestionSerializer(serializers.ModelSerializer):
 
 class QuizSerializer(serializers.ModelSerializer):
     """Serializer for Quiz metadata."""
+
     question_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Quiz
-        fields = ("id", "course", "title", "pin_code", "duration_minutes", "question_count", "created_at", "updated_at")
+        fields = (
+            "id",
+            "course",
+            "title",
+            "pin_code",
+            "duration_minutes",
+            "question_count",
+            "created_at",
+            "updated_at",
+        )
         read_only_fields = ("id", "course", "created_at", "updated_at")
 
     def get_question_count(self, obj):
@@ -558,6 +686,7 @@ class QuizSerializer(serializers.ModelSerializer):
 
 class QuizSubmissionSerializer(serializers.ModelSerializer):
     """Serializer for quiz submissions/attempts."""
+
     student_name = serializers.CharField(source="student.get_full_name", read_only=True)
     student_email = serializers.EmailField(source="student.email", read_only=True)
     quiz_title = serializers.CharField(source="quiz.title", read_only=True)
@@ -594,4 +723,3 @@ class QuizSubmissionSerializer(serializers.ModelSerializer):
             "disqualified_at",
             "shuffled_question_ids",
         )
-

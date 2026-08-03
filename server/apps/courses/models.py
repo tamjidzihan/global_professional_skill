@@ -73,7 +73,7 @@ class Course(models.Model):
     slug = models.SlugField(max_length=200, unique=True, db_index=True)
     description = models.TextField()
     short_description = models.CharField(max_length=500)
-    
+
     # Instructor
     instructor = models.ForeignKey(
         User,
@@ -257,6 +257,88 @@ class Course(models.Model):
         """Increase available seats when a student unenrolls."""
         self.available_seats = min(self.available_seats + count, self.total_seats)
         self.save(update_fields=["available_seats"])
+        return True
+
+
+class CourseAnnouncement(models.Model):
+    """Course-specific announcement for enrolled students."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    course = models.ForeignKey(
+        "Course",
+        on_delete=models.CASCADE,
+        related_name="announcements",
+    )
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    is_visible = models.BooleanField(default=True)
+    start_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When to start showing the announcement",
+    )
+    end_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When to stop showing the announcement",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        "accounts.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="course_announcements",
+    )
+
+    class Meta:
+        db_table = "course_announcements"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.course.title} - {self.title}"
+
+        super().save(*args, **kwargs)
+
+    @property
+    def is_published(self):
+        """Check if course is published."""
+        return self.status == CourseStatus.PUBLISHED  # type: ignore
+
+    @property
+    def lesson_count(self):
+        """Get total number of lessons."""
+        return self.sections.aggregate(total=models.Sum("lessons__id"))["total"] or 0  # type: ignore
+
+    @property
+    def total_sections(self):
+        """Count total number of sections."""
+        return self.sections.count()  # type: ignore
+
+    @property
+    def is_admission_open(self):
+        """Check if admission is still open."""
+        if not self.admission_deadline:  # type: ignore
+            return True
+        return self.admission_deadline >= timezone.now().date()  # type: ignore
+
+    @property
+    def is_full(self):
+        """Check if course is full."""
+        return self.available_seats <= 0
+
+    def decrease_available_seats(self, count=1):
+        """Decrease available seats when a student enrolls."""
+        if self.available_seats >= count:
+            self.available_seats -= count
+            self.save(update_fields=["available_seats"])
+            return True
+        return False
+
+    def increase_available_seats(self, count=1):
+        """Increase available seats when a student unenrolls."""
+        self.available_seats = min(self.available_seats + count, self.total_seats)  # type: ignore
+        self.save(update_fields=["available_seats"])
 
 
 class Section(models.Model):
@@ -408,6 +490,7 @@ class Review(models.Model):
 
 class Quiz(models.Model):
     """MCQ Quiz model."""
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="quizzes")
     title = models.CharField(max_length=200)
@@ -428,6 +511,7 @@ class Quiz(models.Model):
 
 class QuizQuestion(models.Model):
     """MCQ Quiz Question model."""
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="questions")
     question_text = models.TextField()
@@ -435,13 +519,13 @@ class QuizQuestion(models.Model):
     option_b = models.CharField(max_length=255)
     option_c = models.CharField(max_length=255)
     option_d = models.CharField(max_length=255)
-    
+
     class CorrectOption(models.TextChoices):
         A = "A", "Option A"
         B = "B", "Option B"
         C = "C", "Option C"
         D = "D", "Option D"
-        
+
     correct_option = models.CharField(max_length=1, choices=CorrectOption.choices)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -458,7 +542,7 @@ class QuizQuestion(models.Model):
 
 class QuizSubmission(models.Model):
     """Student submission/attempt for a Quiz."""
-    
+
     class DisqualificationReason(models.TextChoices):
         EXCESSIVE_WARNINGS = "excessive_warnings", "Excessive Warnings"
         MANUAL = "manual", "Manual Override"
@@ -466,19 +550,19 @@ class QuizSubmission(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="submissions")
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="quiz_submissions")
+    student = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="quiz_submissions"
+    )
     score = models.IntegerField(default=0)
     total_questions = models.IntegerField(default=0)
     warnings_count = models.IntegerField(default=0)
     started_at = models.DateTimeField(default=timezone.now)
     completed_at = models.DateTimeField(null=True, blank=True)
-    
+
     shuffled_question_ids = models.JSONField(default=list, blank=True)
     is_disqualified = models.BooleanField(default=False)
     disqualification_reason = models.CharField(
-        max_length=50,
-        blank=True,
-        choices=DisqualificationReason.choices
+        max_length=50, blank=True, choices=DisqualificationReason.choices
     )
     disqualified_at = models.DateTimeField(null=True, blank=True)
 
@@ -497,17 +581,23 @@ class QuizSubmission(models.Model):
         return f"{self.student.email} - Quiz: {self.quiz.title} - Score: {self.score}/{self.total_questions}"
 
 
-
 class CourseMaterial(models.Model):
     """Course materials uploaded by instructors."""
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="materials")
+    course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, related_name="materials"
+    )
     title = models.CharField(max_length=255)
     file = models.FileField(upload_to="courses/materials/")
     file_size = models.PositiveIntegerField(help_text="File size in bytes")
-    file_type = models.CharField(max_length=50, blank=True, help_text="e.g. PDF, IMAGE, WORD, EXCEL, etc.")
+    file_type = models.CharField(
+        max_length=50, blank=True, help_text="e.g. PDF, IMAGE, WORD, EXCEL, etc."
+    )
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name="uploaded_materials")
+    uploaded_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name="uploaded_materials"
+    )
 
     class Meta:
         db_table = "course_materials"
@@ -517,5 +607,3 @@ class CourseMaterial(models.Model):
 
     def __str__(self):
         return f"{self.course.title} - {self.title}"
-
-

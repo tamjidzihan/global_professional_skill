@@ -3,11 +3,12 @@ import { StatsCard } from '../../components/dashboard/StatsCard'
 import {
     BookOpen, CheckCircle, Clock, Award, Briefcase,
     Sparkles, AlertCircle, PlayCircle, CreditCard,
-    ArrowRight, Hash, ShieldAlert
+    ArrowRight, Hash, ShieldAlert, Megaphone, FileText, Link2
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useAuthContext } from '../../../context/AuthContext'
 import { useEnrollments } from '../../../hooks/useEnrollments'
+import { useCourseAnnouncements } from '../../../hooks/useCourseAnnouncements'
 import { usePayments } from '../../../hooks/usePayments'
 import { useInstructorRequests } from '../../../hooks/useInstructorRequests'
 import CalendarCard from '../../components/dashboard/CalendarCard'
@@ -18,6 +19,7 @@ import type { QuizSubmission } from '../../../types'
 export function StudentDashboard() {
     const { user } = useAuthContext()
     const { enrollments, getMyEnrollments, loading } = useEnrollments()
+    const { announcements, fetchCourseAnnouncements, loading: announcementsLoading } = useCourseAnnouncements()
     const { payments, fetchPayments } = usePayments()
     const { requests, loading: requestsLoading, error: requestsError } = useInstructorRequests()
 
@@ -27,6 +29,7 @@ export function StudentDashboard() {
     useEffect(() => {
         getMyEnrollments()
         fetchPayments({ status: 'PENDING' })
+        fetchCourseAnnouncements()
 
         const fetchSubmissions = async () => {
             try {
@@ -41,7 +44,7 @@ export function StudentDashboard() {
             }
         };
         fetchSubmissions();
-    }, [getMyEnrollments, fetchPayments])
+    }, [getMyEnrollments, fetchPayments, fetchCourseAnnouncements])
 
     const totalEnrolled = enrollments?.length || 0
     const completed = enrollments?.filter(e => Number(e?.progress_percentage) === 100).length || 0
@@ -63,6 +66,12 @@ export function StudentDashboard() {
     const latestRequest = requests
         ?.slice()
         .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+
+    // Helper to truncate URL for display
+    const truncateUrl = (url: string) => {
+        if (!url) return '';
+        return url.replace(/(^\w+:|^)\/\//, '').replace(/\/$/, '');
+    }
 
     return (
         <div className="py-6 px-4 md:px-6 grid grid-cols-1 lg:grid-cols-4 gap-5">
@@ -221,83 +230,165 @@ export function StudentDashboard() {
                                 })}
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center py-10 text-center">
-                                <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-3">
-                                    <BookOpen className="w-5 h-5 text-gray-300" />
-                                </div>
-                                <p className="text-sm font-medium text-gray-500">No courses yet</p>
-                                <p className="text-xs text-gray-400 mt-0.5 mb-4">Start your learning journey today!</p>
-                                <Link
-                                    to="/courses"
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 text-white text-xs font-semibold rounded-lg hover:bg-violet-700 transition-colors"
-                                >
-                                    Browse Courses <ArrowRight className="w-3.5 h-3.5" />
-                                </Link>
+                            <div className="rounded-2xl border border-dashed border-gray-200 p-6 text-center text-sm text-gray-500">
+                                No courses yet. Start learning by enrolling in a course.
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* ── Recent Quiz Submissions ── */}
-                <div className={card}>
-                    <div className={cardHeader}>
-                        <div>
-                            <p className="text-sm font-semibold text-gray-900">Recent Quiz Results</p>
-                            <p className="text-xs text-gray-400 mt-0.5">Your exam performances and grades</p>
-                        </div>
-                        <div className="w-8 h-8 rounded-lg bg-violet-50 flex items-center justify-center shrink-0">
-                            <Award className="w-4 h-4 text-violet-600" />
-                        </div>
-                    </div>
-                    <div className={cardBody}>
-                        {loadingSubmissions ? (
-                            <div className="space-y-2.5">
-                                {[1, 2].map(i => (
-                                    <div key={i} className="animate-pulse h-16 bg-gray-50 rounded-lg border border-gray-100" />
-                                ))}
+                {/* ── TWO-COLUMN: Announcements & Quiz Submissions ── */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                    {/* ── Course Announcements ── */}
+                    <div className={card}>
+                        <div className={cardHeader}>
+                            <div>
+                                <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                                    <Megaphone className="w-4 h-4 text-violet-500" />
+                                    Notifications
+                                </p>
+                                <p className="text-xs text-gray-400 mt-0.5">Stay updated with course news</p>
                             </div>
-                        ) : submissions && submissions.length > 0 ? (
-                            <div className="space-y-2.5">
-                                {submissions.slice(0, 5).map(sub => {
-                                    const scorePct = sub.total_questions > 0 ? (sub.score / sub.total_questions) * 100 : 0;
-                                    const passed = scorePct >= 50;
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold bg-violet-50 text-violet-600 rounded-md border border-violet-100">
+                                {announcements?.length || 0} new
+                            </span>
+                        </div>
+                        <div className={cardBody}>
+                            {announcementsLoading ? (
+                                <div className="space-y-3">
+                                    {[1, 2].map(i => (
+                                        <div key={i} className="animate-pulse h-16 bg-gray-50 rounded-lg border border-gray-100" />
+                                    ))}
+                                </div>
+                            ) : announcements && announcements.length > 0 ? (
+                                <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+                                    {announcements.slice(0, 4).map((announcement) => (
+                                        <div key={announcement.id} className="rounded-xl border border-gray-100 bg-gray-50 p-3 hover:border-violet-200 hover:bg-violet-50/20 transition-all duration-150">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="text-sm font-semibold text-gray-900 truncate">{announcement.title}</p>
 
-                                    return (
-                                        <div
-                                            key={sub.id}
-                                            className="flex items-center justify-between gap-4 p-3 bg-gray-50 rounded-lg border border-gray-100"
-                                        >
-                                            <div className="min-w-0">
-                                                <p className="text-sm font-semibold text-gray-800 truncate">{sub.quiz_title}</p>
-                                                <p className="text-xs text-gray-400 truncate mt-0.5">{sub.course_title}</p>
-                                            </div>
+                                                    {/* ── REPLACED content with link ── */}
+                                                    {announcement.content && (
+                                                        <div className="mt-1">
+                                                            <a
+                                                                href={announcement.content}
+                                                                target={announcement.content.startsWith('/') ? undefined : '_blank'}
+                                                                rel={announcement.content.startsWith('/') ? undefined : 'noreferrer'}
+                                                                className="inline-flex items-center gap-1.5 text-md text-violet-600 hover:text-violet-700 hover:underline transition-colors truncate max-w-full"
+                                                            >
+                                                                <Link2 className="w-3 h-3 shrink-0" />
+                                                                <span className="truncate">{truncateUrl(announcement.content)}</span>
+                                                            </a>
+                                                        </div>
+                                                    )}
 
-                                            <div className="flex items-center gap-3 shrink-0">
-                                                {sub.warnings_count > 0 && (
-                                                    <span
-                                                        className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100 rounded-md"
-                                                        title={`${sub.warnings_count} window focus warnings during quiz`}
-                                                    >
-                                                        <ShieldAlert className="w-2.5 h-2.5" />
-                                                        {sub.warnings_count}
-                                                    </span>
-                                                )}
-
-                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-bold rounded-lg ${
-                                                    passed ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
-                                                }`}>
-                                                    Score: {sub.score} / {sub.total_questions}
+                                                    <p className="text-xs text-gray-600 mt-1.5">
+                                                        📚 {announcement.course_title || 'Course'}
+                                                    </p>
+                                                </div>
+                                                <span className="text-[10px] font-medium text-gray-400 whitespace-nowrap shrink-0">
+                                                    {announcement.start_date ? new Date(announcement.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Now'}
                                                 </span>
                                             </div>
                                         </div>
-                                    );
-                                })}
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-6 text-center">
+                                    <FileText className="w-8 h-8 text-gray-300 mb-2" />
+                                    <p className="text-xs font-medium text-gray-400">No announcements yet</p>
+                                    <p className="text-[10px] text-gray-300 mt-0.5">Check back for instructor updates</p>
+                                </div>
+                            )}
+                            {announcements && announcements.length > 4 && (
+                                <Link
+                                    to="/dashboard/student/announcements"
+                                    className="mt-3 text-[11px] font-semibold text-violet-600 hover:text-violet-700 flex items-center justify-center gap-1 pt-2 border-t border-gray-100"
+                                >
+                                    View all announcements <ArrowRight className="w-3 h-3" />
+                                </Link>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* ── Recent Quiz Submissions ── */}
+                    <div className={card}>
+                        <div className={cardHeader}>
+                            <div>
+                                <p className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                                    <Award className="w-4 h-4 text-emerald-500" />
+                                    Quiz Results
+                                </p>
+                                <p className="text-xs text-gray-400 mt-0.5">Your recent exam performances</p>
                             </div>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center py-6 text-center">
-                                <p className="text-xs font-medium text-gray-400">No quizzes completed yet</p>
-                            </div>
-                        )}
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold bg-emerald-50 text-emerald-600 rounded-md border border-emerald-100">
+                                {submissions?.length || 0} attempts
+                            </span>
+                        </div>
+                        <div className={cardBody}>
+                            {loadingSubmissions ? (
+                                <div className="space-y-2.5">
+                                    {[1, 2].map(i => (
+                                        <div key={i} className="animate-pulse h-14 bg-gray-50 rounded-lg border border-gray-100" />
+                                    ))}
+                                </div>
+                            ) : submissions && submissions.length > 0 ? (
+                                <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+                                    {submissions.slice(0, 4).map(sub => {
+                                        const scorePct = sub.total_questions > 0 ? (sub.score / sub.total_questions) * 100 : 0;
+                                        const passed = scorePct >= 50;
+
+                                        return (
+                                            <div
+                                                key={sub.id}
+                                                className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:border-emerald-200 hover:bg-emerald-50/10 transition-all duration-150"
+                                            >
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-semibold text-gray-800 truncate">{sub.quiz_title}</p>
+                                                    <p className="text-[10px] text-gray-400 truncate mt-0.5">{sub.course_title}</p>
+                                                </div>
+
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                    {sub.warnings_count > 0 && (
+                                                        <span
+                                                            className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-100 rounded-md"
+                                                            title={`${sub.warnings_count} window focus warnings during quiz`}
+                                                        >
+                                                            <ShieldAlert className="w-2.5 h-2.5" />
+                                                            {sub.warnings_count}
+                                                        </span>
+                                                    )}
+
+                                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold rounded-lg ${passed ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
+                                                        }`}>
+                                                        {sub.score}/{sub.total_questions}
+                                                        <span className="text-[9px] font-medium opacity-60">
+                                                            ({Math.round(scorePct)}%)
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-6 text-center">
+                                    <FileText className="w-8 h-8 text-gray-300 mb-2" />
+                                    <p className="text-xs font-medium text-gray-400">No quiz attempts yet</p>
+                                    <p className="text-[10px] text-gray-300 mt-0.5">Complete a quiz to see your results here</p>
+                                </div>
+                            )}
+                            {submissions && submissions.length > 4 && (
+                                <Link
+                                    to="/dashboard/student/quiz-results"
+                                    className="mt-3 text-[11px] font-semibold text-emerald-600 hover:text-emerald-700 flex items-center justify-center gap-1 pt-2 border-t border-gray-100"
+                                >
+                                    View all results <ArrowRight className="w-3 h-3" />
+                                </Link>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

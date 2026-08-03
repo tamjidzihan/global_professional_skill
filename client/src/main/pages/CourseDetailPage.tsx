@@ -832,6 +832,42 @@ export function CourseDetailPage() {
                     </div>
                 </div>
 
+                {/* Course Announcements */}
+                {course.announcements && course.announcements.length > 0 && (
+                    <div className="mt-10 bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+                        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-800">Course Announcements</h2>
+                                <p className="text-sm text-gray-500">Important updates from the instructor for enrolled students.</p>
+                            </div>
+                            {user && (user.role === 'ADMIN' || (user.role === 'INSTRUCTOR' && user.id === course.instructor.id)) && (
+                                <Link
+                                    to={`/dashboard/instructor/my-courses/${course.id}/announcements`}
+                                    className="text-sm font-semibold text-[#0066CC] hover:text-[#004c99]"
+                                >
+                                    Manage Announcements
+                                </Link>
+                            )}
+                        </div>
+                        <div className="space-y-4">
+                            {course.announcements.map((announcement) => (
+                                <div key={announcement.id} className="rounded-3xl border border-gray-100 bg-gray-50 p-5">
+                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <div>
+                                            <h3 className="text-lg font-semibold text-gray-900">{announcement.title}</h3>
+                                            <p className="text-sm text-gray-500 mt-2 leading-relaxed whitespace-pre-line">{announcement.content}</p>
+                                        </div>
+                                        <div className="text-right text-xs text-gray-500">
+                                            <p>{announcement.start_date ? new Date(announcement.start_date).toLocaleDateString() : 'Immediate'}</p>
+                                            {announcement.end_date && <p>Until {new Date(announcement.end_date).toLocaleDateString()}</p>}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {/* Course Reviews */}
                 {course.status === 'PUBLISHED' && (
                     <div className="mt-12">

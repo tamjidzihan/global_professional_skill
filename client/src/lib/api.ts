@@ -171,6 +171,9 @@ export const endpoints = {
         delete: (id: string) => `/courses/courses/${id}/`,
         submit: (id: string) => `/courses/courses/${id}/submit_for_review/`,
         review: (id: string) => `/courses/courses/${id}/review/`,
+        announcements: (courseId: string) => `/courses/courses/${courseId}/announcements/`,
+        announcementDetail: (id: string) => `/courses/course-announcements/${id}/`,
+        listAnnouncements: '/courses/course-announcements/',
     },
     categories: {
         list: '/courses/categories/',
@@ -573,6 +576,37 @@ export const updateAnnouncement = (id: string, data: any): Promise<AxiosResponse
 
 export const deleteAnnouncement = (id: string): Promise<AxiosResponse<void>> =>
     api.delete<void>(endpoints.core.announcementDetail(id));
+
+export const getCourseAnnouncements = <T = ApiResponse<any[]>>(
+    params?: Record<string, any>,
+    pageUrl?: string | null,
+): Promise<AxiosResponse<T>> => {
+    if (pageUrl) {
+        return api.get<T>(pageUrl);
+    }
+    return api.get<T>(endpoints.courses.listAnnouncements, { params });
+};
+
+export const getCourseAnnouncementsByCourse = <T = ApiResponse<any[]>>(courseId: string): Promise<AxiosResponse<T>> =>
+    api.get<T>(endpoints.courses.announcements(courseId));
+
+export const getCourseAnnouncementDetail = (id: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get<ApiResponse<any>>(endpoints.courses.announcementDetail(id));
+
+export const createCourseAnnouncement = (
+    courseId: string,
+    data: any,
+): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(endpoints.courses.announcements(courseId), data);
+
+export const updateCourseAnnouncement = (
+    id: string,
+    data: any,
+): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.put<ApiResponse<any>>(endpoints.courses.announcementDetail(id), data);
+
+export const deleteCourseAnnouncement = (id: string): Promise<AxiosResponse<void>> =>
+    api.delete<void>(endpoints.courses.announcementDetail(id));
 
 
 // News Ticker API Calls

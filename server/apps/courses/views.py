@@ -12,7 +12,19 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
-from .models import Category, Course, Section, Lesson, Review, CourseStatus, Quiz, QuizQuestion, QuizSubmission, CourseMaterial
+from .models import (
+    Category,
+    Course,
+    Section,
+    Lesson,
+    Review,
+    CourseStatus,
+    Quiz,
+    QuizQuestion,
+    QuizSubmission,
+    CourseMaterial,
+    CourseAnnouncement,
+)
 from .serializers import (
     CategorySerializer,
     CourseListSerializer,
@@ -28,6 +40,7 @@ from .serializers import (
     QuizStudentQuestionSerializer,
     QuizSubmissionSerializer,
     CourseMaterialSerializer,
+    CourseAnnouncementSerializer,
 )
 from apps.accounts.permissions import IsInstructor, IsAdmin, IsInstructorOrAdmin
 from .permissions import IsCourseInstructorOrAdmin, IsEnrolledOrInstructor
@@ -57,7 +70,13 @@ class CourseViewSet(viewsets.ModelViewSet):
     """ViewSet for courses with approval workflow."""
 
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ["category", "difficulty_level", "delivery_mode", "is_free", "status"]
+    filterset_fields = [
+        "category",
+        "difficulty_level",
+        "delivery_mode",
+        "is_free",
+        "status",
+    ]
     search_fields = [
         "title",
         "description",
@@ -97,14 +116,14 @@ class CourseViewSet(viewsets.ModelViewSet):
         """
         user = self.request.user
 
-        if not user.is_authenticated or user.is_student: # type: ignore
+        if not user.is_authenticated or user.is_student:  # type: ignore
             return (
                 Course.objects.filter(status=CourseStatus.PUBLISHED)
                 .select_related("instructor", "category")
                 .prefetch_related("sections__lessons")
             )
 
-        if user.is_instructor: # type: ignore
+        if user.is_instructor:  # type: ignore
             # Allow instructors to see their own courses AND all published courses
             return (
                 Course.objects.filter(
@@ -115,7 +134,7 @@ class CourseViewSet(viewsets.ModelViewSet):
                 .distinct()
             )
 
-        if user.is_admin_user: # type: ignore
+        if user.is_admin_user:  # type: ignore
             return Course.objects.select_related(
                 "instructor", "category", "reviewed_by"
             ).prefetch_related("sections__lessons")
@@ -285,7 +304,13 @@ class MyCoursesViewSet(viewsets.ModelViewSet):
 
     permission_classes = [IsInstructor]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ["category", "difficulty_level", "delivery_mode", "is_free", "status"]
+    filterset_fields = [
+        "category",
+        "difficulty_level",
+        "delivery_mode",
+        "is_free",
+        "status",
+    ]
     search_fields = [
         "title",
         "description",
@@ -300,7 +325,7 @@ class MyCoursesViewSet(viewsets.ModelViewSet):
     ]
     ordering = ["-created_at"]
 
-    def get_queryset(self): # type: ignore
+    def get_queryset(self):  # type: ignore
         """
         This view should only return courses for the currently authenticated
         instructor.
@@ -311,7 +336,7 @@ class MyCoursesViewSet(viewsets.ModelViewSet):
             .prefetch_related("sections__lessons")
         )
 
-    def get_serializer_class(self): # type: ignore
+    def get_serializer_class(self):  # type: ignore
         """Return appropriate serializer based on action."""
         if self.action == "list":
             return CourseListSerializer
@@ -438,36 +463,41 @@ class LessonViewSet(viewsets.ModelViewSet):
             status=status.HTTP_201_CREATED,
         )
 
-
     @action(detail=True, methods=["post"], url_path="toggle-complete")
     @transaction.atomic
     def toggle_complete(self, request, *args, **kwargs):
         """Toggle lesson completion status and update student progress."""
         lesson = self.get_object()
         course = lesson.section.course
-        
+
         # Explicit check: Only course instructor or admin can update progress
         if course.instructor != request.user and not request.user.is_admin_user:
             return Response(
-                {"success": False, "message": "Only the course instructor can update class progress."},
-                status=status.HTTP_403_FORBIDDEN
+                {
+                    "success": False,
+                    "message": "Only the course instructor can update class progress.",
+                },
+                status=status.HTTP_403_FORBIDDEN,
             )
-        
+
         lesson.is_completed = not lesson.is_completed
-        lesson.save() # Trigger potential signals or model logic
-        
+        lesson.save()  # Trigger potential signals or model logic
+
         # If it's an online or hybrid course, update student progress
-        if course.delivery_mode in ['ONLINE', 'BOTH']:
+        if course.delivery_mode in ["ONLINE", "BOTH"]:
             enrollments = course.enrollments.all()
             for enrollment in enrollments:
                 enrollment.update_progress()
-                enrollment.save() # Ensure progress_percentage is saved
-                
-        return Response({
-            "success": True, 
-            "message": f"Class marked as {'completed' if lesson.is_completed else 'incomplete'}",
-            "data": LessonSerializer(lesson).data
-        })
+                enrollment.save()  # Ensure progress_percentage is saved
+
+        return Response(
+            {
+                "success": True,
+                "message": f"Class marked as {'completed' if lesson.is_completed else 'incomplete'}",
+                "data": LessonSerializer(lesson).data,
+            }
+        )
+
 
 class ReviewViewSet(viewsets.ModelViewSet):
     """ViewSet for course reviews."""
@@ -482,7 +512,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         - Allow anyone to view reviews (list, retrieve)
         - Require authentication for creating, updating, deleting reviews
         """
-        if self.action in ['list', 'retrieve']:
+        if self.action in ["list", "retrieve"]:
             return [AllowAny()]
         return [IsAuthenticated()]
 
@@ -541,7 +571,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         """Delete review."""
         instance = self.get_object()
-        
+
         # Only review owner or admin can delete
         if instance.student != request.user and not request.user.is_admin_user:
             return Response(
@@ -551,7 +581,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_403_FORBIDDEN,
             )
-            
+
         self.perform_destroy(instance)
         return Response(
             {
@@ -562,10 +592,126 @@ class ReviewViewSet(viewsets.ModelViewSet):
         )
 
 
+class CourseAnnouncementViewSet(viewsets.ModelViewSet):
+    """ViewSet for course-specific announcements."""
+
+    serializer_class = CourseAnnouncementSerializer
+    pagination_class = None
+
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            return [IsAuthenticated()]
+        if self.action == "create":
+            return [IsAuthenticated()]
+        return [IsCourseInstructorOrAdmin()]
+
+    def get_queryset(self):  # type: ignore
+        course_id = self.kwargs.get("course_pk")
+        user = self.request.user
+        now = timezone.now()
+
+        queryset = CourseAnnouncement.objects.select_related("course", "created_by")
+        if course_id:
+            queryset = queryset.filter(course_id=course_id)
+
+        if user.is_admin_user:  # type: ignore
+            return queryset
+
+        if user.is_instructor:  # type: ignore
+            return queryset.filter(course__instructor=user)
+
+        # Student access: only enrolled students see visible and active announcements
+        from apps.enrollments.models import Enrollment
+
+        enrolled_course_ids = Enrollment.objects.filter(student=user).values_list(
+            "course_id", flat=True
+        )
+
+        queryset = queryset.filter(
+            course_id__in=enrolled_course_ids, is_visible=True
+        ).filter(Q(end_date__isnull=True) | Q(end_date__gte=now))
+
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        course_id = self.kwargs.get("course_pk") or request.data.get("course")
+        if not course_id:
+            return Response(
+                {"success": False, "error": {"message": "Course ID is required."}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return Response(
+                {"success": False, "error": {"message": "Course not found."}},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if not request.user.is_admin_user and course.instructor != request.user:  # type: ignore
+            return Response(
+                {
+                    "success": False,
+                    "error": {
+                        "message": "You do not have permission to manage announcements for this course."
+                    },
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(course=course, created_by=request.user)
+
+        return Response(
+            {
+                "success": True,
+                "message": "Course announcement created successfully.",
+                "data": serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response({"success": True, "data": serializer.data})
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset.order_by("-created_at"), many=True)
+        return Response({"success": True, "data": serializer.data})
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {
+                "success": True,
+                "message": "Course announcement updated successfully.",
+                "data": serializer.data,
+            }
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(
+            {"success": True, "message": "Course announcement deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
+
 from rest_framework.views import APIView
+
 
 class QuizLookupView(APIView):
     """View to lookup basic quiz details by quiz ID alone (for student redirection/init)."""
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request, pk=None):
@@ -574,33 +720,42 @@ class QuizLookupView(APIView):
         except Quiz.DoesNotExist:
             return Response(
                 {"success": False, "error": {"message": "Quiz not found."}},
-                status=status.HTTP_404_NOT_FOUND
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         # Verify enrollment for student
         user = request.user
         if not user.is_admin_user and not user.is_instructor:
             from apps.enrollments.models import Enrollment
+
             if not Enrollment.objects.filter(student=user, course=quiz.course).exists():
                 return Response(
-                    {"success": False, "error": {"message": "You must be enrolled in this course to access the quiz."}},
-                    status=status.HTTP_403_FORBIDDEN
+                    {
+                        "success": False,
+                        "error": {
+                            "message": "You must be enrolled in this course to access the quiz."
+                        },
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
                 )
 
-        return Response({
-            "success": True,
-            "data": {
-                "id": str(quiz.id),
-                "course": str(quiz.course.id),
-                "title": quiz.title,
-                "duration_minutes": quiz.duration_minutes,
-                "question_count": quiz.questions.count(), # type: ignore
+        return Response(
+            {
+                "success": True,
+                "data": {
+                    "id": str(quiz.id),
+                    "course": str(quiz.course.id),
+                    "title": quiz.title,
+                    "duration_minutes": quiz.duration_minutes,
+                    "question_count": quiz.questions.count(),  # type: ignore
+                },
             }
-        })
+        )
 
 
 class LogWarningView(APIView):
     """View to log anti-cheat warnings and handle auto-disqualification."""
+
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
@@ -609,7 +764,7 @@ class LogWarningView(APIView):
         if not submission_id:
             return Response(
                 {"success": False, "error": {"message": "submission_id is required."}},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
@@ -617,14 +772,18 @@ class LogWarningView(APIView):
         except QuizSubmission.DoesNotExist:
             return Response(
                 {"success": False, "error": {"message": "Quiz submission not found."}},
-                status=status.HTTP_404_NOT_FOUND
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         # Check if student is authorized for this submission
-        if submission.student != request.user and not request.user.is_admin_user and not request.user.is_instructor:
+        if (
+            submission.student != request.user
+            and not request.user.is_admin_user
+            and not request.user.is_instructor
+        ):
             return Response(
                 {"success": False, "error": {"message": "Unauthorized."}},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         if submission.completed_at is not None or submission.is_disqualified:
@@ -632,21 +791,27 @@ class LogWarningView(APIView):
                 {
                     "success": True,
                     "data": {
-                        "status": "disqualified" if submission.is_disqualified else "completed",
+                        "status": (
+                            "disqualified"
+                            if submission.is_disqualified
+                            else "completed"
+                        ),
                         "warnings_count": submission.warnings_count,
                         "warnings_remaining": 0,
-                        "message": "Submission is already closed or student is disqualified."
-                    }
+                        "message": "Submission is already closed or student is disqualified.",
+                    },
                 }
             )
 
         # Increment warning count
         submission.warnings_count += 1
-        
+
         # Check threshold
         if submission.warnings_count >= 3:
             submission.is_disqualified = True
-            submission.disqualification_reason = QuizSubmission.DisqualificationReason.EXCESSIVE_WARNINGS
+            submission.disqualification_reason = (
+                QuizSubmission.DisqualificationReason.EXCESSIVE_WARNINGS
+            )
             submission.disqualified_at = timezone.now()
             submission.score = 0
             submission.completed_at = timezone.now()
@@ -654,32 +819,38 @@ class LogWarningView(APIView):
 
             # Notify instructor
             from .notifications import send_disqualification_email
+
             send_disqualification_email(submission)
 
-            return Response({
-                "success": True,
-                "data": {
-                    "status": "disqualified",
-                    "warnings_count": submission.warnings_count,
-                    "warnings_remaining": 0,
-                    "message": "Disqualified due to excessive proctoring violations."
+            return Response(
+                {
+                    "success": True,
+                    "data": {
+                        "status": "disqualified",
+                        "warnings_count": submission.warnings_count,
+                        "warnings_remaining": 0,
+                        "message": "Disqualified due to excessive proctoring violations.",
+                    },
                 }
-            })
+            )
         else:
             submission.save()
-            return Response({
-                "success": True,
-                "data": {
-                    "status": "warning_logged",
-                    "warnings_count": submission.warnings_count,
-                    "warnings_remaining": 3 - submission.warnings_count,
-                    "message": f"Warning logged. {3 - submission.warnings_count} warning(s) remaining."
+            return Response(
+                {
+                    "success": True,
+                    "data": {
+                        "status": "warning_logged",
+                        "warnings_count": submission.warnings_count,
+                        "warnings_remaining": 3 - submission.warnings_count,
+                        "message": f"Warning logged. {3 - submission.warnings_count} warning(s) remaining.",
+                    },
                 }
-            })
+            )
 
 
 class UndisqualifyStudentView(APIView):
     """View for instructors/admins to un-disqualify a student's quiz submission."""
+
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
@@ -689,7 +860,7 @@ class UndisqualifyStudentView(APIView):
         except QuizSubmission.DoesNotExist:
             return Response(
                 {"success": False, "error": {"message": "Submission not found."}},
-                status=status.HTTP_404_NOT_FOUND
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         # Check if the requesting user is the instructor of this course or an admin
@@ -699,8 +870,13 @@ class UndisqualifyStudentView(APIView):
 
         if not (is_instructor or is_admin):
             return Response(
-                {"success": False, "error": {"message": "Only the course instructor or an admin can un-disqualify a student."}},
-                status=status.HTTP_403_FORBIDDEN
+                {
+                    "success": False,
+                    "error": {
+                        "message": "Only the course instructor or an admin can un-disqualify a student."
+                    },
+                },
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         # Reset proctoring/disqualification fields
@@ -712,23 +888,26 @@ class UndisqualifyStudentView(APIView):
         submission.score = 0
         submission.save()
 
-        return Response({
-            "success": True,
-            "message": "Student has been successfully un-disqualified and warnings reset.",
-            "data": QuizSubmissionSerializer(submission).data
-        })
+        return Response(
+            {
+                "success": True,
+                "message": "Student has been successfully un-disqualified and warnings reset.",
+                "data": QuizSubmissionSerializer(submission).data,
+            }
+        )
 
 
 class DeleteQuizSubmissionView(APIView):
     """Allow an instructor or admin to permanently delete a quiz submission."""
+
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
     def delete(self, request, pk=None):
         try:
-            submission = QuizSubmission.objects.select_related(
-                "quiz__course"
-            ).get(pk=pk)
+            submission = QuizSubmission.objects.select_related("quiz__course").get(
+                pk=pk
+            )
         except QuizSubmission.DoesNotExist:
             return Response(
                 {"success": False, "error": {"message": "Submission not found."}},
@@ -759,6 +938,7 @@ class DeleteQuizSubmissionView(APIView):
 
 class QuizViewSet(viewsets.ModelViewSet):
     """ViewSet for Course Quizzes."""
+
     serializer_class = QuizSerializer
     pagination_class = None
 
@@ -767,13 +947,13 @@ class QuizViewSet(viewsets.ModelViewSet):
             return [IsAuthenticated()]
         return [IsCourseInstructorOrAdmin()]
 
-    def get_queryset(self): # type: ignore
+    def get_queryset(self):  # type: ignore
         course_id = self.kwargs.get("course_pk")
         user = self.request.user
         if not user.is_authenticated:
             return Quiz.objects.none()
 
-        if user.is_instructor or user.is_admin_user: # type: ignore
+        if user.is_instructor or user.is_admin_user:  # type: ignore
             return Quiz.objects.filter(course_id=course_id)
 
         # For students: they can retrieve, start, or submit a specific quiz detail, but list is empty/hidden
@@ -794,14 +974,18 @@ class QuizViewSet(viewsets.ModelViewSet):
     @transaction.atomic
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=kwargs.get('partial', False))
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=kwargs.get("partial", False)
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({
-            "success": True,
-            "message": "Quiz updated successfully.",
-            "data": serializer.data
-        })
+        return Response(
+            {
+                "success": True,
+                "message": "Quiz updated successfully.",
+                "data": serializer.data,
+            }
+        )
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -828,24 +1012,28 @@ class QuizViewSet(viewsets.ModelViewSet):
         # 1. Verify enrollment if student
         if not user.is_admin_user and not user.is_instructor:
             from apps.enrollments.models import Enrollment
+
             if not Enrollment.objects.filter(student=user, course=quiz.course).exists():
                 return Response(
-                    {"success": False, "error": {"message": "You must be enrolled in this course to take the quiz."}},
-                    status=status.HTTP_403_FORBIDDEN
+                    {
+                        "success": False,
+                        "error": {
+                            "message": "You must be enrolled in this course to take the quiz."
+                        },
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
                 )
 
         # 2. Verify PIN
         if quiz.pin_code != pin_code:
             return Response(
                 {"success": False, "error": {"message": "Invalid PIN code."}},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # 3. Check for existing submission
         submission, created = QuizSubmission.objects.get_or_create(
-            quiz=quiz,
-            student=user,
-            defaults={"started_at": timezone.now()}
+            quiz=quiz, student=user, defaults={"started_at": timezone.now()}
         )
 
         is_preview = user.is_admin_user or user.is_instructor
@@ -856,36 +1044,45 @@ class QuizViewSet(viewsets.ModelViewSet):
                     return Response(
                         {
                             "success": False,
-                            "error": {"message": "You have been disqualified from this quiz."},
-                            "data": QuizSubmissionSerializer(submission).data
+                            "error": {
+                                "message": "You have been disqualified from this quiz."
+                            },
+                            "data": QuizSubmissionSerializer(submission).data,
                         },
-                        status=status.HTTP_400_BAD_REQUEST
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
                 if submission.completed_at is not None:
                     return Response(
                         {
                             "success": False,
-                            "error": {"message": "You have already completed this quiz."},
-                            "data": QuizSubmissionSerializer(submission).data
+                            "error": {
+                                "message": "You have already completed this quiz."
+                            },
+                            "data": QuizSubmissionSerializer(submission).data,
                         },
-                        status=status.HTTP_400_BAD_REQUEST
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
-                
+
                 # Check time limit
                 elapsed_time = timezone.now() - submission.started_at
                 allowed_time = elapsed_time.total_seconds() / 60.0
                 if allowed_time >= quiz.duration_minutes:
-                    submission.completed_at = submission.started_at + timezone.timedelta(minutes=quiz.duration_minutes)
+                    submission.completed_at = (
+                        submission.started_at
+                        + timezone.timedelta(minutes=quiz.duration_minutes)
+                    )
                     submission.score = 0
                     submission.total_questions = quiz.questions.count()
                     submission.save()
                     return Response(
                         {
                             "success": False,
-                            "error": {"message": "Time has expired for this quiz attempt."},
-                            "data": QuizSubmissionSerializer(submission).data
+                            "error": {
+                                "message": "Time has expired for this quiz attempt."
+                            },
+                            "data": QuizSubmissionSerializer(submission).data,
                         },
-                        status=status.HTTP_400_BAD_REQUEST
+                        status=status.HTTP_400_BAD_REQUEST,
                     )
             else:
                 if submission.completed_at is not None:
@@ -902,6 +1099,7 @@ class QuizViewSet(viewsets.ModelViewSet):
             # Generate deterministic shuffle if not set
             if not submission.shuffled_question_ids:
                 import random
+
                 seed = f"{user.id}_{quiz.id}"
                 r = random.Random(seed)
                 shuffled_ids = q_ids.copy()
@@ -926,22 +1124,28 @@ class QuizViewSet(viewsets.ModelViewSet):
             ordered_questions = list(questions)
 
         serializer = QuizStudentQuestionSerializer(ordered_questions, many=True)
-        
+
         # Calculate remaining seconds
         elapsed_seconds = (timezone.now() - submission.started_at).total_seconds()
         remaining_seconds = max(0, int((quiz.duration_minutes * 60) - elapsed_seconds))
 
-        return Response({
-            "success": True,
-            "data": {
-                "quiz": QuizSerializer(quiz).data,
-                "questions": serializer.data,
-                "remaining_seconds": remaining_seconds,
-                "submission_id": submission.id,
-                "warnings_count": submission.warnings_count if not is_preview else 0,
-                "is_disqualified": submission.is_disqualified if not is_preview else False
+        return Response(
+            {
+                "success": True,
+                "data": {
+                    "quiz": QuizSerializer(quiz).data,
+                    "questions": serializer.data,
+                    "remaining_seconds": remaining_seconds,
+                    "submission_id": submission.id,
+                    "warnings_count": (
+                        submission.warnings_count if not is_preview else 0
+                    ),
+                    "is_disqualified": (
+                        submission.is_disqualified if not is_preview else False
+                    ),
+                },
             }
-        })
+        )
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     @transaction.atomic
@@ -955,18 +1159,23 @@ class QuizViewSet(viewsets.ModelViewSet):
             submission = QuizSubmission.objects.get(quiz=quiz, student=user)
         except QuizSubmission.DoesNotExist:
             return Response(
-                {"success": False, "error": {"message": "Quiz attempt has not been started."}},
-                status=status.HTTP_400_BAD_REQUEST
+                {
+                    "success": False,
+                    "error": {"message": "Quiz attempt has not been started."},
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         if submission.is_disqualified:
             return Response(
                 {
                     "success": False,
-                    "error": {"message": "You are disqualified and cannot submit this quiz."},
-                    "data": QuizSubmissionSerializer(submission).data
+                    "error": {
+                        "message": "You are disqualified and cannot submit this quiz."
+                    },
+                    "data": QuizSubmissionSerializer(submission).data,
                 },
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         if submission.completed_at is not None:
@@ -974,16 +1183,16 @@ class QuizViewSet(viewsets.ModelViewSet):
                 {
                     "success": False,
                     "error": {"message": "You have already submitted this quiz."},
-                    "data": QuizSubmissionSerializer(submission).data
+                    "data": QuizSubmissionSerializer(submission).data,
                 },
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         # Calculate score
         score = 0
         questions = {q.id: q for q in quiz.questions.all()}
         shuffled_ids = submission.shuffled_question_ids or []
-        
+
         for ans in answers:
             q_id_or_index = ans.get("question_id")
             q_index = ans.get("question_index")
@@ -1015,7 +1224,12 @@ class QuizViewSet(viewsets.ModelViewSet):
 
             try:
                 import uuid
-                q_uuid = uuid.UUID(str(actual_q_uuid)) if isinstance(actual_q_uuid, str) else actual_q_uuid
+
+                q_uuid = (
+                    uuid.UUID(str(actual_q_uuid))
+                    if isinstance(actual_q_uuid, str)
+                    else actual_q_uuid
+                )
             except (ValueError, TypeError):
                 continue
 
@@ -1032,29 +1246,29 @@ class QuizViewSet(viewsets.ModelViewSet):
 
         # Prepare and send response with required fields
         data = QuizSubmissionSerializer(submission).data
-        data.update({
-            "score": submission.score,
-            "correct_count": submission.score,
-            "total_questions": submission.total_questions,
-            "warnings_count": submission.warnings_count,
-            "is_disqualified": submission.is_disqualified
-        })
+        data.update(
+            {
+                "score": submission.score,
+                "correct_count": submission.score,
+                "total_questions": submission.total_questions,
+                "warnings_count": submission.warnings_count,
+                "is_disqualified": submission.is_disqualified,
+            }
+        )
 
-        return Response({
-            "success": True,
-            "message": "Quiz submitted successfully.",
-            "data": data
-        })
-
+        return Response(
+            {"success": True, "message": "Quiz submitted successfully.", "data": data}
+        )
 
 
 class QuizQuestionViewSet(viewsets.ModelViewSet):
     """ViewSet for Quiz Questions."""
+
     serializer_class = QuizQuestionSerializer
     permission_classes = [IsCourseInstructorOrAdmin]
     pagination_class = None
 
-    def get_queryset(self): # type: ignore
+    def get_queryset(self):  # type: ignore
         quiz_id = self.kwargs.get("quiz_pk")
         return QuizQuestion.objects.filter(quiz_id=quiz_id)
 
@@ -1071,14 +1285,18 @@ class QuizQuestionViewSet(viewsets.ModelViewSet):
     @transaction.atomic
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=kwargs.get('partial', False))
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=kwargs.get("partial", False)
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response({
-            "success": True,
-            "message": "Question updated successfully.",
-            "data": serializer.data
-        })
+        return Response(
+            {
+                "success": True,
+                "message": "Question updated successfully.",
+                "data": serializer.data,
+            }
+        )
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -1098,12 +1316,15 @@ class QuizQuestionViewSet(viewsets.ModelViewSet):
 
 class MyQuizSubmissionsViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for students to fetch their own quiz submissions."""
+
     serializer_class = QuizSubmissionSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = None
 
-    def get_queryset(self): # type: ignore
-        return QuizSubmission.objects.filter(student=self.request.user).select_related("quiz", "quiz__course")
+    def get_queryset(self):  # type: ignore
+        return QuizSubmission.objects.filter(student=self.request.user).select_related(
+            "quiz", "quiz__course"
+        )
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -1119,32 +1340,42 @@ class MyQuizSubmissionsViewSet(viewsets.ReadOnlyModelViewSet):
 from rest_framework.exceptions import PermissionDenied
 import os
 
+
 class CourseMaterialViewSet(viewsets.ModelViewSet):
     """ViewSet for Course Materials."""
+
     serializer_class = CourseMaterialSerializer
     pagination_class = None
 
     def get_permissions(self):
-        if self.action in ["create", "update", "partial_update", "destroy", "bulk_delete"]:
+        if self.action in [
+            "create",
+            "update",
+            "partial_update",
+            "destroy",
+            "bulk_delete",
+        ]:
             return [IsAuthenticated(), IsCourseInstructorOrAdmin()]
         return [IsAuthenticated()]
 
-    def get_queryset(self): # type: ignore
+    def get_queryset(self):  # type: ignore
         course_id = self.kwargs.get("course_pk")
         user = self.request.user
-        
+
         from apps.enrollments.models import Enrollment
         from django.shortcuts import get_object_or_404
-        
+
         course = get_object_or_404(Course, id=course_id)
-        
+
         is_enrolled = Enrollment.objects.filter(student=user, course=course).exists()
         is_instructor = course.instructor == user
-        is_admin = user.role == 'ADMIN' # type: ignore
-        
+        is_admin = user.role == "ADMIN"  # type: ignore
+
         if not (is_enrolled or is_instructor or is_admin):
-            raise PermissionDenied("You must be enrolled in this course to access materials.")
-            
+            raise PermissionDenied(
+                "You must be enrolled in this course to access materials."
+            )
+
         return CourseMaterial.objects.filter(course=course)
 
     def list(self, request, *args, **kwargs):
@@ -1161,42 +1392,45 @@ class CourseMaterialViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         course_id = self.kwargs.get("course_pk")
         from django.shortcuts import get_object_or_404
+
         course = get_object_or_404(Course, id=course_id)
-        
+
         # Verify permissions
         if course.instructor != request.user and not request.user.is_admin_user:
-            raise PermissionDenied("You do not have permission to upload materials to this course.")
-            
+            raise PermissionDenied(
+                "You do not have permission to upload materials to this course."
+            )
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         # Calculate size & type
-        file_obj = request.data.get('file')
+        file_obj = request.data.get("file")
         file_size = file_obj.size
         ext = os.path.splitext(file_obj.name)[1].lower()
-        
-        if ext in ['.pdf']:
-            file_type = 'PDF'
-        elif ext in ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp']:
-            file_type = 'IMAGE'
-        elif ext in ['.doc', '.docx', '.odt']:
-            file_type = 'WORD'
-        elif ext in ['.xls', '.xlsx', '.ods']:
-            file_type = 'EXCEL'
-        elif ext in ['.ppt', '.pptx']:
-            file_type = 'POWERPOINT'
-        elif ext in ['.txt']:
-            file_type = 'TEXT'
-        elif ext in ['.zip', '.rar']:
-            file_type = 'ARCHIVE'
+
+        if ext in [".pdf"]:
+            file_type = "PDF"
+        elif ext in [".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp"]:
+            file_type = "IMAGE"
+        elif ext in [".doc", ".docx", ".odt"]:
+            file_type = "WORD"
+        elif ext in [".xls", ".xlsx", ".ods"]:
+            file_type = "EXCEL"
+        elif ext in [".ppt", ".pptx"]:
+            file_type = "POWERPOINT"
+        elif ext in [".txt"]:
+            file_type = "TEXT"
+        elif ext in [".zip", ".rar"]:
+            file_type = "ARCHIVE"
         else:
-            file_type = 'OTHER'
+            file_type = "OTHER"
 
         serializer.save(
             course=course,
             uploaded_by=request.user,
             file_size=file_size,
-            file_type=file_type
+            file_type=file_type,
         )
         return Response(
             {
@@ -1210,45 +1444,49 @@ class CourseMaterialViewSet(viewsets.ModelViewSet):
     @transaction.atomic
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=kwargs.get('partial', False))
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=kwargs.get("partial", False)
+        )
         serializer.is_valid(raise_exception=True)
-        
+
         # Calculate size & type if file changed
-        file_obj = request.data.get('file')
+        file_obj = request.data.get("file")
         if file_obj:
             file_size = file_obj.size
             ext = os.path.splitext(file_obj.name)[1].lower()
-            
-            if ext in ['.pdf']:
-                file_type = 'PDF'
-            elif ext in ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp']:
-                file_type = 'IMAGE'
-            elif ext in ['.doc', '.docx', '.odt']:
-                file_type = 'WORD'
-            elif ext in ['.xls', '.xlsx', '.ods']:
-                file_type = 'EXCEL'
-            elif ext in ['.ppt', '.pptx']:
-                file_type = 'POWERPOINT'
-            elif ext in ['.txt']:
-                file_type = 'TEXT'
-            elif ext in ['.zip', '.rar']:
-                file_type = 'ARCHIVE'
+
+            if ext in [".pdf"]:
+                file_type = "PDF"
+            elif ext in [".jpg", ".jpeg", ".png", ".gif", ".svg", ".webp"]:
+                file_type = "IMAGE"
+            elif ext in [".doc", ".docx", ".odt"]:
+                file_type = "WORD"
+            elif ext in [".xls", ".xlsx", ".ods"]:
+                file_type = "EXCEL"
+            elif ext in [".ppt", ".pptx"]:
+                file_type = "POWERPOINT"
+            elif ext in [".txt"]:
+                file_type = "TEXT"
+            elif ext in [".zip", ".rar"]:
+                file_type = "ARCHIVE"
             else:
-                file_type = 'OTHER'
-                
+                file_type = "OTHER"
+
             # Delete old file
             if instance.file:
                 instance.file.delete(save=False)
-                
+
             serializer.save(file_size=file_size, file_type=file_type)
         else:
             serializer.save()
-            
-        return Response({
-            "success": True,
-            "message": "Material updated successfully.",
-            "data": serializer.data
-        })
+
+        return Response(
+            {
+                "success": True,
+                "message": "Material updated successfully.",
+                "data": serializer.data,
+            }
+        )
 
     def perform_destroy(self, instance):
         # Delete file from storage
@@ -1256,24 +1494,27 @@ class CourseMaterialViewSet(viewsets.ModelViewSet):
             instance.file.delete(save=False)
         instance.delete()
 
-    @action(detail=False, methods=['post'], url_path='bulk-delete')
+    @action(detail=False, methods=["post"], url_path="bulk-delete")
     @transaction.atomic
     def bulk_delete(self, request, *args, **kwargs):
         course_id = self.kwargs.get("course_pk")
         from django.shortcuts import get_object_or_404
+
         course = get_object_or_404(Course, id=course_id)
-        
+
         # Manually verify permissions
         if course.instructor != request.user and not request.user.is_admin_user:
-            raise PermissionDenied("You do not have permission to delete materials for this course.")
-            
+            raise PermissionDenied(
+                "You do not have permission to delete materials for this course."
+            )
+
         material_ids = request.data.get("ids", [])
         if not material_ids:
             return Response(
                 {"success": False, "message": "No material IDs provided."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
-            
+
         materials = CourseMaterial.objects.filter(course=course, id__in=material_ids)
         deleted_count = 0
         for mat in materials:
@@ -1281,9 +1522,10 @@ class CourseMaterialViewSet(viewsets.ModelViewSet):
                 mat.file.delete(save=False)
             mat.delete()
             deleted_count += 1
-            
-        return Response({
-            "success": True,
-            "message": f"Successfully deleted {deleted_count} materials."
-        })
 
+        return Response(
+            {
+                "success": True,
+                "message": f"Successfully deleted {deleted_count} materials.",
+            }
+        )

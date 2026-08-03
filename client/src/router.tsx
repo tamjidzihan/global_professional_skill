@@ -56,6 +56,7 @@ import QuizListPage from "./main/pages/dashboard/instructor/QuizListPage";
 import QuizQuestionsPage from "./main/pages/dashboard/instructor/QuizQuestionsPage";
 import TakeQuizPage from "./main/pages/TakeQuizPage";
 import CourseMaterialsPage from "./main/pages/dashboard/instructor/CourseMaterialsPage";
+import CourseAnnouncementsPage from "./main/pages/dashboard/instructor/CourseAnnouncementsPage";
 import StudentMaterialsPage from "./main/pages/dashboard/student/StudentMaterialsPage";
 
 export const router = createBrowserRouter([
@@ -222,6 +223,14 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
                                 <CourseMaterialsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/my-courses/:courseId/announcements',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR', 'ADMIN']}>
+                                <CourseAnnouncementsPage />
                             </ProtectedRoute>
                         )
                     },

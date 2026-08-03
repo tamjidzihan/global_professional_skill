@@ -189,6 +189,7 @@ export interface CourseDetail {
     venue: string;
     is_admission_open: boolean;
     is_full: boolean;
+    announcements?: CourseAnnouncement[];
     created_at: string;
     updated_at: string;
     published_at: string | null;
@@ -462,6 +463,29 @@ export interface JobCreateUpdateData {
     salary_range?: string;
     closing_date?: string | null;
     is_active: boolean;
+}
+
+export interface CourseAnnouncement {
+    id: string;
+    course: string;
+    title: string;
+    course_title?: string;
+    content: string;
+    is_visible: boolean;
+    start_date: string | null;
+    end_date: string | null;
+    created_at: string;
+    updated_at: string;
+    created_by: string;
+    created_by_detail?: User;
+}
+
+export interface CourseAnnouncementCreateUpdateData {
+    title: string;
+    content: string;
+    is_visible: boolean;
+    start_date: string | null;
+    end_date: string | null;
 }
 
 export interface Announcement {

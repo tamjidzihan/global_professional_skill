@@ -23,6 +23,7 @@ import {
     WifiOff,
     Globe,
     FileText,
+    Megaphone,
 } from 'lucide-react'
 import { useAuth } from '../../../../hooks/useAuth'
 import { useCourses } from '../../../../hooks/useCourses'
@@ -368,7 +369,7 @@ export function InstructorCourseDetailPage() {
                 </div>
 
                 {/* ── Quick action cards ── */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                     <button
                         onClick={handleManageCurriculum}
                         className={`group flex items-center gap-4 px-5 py-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-violet-200 hover:shadow-md transition-all duration-150 text-left cursor-pointer ${course.status === 'PENDING' ? 'opacity-60 cursor-not-allowed' : ''}`}
@@ -416,6 +417,21 @@ export function InstructorCourseDetailPage() {
                         </div>
                         <div className="w-6 h-6 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:bg-blue-50 group-hover:border-blue-200 transition-colors">
                             <ChevronDown className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500 -rotate-90 transition-colors" />
+                        </div>
+                    </button>
+                    <button
+                        onClick={() => navigate(`/dashboard/instructor/my-courses/${id}/announcements`)}
+                        className="group flex items-center gap-4 px-5 py-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-violet-200 hover:shadow-md transition-all duration-150 text-left cursor-pointer"
+                    >
+                        <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center shrink-0 group-hover:bg-violet-100 transition-colors">
+                            <Megaphone className="w-5 h-5 text-violet-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900">Manage Announcements</p>
+                            <p className="text-xs text-gray-400 mt-0.5">Post course announcements to enrolled students</p>
+                        </div>
+                        <div className="w-6 h-6 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:bg-violet-50 group-hover:border-violet-200 transition-colors">
+                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 group-hover:text-violet-500 -rotate-90 transition-colors" />
                         </div>
                     </button>
                 </div>
