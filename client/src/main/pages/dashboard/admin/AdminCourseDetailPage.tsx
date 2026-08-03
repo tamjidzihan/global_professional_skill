@@ -6,6 +6,7 @@ import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { TbCurrencyTaka } from "react-icons/tb";
 import {
     ArrowLeft,
+    Bell,
     CheckCircle,
     XCircle,
     Clock,
@@ -733,6 +734,37 @@ const AdminCourseDetailPage = () => {
                                         <p className="text-xs text-gray-700">{new Date(selectedCourse.published_at).toLocaleDateString()}</p>
                                     </div>
                                 )}
+                            </div>
+                        </div>
+
+                        {/* Course Announcements */}
+                        <div className={card}>
+                            <div className={cardHeader}>
+                                <div>
+                                    <p className={sectionTitle}>Course Announcements</p>
+                                    <p className={sectionSub}>Create and manage announcements for this course.</p>
+                                </div>
+                                <div className={iconBox('bg-violet-50')}>
+                                    <Bell className="w-4 h-4 text-violet-600" />
+                                </div>
+                            </div>
+                            <div className={cardBody}>
+                                <div className="grid grid-cols-2 gap-3 mb-4">
+                                    <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                                        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">Announcements</p>
+                                        <p className="text-2xl font-bold text-gray-900 mt-2">{selectedCourse.announcements?.length || 0}</p>
+                                    </div>
+                                    <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4">
+                                        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">Visible Now</p>
+                                        <p className="text-2xl font-bold text-gray-900 mt-2">{selectedCourse.announcements?.filter((ann: any) => ann.is_visible).length || 0}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => navigate(`/dashboard/admin/course-announcements?courseId=${selectedCourse.id}`)}
+                                    className="w-full flex items-center justify-center gap-2 p-2.5 bg-violet-50 text-violet-700 hover:bg-violet-100 rounded-lg transition-colors font-semibold text-xs cursor-pointer"
+                                >
+                                    <MessageSquare className="w-4 h-4" /> Manage Course Announcements
+                                </button>
                             </div>
                         </div>
 

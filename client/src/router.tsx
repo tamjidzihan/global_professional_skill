@@ -37,6 +37,7 @@ import { CategoryManagementPage } from "./main/pages/dashboard/admin/CategoryMan
 import PaymentManagementPage from "./main/pages/dashboard/admin/PaymentManagementPage";
 import SiteSettingsPage from "./main/pages/dashboard/admin/SiteSettingsPage";
 import AdminCourseDetailPage from "./main/pages/dashboard/admin/AdminCourseDetailPage";
+import AdminCourseAnnouncementsPage from "./main/pages/dashboard/admin/AdminCourseAnnouncementsPage";
 import JobManagementPage from "./main/pages/dashboard/admin/JobManagementPage";
 import JobApplicationsPage from "./main/pages/dashboard/admin/JobApplicationsPage";
 import CheckoutPage from "./main/pages/CheckoutPage";
@@ -328,6 +329,14 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['ADMIN']}>
                                 <PaymentManagementPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/course-announcements',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <AdminCourseAnnouncementsPage />
                             </ProtectedRoute>
                         )
                     },

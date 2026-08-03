@@ -262,7 +262,7 @@ export function StudentDashboard() {
                                     ))}
                                 </div>
                             ) : announcements && announcements.length > 0 ? (
-                                <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+                                <div className="space-y-3 max-h-70 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
                                     {announcements.slice(0, 4).map((announcement) => (
                                         <div key={announcement.id} className="rounded-xl border border-gray-100 bg-gray-50 p-3 hover:border-violet-200 hover:bg-violet-50/20 transition-all duration-150">
                                             <div className="flex items-start justify-between gap-2">
@@ -335,7 +335,7 @@ export function StudentDashboard() {
                                     ))}
                                 </div>
                             ) : submissions && submissions.length > 0 ? (
-                                <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+                                <div className="space-y-2.5 max-h-70 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
                                     {submissions.slice(0, 4).map(sub => {
                                         const scorePct = sub.total_questions > 0 ? (sub.score / sub.total_questions) * 100 : 0;
                                         const passed = scorePct >= 50;

@@ -134,6 +134,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
             children: [
                 { name: 'Course Catalog', path: '/dashboard/admin/courses', icon: BookOpen },
                 { name: 'Category Management', path: '/dashboard/admin/categories', icon: Tag },
+                { name: 'Course Announcements', path: '/dashboard/admin/course-announcements', icon: Bell },
             ],
         },
 
