@@ -266,21 +266,21 @@ const AdminCourseAnnouncementsPage: React.FC = () => {
 
             {/* Header */}
             <div className="mb-8">
+                {courseIdQuery && (
+                    <Link
+                        to={`/dashboard/admin/courses/${courseIdQuery}`}
+                        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-6 transition-colors cursor-pointer"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        Return to course details
+                    </Link>
+                )}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Course Announcements</h1>
                         <p className="text-sm text-gray-500 mt-1">
                             Manage announcements for enrolled students across all courses
                         </p>
-                        {courseIdQuery && (
-                            <Link
-                                to={`/dashboard/admin/courses/${courseIdQuery}`}
-                                className="inline-flex items-center gap-1.5 text-sm text-violet-600 hover:text-violet-700 hover:underline mt-2 transition-colors cursor-pointer"
-                            >
-                                <ArrowLeft className="w-4 h-4" />
-                                Return to course details
-                            </Link>
-                        )}
                     </div>
                     <button
                         onClick={() => openModal()}
