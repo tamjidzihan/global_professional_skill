@@ -541,6 +541,8 @@ export interface Quiz {
     title: string;
     pin_code: string;
     duration_minutes: number;
+    expires_at: string | null;
+    is_expired: boolean;
     question_count: number;
     created_at: string;
     updated_at: string;
@@ -562,6 +564,7 @@ export interface QuizSubmission {
     id: string;
     quiz: string;
     quiz_title: string;
+    course: string;
     course_title: string;
     student: string;
     student_name: string;
@@ -574,6 +577,9 @@ export interface QuizSubmission {
     disqualified_at: string | null;
     started_at: string;
     completed_at: string | null;
+    shuffled_question_ids: string[];
+    student_answers: Array<{ question_id: string; selected_option: string }>;
+    questions?: QuizQuestion[];  // Optional, only included in detail view
 }
 
 export interface CourseMaterial {

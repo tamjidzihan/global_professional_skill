@@ -665,6 +665,7 @@ class QuizSerializer(serializers.ModelSerializer):
     """Serializer for Quiz metadata."""
 
     question_count = serializers.SerializerMethodField()
+    is_expired = serializers.SerializerMethodField()
 
     class Meta:
         model = Quiz
@@ -674,6 +675,8 @@ class QuizSerializer(serializers.ModelSerializer):
             "title",
             "pin_code",
             "duration_minutes",
+            "expires_at",
+            "is_expired",
             "question_count",
             "created_at",
             "updated_at",
@@ -683,6 +686,9 @@ class QuizSerializer(serializers.ModelSerializer):
     def get_question_count(self, obj):
         return obj.questions.count()
 
+    def get_is_expired(self, obj):
+        return obj.is_expired()
+
 
 class QuizSubmissionSerializer(serializers.ModelSerializer):
     """Serializer for quiz submissions/attempts."""
@@ -691,6 +697,8 @@ class QuizSubmissionSerializer(serializers.ModelSerializer):
     student_email = serializers.EmailField(source="student.email", read_only=True)
     quiz_title = serializers.CharField(source="quiz.title", read_only=True)
     course_title = serializers.CharField(source="quiz.course.title", read_only=True)
+    course = serializers.CharField(source="quiz.course.id", read_only=True)
+    questions = serializers.SerializerMethodField()
 
     class Meta:
         model = QuizSubmission
@@ -698,6 +706,7 @@ class QuizSubmissionSerializer(serializers.ModelSerializer):
             "id",
             "quiz",
             "quiz_title",
+            "course",
             "course_title",
             "student",
             "student_name",
@@ -711,6 +720,8 @@ class QuizSubmissionSerializer(serializers.ModelSerializer):
             "disqualification_reason",
             "disqualified_at",
             "shuffled_question_ids",
+            "student_answers",
+            "questions",
         )
         read_only_fields = (
             "id",
@@ -722,4 +733,15 @@ class QuizSubmissionSerializer(serializers.ModelSerializer):
             "disqualification_reason",
             "disqualified_at",
             "shuffled_question_ids",
+            "student_answers",
+            "questions",
         )
+
+    def get_questions(self, obj):
+        """Return quiz questions with details for PDF generation."""
+        # Only include questions in detail view (when context has 'view' and action is 'retrieve')
+        view = self.context.get('view')
+        if view and hasattr(view, 'action') and view.action == 'retrieve':
+            questions = obj.quiz.questions.all()
+            return QuizQuestionSerializer(questions, many=True).data
+        return None

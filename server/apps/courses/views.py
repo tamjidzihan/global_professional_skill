@@ -723,6 +723,19 @@ class QuizLookupView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
+        # Check expiration
+        if quiz.is_expired():
+            return Response(
+                {
+                    "success": False,
+                    "expired": True,
+                    "error": {
+                        "message": "This quiz link has expired. The exam window is now closed."
+                    },
+                },
+                status=status.HTTP_410_GONE,
+            )
+
         # Verify enrollment for student
         user = request.user
         if not user.is_admin_user and not user.is_instructor:
@@ -748,6 +761,8 @@ class QuizLookupView(APIView):
                     "title": quiz.title,
                     "duration_minutes": quiz.duration_minutes,
                     "question_count": quiz.questions.count(),  # type: ignore
+                    "expires_at": quiz.expires_at.isoformat() if quiz.expires_at else None,
+                    "is_expired": quiz.is_expired(),
                 },
             }
         )
@@ -1009,6 +1024,20 @@ class QuizViewSet(viewsets.ModelViewSet):
         user = request.user
         pin_code = request.data.get("pin_code")
 
+        # 0. Check expiration (students only — instructors/admins can always preview)
+        is_preview = user.is_admin_user or user.is_instructor
+        if not is_preview and quiz.is_expired():
+            return Response(
+                {
+                    "success": False,
+                    "expired": True,
+                    "error": {
+                        "message": "This quiz link has expired. The exam window is now closed."
+                    },
+                },
+                status=status.HTTP_410_GONE,
+            )
+
         # 1. Verify enrollment if student
         if not user.is_admin_user and not user.is_instructor:
             from apps.enrollments.models import Enrollment
@@ -1035,8 +1064,6 @@ class QuizViewSet(viewsets.ModelViewSet):
         submission, created = QuizSubmission.objects.get_or_create(
             quiz=quiz, student=user, defaults={"started_at": timezone.now()}
         )
-
-        is_preview = user.is_admin_user or user.is_instructor
 
         if not created:
             if not is_preview:
@@ -1143,9 +1170,21 @@ class QuizViewSet(viewsets.ModelViewSet):
                     "is_disqualified": (
                         submission.is_disqualified if not is_preview else False
                     ),
+                    "answered_questions": (
+                        [ans.get("question_id") for ans in submission.student_answers] if not is_preview else []
+                    ),
                 },
             }
         )
+
+    @action(detail=True, methods=["get"], permission_classes=[IsCourseInstructorOrAdmin])
+    def submissions(self, request, course_pk=None, pk=None):
+        """List all submissions for a specific quiz (Instructor/Admin only)"""
+        quiz = self.get_object()
+        submissions = QuizSubmission.objects.filter(quiz=quiz).select_related("student", "quiz")
+        serializer = QuizSubmissionSerializer(submissions, many=True)
+        return Response({"success": True, "data": serializer.data})
+
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     @transaction.atomic
@@ -1242,6 +1281,8 @@ class QuizViewSet(viewsets.ModelViewSet):
         submission.total_questions = len(questions)
         submission.warnings_count = warnings_count
         submission.completed_at = timezone.now()
+        # Persist the student's answers for answer sheet review
+        submission.student_answers = answers
         submission.save()
 
         # Prepare and send response with required fields
@@ -1527,5 +1568,174 @@ class CourseMaterialViewSet(viewsets.ModelViewSet):
             {
                 "success": True,
                 "message": f"Successfully deleted {deleted_count} materials.",
+            }
+        )
+
+
+class AnswerSheetView(APIView):
+    """
+    Returns a detailed answer sheet for a quiz submission.
+    Accessible by the student who took the quiz, the course instructor, or an admin.
+    Includes each question, the student's selected answer, and the correct answer.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk=None):
+        try:
+            submission = QuizSubmission.objects.select_related(
+                "quiz", "quiz__course", "student"
+            ).get(pk=pk)
+        except QuizSubmission.DoesNotExist:
+            return Response(
+                {"success": False, "error": {"message": "Submission not found."}},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        user = request.user
+        is_student = submission.student == user
+        is_instructor = submission.quiz.course.instructor == user
+        is_admin = user.is_admin_user  # type: ignore
+
+        if not (is_student or is_instructor or is_admin):
+            return Response(
+                {
+                    "success": False,
+                    "error": {
+                        "message": "You do not have permission to view this answer sheet."
+                    },
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if submission.completed_at is None and not (is_instructor or is_admin):
+            return Response(
+                {
+                    "success": False,
+                    "error": {"message": "This quiz has not been completed yet."},
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Build answer map: question_id -> selected_option
+        answer_map: dict = {}
+        for ans in (submission.student_answers or []):
+            q_id = ans.get("question_id")
+            selected = ans.get("selected_option")
+            if q_id and selected:
+                answer_map[str(q_id)] = selected
+
+        questions = QuizQuestion.objects.filter(
+            quiz=submission.quiz
+        ).order_by("created_at")
+
+        answer_sheet = []
+        for idx, q in enumerate(questions, start=1):
+            q_id_str = str(q.id)
+            selected = answer_map.get(q_id_str, None)
+            is_correct = selected == q.correct_option if selected else False
+            answer_sheet.append(
+                {
+                    "index": idx,
+                    "question_id": q_id_str,
+                    "question_text": q.question_text,
+                    "option_a": q.option_a,
+                    "option_b": q.option_b,
+                    "option_c": q.option_c,
+                    "option_d": q.option_d,
+                    "correct_option": q.correct_option,
+                    "selected_option": selected,
+                    "is_correct": is_correct,
+                    "is_skipped": selected is None,
+                }
+            )
+
+        return Response(
+            {
+                "success": True,
+                "data": {
+                    "submission_id": str(submission.id),
+                    "quiz_title": submission.quiz.title,
+                    "course_title": submission.quiz.course.title,
+                    "student_name": submission.student.get_full_name(),
+                    "student_email": submission.student.email,
+                    "score": submission.score,
+                    "total_questions": submission.total_questions,
+                    "warnings_count": submission.warnings_count,
+                    "is_disqualified": submission.is_disqualified,
+                    "started_at": submission.started_at,
+                    "completed_at": submission.completed_at,
+                    "answer_sheet": answer_sheet,
+                },
+            }
+        )
+
+
+class QuestionSheetView(APIView):
+    """
+    Returns the full question paper for a quiz.
+    Students get questions without correct answers.
+    Instructors and admins also see the correct answers.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk=None):
+        try:
+            quiz = Quiz.objects.select_related("course").get(pk=pk)
+        except Quiz.DoesNotExist:
+            return Response(
+                {"success": False, "error": {"message": "Quiz not found."}},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        user = request.user
+        is_instructor = quiz.course.instructor == user
+        is_admin = user.is_admin_user  # type: ignore
+        is_privileged = is_instructor or is_admin
+
+        # Students must be enrolled
+        if not is_privileged:
+            from apps.enrollments.models import Enrollment
+
+            if not Enrollment.objects.filter(student=user, course=quiz.course).exists():
+                return Response(
+                    {
+                        "success": False,
+                        "error": {
+                            "message": "You must be enrolled in this course to download the question sheet."
+                        },
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+        questions = QuizQuestion.objects.filter(quiz=quiz).order_by("created_at")
+
+        question_list = []
+        for idx, q in enumerate(questions, start=1):
+            entry = {
+                "index": idx,
+                "question_id": str(q.id),
+                "question_text": q.question_text,
+                "option_a": q.option_a,
+                "option_b": q.option_b,
+                "option_c": q.option_c,
+                "option_d": q.option_d,
+            }
+            if is_privileged:
+                entry["correct_option"] = q.correct_option
+            question_list.append(entry)
+
+        return Response(
+            {
+                "success": True,
+                "data": {
+                    "quiz_id": str(quiz.id),
+                    "quiz_title": quiz.title,
+                    "course_title": quiz.course.title,
+                    "duration_minutes": quiz.duration_minutes,
+                    "total_questions": len(question_list),
+                    "questions": question_list,
+                },
             }
         )

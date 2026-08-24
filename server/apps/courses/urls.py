@@ -20,6 +20,8 @@ from .views import (
     CourseAnnouncementViewSet,
     UndisqualifyStudentView,
     DeleteQuizSubmissionView,
+    AnswerSheetView,
+    QuestionSheetView,
 )
 
 router = routers.DefaultRouter()
@@ -69,5 +71,17 @@ urlpatterns = [
         "submissions/<uuid:pk>/",
         DeleteQuizSubmissionView.as_view(),
         name="submission-delete",
+    ),
+    # Answer sheet: accessible by student/instructor/admin after quiz completion
+    path(
+        "submissions/<uuid:pk>/answer-sheet/",
+        AnswerSheetView.as_view(),
+        name="submission-answer-sheet",
+    ),
+    # Question sheet: full question paper download (no answers for students)
+    path(
+        "quizzes/<uuid:pk>/question-sheet/",
+        QuestionSheetView.as_view(),
+        name="quiz-question-sheet",
     ),
 ]

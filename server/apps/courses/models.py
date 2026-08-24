@@ -496,6 +496,11 @@ class Quiz(models.Model):
     title = models.CharField(max_length=200)
     pin_code = models.CharField(max_length=10)
     duration_minutes = models.PositiveIntegerField(help_text="Duration in minutes")
+    expires_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="If set, the quiz link becomes inaccessible after this datetime.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -507,6 +512,12 @@ class Quiz(models.Model):
 
     def __str__(self):
         return f"{self.course.title} - {self.title}"
+
+    def is_expired(self):
+        """Return True if the quiz link has expired."""
+        if self.expires_at is None:
+            return False
+        return timezone.now() > self.expires_at
 
 
 class QuizQuestion(models.Model):
@@ -560,6 +571,8 @@ class QuizSubmission(models.Model):
     completed_at = models.DateTimeField(null=True, blank=True)
 
     shuffled_question_ids = models.JSONField(default=list, blank=True)
+    # Stores submitted answers: [{"question_id": "...", "selected_option": "A/B/C/D"}, ...]
+    student_answers = models.JSONField(default=list, blank=True)
     is_disqualified = models.BooleanField(default=False)
     disqualification_reason = models.CharField(
         max_length=50, blank=True, choices=DisqualificationReason.choices

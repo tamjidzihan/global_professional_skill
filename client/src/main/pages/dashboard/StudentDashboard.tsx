@@ -341,7 +341,8 @@ export function StudentDashboard() {
                                         const passed = scorePct >= 50;
 
                                         return (
-                                            <div
+                                            <Link
+                                                to={`/dashboard/student/my-courses/${sub.course}/quizzes/${sub.id}`}
                                                 key={sub.id}
                                                 className="flex items-center justify-between gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 hover:border-emerald-200 hover:bg-emerald-50/10 transition-all duration-150"
                                             >
@@ -369,7 +370,7 @@ export function StudentDashboard() {
                                                         </span>
                                                     </span>
                                                 </div>
-                                            </div>
+                                            </Link>
                                         );
                                     })}
                                 </div>

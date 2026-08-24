@@ -43,6 +43,8 @@ import JobApplicationsPage from "./main/pages/dashboard/admin/JobApplicationsPag
 import CheckoutPage from "./main/pages/CheckoutPage";
 import MyEnrollmentsPage from "./main/pages/dashboard/student/MyEnrollmentsPage";
 import EnrolledCourseDetailPage from "./main/pages/dashboard/student/EnrolledCourseDetailPage";
+import StudentQuizResultsPage from "./main/pages/dashboard/student/StudentQuizResultsPage";
+import QuizResultDetailPage from "./main/pages/dashboard/student/QuizResultDetailPage";
 import { CertificatesPage } from "./main/pages/dashboard/student/CertificatesPage";
 import { ReportsPage } from "./main/pages/dashboard/instructor/ReportsPage";
 import CourseProgressPage from "./main/pages/dashboard/instructor/CourseProgressPage";
@@ -54,6 +56,7 @@ import AnnouncementListPage from "./main/pages/dashboard/common/AnnouncementList
 import AnnouncementManagementPage from "./main/pages/dashboard/admin/AnnouncementManagementPage";
 import NewsTickerManagementPage from "./main/pages/dashboard/admin/NewsTickerManagementPage";
 import QuizListPage from "./main/pages/dashboard/instructor/QuizListPage";
+import QuizSubmissionsListPage from "./main/pages/dashboard/instructor/QuizSubmissionsListPage";
 import QuizQuestionsPage from "./main/pages/dashboard/instructor/QuizQuestionsPage";
 import TakeQuizPage from "./main/pages/TakeQuizPage";
 import CourseMaterialsPage from "./main/pages/dashboard/instructor/CourseMaterialsPage";
@@ -161,6 +164,22 @@ export const router = createBrowserRouter([
                                 )
                             },
                             {
+                                path: 'my-courses/:courseId/quizzes',
+                                element: (
+                                    <ProtectedRoute allowedRoles={['STUDENT']}>
+                                        <StudentQuizResultsPage />
+                                    </ProtectedRoute>
+                                )
+                            },
+                            {
+                                path: 'my-courses/:courseId/quizzes/:submissionId',
+                                element: (
+                                    <ProtectedRoute allowedRoles={['STUDENT']}>
+                                        <QuizResultDetailPage />
+                                    </ProtectedRoute>
+                                )
+                            },
+                            {
                                 path: 'certificates',
                                 element: (
                                     <ProtectedRoute allowedRoles={['STUDENT']}>
@@ -240,6 +259,14 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
                                 <QuizListPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/my-courses/:courseId/quizzes/:quizId/submissions',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+                                <QuizSubmissionsListPage />
                             </ProtectedRoute>
                         )
                     },

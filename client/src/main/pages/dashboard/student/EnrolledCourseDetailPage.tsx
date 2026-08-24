@@ -28,6 +28,8 @@ import { useCourses } from '../../../../hooks/useCourses';
 import { useCourseAnnouncements } from '../../../../hooks/useCourseAnnouncements';
 import SEO from '../../../components/SEO';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
+import { api } from '../../../../lib/api';
+import type { QuizSubmission } from '../../../../types';
 
 export default function EnrolledCourseDetailPage() {
     const { id } = useParams<{ id: string }>(); // This is the COURSE ID
@@ -36,6 +38,42 @@ export default function EnrolledCourseDetailPage() {
     const { announcements, fetchCourseAnnouncementsByCourse, loading: announcementsLoading } = useCourseAnnouncements();
     const [activeTab, setActiveTab] = useState('overview');
     const [expandedSections, setExpandedSections] = useState<string[]>([]);
+    const [quizSubmissions, setQuizSubmissions] = useState<QuizSubmission[]>([]);
+    const [loadingQuizzes, setLoadingQuizzes] = useState(false);
+
+    useEffect(() => {
+        getMyEnrollments();
+        if (id) {
+            fetchCourseDetail(id);
+            fetchCourseAnnouncementsByCourse(id);
+        }
+    }, [id, getMyEnrollments, fetchCourseDetail, fetchCourseAnnouncementsByCourse]);
+
+    // Load quiz submissions when quiz tab is active
+    useEffect(() => {
+        if (activeTab === 'quizzes' && id) {
+            loadQuizSubmissions();
+        }
+    }, [activeTab, id]);
+
+    const loadQuizSubmissions = async () => {
+        setLoadingQuizzes(true);
+        try {
+            const res = await api.get('/courses/my-quiz-submissions/');
+            if (res.data.success) {
+                // Filter submissions for this course only using the course ID
+                const allSubmissions = res.data.data || [];
+                const courseSubmissions = allSubmissions.filter(
+                    (sub: QuizSubmission) => sub.course === id
+                );
+                setQuizSubmissions(courseSubmissions);
+            }
+        } catch (error) {
+            console.error('Failed to load quiz submissions:', error);
+        } finally {
+            setLoadingQuizzes(false);
+        }
+    };
 
     useEffect(() => {
         getMyEnrollments();
@@ -182,7 +220,7 @@ export default function EnrolledCourseDetailPage() {
                 <div className="lg:col-span-2 space-y-6">
                     {/* Tab Navigation */}
                     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-1.5 flex items-center gap-1 overflow-x-auto scrollbar-hide">
-                        {['overview', 'curriculum', 'materials', 'reviews'].map((tab) => (
+                        {['overview', 'curriculum', 'materials', 'quizzes', 'reviews'].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
@@ -348,6 +386,79 @@ export default function EnrolledCourseDetailPage() {
                             </div>
                         )}
 
+                        {activeTab === 'quizzes' && (
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-bold text-gray-900">Course Quizzes</h3>
+                                    <Link
+                                        to={`/dashboard/student/my-courses/${id}/quizzes`}
+                                        className="text-sm font-semibold text-violet-600 hover:text-violet-700 flex items-center gap-1"
+                                    >
+                                        View All Results <ChevronRight className="w-4 h-4" />
+                                    </Link>
+                                </div>
+
+                                {loadingQuizzes ? (
+                                    <div className="text-center py-8">
+                                        <LoadingSpinner />
+                                    </div>
+                                ) : quizSubmissions.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {quizSubmissions.slice(0, 5).map((sub: QuizSubmission) => (
+                                            <Link
+                                                key={sub.id}
+                                                to={`/dashboard/student/my-courses/${id}/quizzes/${sub.id}`}
+                                                className="block p-4 bg-gray-50 hover:bg-violet-50 border border-gray-100 hover:border-violet-200 rounded-xl transition-all"
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="font-semibold text-gray-900 text-sm mb-1 truncate">{sub.quiz_title || 'Quiz'}</h4>
+                                                        <div className="flex items-center gap-3 text-xs text-gray-500">
+                                                            <span>Score: <span className="font-semibold text-gray-700">{sub.score || 0}/{sub.total_questions || 0}</span></span>
+                                                            {sub.completed_at && (
+                                                                <span>{new Date(sub.completed_at).toLocaleDateString()}</span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="ml-4">
+                                                        {sub.is_disqualified ? (
+                                                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-rose-100 text-rose-700">
+                                                                <AlertCircle className="w-3 h-3" /> Disqualified
+                                                            </span>
+                                                        ) : sub.completed_at ? (
+                                                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                                                                <CheckCircle className="w-3 h-3" /> Completed
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                                                                In Progress
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        ))}
+                                        {quizSubmissions.length > 5 && (
+                                            <Link
+                                                to={`/dashboard/student/my-courses/${id}/quizzes`}
+                                                className="block text-center py-2 text-sm font-semibold text-violet-600 hover:text-violet-700"
+                                            >
+                                                View all {quizSubmissions.length} results →
+                                            </Link>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="bg-violet-50 border border-violet-100 rounded-xl p-6 text-center">
+                                        <AlertCircle className="w-8 h-8 text-violet-300 mx-auto mb-2" />
+                                        <p className="text-sm text-violet-900 font-medium mb-1">No Quiz Results Yet</p>
+                                        <p className="text-xs text-violet-700">
+                                            Your instructor will share quiz links with you. After completing a quiz, your results will appear here.
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {activeTab === 'reviews' && (
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between">
@@ -455,7 +566,7 @@ export default function EnrolledCourseDetailPage() {
                                 ))}
                             </div>
                         ) : announcements && announcements.length > 0 ? (
-                            <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
+                            <div className="space-y-3 max-h-70 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
                                 {announcements.slice(0, 5).map((announcement) => (
                                     <div key={announcement.id} className="rounded-xl border border-gray-100 bg-gray-50 p-3 hover:border-violet-200 hover:bg-violet-50/20 transition-all duration-150">
                                         <div className="flex items-start justify-between gap-2">
