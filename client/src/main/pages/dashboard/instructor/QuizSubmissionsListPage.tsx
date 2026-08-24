@@ -59,16 +59,14 @@ const QuizSubmissionsListPage: React.FC = () => {
         const tableRows: any[] = [];
 
         submissions.forEach(sub => {
-            const studentData = sub.student || {};
-            const stName = studentData.first_name ? `${studentData.first_name} ${studentData.last_name}` : studentData.username;
             const completed = sub.completed_at ? new Date(sub.completed_at).toLocaleString() : 'In Progress';
             let status = 'Completed';
             if (sub.is_disqualified) status = 'Disqualified';
             else if (!sub.completed_at) status = 'Ongoing';
 
             tableRows.push([
-                stName,
-                studentData.email || '',
+                sub.student_name,
+                sub.student_email || '',
                 sub.score !== null ? `${sub.score}/${sub.total_questions || '?'}` : '-',
                 sub.started_at ? new Date(sub.started_at).toLocaleString() : '',
                 completed,
@@ -139,12 +137,11 @@ const QuizSubmissionsListPage: React.FC = () => {
                                 </tr>
                             ) : (
                                 submissions.map((sub) => {
-                                    const studentName = sub.student?.first_name ? `${sub.student.first_name} ${sub.student.last_name}` : sub.student?.username || 'Unknown';
                                     return (
                                         <tr key={sub.id} className="hover:bg-gray-50 transition-colors">
                                             <td className="px-6 py-4">
-                                                <div className="font-medium text-gray-900">{studentName}</div>
-                                                <div className="text-xs text-gray-500">{sub.student?.email}</div>
+                                                <div className="font-medium text-gray-900">{sub.student_name}</div>
+                                                <div className="text-xs text-gray-500">{sub.student_email}</div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 {sub.is_disqualified ? (
