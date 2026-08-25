@@ -1,14 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     lookupQuiz,
     startQuiz,
     submitQuiz,
-    logWarning,
-    getAnswerSheet,
-    getQuestionSheet
+    logWarning
 } from '../../lib/api';
 import type { QuizQuestion } from '../../types';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -16,8 +14,7 @@ import { extractErrorMessage } from '../../lib/errorUtils';
 import { toast } from 'react-hot-toast';
 import {
     Clock, ShieldAlert, AlertTriangle, ArrowRight,
-    CheckCircle, ShieldCheck, XCircle, Lock, Download,
-    RefreshCw, BookOpen, FileText
+    CheckCircle, ShieldCheck, XCircle, Lock, RefreshCw, BookOpen
 } from 'lucide-react';
 import SEO from '../components/SEO';
 
@@ -55,12 +52,6 @@ const TakeQuizPage: React.FC = () => {
 
     // Reload warning state
     const [showReloadWarning, setShowReloadWarning] = useState(false);
-
-    // Answer sheet & question sheet state
-    const [answerSheet, setAnswerSheet] = useState<any | null>(null);
-    const [loadingAnswerSheet, setLoadingAnswerSheet] = useState(false);
-    const [loadingQuestionSheet, setLoadingQuestionSheet] = useState(false);
-    const [showAnswerSheet, setShowAnswerSheet] = useState(false);
 
     // Fetch basic quiz info to unlock
     useEffect(() => {
@@ -334,106 +325,10 @@ const TakeQuizPage: React.FC = () => {
         }
     };
 
-    // Feature 3 & 4: Fetch answer sheet after quiz completion
-    const handleViewAnswerSheet = useCallback(async () => {
-        if (!submissionResult?.id) return;
-        setLoadingAnswerSheet(true);
-        try {
-            const res = await getAnswerSheet(submissionResult.id);
-            if (res.data.success) {
-                setAnswerSheet(res.data.data);
-                setShowAnswerSheet(true);
-            }
-        } catch (error) {
-            toast.error(extractErrorMessage(error) || 'Failed to load answer sheet');
-        } finally {
-            setLoadingAnswerSheet(false);
-        }
-    }, [submissionResult]);
-
-    // Feature 4: Download question sheet as PDF (client-side)
-    const handleDownloadQuestionSheet = useCallback(async () => {
-        if (!quizId) return;
-        setLoadingQuestionSheet(true);
-        try {
-            const res = await getQuestionSheet(quizId);
-            if (res.data.success) {
-                downloadQuestionSheetPDF(res.data.data);
-            }
-        } catch (error) {
-            toast.error(extractErrorMessage(error) || 'Failed to download question sheet');
-        } finally {
-            setLoadingQuestionSheet(false);
-        }
-    }, [quizId]);
-
-    const downloadQuestionSheetPDF = (data: any) => {
-        const lines: string[] = [];
-        lines.push(`QUESTION PAPER`);
-        lines.push(`Quiz: ${data.quiz_title}`);
-        lines.push(`Course: ${data.course_title}`);
-        lines.push(`Duration: ${data.duration_minutes} minutes`);
-        lines.push(`Total Questions: ${data.total_questions}`);
-        lines.push(`Generated: ${new Date().toLocaleString()}`);
-        lines.push('');
-        lines.push('='.repeat(60));
-        lines.push('');
-
-        data.questions.forEach((q: any) => {
-            lines.push(`Q${q.index}. ${q.question_text}`);
-            lines.push(`   A. ${q.option_a}`);
-            lines.push(`   B. ${q.option_b}`);
-            lines.push(`   C. ${q.option_c}`);
-            lines.push(`   D. ${q.option_d}`);
-            if (q.correct_option) {
-                lines.push(`   ✓ Correct: ${q.correct_option}`);
-            }
-            lines.push('');
-        });
-
-        const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${data.quiz_title.replace(/\s+/g, '_')}_Questions.txt`;
-        a.click();
-        URL.revokeObjectURL(url);
-        toast.success('Question sheet downloaded!');
-    };
-
-    const downloadAnswerSheetPDF = (data: any) => {
-        const lines: string[] = [];
-        lines.push(`ANSWER SHEET`);
-        lines.push(`Quiz: ${data.quiz_title}`);
-        lines.push(`Course: ${data.course_title}`);
-        lines.push(`Student: ${data.student_name} (${data.student_email})`);
-        lines.push(`Score: ${data.score} / ${data.total_questions}`);
-        lines.push(`Warnings: ${data.warnings_count}`);
-        lines.push(`Disqualified: ${data.is_disqualified ? 'Yes' : 'No'}`);
-        lines.push(`Completed: ${data.completed_at ? new Date(data.completed_at).toLocaleString() : 'N/A'}`);
-        lines.push('');
-        lines.push('='.repeat(60));
-        lines.push('');
-
-        data.answer_sheet.forEach((q: any) => {
-            const status = q.is_skipped ? '⏭ SKIPPED' : q.is_correct ? '✓ CORRECT' : '✗ WRONG';
-            lines.push(`Q${q.index}. ${q.question_text}`);
-            lines.push(`   A. ${q.option_a}`);
-            lines.push(`   B. ${q.option_b}`);
-            lines.push(`   C. ${q.option_c}`);
-            lines.push(`   D. ${q.option_d}`);
-            lines.push(`   Your Answer: ${q.selected_option ?? 'Not answered'}  |  Correct: ${q.correct_option}  |  ${status}`);
-            lines.push('');
-        });
-
-        const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${data.quiz_title.replace(/\s+/g, '_')}_AnswerSheet.txt`;
-        a.click();
-        URL.revokeObjectURL(url);
-        toast.success('Answer sheet downloaded!');
+    // Navigate to answer sheet page after quiz completion
+    const handleViewAnswerSheet = () => {
+        if (!submissionResult?.id || !quizInfo?.course) return;
+        navigate(`/dashboard/student/my-courses/${quizInfo.course}/quizzes/${submissionResult.id}`);
     };
 
     if (loadingInfo) {
@@ -554,19 +449,10 @@ const TakeQuizPage: React.FC = () => {
                     <div className="flex flex-col gap-3">
                         <button
                             onClick={handleViewAnswerSheet}
-                            disabled={loadingAnswerSheet}
-                            className="flex items-center justify-center gap-2 w-full px-5 py-3 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-2xl transition-all shadow-sm cursor-pointer disabled:opacity-60"
+                            className="flex items-center justify-center gap-2 w-full px-5 py-3 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-2xl transition-all shadow-sm cursor-pointer"
                         >
                             <BookOpen className="w-4 h-4" />
-                            {loadingAnswerSheet ? 'Loading...' : 'View Answer Sheet'}
-                        </button>
-                        <button
-                            onClick={handleDownloadQuestionSheet}
-                            disabled={loadingQuestionSheet}
-                            className="flex items-center justify-center gap-2 w-full px-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-2xl transition-all cursor-pointer disabled:opacity-60"
-                        >
-                            <Download className="w-4 h-4" />
-                            {loadingQuestionSheet ? 'Downloading...' : 'Download Question Sheet'}
+                            View Answer Sheet
                         </button>
                         <button
                             onClick={() => navigate('/dashboard')}
@@ -744,9 +630,8 @@ const TakeQuizPage: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Navigation Buttons — Forward Only (Feature 5: No Previous) */}
+                    {/* Navigation Buttons — Forward Only */}
                     <div className="flex items-center justify-end gap-4 mt-12 pt-6 border-t border-gray-100">
-                        {/* Progress indicator showing forward-only flow */}
                         <p className="text-[11px] text-gray-400 mr-auto">
                             <Lock className="w-3 h-3 inline mr-1 -mt-0.5" />
                             Forward only — cannot revisit previous questions
@@ -832,98 +717,8 @@ const TakeQuizPage: React.FC = () => {
                     </div>
                 </div>
             )}
-            {/* Feature 3: Answer Sheet Modal */}
-            {showAnswerSheet && answerSheet && (
-                <AnswerSheetModal
-                    answerSheet={answerSheet}
-                    onClose={() => setShowAnswerSheet(false)}
-                    onDownload={() => downloadAnswerSheetPDF(answerSheet)}
-                />
-            )}
         </div>
     );
 };
-
-// ──────────────────────────────────────────────────────────────────────────────
-// Answer Sheet Modal Component
-// ──────────────────────────────────────────────────────────────────────────────
-interface AnswerSheetModalProps {
-    answerSheet: any;
-    onClose: () => void;
-    onDownload: () => void;
-}
-
-const AnswerSheetModal: React.FC<AnswerSheetModalProps> = ({ answerSheet, onClose, onDownload }) => (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 bg-gray-900/70 backdrop-blur-sm overflow-y-auto">
-        <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl border border-gray-100 my-8 animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-gray-100">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                            <FileText className="w-5 h-5 text-violet-600" />
-                            Answer Sheet
-                        </h3>
-                        <p className="text-xs text-gray-500 mt-1">{answerSheet.quiz_title} — {answerSheet.course_title}</p>
-                    </div>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-2xl font-bold cursor-pointer leading-none">×</button>
-                </div>
-                <div className="mt-4 grid grid-cols-3 gap-3">
-                    <div className="bg-violet-50 rounded-2xl p-3 text-center">
-                        <p className="text-xs text-violet-500 font-semibold">Score</p>
-                        <p className="text-xl font-bold text-violet-700">{answerSheet.score}/{answerSheet.total_questions}</p>
-                    </div>
-                    <div className="bg-emerald-50 rounded-2xl p-3 text-center">
-                        <p className="text-xs text-emerald-500 font-semibold">Correct</p>
-                        <p className="text-xl font-bold text-emerald-700">{answerSheet.score}</p>
-                    </div>
-                    <div className="bg-rose-50 rounded-2xl p-3 text-center">
-                        <p className="text-xs text-rose-500 font-semibold">Wrong / Skipped</p>
-                        <p className="text-xl font-bold text-rose-700">{answerSheet.total_questions - answerSheet.score}</p>
-                    </div>
-                </div>
-                <button onClick={onDownload} className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-900 text-white text-sm font-semibold rounded-xl hover:bg-gray-800 transition-all cursor-pointer">
-                    <Download className="w-4 h-4" />
-                    Download Answer Sheet
-                </button>
-            </div>
-            <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">
-                {answerSheet.answer_sheet.map((q: any) => (
-                    <AnswerSheetQuestion key={q.question_id} q={q} />
-                ))}
-            </div>
-        </div>
-    </div>
-);
-
-const AnswerSheetQuestion: React.FC<{ q: any }> = ({ q }) => (
-    <div className={`rounded-2xl border p-4 ${q.is_skipped ? 'border-gray-200 bg-gray-50' : q.is_correct ? 'border-emerald-200 bg-emerald-50/40' : 'border-rose-200 bg-rose-50/40'}`}>
-        <p className="text-sm font-semibold text-gray-800 mb-3">
-            <span className="text-gray-400 mr-2">Q{q.index}.</span>
-            {q.question_text}
-        </p>
-        <div className="grid grid-cols-2 gap-2 text-xs">
-            {(['a', 'b', 'c', 'd'] as const).map((letter) => {
-                const optLabel = letter.toUpperCase();
-                const isCorrect = q.correct_option === optLabel;
-                const isSelected = q.selected_option === optLabel;
-                return (
-                    <div key={letter} className={`flex items-center gap-2 px-3 py-2 rounded-xl border font-medium ${isCorrect && isSelected ? 'bg-emerald-100 border-emerald-400 text-emerald-800'
-                        : isCorrect ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
-                            : isSelected ? 'bg-rose-100 border-rose-400 text-rose-800'
-                                : 'bg-white border-gray-200 text-gray-600'
-                        }`}>
-                        <span className="font-bold w-4">{optLabel}.</span>
-                        <span className="truncate">{q[`option_${letter}`]}</span>
-                        {isCorrect && <CheckCircle className="w-3.5 h-3.5 ml-auto text-emerald-600 shrink-0" />}
-                        {isSelected && !isCorrect && <XCircle className="w-3.5 h-3.5 ml-auto text-rose-600 shrink-0" />}
-                    </div>
-                );
-            })}
-        </div>
-        <p className={`mt-2 text-[10px] font-bold ${q.is_skipped ? 'text-gray-400' : q.is_correct ? 'text-emerald-600' : 'text-rose-600'}`}>
-            {q.is_skipped ? '⏭ Skipped' : q.is_correct ? '✓ Correct' : `✗ Wrong — Correct answer: ${q.correct_option}`}
-        </p>
-    </div>
-);
 
 export default TakeQuizPage;

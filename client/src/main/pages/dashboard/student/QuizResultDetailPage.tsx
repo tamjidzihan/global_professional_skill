@@ -9,13 +9,13 @@ import { extractErrorMessage } from '../../../../lib/errorUtils';
 import { api } from '../../../../lib/api';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import type { QuizSubmission } from '../../../../types';
+import type { CourseDetail, QuizSubmission } from '../../../../types';
 
 const QuizResultDetailPage: React.FC = () => {
     const { courseId, submissionId } = useParams<{ courseId: string; submissionId: string }>();
     const navigate = useNavigate();
 
-    const [course, setCourse] = useState<any>(null);
+    const [course, setCourse] = useState<CourseDetail>();
     const [submission, setSubmission] = useState<any>(null);
     const [loading, setLoading] = useState(true);
 
@@ -79,12 +79,15 @@ const QuizResultDetailPage: React.FC = () => {
             doc.setFillColor(139, 92, 246);
             doc.rect(0, 0, pageWidth, 40, 'F');
             doc.setTextColor(255, 255, 255);
-            doc.setFontSize(22);
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'normal');
+            doc.text('QUIZ RESULT REPORT', pageWidth / 2, 13, { align: 'center' });
+            doc.setFontSize(24);
             doc.setFont('helvetica', 'bold');
-            doc.text('QUIZ RESULT REPORT', pageWidth / 2, 20, { align: 'center' });
+            doc.text('Global Professional Institute', pageWidth / 2, 25, { align: 'center' });
             doc.setFontSize(10);
             doc.setFont('helvetica', 'normal');
-            doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), pageWidth / 2, 30, { align: 'center' });
+            doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), pageWidth / 2, 34, { align: 'center' });
             yPos = 55;
 
             doc.setFillColor(248, 250, 252);
@@ -103,7 +106,7 @@ const QuizResultDetailPage: React.FC = () => {
             doc.setFont('helvetica', 'bold');
             doc.text('Instructor:', margin + 5, yPos + 30);
             doc.setFont('helvetica', 'normal');
-            doc.text(course?.instructor_name || 'N/A', margin + 25, yPos + 30);
+            doc.text(course?.instructor.full_name || 'N/A', margin + 25, yPos + 30);
             doc.setFont('helvetica', 'bold');
             doc.text('Student:', margin + 5, yPos + 40);
             doc.setFont('helvetica', 'normal');
@@ -118,9 +121,9 @@ const QuizResultDetailPage: React.FC = () => {
             doc.setTextColor(21, 128, 61);
             doc.text('SCORE', margin + 5, yPos + 10);
             doc.setFontSize(20);
-            doc.text(`${submission.score}/${submission.total_questions}`, margin + 5, yPos + 25);
+            doc.text(`${submission.score}/${submission.total_questions}`, margin + 5, yPos + 20);
             doc.setFontSize(10);
-            doc.text(`(${percentage}%)`, margin + 5, yPos + 32);
+            doc.text(`(${percentage}%)`, margin + 5, yPos + 29);
 
             doc.setFillColor(254, 243, 199);
             doc.roundedRect(pageWidth / 2 + 5, yPos, contentWidth / 2 - 5, 35, 3, 3, 'F');
@@ -132,12 +135,12 @@ const QuizResultDetailPage: React.FC = () => {
             if (submission.is_disqualified) statusText = 'DISQUALIFIED';
             else if (!submission.completed_at) statusText = 'In Progress';
             doc.setFontSize(11);
-            doc.text(statusText, pageWidth / 2 + 10, yPos + 20);
+            doc.text(statusText, pageWidth / 2 + 10, yPos + 18);
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(8);
-            doc.text(`Started: ${new Date(submission.started_at).toLocaleString()}`, pageWidth / 2 + 10, yPos + 28);
+            doc.text(`Started: ${new Date(submission.started_at).toLocaleString()}`, pageWidth / 2 + 10, yPos + 26);
             if (submission.completed_at) {
-                doc.text(`Completed: ${new Date(submission.completed_at).toLocaleString()}`, pageWidth / 2 + 10, yPos + 33);
+                doc.text(`Completed: ${new Date(submission.completed_at).toLocaleString()}`, pageWidth / 2 + 10, yPos + 31);
             }
             yPos += 45;
 
@@ -211,8 +214,8 @@ const QuizResultDetailPage: React.FC = () => {
                     doc.setFontSize(9);
                     doc.setFont('helvetica', isCorrect || isSelected ? 'bold' : 'normal');
                     let prefix = `${opt.label}. `;
-                    if (isCorrect) prefix += '✓ ';
-                    if (isSelected && !isCorrect) prefix += '✗ ';
+                    if (isCorrect) prefix += '(correct) ';
+                    if (isSelected && !isCorrect) prefix += '(your answer) ';
                     const optionText = doc.splitTextToSize(opt.text, contentWidth - 30);
                     doc.text(prefix + optionText[0], margin + 8, yPos + 7);
                     yPos += 12;
@@ -274,7 +277,7 @@ const QuizResultDetailPage: React.FC = () => {
                     </button>
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Quiz Result</h1>
-                        <p className="text-sm text-gray-500 mt-1">{submission.quiz?.title}</p>
+                        <p className="text-sm text-gray-500 mt-1">{submission.quiz?.title || submission.quiz_title}</p>
                     </div>
                 </div>
                 <button
@@ -283,7 +286,7 @@ const QuizResultDetailPage: React.FC = () => {
                         downloadResultPDF(submission);
                     }}
                     disabled={!submission.completed_at}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-rose-600 text-white hover:bg-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-rose-600 text-white hover:bg-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                     <Download className="w-4 h-4" /> Download PDF
                 </button>
@@ -331,7 +334,6 @@ const QuizResultDetailPage: React.FC = () => {
                 </div>
             </div>
 
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
                     <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
@@ -373,6 +375,130 @@ const QuizResultDetailPage: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* DETAILED ANSWERS SECTION - ADD THIS */}
+            {submission.questions && submission.questions.length > 0 && (
+                <div className="mt-8 bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+                    <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+                        <Award className="w-5 h-5 text-violet-600" />
+                        Detailed Answers
+                    </h2>
+
+                    <div className="space-y-6">
+                        {(submission.shuffled_question_ids || submission.questions.map((q: any) => q.id)).map((questionId: string, index: number) => {
+                            const question = submission.questions.find((q: any) => q.id === questionId);
+                            if (!question) return null;
+
+                            const studentAnswer = submission.student_answers?.find(
+                                (ans: any) => ans.question_id === question.id
+                            );
+                            const selectedOption = studentAnswer?.selected_option || null;
+                            const correctOption = question.correct_option;
+                            const isCorrect = selectedOption === correctOption;
+
+                            const options = [
+                                { label: 'A', text: question.option_a },
+                                { label: 'B', text: question.option_b },
+                                { label: 'C', text: question.option_c },
+                                { label: 'D', text: question.option_d },
+                            ];
+
+                            return (
+                                <div
+                                    key={question.id}
+                                    className="border border-gray-200 rounded-xl p-4 hover:border-violet-200 transition-colors"
+                                >
+                                    <div className="flex items-start gap-3 mb-3">
+                                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-violet-100 text-violet-700 text-xs font-bold shrink-0">
+                                            {index + 1}
+                                        </span>
+                                        <p className="text-sm font-medium text-gray-900">
+                                            {question.question_text}
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-1.5 ml-9">
+                                        {options.map((opt) => {
+                                            const isSelected = opt.label === selectedOption;
+                                            const isCorrectOption = opt.label === correctOption;
+
+                                            let bgColor = 'bg-gray-50';
+                                            let borderColor = 'border-gray-200';
+                                            let textColor = 'text-gray-700';
+                                            let icon = null;
+
+                                            if (isCorrectOption) {
+                                                bgColor = 'bg-emerald-50';
+                                                borderColor = 'border-emerald-300';
+                                                textColor = 'text-emerald-700';
+                                                icon = <CheckCircle className="w-4 h-4 text-emerald-600" />;
+                                            } else if (isSelected && !isCorrectOption) {
+                                                bgColor = 'bg-rose-50';
+                                                borderColor = 'border-rose-300';
+                                                textColor = 'text-rose-700';
+                                                icon = <AlertTriangle className="w-4 h-4 text-rose-600" />;
+                                            }
+
+                                            return (
+                                                <div
+                                                    key={opt.label}
+                                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${bgColor} ${borderColor}`}
+                                                >
+                                                    <span className={`text-xs font-bold ${textColor}`}>
+                                                        {opt.label}.
+                                                    </span>
+                                                    <span className={`text-sm ${textColor}`}>
+                                                        {opt.text}
+                                                    </span>
+                                                    {icon && (
+                                                        <span className="ml-auto">{icon}</span>
+                                                    )}
+                                                    {isSelected && (
+                                                        <span className="ml-auto text-xs font-medium px-2 py-0.5 rounded bg-white/60">
+                                                            Your Answer
+                                                        </span>
+                                                    )}
+                                                    {isCorrectOption && isSelected && (
+                                                        <span className="ml-auto text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded">
+                                                            ✓ Correct
+                                                        </span>
+                                                    )}
+                                                    {isCorrectOption && !isSelected && (
+                                                        <span className="ml-auto text-xs font-medium text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded">
+                                                            Correct Answer
+                                                        </span>
+                                                    )}
+                                                    {isSelected && !isCorrectOption && (
+                                                        <span className="ml-auto text-xs font-medium text-rose-600 bg-rose-100 px-2 py-0.5 rounded">
+                                                            ✗ Incorrect
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {selectedOption && (
+                                        <div className="mt-2 ml-9">
+                                            {isCorrect ? (
+                                                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600">
+                                                    <CheckCircle className="w-3.5 h-3.5" />
+                                                    Correct Answer
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1 text-xs font-medium text-rose-600">
+                                                    <AlertTriangle className="w-3.5 h-3.5" />
+                                                    Incorrect Answer
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
