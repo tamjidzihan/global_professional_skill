@@ -7,9 +7,9 @@ import { toast } from 'react-hot-toast';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { extractErrorMessage } from '../../../../lib/errorUtils';
 import { api } from '../../../../lib/api';
-import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import type { CourseDetail, QuizSubmission } from '../../../../types';
+import type { CourseDetail } from '../../../../types';
+import { downloadResultPDF } from '../../../../lib/pdfUtils';
 
 const QuizResultDetailPage: React.FC = () => {
     const { courseId, submissionId } = useParams<{ courseId: string; submissionId: string }>();
@@ -57,188 +57,7 @@ const QuizResultDetailPage: React.FC = () => {
 
 
 
-    const downloadResultPDF = async (submission: QuizSubmission) => {
-        try {
-            toast.loading('Generating PDF...');
-            // Fetch submission details with questions included
-            const submissionRes = await api.get(`/courses/my-quiz-submissions/${submission.id}/`);
-            if (!submissionRes.data.success) {
-                toast.dismiss();
-                toast.error('Failed to load submission details');
-                return;
-            }
-            const submissionDetail = submissionRes.data.data;
-            const questions = submissionDetail.questions || [];
-            const doc = new jsPDF();
-            const pageWidth = doc.internal.pageSize.width;
-            const pageHeight = doc.internal.pageSize.height;
-            const margin = 14;
-            const contentWidth = pageWidth - (margin * 2);
-            let yPos = 20;
-
-            doc.setFillColor(139, 92, 246);
-            doc.rect(0, 0, pageWidth, 40, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(16);
-            doc.setFont('helvetica', 'normal');
-            doc.text('QUIZ RESULT REPORT', pageWidth / 2, 13, { align: 'center' });
-            doc.setFontSize(24);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Global Professional Institute', pageWidth / 2, 25, { align: 'center' });
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), pageWidth / 2, 34, { align: 'center' });
-            yPos = 55;
-
-            doc.setFillColor(248, 250, 252);
-            doc.roundedRect(margin, yPos, contentWidth, 50, 3, 3, 'F');
-            doc.setTextColor(30, 41, 59);
-            doc.setFontSize(11);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Course:', margin + 5, yPos + 10);
-            doc.setFont('helvetica', 'normal');
-            const courseText = doc.splitTextToSize(submission.course_title || 'N/A', contentWidth - 30);
-            doc.text(courseText[0], margin + 25, yPos + 10);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Quiz:', margin + 5, yPos + 20);
-            doc.setFont('helvetica', 'normal');
-            doc.text(submission.quiz_title || 'N/A', margin + 25, yPos + 20);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Instructor:', margin + 5, yPos + 30);
-            doc.setFont('helvetica', 'normal');
-            doc.text(course?.instructor.full_name || 'N/A', margin + 25, yPos + 30);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Student:', margin + 5, yPos + 40);
-            doc.setFont('helvetica', 'normal');
-            doc.text(submission.student_name || 'N/A', margin + 25, yPos + 40);
-            yPos += 60;
-
-            const percentage = submission.total_questions > 0 ? Math.round((submission.score / submission.total_questions) * 100) : 0;
-            doc.setFillColor(220, 252, 231);
-            doc.roundedRect(margin, yPos, contentWidth / 2 - 5, 35, 3, 3, 'F');
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(10);
-            doc.setTextColor(21, 128, 61);
-            doc.text('SCORE', margin + 5, yPos + 10);
-            doc.setFontSize(20);
-            doc.text(`${submission.score}/${submission.total_questions}`, margin + 5, yPos + 20);
-            doc.setFontSize(10);
-            doc.text(`(${percentage}%)`, margin + 5, yPos + 29);
-
-            doc.setFillColor(254, 243, 199);
-            doc.roundedRect(pageWidth / 2 + 5, yPos, contentWidth / 2 - 5, 35, 3, 3, 'F');
-            doc.setTextColor(146, 64, 14);
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(10);
-            doc.text('STATUS', pageWidth / 2 + 10, yPos + 10);
-            let statusText = 'Completed';
-            if (submission.is_disqualified) statusText = 'DISQUALIFIED';
-            else if (!submission.completed_at) statusText = 'In Progress';
-            doc.setFontSize(11);
-            doc.text(statusText, pageWidth / 2 + 10, yPos + 18);
-            doc.setFont('helvetica', 'normal');
-            doc.setFontSize(8);
-            doc.text(`Started: ${new Date(submission.started_at).toLocaleString()}`, pageWidth / 2 + 10, yPos + 26);
-            if (submission.completed_at) {
-                doc.text(`Completed: ${new Date(submission.completed_at).toLocaleString()}`, pageWidth / 2 + 10, yPos + 31);
-            }
-            yPos += 45;
-
-            if (submission.warnings_count > 0 || submission.is_disqualified) {
-                doc.setFillColor(254, 226, 226);
-                doc.roundedRect(margin, yPos, contentWidth, 15, 3, 3, 'F');
-                doc.setTextColor(185, 28, 28);
-                doc.setFontSize(9);
-                doc.setFont('helvetica', 'bold');
-                doc.text(`⚠ Warnings: ${submission.warnings_count}`, margin + 5, yPos + 10);
-                if (submission.is_disqualified) {
-                    doc.text(`| Reason: ${submission.disqualification_reason || 'N/A'}`, margin + 50, yPos + 10);
-                }
-                yPos += 20;
-            }
-
-            doc.setTextColor(30, 41, 59);
-            doc.setFontSize(14);
-            doc.setFont('helvetica', 'bold');
-            doc.text('DETAILED ANSWERS', margin, yPos);
-            yPos += 10;
-
-            const orderedQuestions = submissionDetail.shuffled_question_ids.map((qId: string) => questions.find((q: any) => q.id === qId)).filter((q: any) => q);
-
-
-            orderedQuestions.forEach((question: any, index: number) => {
-                if (yPos > pageHeight - 60) {
-                    doc.addPage();
-                    yPos = 20;
-                }
-                doc.setFillColor(249, 250, 251);
-                const questionHeight = 15 + (Math.ceil(doc.getTextWidth(question.question_text) / (contentWidth - 10)) * 5);
-                doc.roundedRect(margin, yPos, contentWidth, questionHeight, 2, 2, 'F');
-                doc.setFontSize(10);
-                doc.setFont('helvetica', 'bold');
-                doc.setTextColor(30, 41, 59);
-                doc.text(`Q${index + 1}.`, margin + 5, yPos + 8);
-                doc.setFont('helvetica', 'normal');
-                const splitQuestion = doc.splitTextToSize(question.question_text, contentWidth - 20);
-                doc.text(splitQuestion, margin + 15, yPos + 8);
-                yPos += questionHeight + 3;
-
-                const studentAnswer = submissionDetail.student_answers.find((ans: any) => ans.question_id === question.id);
-                const selectedOption = studentAnswer?.selected_option || null;
-                const correctOption = question.correct_option;
-                const options = [
-                    { label: 'A', text: question.option_a },
-                    { label: 'B', text: question.option_b },
-                    { label: 'C', text: question.option_c },
-                    { label: 'D', text: question.option_d },
-                ];
-
-                options.forEach((opt) => {
-                    if (yPos > pageHeight - 20) {
-                        doc.addPage();
-                        yPos = 20;
-                    }
-                    const isCorrect = opt.label === correctOption;
-                    const isSelected = opt.label === selectedOption;
-                    if (isCorrect) {
-                        doc.setFillColor(220, 252, 231);
-                        doc.setTextColor(21, 128, 61);
-                    } else if (isSelected && !isCorrect) {
-                        doc.setFillColor(254, 226, 226);
-                        doc.setTextColor(185, 28, 28);
-                    } else {
-                        doc.setFillColor(255, 255, 255);
-                        doc.setTextColor(100, 116, 139);
-                    }
-                    doc.roundedRect(margin + 5, yPos, contentWidth - 10, 10, 2, 2, 'FD');
-                    doc.setFontSize(9);
-                    doc.setFont('helvetica', isCorrect || isSelected ? 'bold' : 'normal');
-                    let prefix = `${opt.label}. `;
-                    if (isCorrect) prefix += '(correct) ';
-                    if (isSelected && !isCorrect) prefix += '(your answer) ';
-                    const optionText = doc.splitTextToSize(opt.text, contentWidth - 30);
-                    doc.text(prefix + optionText[0], margin + 8, yPos + 7);
-                    yPos += 12;
-                });
-                yPos += 5;
-            });
-
-            doc.setFontSize(8);
-            doc.setTextColor(156, 163, 175);
-            doc.setFont('helvetica', 'italic');
-            const footerY = pageHeight - 10;
-            doc.text('Generated by Global Professional Skills Platform', pageWidth / 2, footerY, { align: 'center' });
-            doc.text(`Document ID: ${submission.id}`, pageWidth / 2, footerY + 4, { align: 'center' });
-            const filename = `${submission.quiz_title?.replace(/[^a-z0-9]/gi, '_') || 'quiz'}_result_${new Date().toISOString().split('T')[0]}.pdf`;
-            doc.save(filename);
-            toast.dismiss();
-            toast.success('PDF downloaded successfully');
-        } catch (error) {
-            console.error('PDF generation error:', error);
-            toast.dismiss();
-            toast.error('Failed to generate PDF');
-        }
-    };
+    
 
 
     if (loading) return <LoadingSpinner />;
@@ -280,16 +99,20 @@ const QuizResultDetailPage: React.FC = () => {
                         <p className="text-sm text-gray-500 mt-1">{submission.quiz?.title || submission.quiz_title}</p>
                     </div>
                 </div>
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        downloadResultPDF(submission);
-                    }}
-                    disabled={!submission.completed_at}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-rose-600 text-white hover:bg-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                >
-                    <Download className="w-4 h-4" /> Download PDF
-                </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            downloadResultPDF({ 
+                            submission, 
+                            course, 
+                            api 
+                            });
+                        }}
+                        disabled={!submission.completed_at}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm bg-rose-600 text-white hover:bg-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                        <Download className="w-4 h-4" /> Download PDF
+                    </button>
             </div>
 
             {submission.is_disqualified && (
