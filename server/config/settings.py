@@ -5,7 +5,6 @@ Production-ready configuration with environment-based settings.
 
 import os
 from pathlib import Path
-from pathlib import Path
 from datetime import timedelta
 from decouple import config, Csv
 import dj_database_url
@@ -201,7 +200,7 @@ REST_FRAMEWORK = {
 # JWT Configuration
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(
-        minutes=config("ACCESS_TOKEN_LIFETIME_MINUTES", default=60, cast=int)
+        minutes=config("ACCESS_TOKEN_LIFETIME_MINUTES", default=400, cast=int)
     ),
     "REFRESH_TOKEN_LIFETIME": timedelta(
         days=config("REFRESH_TOKEN_LIFETIME_DAYS", default=7, cast=int)
