@@ -3,13 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCourses } from '../../../../hooks/useCourses';
-import { getQuizDetail, getQuizSubmissionsForInstructor } from '../../../../lib/api';
-import { ArrowLeft, FileText, CheckCircle, AlertTriangle } from 'lucide-react';
+import { getQuizDetail, getQuizSubmissionsForInstructor, getAnswerSheet } from '../../../../lib/api';
+import { ArrowLeft, FileText, CheckCircle, AlertTriangle, Download } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { extractErrorMessage } from '../../../../lib/errorUtils';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { downloadSubmissionsListPDF, generateAnswerSheetPDF } from '../../../../lib/pdfUtilsInstructor';
+
 
 const QuizSubmissionsListPage: React.FC = () => {
     const { courseId, quizId } = useParams<{ courseId: string; quizId: string }>();
@@ -49,41 +49,27 @@ const QuizSubmissionsListPage: React.FC = () => {
 
 
     const downloadListPDF = () => {
-        const doc = new jsPDF();
-        doc.setFontSize(16);
-        doc.text(`Quiz Submissions: ${quiz?.title || 'Unknown Quiz'}`, 14, 20);
-        doc.setFontSize(12);
-        doc.text(`Course: ${course?.title || ''}`, 14, 28);
-
-        const tableColumn = ["Student", "Email", "Score", "Started At", "Completed At", "Status"];
-        const tableRows: any[] = [];
-
-        submissions.forEach(sub => {
-            const completed = sub.completed_at ? new Date(sub.completed_at).toLocaleString() : 'In Progress';
-            let status = 'Completed';
-            if (sub.is_disqualified) status = 'Disqualified';
-            else if (!sub.completed_at) status = 'Ongoing';
-
-            tableRows.push([
-                sub.student_name,
-                sub.student_email || '',
-                sub.score !== null ? `${sub.score}/${sub.total_questions || '?'}` : '-',
-                sub.started_at ? new Date(sub.started_at).toLocaleString() : '',
-                completed,
-                status
-            ]);
+        downloadSubmissionsListPDF({
+            quizTitle: quiz?.title || 'Unknown Quiz',
+            courseTitle: course?.title || '',
+            submissions: submissions,
         });
-
-        // Use autoTable as a function call
-        autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            startY: 35,
-            theme: 'grid'
-        });
-
-        doc.save(`quiz_submissions_${quiz?.title?.replace(/[^a-z0-9]/gi, '_') || 'quiz'}.pdf`);
     };
+
+    const downloadStudentAnswerSheet = async (submissionId: string, studentName: string) => {
+        try {
+            const response = await getAnswerSheet(submissionId);
+            if (!response.data.success) {
+                throw new Error(response.data.error?.message || 'Failed to fetch answer sheet');
+            }
+            const data = response.data.data;
+            await generateAnswerSheetPDF(data, studentName); // Note: await here
+        } catch (error) {
+            console.error('Download error:', error);
+            toast.error(extractErrorMessage(error) || 'Failed to download answer sheet');
+        }
+    };
+
 
     if (courseLoading || loading) return <LoadingSpinner />;
 
@@ -126,12 +112,13 @@ const QuizSubmissionsListPage: React.FC = () => {
                                 <th className="px-6 py-4">Score</th>
                                 <th className="px-6 py-4">Started</th>
                                 <th className="px-6 py-4">Completed</th>
+                                <th className="px-6 py-4">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {submissions.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                                         No submissions found for this quiz.
                                     </td>
                                 </tr>
@@ -170,6 +157,18 @@ const QuizSubmissionsListPage: React.FC = () => {
                                             </td>
                                             <td className="px-6 py-4 text-gray-500">
                                                 {sub.completed_at ? new Date(sub.completed_at).toLocaleString() : '-'}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {sub.completed_at && (
+                                                    <button
+                                                        onClick={() => downloadStudentAnswerSheet(sub.id, sub.student_name)}
+                                                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium rounded-lg text-xs transition-colors border border-blue-100"
+                                                        title="Download Answer Sheet"
+                                                    >
+                                                        <Download className="w-4 h-4" />
+                                                        Answer Sheet
+                                                    </button>
+                                                )}
                                             </td>
                                         </tr>
                                     );
