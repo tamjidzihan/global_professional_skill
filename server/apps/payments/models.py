@@ -88,3 +88,69 @@ class Payment(models.Model):
     def is_completed(self):
         """Check if payment is completed."""
         return self.status == PaymentStatus.COMPLETED
+
+
+class PromoCode(models.Model):
+    """Model to store discount promo codes."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    code = models.CharField(max_length=50, unique=True, db_index=True)
+    discount_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        help_text="Discount percentage (e.g. 10.0 for 10%, 50.0 for 50%)"
+    )
+    valid_from = models.DateTimeField(help_text="Start date/time of validity")
+    valid_until = models.DateTimeField(help_text="Expiration date/time")
+    max_uses = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text="Maximum total redemptions allowed (leave blank for unlimited)"
+    )
+    uses_count = models.PositiveIntegerField(default=0, help_text="Total number of times used")
+    is_active = models.BooleanField(default=True, help_text="Enable or disable promo code")
+    courses = models.ManyToManyField(
+        Course,
+        blank=True,
+        related_name="promo_codes",
+        help_text="Select courses eligible for this promo code (leave blank to apply to all courses)"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "promo_codes"
+        verbose_name = "Promo Code"
+        verbose_name_plural = "Promo Codes"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.code} ({self.discount_percentage}%)"
+
+    def save(self, *args, **kwargs):
+        if self.code:
+            self.code = self.code.upper().strip()
+        super().save(*args, **kwargs)
+
+    def is_valid_now(self, course=None):
+        """Check if promo code is active, within duration window, under max uses, and applicable for course."""
+        from django.utils import timezone
+        now = timezone.now()
+
+        if not self.is_active:
+            return False, "Promo code is inactive."
+
+        if self.valid_from and now < self.valid_from:
+            return False, "Promo code is not yet active."
+
+        if self.valid_until and now > self.valid_until:
+            return False, "Promo code has expired."
+
+        if self.max_uses and self.uses_count >= self.max_uses:
+            return False, "Promo code usage limit reached."
+
+        if course and self.courses.exists() and not self.courses.filter(id=course.id).exists():
+            return False, "Promo code is not applicable for this course."
+
+        return True, "Promo code is valid."
+

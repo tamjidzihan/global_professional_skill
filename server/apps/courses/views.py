@@ -662,7 +662,26 @@ class CourseAnnouncementViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(course=course, created_by=request.user)
+        announcement = serializer.save(course=course, created_by=request.user)
+
+        # Notify enrolled students via email
+        try:
+            from apps.enrollments.models import Enrollment
+            from apps.core.notification_service import dispatch_notification
+            enrollments = Enrollment.objects.filter(course=course).select_related("student")
+            instructor_name = request.user.get_full_name() or request.user.email
+            for enrollment in enrollments:
+                dispatch_notification(
+                    "EMAIL_INSTRUCTOR_ANNOUNCEMENT",
+                    user=enrollment.student,
+                    context={
+                        "instructor_name": instructor_name,
+                        "course_name": course.title,
+                        "announcement_content": announcement.content,
+                    }
+                )
+        except Exception as e:
+            logger.error(f"Error sending instructor announcement emails: {str(e)}")
 
         return Response(
             {
@@ -1284,6 +1303,28 @@ class QuizViewSet(viewsets.ModelViewSet):
         # Persist the student's answers for answer sheet review
         submission.student_answers = answers
         submission.save()
+
+        # Send SMS Pass/Fail notification based on pass mark percentage setting
+        try:
+            from apps.core.models import SiteSettings
+            from apps.core.notification_service import dispatch_notification
+            
+            total_q = submission.total_questions or 1
+            percentage_score = round((submission.score / total_q) * 100, 1)
+            pass_mark = float(SiteSettings.get_settings().quiz_pass_percentage)
+
+            ctx = {
+                "quiz_name": quiz.title,
+                "score": str(percentage_score),
+                "student_name": user.get_full_name() or user.email,
+            }
+
+            if percentage_score >= pass_mark:
+                dispatch_notification("SMS_QUIZ_RESULT_PASS", user=user, context=ctx)
+            else:
+                dispatch_notification("SMS_QUIZ_RESULT_FAIL", user=user, context=ctx)
+        except Exception as e:
+            logger.error(f"Error sending quiz result SMS: {str(e)}")
 
         # Prepare and send response with required fields
         data = QuizSubmissionSerializer(submission).data

@@ -10,21 +10,22 @@ import {
     QrCode,
     Phone,
     Hash,
-    Info
+    Info,
+    Tag
 } from 'lucide-react';
 import { useCourses } from '../../hooks/useCourses';
 import { usePayments } from '../../hooks/usePayments';
 import { useAuth } from '../../hooks/useAuth';
 import Breadcrumb from '../components/Breadcrumb';
 import { toast } from 'react-hot-toast';
-import { getSiteSettings } from '../../lib/api';
+import { getSiteSettings, validatePromoCode } from '../../lib/api';
 import type { SiteSettings } from '../../types';
 
 const CheckoutPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { course, fetchCourseDetail, loading: courseLoading } = useCourses();
+    const { course, fetchCourseDetail, loading: courseLoading, error: courseError } = useCourses();
     const { initiatePayment, loading: paymentLoading } = usePayments();
 
     const [paymentMethod] = useState<'BKASH'>('BKASH');
@@ -32,6 +33,17 @@ const CheckoutPage: React.FC = () => {
     const [senderNumber, setSenderNumber] = useState('');
     const [isSuccess, setIsSuccess] = useState(false);
     const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+
+    // Promo Code state
+    const [promoInput, setPromoInput] = useState('');
+    const [validatingPromo, setValidatingPromo] = useState(false);
+    const [appliedPromo, setAppliedPromo] = useState<{
+        code: string;
+        discount_percentage: number;
+        original_price: number;
+        discount_amount: number;
+        final_price: number;
+    } | null>(null);
 
     useEffect(() => {
         if (id) {
@@ -60,6 +72,30 @@ const CheckoutPage: React.FC = () => {
         }
     }, [course, id, navigate]);
 
+    const handleApplyPromoCode = async () => {
+        if (!promoInput.trim() || !course) return;
+        setValidatingPromo(true);
+        try {
+            const res = await validatePromoCode(promoInput.trim(), course.id);
+            if (res.data.success) {
+                setAppliedPromo(res.data.data);
+                toast.success(res.data.message || 'Promo code applied successfully!');
+            }
+        } catch (err: any) {
+            const msg = err.response?.data?.error?.message || 'Invalid or expired promo code.';
+            toast.error(msg);
+            setAppliedPromo(null);
+        } finally {
+            setValidatingPromo(false);
+        }
+    };
+
+    const handleRemovePromo = () => {
+        setAppliedPromo(null);
+        setPromoInput('');
+        toast.success('Promo code removed.');
+    };
+
     const handlePayment = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -70,16 +106,25 @@ const CheckoutPage: React.FC = () => {
             return;
         }
 
-        const paymentData = {
+        const finalAmount = appliedPromo ? appliedPromo.final_price : course.price;
+
+        const paymentData: any = {
             course: course.id,
-            amount: course.price,
+            amount: finalAmount,
             currency: 'USD',
             payment_method: paymentMethod,
             transaction_id: transactionId,
             sender_number: senderNumber,
+            promo_code: appliedPromo ? appliedPromo.code : undefined,
             metadata: {
                 student_name: user.full_name || user.email,
-                course_title: course.title
+                course_title: course.title,
+                ...(appliedPromo ? {
+                    promo_code: appliedPromo.code,
+                    discount_percentage: appliedPromo.discount_percentage,
+                    discount_amount: appliedPromo.discount_amount,
+                    original_price: appliedPromo.original_price,
+                } : {})
             }
         };
 
@@ -89,7 +134,7 @@ const CheckoutPage: React.FC = () => {
         }
     };
 
-    if (courseLoading) {
+    if (courseLoading || (!course && !courseError)) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0066CC]"></div>
@@ -143,6 +188,8 @@ const CheckoutPage: React.FC = () => {
         );
     }
 
+    const currentPriceToPay = appliedPromo ? appliedPromo.final_price : parseFloat(course.price);
+
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
             <Breadcrumb
@@ -189,7 +236,7 @@ const CheckoutPage: React.FC = () => {
                                             <li>Open your <strong>bKash App</strong> or Dial <strong>*247#</strong></li>
                                             <li>Select <strong>Payment</strong> option</li>
                                             <li>Enter Merchant Number: <strong>{siteSettings?.bkash_merchant_number || "01XXXXXXXXX"}</strong></li>
-                                            <li>Enter Amount: <strong>TK. {parseFloat(course.price).toLocaleString()}</strong></li>
+                                            <li>Enter Amount: <strong className="text-[#D12053]">TK. {currentPriceToPay.toLocaleString()}</strong></li>
                                             <li>Complete the transaction and save the <strong>TrxID</strong></li>
                                         </ul>
                                     </div>
@@ -289,14 +336,69 @@ const CheckoutPage: React.FC = () => {
                                         <span>Course Price</span>
                                         <span className="font-medium">TK. {parseFloat(course.price).toLocaleString()}</span>
                                     </div>
+
+                                    {/* Applied Promo Row */}
+                                    {appliedPromo && (
+                                        <div className="flex justify-between text-emerald-600 font-medium text-sm">
+                                            <span>Discount ({appliedPromo.discount_percentage}%)</span>
+                                            <span>- TK. {appliedPromo.discount_amount.toLocaleString()}</span>
+                                        </div>
+                                    )}
+
                                     <div className="flex justify-between text-gray-600">
                                         <span>Platform Fee</span>
                                         <span className="text-green-600 font-medium">TK. 0</span>
                                     </div>
+
+                                    {/* Promo Code Input */}
+                                    <div className="pt-4 border-t border-gray-100">
+                                        <label className="block text-xs font-bold text-gray-700 mb-2 flex items-center gap-1.5">
+                                            <Tag className="w-3.5 h-3.5 text-violet-600" />
+                                            Have a Promo Code?
+                                        </label>
+                                        {appliedPromo ? (
+                                            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between">
+                                                <div>
+                                                    <span className="font-bold text-emerald-800 text-sm block">
+                                                        {appliedPromo.code} ({appliedPromo.discount_percentage}% OFF)
+                                                    </span>
+                                                    <span className="text-xs text-emerald-600">
+                                                        You save TK. {appliedPromo.discount_amount.toLocaleString()}
+                                                    </span>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={handleRemovePromo}
+                                                    className="text-xs text-red-500 hover:text-red-700 font-bold px-2 py-1 bg-white rounded-lg border border-red-100 shadow-sm"
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter code (e.g. SAVE20)"
+                                                    value={promoInput}
+                                                    onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                                                    className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm uppercase font-mono font-bold focus:bg-white focus:ring-2 focus:ring-violet-500 outline-none"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleApplyPromoCode}
+                                                    disabled={validatingPromo || !promoInput.trim()}
+                                                    className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-bold text-xs rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+                                                >
+                                                    {validatingPromo ? 'Applying...' : 'Apply'}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
                                     <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
                                         <span className="font-bold text-gray-800">Total</span>
                                         <span className="text-2xl font-black text-[#D12053]">
-                                            TK. {parseFloat(course.price).toLocaleString()}
+                                            TK. {currentPriceToPay.toLocaleString()}
                                         </span>
                                     </div>
                                 </div>
@@ -332,3 +434,4 @@ const CheckoutPage: React.FC = () => {
 };
 
 export default CheckoutPage;
+

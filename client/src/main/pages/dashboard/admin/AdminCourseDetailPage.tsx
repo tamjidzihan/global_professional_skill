@@ -223,7 +223,7 @@ const AdminCourseDetailPage = () => {
     const sectionSub = 'text-xs text-gray-400 mt-0.5';
     const iconBox = (color: string) => `w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${color}`;
 
-    if (loading) return <LoadingSpinner fullscreen text="Loading course details..." />;
+    if (loading || (!selectedCourse && !error)) return <LoadingSpinner fullscreen text="Loading course details..." />;
 
     if (error || !selectedCourse) {
         return (

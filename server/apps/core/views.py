@@ -2,8 +2,14 @@ from rest_framework import generics, permissions, status, viewsets
 from rest_framework.response import Response
 from django.utils import timezone
 from django.db import models
-from .models import SiteSettings, Announcement, NewsTickerItem
-from .serializers import SiteSettingsSerializer, AnnouncementSerializer, NewsTickerItemSerializer
+from .models import SiteSettings, Announcement, NewsTickerItem, NotificationTemplate, NotificationLog
+from .serializers import (
+    SiteSettingsSerializer,
+    AnnouncementSerializer,
+    NewsTickerItemSerializer,
+    NotificationTemplateSerializer,
+    NotificationLogSerializer,
+)
 from apps.accounts.permissions import IsAdmin
 
 
@@ -72,7 +78,21 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        announcement = serializer.save(created_by=self.request.user)
+        # Send Email Notification to all active students
+        try:
+            from apps.accounts.models import User, UserRole
+            from apps.core.notification_service import dispatch_notification
+            students = User.objects.filter(role=UserRole.STUDENT, is_active=True)
+            for student in students:
+                dispatch_notification(
+                    "EMAIL_ADMIN_ANNOUNCEMENT",
+                    user=student,
+                    context={"announcement_content": announcement.content}
+                )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to dispatch admin announcement emails: {str(e)}")
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -172,3 +192,37 @@ class NewsTickerItemViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response({"success": True, "data": serializer.data})
+
+
+class NotificationTemplateViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Admin notification template management.
+    """
+    queryset = NotificationTemplate.objects.all()
+    serializer_class = NotificationTemplateSerializer
+    permission_classes = [IsAdmin]
+    pagination_class = None
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"success": True, "data": serializer.data})
+
+
+class NotificationLogViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    ViewSet for Admin delivery logs viewing.
+    """
+    queryset = NotificationLog.objects.select_related("recipient_user").all()
+    serializer_class = NotificationLogSerializer
+    permission_classes = [IsAdmin]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({"success": True, "data": serializer.data})
+

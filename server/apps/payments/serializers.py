@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Payment, PaymentStatus
+from .models import Payment, PaymentStatus, PromoCode
 from apps.courses.models import Course
 
 
@@ -57,6 +57,7 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 class PaymentCreateSerializer(serializers.ModelSerializer):
     """Serializer for creating a Payment (Order)."""
+    promo_code = serializers.CharField(required=False, allow_blank=True, write_only=True)
 
     class Meta:
         model = Payment
@@ -67,6 +68,7 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
             "payment_method",
             "transaction_id",
             "sender_number",
+            "promo_code",
             "metadata",
         ]
 
@@ -90,3 +92,40 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("This Transaction ID has already been submitted.")
             
         return value
+
+
+class PromoCodeSerializer(serializers.ModelSerializer):
+    """Serializer for PromoCode management."""
+    
+    courses_detail = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PromoCode
+        fields = [
+            "id",
+            "code",
+            "discount_percentage",
+            "valid_from",
+            "valid_until",
+            "max_uses",
+            "uses_count",
+            "is_active",
+            "courses",
+            "courses_detail",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "uses_count", "created_at", "updated_at"]
+
+    def get_courses_detail(self, obj):
+        return [{"id": str(c.id), "title": c.title} for c in obj.courses.all()]
+
+    def validate_code(self, value):
+        return value.upper().strip()
+
+
+class PromoCodeValidateSerializer(serializers.Serializer):
+    """Serializer for validating promo code at checkout."""
+    code = serializers.CharField(required=True)
+    course_id = serializers.UUIDField(required=True)
+

@@ -70,6 +70,8 @@ export function useCourses() {
     const [review, setReview] = useState<Review | null>(null);
 
     const [loading, setLoading] = useState(false);
+    const [coursesFetched, setCoursesFetched] = useState(false);
+    const [courseDetailFetched, setCourseDetailFetched] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [pagination, setPagination] = useState({
         count: 0,
@@ -124,27 +126,33 @@ export function useCourses() {
     // ==================== Course Actions ====================
 
     const fetchCourses = useCallback(
-        async (filters?: CourseFilters, pageUrl?: string | null) =>
-            fetchData<CoursesSummary[]>(
+        async (filters?: CourseFilters, pageUrl?: string | null) => {
+            setCoursesFetched(false);
+            await fetchData<CoursesSummary[]>(
                 getCourses,
                 setCourses,
                 setPagination,
                 ['results', 'data'],
                 filters,
                 pageUrl
-            ),
+            );
+            setCoursesFetched(true);
+        },
         [fetchData],
     );
 
     const fetchCourseDetail = useCallback(
-        async (id: string) =>
-            fetchData<CourseDetail | null>(
+        async (id: string) => {
+            setCourseDetailFetched(false);
+            await fetchData<CourseDetail | null>(
                 getCourseDetail,
                 setCourse,
                 undefined,
                 ['data', 'data'],
                 id
-            ),
+            );
+            setCourseDetailFetched(true);
+        },
         [fetchData],
     );
 
@@ -855,6 +863,8 @@ export function useCourses() {
         setReviews([]);
         setReview(null);
         setError(null);
+        setCoursesFetched(false);
+        setCourseDetailFetched(false);
         setPagination({
             count: 0,
             next: null,
@@ -878,6 +888,8 @@ export function useCourses() {
         reviews,
         review,
         loading,
+        coursesFetched,
+        courseDetailFetched,
         error,
 
         // Course Actions

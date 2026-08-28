@@ -74,12 +74,29 @@ class Enrollment(models.Model):
             self.progress_percentage = (completed / total_lessons) * 100
 
         # Mark as completed if 100%
+        is_newly_completed = False
         if self.progress_percentage >= 100 and not self.completed_at:
             from django.utils import timezone
 
             self.completed_at = timezone.now()
+            is_newly_completed = True
 
         self.save(update_fields=["progress_percentage", "completed_at"])
+
+        if is_newly_completed:
+            try:
+                # Create certificate record
+                Certificate.objects.get_or_create(enrollment=self)
+                # Dispatch Email
+                from apps.core.notification_service import dispatch_notification
+                dispatch_notification(
+                    "EMAIL_COURSE_COMPLETION",
+                    user=self.student,
+                    context={"course_name": course.title}
+                )
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Error triggering course completion notification: {str(e)}")
 
 
 class LessonProgress(models.Model):

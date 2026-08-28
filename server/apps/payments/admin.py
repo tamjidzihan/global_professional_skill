@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Payment
+from .models import Payment, PromoCode
 
 
 @admin.register(Payment)
@@ -48,3 +48,24 @@ class PaymentAdmin(admin.ModelAdmin):
             {"fields": ("created_at", "updated_at", "completed_at")},
         ),
     )
+
+
+@admin.register(PromoCode)
+class PromoCodeAdmin(admin.ModelAdmin):
+    """Admin configuration for PromoCode model."""
+
+    list_display = (
+        "code",
+        "discount_percentage",
+        "valid_from",
+        "valid_until",
+        "max_uses",
+        "uses_count",
+        "is_active",
+        "created_at",
+    )
+    list_filter = ("is_active", "valid_from", "valid_until")
+    search_fields = ("code",)
+    readonly_fields = ("id", "uses_count", "created_at", "updated_at")
+    filter_horizontal = ("courses",)
+

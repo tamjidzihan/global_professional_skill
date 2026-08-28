@@ -25,6 +25,7 @@ const CoursesPage = () => {
         courses,
         fetchCourses,
         loading,
+        coursesFetched,
         error,
         pagination
     } = useCourses()
@@ -177,7 +178,7 @@ const CoursesPage = () => {
         navigate(`/courses?${newParams.toString()}`);
     }
 
-    if (loading && courses.length === 0) {
+    if (loading || !coursesFetched) {
         return <CoursesPageSkeleton />
     }
 

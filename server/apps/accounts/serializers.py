@@ -45,6 +45,12 @@ class UserSerializer(serializers.ModelSerializer):
     def get_full_name(self, obj):
         return obj.get_full_name()
 
+    def update(self, instance, validated_data):
+        if "phone_number" in validated_data and validated_data["phone_number"]:
+            from apps.core.notification_service import format_phone_number
+            validated_data["phone_number"] = format_phone_number(validated_data["phone_number"])
+        return super().update(instance, validated_data)
+
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """Serializer for user registration."""
@@ -75,10 +81,15 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         """Create new user with Student role by default."""
         validated_data.pop("password_confirm")
 
+        phone = validated_data.get("phone_number", "")
+        if phone:
+            from apps.core.notification_service import format_phone_number
+            phone = format_phone_number(phone)
+
         user = User.objects.create_user(  # type: ignore
             email=validated_data["email"],
             password=validated_data["password"],
-            phone_number = validated_data.get("phone_number",""),
+            phone_number=phone,
             first_name=validated_data.get("first_name", ""),
             last_name=validated_data.get("last_name", ""),
             role=UserRole.STUDENT,  # Default role
@@ -90,6 +101,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         send_verification_email(user.id)
 
         return user
+
 
 
 class UserLoginSerializer(serializers.Serializer):

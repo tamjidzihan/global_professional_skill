@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import SiteSettings, Announcement, NewsTickerItem
+from .models import SiteSettings, Announcement, NewsTickerItem, NotificationTemplate, NotificationLog
 from apps.accounts.serializers import UserSerializer
 
 class SiteSettingsSerializer(serializers.ModelSerializer):
@@ -7,7 +7,9 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
         model = SiteSettings
         fields = [
             'bkash_merchant_number', 
-            'bkash_qr_code', 
+            'bkash_qr_code',
+            'quiz_pass_percentage',
+            'greenweb_sms_token',
             'updated_at'
         ]
 
@@ -35,3 +37,18 @@ class NewsTickerItemSerializer(serializers.ModelSerializer):
             'created_by', 'created_by_detail'
         ]
         read_only_fields = ['created_by']
+
+
+class NotificationTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotificationTemplate
+        fields = '__all__'
+
+
+class NotificationLogSerializer(serializers.ModelSerializer):
+    recipient_user_detail = UserSerializer(source='recipient_user', read_only=True)
+
+    class Meta:
+        model = NotificationLog
+        fields = '__all__'
+

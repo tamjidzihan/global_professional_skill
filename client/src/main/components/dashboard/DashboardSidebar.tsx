@@ -139,6 +139,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
         },
 
         { name: 'Payment Management', path: '/dashboard/admin/payments', icon: CreditCard, badge: 'Review' },
+        { name: 'Promo Codes', path: '/dashboard/admin/promo-codes', icon: Tag, badge: 'New' },
         { name: 'Platform Settings', path: '/dashboard/admin/settings', icon: Settings },
     ]
 

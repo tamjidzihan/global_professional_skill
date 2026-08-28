@@ -34,7 +34,7 @@ import type { QuizSubmission } from '../../../../types';
 export default function EnrolledCourseDetailPage() {
     const { id } = useParams<{ id: string }>(); // This is the COURSE ID
     const { enrollments, getMyEnrollments, loading: enrollmentsLoading } = useEnrollments();
-    const { course, fetchCourseDetail, loading: courseLoading } = useCourses();
+    const { course, fetchCourseDetail, loading: courseLoading, error: courseError } = useCourses();
     const { announcements, fetchCourseAnnouncementsByCourse, loading: announcementsLoading } = useCourseAnnouncements();
     const [activeTab, setActiveTab] = useState('overview');
     const [expandedSections, setExpandedSections] = useState<string[]>([]);
@@ -101,7 +101,7 @@ export default function EnrolledCourseDetailPage() {
     // Find the enrollment for this specific course
     const enrollment = enrollments.find(e => e.course.id === id);
 
-    const loading = enrollmentsLoading || courseLoading;
+    const loading = enrollmentsLoading || courseLoading || (!course && !courseError);
 
     // Helper to truncate URL for display
     const truncateUrl = (url: string) => {

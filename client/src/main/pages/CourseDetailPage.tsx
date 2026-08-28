@@ -15,6 +15,7 @@ import {
     BookOpen,
     Award,
     Lock,
+    CheckCircle2,
     FileText,
     Download,
 } from 'lucide-react'
@@ -33,6 +34,7 @@ export function CourseDetailPage() {
     const {
         course,
         loading,
+        courseDetailFetched,
         error,
         fetchCourseDetail,
         submitForReview,
@@ -190,7 +192,7 @@ export function CourseDetailPage() {
         return 'bg-green-100 text-green-800'
     }
 
-    if (loading) {
+    if (loading || !courseDetailFetched) {
         return <CourseDetailSkeleton />
     }
 
@@ -406,18 +408,26 @@ export function CourseDetailPage() {
                                         </button>
                                     )}
                                     {course.status === 'PUBLISHED' && (
-                                        <button
-                                            onClick={handleEnrollNow}
-                                            disabled={!course.is_admission_open || course.is_full || enrollLoading}
-                                            className={`px-8 py-3 rounded font-bold transition-colors shadow-md hover:shadow-lg cursor-pointer ${course.is_enrolled
-                                                ? 'bg-green-600 text-white hover:bg-green-700'
-                                                : !course.is_admission_open || course.is_full
+                                        course.is_enrolled ? (
+                                            <Link
+                                                to={`/dashboard/student/my-courses/${course.id}`}
+                                                className="px-8 py-3 rounded-lg font-bold transition-colors shadow-md hover:shadow-lg bg-emerald-600 text-white hover:bg-emerald-700 inline-flex items-center gap-2"
+                                            >
+                                                <CheckCircle2 className="w-5 h-5" />
+                                                Go to Course
+                                            </Link>
+                                        ) : (
+                                            <button
+                                                onClick={handleEnrollNow}
+                                                disabled={!course.is_admission_open || course.is_full || enrollLoading}
+                                                className={`px-8 py-3 rounded-lg font-bold transition-colors shadow-md hover:shadow-lg cursor-pointer ${!course.is_admission_open || course.is_full
                                                     ? 'bg-gray-400 text-white cursor-not-allowed'
                                                     : 'bg-[#76C043] text-white hover:bg-[#65a838]'
-                                                }`}
-                                        >
-                                            {enrollLoading ? 'Processing...' : course.is_enrolled ? 'Enrolled' : 'Enroll Now'}
-                                        </button>
+                                                    }`}
+                                            >
+                                                {enrollLoading ? 'Processing...' : 'Enroll Now'}
+                                            </button>
+                                        )
                                     )}
                                 </div>
                             </div>

@@ -27,7 +27,7 @@ export function RegisterPage() {
         password_confirm: '',
         first_name: '',
         last_name: '',
-        phone_number: '',
+        phone_number: '+880',
         acceptTerms: false
     })
 

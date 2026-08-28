@@ -31,7 +31,7 @@ export default function StudentMaterialsPage() {
     const [searchParams] = useSearchParams();
     const targetMaterialId = searchParams.get('id');
 
-    const { course, fetchCourseDetail, loading: courseLoading } = useCourses();
+    const { course, fetchCourseDetail, loading: courseLoading, error: courseError } = useCourses();
     const { enrollments, getMyEnrollments, loading: enrollmentsLoading } = useEnrollments();
     const { materials, fetchMaterials, loading: materialsLoading } = useCourseMaterials();
 
@@ -123,7 +123,7 @@ export default function StudentMaterialsPage() {
 
     const selectedMaterial = materials.find(m => m.id === selectedMaterialId);
 
-    const loading = courseLoading || enrollmentsLoading || materialsLoading;
+    const loading = courseLoading || enrollmentsLoading || materialsLoading || (!course && !courseError);
 
     if (loading) {
         return (

@@ -24,6 +24,8 @@ const SiteSettingsPage: React.FC = () => {
 
     // Form state
     const [merchantNumber, setMerchantNumber] = useState('');
+    const [quizPassPercentage, setQuizPassPercentage] = useState<number>(50);
+    const [greenwebSmsToken, setGreenwebSmsToken] = useState('');
     const [qrCodeFile, setQrCodeFile] = useState<File | null>(null);
     const [qrCodePreview, setQrCodePreview] = useState<string | null>(null);
 
@@ -37,7 +39,9 @@ const SiteSettingsPage: React.FC = () => {
             if (response.data.success) {
                 const data = response.data.data;
                 setSettings(data);
-                setMerchantNumber(data.bkash_merchant_number);
+                setMerchantNumber(data.bkash_merchant_number || '');
+                setQuizPassPercentage(data.quiz_pass_percentage ?? 50);
+                setGreenwebSmsToken(data.greenweb_sms_token || '');
                 setQrCodePreview(data.bkash_qr_code);
             }
         } catch (error: any) {
@@ -66,6 +70,8 @@ const SiteSettingsPage: React.FC = () => {
         try {
             const formData = new FormData();
             formData.append('bkash_merchant_number', merchantNumber);
+            formData.append('quiz_pass_percentage', quizPassPercentage.toString());
+            formData.append('greenweb_sms_token', greenwebSmsToken);
             if (qrCodeFile) {
                 formData.append('bkash_qr_code', qrCodeFile);
             }
@@ -209,12 +215,64 @@ const SiteSettingsPage: React.FC = () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+
+                    {/* Notification & Quiz Settings Section */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="bg-violet-50 px-6 py-4 border-b border-violet-100 flex items-center justify-between">
+                            <div className="flex items-center">
+                                <Settings className="w-5 h-5 text-violet-600 mr-3" />
+                                <h2 className="text-lg font-bold text-gray-800">Quiz & Notification Settings</h2>
+                            </div>
+                        </div>
+
+                        <div className="p-8 space-y-6">
+                            {/* Quiz Pass Percentage */}
+                            <div className="max-w-md">
+                                <label className="block text-sm font-bold text-gray-700 mb-2">
+                                    Quiz Passing Mark Percentage (%)
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        step="1"
+                                        value={quizPassPercentage}
+                                        onChange={(e) => setQuizPassPercentage(Number(e.target.value))}
+                                        placeholder="e.g. 50"
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-violet-500 focus:bg-white focus:border-transparent transition-all outline-none text-lg font-bold"
+                                    />
+                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">%</span>
+                                </div>
+                                <p className="text-xs text-gray-400 mt-2">
+                                    Students scoring at or above this percentage will receive the Bangla "পাস" SMS. Scores below will receive the "ফেল" SMS.
+                                </p>
+                            </div>
+
+                            {/* Greenweb SMS Token */}
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-2">
+                                    Greenweb BD SMS API Token
+                                </label>
+                                <input
+                                    type="text"
+                                    value={greenwebSmsToken}
+                                    onChange={(e) => setGreenwebSmsToken(e.target.value)}
+                                    placeholder="Enter your Greenweb SMS API Token (e.g., 1234567890abcdef)"
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-violet-500 focus:bg-white focus:border-transparent transition-all outline-none font-mono text-sm"
+                                />
+                                <p className="text-xs text-gray-400 mt-2">
+                                    API token from Greenweb (http://api.greenweb.com.bd). If left empty, SMS logs will be recorded in mock mode.
+                                </p>
+                            </div>
+                        </div>
 
                         {/* Save Action */}
                         <div className="px-8 py-6 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
                             <div className="flex items-center gap-2 text-amber-600">
                                 <AlertCircle className="w-4 h-4" />
-                                <span className="text-xs font-medium">Changes take effect immediately for all students.</span>
+                                <span className="text-xs font-medium">Changes take effect immediately.</span>
                             </div>
                             <button
                                 type="submit"

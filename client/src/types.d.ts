@@ -381,6 +381,7 @@ export interface PaymentCreateData {
     payment_method: string;
     transaction_id: string;
     sender_number: string;
+    promo_code?: string;
     metadata?: any;
 }
 
@@ -417,6 +418,8 @@ export interface PasswordResetConfirmData {
 export interface SiteSettings {
     bkash_merchant_number: string;
     bkash_qr_code: string | null;
+    quiz_pass_percentage?: number;
+    greenweb_sms_token?: string;
     updated_at: string;
 }
 
@@ -594,3 +597,32 @@ export interface CourseMaterial {
     uploaded_by: string;
     uploaded_by_name: string;
 }
+
+export interface PromoCode {
+    id: string;
+    code: string;
+    discount_percentage: number;
+    valid_from: string;
+    valid_until: string;
+    max_uses: number | null;
+    uses_count: number;
+    is_active: boolean;
+    courses: string[];
+    courses_detail?: Array<{ id: string; title: string }>;
+    created_at?: string;
+    updated_at?: string;
+}
+
+export interface PromoCodeValidateResponse {
+    success: boolean;
+    message: string;
+    data: {
+        id: string;
+        code: string;
+        discount_percentage: number;
+        original_price: number;
+        discount_amount: number;
+        final_price: number;
+    };
+}
+

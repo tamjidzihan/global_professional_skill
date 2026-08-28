@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import SiteSettings, Announcement, NewsTickerItem
+from .models import SiteSettings, Announcement, NewsTickerItem, NotificationTemplate, NotificationLog
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'bkash_merchant_number', 'updated_at']
+    list_display = ['__str__', 'bkash_merchant_number', 'quiz_pass_percentage', 'greenweb_sms_token', 'updated_at']
     
     def has_add_permission(self, request):
         # Prevent adding more than one settings object
@@ -39,3 +39,24 @@ class NewsTickerItemAdmin(admin.ModelAdmin):
         if not obj.created_by:
             obj.created_by = request.user
         super().save_model(request, obj, form, change)
+
+
+@admin.register(NotificationTemplate)
+class NotificationTemplateAdmin(admin.ModelAdmin):
+    list_display = ('code', 'name', 'channel', 'subject', 'is_active', 'updated_at')
+    list_filter = ('channel', 'is_active')
+    search_fields = ('code', 'name', 'subject', 'template_body')
+    ordering = ('code',)
+
+
+@admin.register(NotificationLog)
+class NotificationLogAdmin(admin.ModelAdmin):
+    list_display = ('notification_type', 'channel', 'recipient_phone', 'recipient_email', 'status', 'sent_at')
+    list_filter = ('channel', 'status', 'notification_type', 'sent_at')
+    search_fields = ('recipient_phone', 'recipient_email', 'subject', 'body', 'response_data')
+    ordering = ('-sent_at',)
+    readonly_fields = ('recipient_user', 'recipient_email', 'recipient_phone', 'channel', 'notification_type', 'subject', 'body', 'status', 'response_data', 'sent_at')
+
+    def has_add_permission(self, request):
+        return False
+

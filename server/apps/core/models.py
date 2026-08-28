@@ -17,6 +17,20 @@ class SiteSettings(models.Model):
         help_text="Upload the bKash QR code image."
     )
     
+    # Greenweb SMS & Quiz Pass Settings
+    quiz_pass_percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=50.0,
+        help_text="Passing score percentage for quizzes (e.g. 40, 50, 60)"
+    )
+    greenweb_sms_token = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Token for Greenweb BD SMS API"
+    )
+    
     # Metadata for singleton pattern
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -82,3 +96,74 @@ class NewsTickerItem(models.Model):
 
     def __str__(self):
         return self.text
+
+
+class NotificationChannel(models.TextChoices):
+    SMS = "SMS", "SMS"
+    EMAIL = "EMAIL", "Email"
+
+
+class NotificationTypeCode(models.TextChoices):
+    # SMS (Bangla)
+    SMS_STUDENT_VERIFICATION = "SMS_STUDENT_VERIFICATION", "SMS - Student Verification"
+    SMS_COURSE_APPROVAL = "SMS_COURSE_APPROVAL", "SMS - Course Purchase Approval"
+    SMS_QUIZ_RESULT_PASS = "SMS_QUIZ_RESULT_PASS", "SMS - Quiz Result (Pass)"
+    SMS_QUIZ_RESULT_FAIL = "SMS_QUIZ_RESULT_FAIL", "SMS - Quiz Result (Fail)"
+    
+    # Email (English)
+    EMAIL_STUDENT_VERIFICATION = "EMAIL_STUDENT_VERIFICATION", "Email - Student Verification"
+    EMAIL_COURSE_PURCHASE = "EMAIL_COURSE_PURCHASE", "Email - Course Purchase Confirmation"
+    EMAIL_COURSE_APPROVAL = "EMAIL_COURSE_APPROVAL", "Email - Course Approval Confirmation"
+    EMAIL_INSTRUCTOR_ANNOUNCEMENT = "EMAIL_INSTRUCTOR_ANNOUNCEMENT", "Email - Instructor Announcement"
+    EMAIL_ADMIN_ANNOUNCEMENT = "EMAIL_ADMIN_ANNOUNCEMENT", "Email - Admin Announcement"
+    EMAIL_COURSE_COMPLETION = "EMAIL_COURSE_COMPLETION", "Email - Course Completion Confirmation"
+
+
+class NotificationTemplate(models.Model):
+    """Customizable SMS and Email notification templates."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    code = models.CharField(max_length=50, choices=NotificationTypeCode.choices, unique=True, db_index=True)
+    channel = models.CharField(max_length=10, choices=NotificationChannel.choices, db_index=True)
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    subject = models.CharField(max_length=255, blank=True, help_text="Email Subject line (ignored for SMS)")
+    template_body = models.TextField(help_text="Body content with variables like [Student Name], [Course Name], [Score], etc.")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "notification_templates"
+        verbose_name = "Notification Template"
+        verbose_name_plural = "Notification Templates"
+        ordering = ["code"]
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+
+class NotificationLog(models.Model):
+    """Log of all sent SMS and Email notifications."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    recipient_user = models.ForeignKey(
+        'accounts.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='notification_logs'
+    )
+    recipient_email = models.CharField(max_length=255, blank=True)
+    recipient_phone = models.CharField(max_length=50, blank=True)
+    channel = models.CharField(max_length=10, choices=NotificationChannel.choices, db_index=True)
+    notification_type = models.CharField(max_length=50, choices=NotificationTypeCode.choices, db_index=True)
+    subject = models.CharField(max_length=255, blank=True)
+    body = models.TextField()
+    status = models.CharField(max_length=20, default="SENT", choices=[("SENT", "Sent"), ("FAILED", "Failed")], db_index=True)
+    response_data = models.TextField(blank=True, help_text="API response or error stack")
+    sent_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        db_table = "notification_logs"
+        verbose_name = "Notification Log"
+        verbose_name_plural = "Notification Logs"
+        ordering = ["-sent_at"]
+
+    def __str__(self):
+        return f"{self.channel} to {self.recipient_email or self.recipient_phone} ({self.status})"
+

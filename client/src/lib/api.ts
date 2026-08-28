@@ -29,6 +29,8 @@ import type {
     JobCreateUpdateData,
     JobApplicationStatus,
     CourseMaterial,
+    PromoCode,
+    PromoCodeValidateResponse,
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
@@ -233,6 +235,12 @@ export const endpoints = {
         detail: (id: string) => `/payments/payments/${id}/`,
         approve: (id: string) => `/payments/payments/${id}/approve/`,
         reject: (id: string) => `/payments/payments/${id}/reject/`,
+        promoCodes: {
+            list: '/payments/promo-codes/',
+            create: '/payments/promo-codes/',
+            detail: (id: string) => `/payments/promo-codes/${id}/`,
+            validate: '/payments/promo-codes/validate/',
+        },
     },
     core: {
         settings: '/core/settings/',
@@ -724,4 +732,22 @@ export const deleteCourseMaterial = (courseId: string, materialId: string): Prom
 
 export const deleteCourseMaterialsBulk = (courseId: string, materialIds: string[]): Promise<AxiosResponse<ApiResponse<void>>> =>
     api.post<ApiResponse<void>>(endpoints.courseMaterials.deleteBulk(courseId), { ids: materialIds });
+
+// Promo Code API Calls
+export const getPromoCodes = <T = ApiResponse<PromoCode[]>>(
+    params?: Record<string, any>,
+): Promise<AxiosResponse<T>> => api.get<T>(endpoints.payments.promoCodes.list, { params });
+
+export const createPromoCode = (data: Partial<PromoCode>): Promise<AxiosResponse<ApiResponse<PromoCode>>> =>
+    api.post<ApiResponse<PromoCode>>(endpoints.payments.promoCodes.create, data);
+
+export const updatePromoCode = (id: string, data: Partial<PromoCode>): Promise<AxiosResponse<ApiResponse<PromoCode>>> =>
+    api.put<ApiResponse<PromoCode>>(endpoints.payments.promoCodes.detail(id), data);
+
+export const deletePromoCode = (id: string): Promise<AxiosResponse<void>> =>
+    api.delete<void>(endpoints.payments.promoCodes.detail(id));
+
+export const validatePromoCode = (code: string, courseId: string): Promise<AxiosResponse<PromoCodeValidateResponse>> =>
+    api.post<PromoCodeValidateResponse>(endpoints.payments.promoCodes.validate, { code, course_id: courseId });
+
 

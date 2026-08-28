@@ -36,6 +36,7 @@ import { UserManagementPage } from "./main/pages/dashboard/admin/UserManagementP
 import { CategoryManagementPage } from "./main/pages/dashboard/admin/CategoryManagementPage";
 import PaymentManagementPage from "./main/pages/dashboard/admin/PaymentManagementPage";
 import SiteSettingsPage from "./main/pages/dashboard/admin/SiteSettingsPage";
+import { PromoCodeManagementPage } from "./main/pages/dashboard/admin/PromoCodeManagementPage";
 import AdminCourseDetailPage from "./main/pages/dashboard/admin/AdminCourseDetailPage";
 import AdminCourseAnnouncementsPage from "./main/pages/dashboard/admin/AdminCourseAnnouncementsPage";
 import JobManagementPage from "./main/pages/dashboard/admin/JobManagementPage";
@@ -356,6 +357,14 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['ADMIN']}>
                                 <PaymentManagementPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/promo-codes',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <PromoCodeManagementPage />
                             </ProtectedRoute>
                         )
                     },

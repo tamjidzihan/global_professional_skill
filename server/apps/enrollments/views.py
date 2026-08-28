@@ -51,7 +51,21 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
 
         if created:
             course.enrollment_count += 1
+            course.decrease_available_seats()
             course.save(update_fields=["enrollment_count"])
+
+            # Send SMS & Email Notifications for Immediate Course Enrollment
+            try:
+                from apps.core.notification_service import dispatch_notification
+                ctx = {
+                    "course_name": course.title,
+                    "student_name": request.user.get_full_name() or request.user.email,
+                }
+                dispatch_notification("SMS_COURSE_APPROVAL", user=request.user, context=ctx)
+                dispatch_notification("EMAIL_COURSE_APPROVAL", user=request.user, context=ctx)
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Failed to send enrollment notifications for free course to {request.user.email}: {str(e)}")
 
         return Response(
             {

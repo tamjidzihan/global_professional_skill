@@ -102,6 +102,14 @@ class EmailVerificationView(generics.GenericAPIView):
 
             logger.info(f"Email verified for user {user.email}")
 
+            # Trigger notifications
+            try:
+                from apps.core.notification_service import dispatch_notification
+                dispatch_notification("SMS_STUDENT_VERIFICATION", user=user)
+                dispatch_notification("EMAIL_STUDENT_VERIFICATION", user=user)
+            except Exception as e:
+                logger.error(f"Error triggering verification notifications for {user.email}: {str(e)}")
+
             return Response(
                 {
                     "success": True,
