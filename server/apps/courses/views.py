@@ -1402,9 +1402,22 @@ class MyQuizSubmissionsViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = QuizSubmissionSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = None
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ["quiz", "quiz__course", "student"]
 
     def get_queryset(self):  # type: ignore
-        return QuizSubmission.objects.filter(student=self.request.user).select_related(
+        user = self.request.user
+        if not user.is_authenticated:
+            return QuizSubmission.objects.none()
+        if user.is_admin_user:
+            return QuizSubmission.objects.all().select_related(
+                "quiz", "quiz__course", "student"
+            )
+        if user.is_instructor:
+            return QuizSubmission.objects.filter(
+                Q(student=user) | Q(quiz__course__instructor=user)
+            ).select_related("quiz", "quiz__course", "student")
+        return QuizSubmission.objects.filter(student=user).select_related(
             "quiz", "quiz__course"
         )
 

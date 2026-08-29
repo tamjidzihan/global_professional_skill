@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useCourses } from '../../../../hooks/useCourses';
 import { getQuizDetail, getQuizSubmissionsForInstructor, getAnswerSheet } from '../../../../lib/api';
-import { ArrowLeft, FileText, CheckCircle, AlertTriangle, Download } from 'lucide-react';
+import { ArrowLeft, FileText, CheckCircle, AlertTriangle, Download, Eye } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { extractErrorMessage } from '../../../../lib/errorUtils';
@@ -112,7 +112,7 @@ const QuizSubmissionsListPage: React.FC = () => {
                                 <th className="px-6 py-4">Score</th>
                                 <th className="px-6 py-4">Started</th>
                                 <th className="px-6 py-4">Completed</th>
-                                <th className="px-6 py-4">Actions</th>
+                                <th className="px-6 py-4 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -125,9 +125,13 @@ const QuizSubmissionsListPage: React.FC = () => {
                             ) : (
                                 submissions.map((sub) => {
                                     return (
-                                        <tr key={sub.id} className="hover:bg-gray-50 transition-colors">
+                                        <tr 
+                                            key={sub.id} 
+                                            onClick={() => navigate(`/dashboard/instructor/my-courses/${courseId}/quizzes/${quizId}/submissions/${sub.id}`)}
+                                            className="hover:bg-violet-50/40 transition-colors cursor-pointer group"
+                                        >
                                             <td className="px-6 py-4">
-                                                <div className="font-medium text-gray-900">{sub.student_name}</div>
+                                                <div className="font-medium text-gray-900 group-hover:text-violet-700 transition-colors">{sub.student_name}</div>
                                                 <div className="text-xs text-gray-500">{sub.student_email}</div>
                                             </td>
                                             <td className="px-6 py-4">
@@ -158,17 +162,33 @@ const QuizSubmissionsListPage: React.FC = () => {
                                             <td className="px-6 py-4 text-gray-500">
                                                 {sub.completed_at ? new Date(sub.completed_at).toLocaleString() : '-'}
                                             </td>
-                                            <td className="px-6 py-4">
-                                                {sub.completed_at && (
+                                            <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                                                <div className="flex items-center justify-end gap-2">
                                                     <button
-                                                        onClick={() => downloadStudentAnswerSheet(sub.id, sub.student_name)}
-                                                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium rounded-lg text-xs transition-colors border border-blue-100"
-                                                        title="Download Answer Sheet"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            navigate(`/dashboard/instructor/my-courses/${courseId}/quizzes/${quizId}/submissions/${sub.id}`);
+                                                        }}
+                                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 text-violet-700 hover:bg-violet-100 font-medium rounded-lg text-xs transition-colors border border-violet-200 cursor-pointer"
+                                                        title="View Quiz Sheet"
                                                     >
-                                                        <Download className="w-4 h-4" />
-                                                        Answer Sheet
+                                                        <Eye className="w-3.5 h-3.5" />
+                                                        View Sheet
                                                     </button>
-                                                )}
+                                                    {sub.completed_at && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                downloadStudentAnswerSheet(sub.id, sub.student_name);
+                                                            }}
+                                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 font-medium rounded-lg text-xs transition-colors border border-blue-100 cursor-pointer"
+                                                            title="Download Answer Sheet"
+                                                        >
+                                                            <Download className="w-3.5 h-3.5" />
+                                                            PDF
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     );

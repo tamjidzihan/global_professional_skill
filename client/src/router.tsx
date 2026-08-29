@@ -63,6 +63,7 @@ import TakeQuizPage from "./main/pages/TakeQuizPage";
 import CourseMaterialsPage from "./main/pages/dashboard/instructor/CourseMaterialsPage";
 import CourseAnnouncementsPage from "./main/pages/dashboard/instructor/CourseAnnouncementsPage";
 import StudentMaterialsPage from "./main/pages/dashboard/student/StudentMaterialsPage";
+import StudentQuizSubmissionsPage from "./main/pages/dashboard/instructor/StudentQuizSubmissionsPage";
 
 export const router = createBrowserRouter([
     {
@@ -272,6 +273,14 @@ export const router = createBrowserRouter([
                         )
                     },
                     {
+                        path: 'instructor/my-courses/:courseId/quizzes/:quizId/submissions/:submissionId',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR', 'ADMIN']}>
+                                <QuizResultDetailPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
                         path: 'instructor/my-courses/:courseId/quizzes/:quizId/questions',
                         element: (
                             <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
@@ -282,8 +291,24 @@ export const router = createBrowserRouter([
                     {
                         path: 'instructor/my-courses/:id/students',
                         element: (
-                            <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR', 'ADMIN']}>
                                 <EnrolledStudentsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/my-courses/:id/students/:studentId/quizzes',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR', 'ADMIN']}>
+                                <StudentQuizSubmissionsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/my-courses/:courseId/students/:studentId/quizzes',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR', 'ADMIN']}>
+                                <StudentQuizSubmissionsPage />
                             </ProtectedRoute>
                         )
                     },

@@ -18,7 +18,9 @@ class EnrollmentSerializer(serializers.ModelSerializer):
     def get_quiz_submissions(self, obj):
         from apps.courses.models import QuizSubmission
         from apps.courses.serializers import QuizSubmissionSerializer
-        submissions = QuizSubmission.objects.filter(student=obj.student, quiz__course=obj.course)
+        submissions = QuizSubmission.objects.filter(
+            student=obj.student, quiz__course=obj.course
+        ).order_by("-completed_at", "-started_at")
         return QuizSubmissionSerializer(submissions, many=True).data
 
 

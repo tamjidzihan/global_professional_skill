@@ -15,7 +15,7 @@ from apps.courses.models import Course
 class EnrollmentViewSet(viewsets.ModelViewSet):
     serializer_class = EnrollmentSerializer
     permission_classes = [IsAuthenticated]
-    filterset_fields = ["course"]
+    filterset_fields = ["course", "student"]
 
     def get_queryset(self):  # type: ignore
         user = self.request.user

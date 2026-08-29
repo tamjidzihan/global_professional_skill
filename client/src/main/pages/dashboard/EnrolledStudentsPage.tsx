@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import {
     Users, ArrowLeft, Search, Download, Mail, Phone,
     Calendar, CheckCircle, Clock, Filter, AlertCircle,
-    ShieldOff, ShieldCheck, Loader2, Trash2,
+    ShieldOff, Loader2, Trash2, Award,
 } from 'lucide-react'
 import { useEnrollments } from '../../../hooks/useEnrollments'
 import { useCourses } from '../../../hooks/useCourses'
@@ -256,30 +256,38 @@ export default function EnrolledStudentsPage() {
                                             {/* Student */}
                                             <td className="px-5 py-3 whitespace-nowrap">
                                                 <div className="flex items-center gap-3">
-                                                    {enrollment.student.profile_picture ? (
-                                                        <img
-                                                            src={enrollment.student.profile_picture}
-                                                            alt={enrollment.student_name}
-                                                            className="w-9 h-9 rounded-xl object-cover border border-gray-100 shrink-0"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600 font-bold text-sm shrink-0">
-                                                            {enrollment.student_name.charAt(0)}
-                                                        </div>
-                                                    )}
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-semibold text-gray-800 truncate">{enrollment.student_name}</p>
-                                                        <div className="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5">
-                                                            <Mail className="w-3 h-3 shrink-0" />
-                                                            <span className="truncate max-w-40">{enrollment.student.email}</span>
-                                                        </div>
-                                                        {enrollment.student.phone_number && (
-                                                            <div className="flex items-center gap-1 text-[11px] text-gray-400">
-                                                                <Phone className="w-3 h-3 shrink-0" />
-                                                                <span>{enrollment.student.phone_number}</span>
+                                                    <button
+                                                        onClick={() => navigate(`/dashboard/instructor/my-courses/${id}/students/${enrollment.student.id}/quizzes`)}
+                                                        className="text-left flex items-center gap-3 group/student cursor-pointer"
+                                                        title="View student quiz history"
+                                                    >
+                                                        {enrollment.student.profile_picture ? (
+                                                            <img
+                                                                src={enrollment.student.profile_picture}
+                                                                alt={enrollment.student_name}
+                                                                className="w-9 h-9 rounded-xl object-cover border border-gray-100 shrink-0 group-hover/student:ring-2 group-hover/student:ring-violet-400 transition-all"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center text-violet-600 font-bold text-sm shrink-0 group-hover/student:bg-violet-100 transition-all">
+                                                                {enrollment.student_name.charAt(0)}
                                                             </div>
                                                         )}
-                                                    </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-semibold text-gray-800 group-hover/student:text-violet-600 transition-colors truncate">
+                                                                {enrollment.student_name}
+                                                            </p>
+                                                            <div className="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5">
+                                                                <Mail className="w-3 h-3 shrink-0" />
+                                                                <span className="truncate max-w-40">{enrollment.student.email}</span>
+                                                            </div>
+                                                            {enrollment.student.phone_number && (
+                                                                <div className="flex items-center gap-1 text-[11px] text-gray-400">
+                                                                    <Phone className="w-3 h-3 shrink-0" />
+                                                                    <span>{enrollment.student.phone_number}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </button>
                                                 </div>
                                             </td>
 
@@ -311,64 +319,86 @@ export default function EnrolledStudentsPage() {
                                                 </div>
                                             </td>
 
-                                            {/* Quiz Scores */}
+                                            {/* Quiz Scores - Show last 3 scores */}
                                             <td className="px-5 py-3 text-xs text-gray-700">
                                                 {enrollment.quiz_submissions && enrollment.quiz_submissions.length > 0 ? (
-                                                    <div className="space-y-2">
-                                                        {enrollment.quiz_submissions.map(sub => (
-                                                            <div key={sub.id} className="space-y-1">
-                                                                <div className="flex items-center gap-1.5 font-medium flex-wrap">
-                                                                    <span className="text-gray-900 font-bold shrink-0">{sub.score} / {sub.total_questions}</span>
-                                                                    <span className="text-[10px] text-gray-400 truncate max-w-24" title={sub.quiz_title}>({sub.quiz_title})</span>
-                                                                    {sub.warnings_count > 0 && (
-                                                                        <span
-                                                                            className="inline-flex items-center gap-0.5 px-1 bg-amber-50 text-amber-700 border border-amber-100 rounded text-[9px] font-bold"
-                                                                            title={`${sub.warnings_count} window focus warning(s)`}
-                                                                        >
-                                                                            ⚠️{sub.warnings_count}
+                                                    <div className="space-y-1.5 min-w-44">
+                                                        {enrollment.quiz_submissions.slice(0, 3).map(sub => {
+                                                            const quizId = (sub.quiz as any)?.id || sub.quiz;
+                                                            return (
+                                                                <div
+                                                                    key={sub.id}
+                                                                    onClick={() => navigate(`/dashboard/instructor/my-courses/${id}/quizzes/${quizId}/submissions/${sub.id}`)}
+                                                                    className="group/score flex items-center justify-between gap-2 p-1.5 rounded-lg bg-gray-50/80 hover:bg-violet-50 border border-gray-100 hover:border-violet-200 transition-all cursor-pointer"
+                                                                    title={`Click to view full result sheet for ${sub.quiz_title || 'Quiz'}`}
+                                                                >
+                                                                    <div className="flex items-center gap-1.5 min-w-0">
+                                                                        <span className="text-gray-900 font-bold shrink-0 text-xs group-hover/score:text-violet-700">
+                                                                            {sub.score} / {sub.total_questions}
                                                                         </span>
-                                                                    )}
-                                                                    {sub.is_disqualified && (
-                                                                        <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-rose-50 text-rose-700 border border-rose-100 rounded text-[9px] font-bold">
-                                                                            <ShieldOff className="w-2.5 h-2.5" /> DQ
+                                                                        <span className="text-[10px] text-gray-500 truncate max-w-24 group-hover/score:text-violet-600">
+                                                                            {sub.quiz_title}
                                                                         </span>
-                                                                    )}
-                                                                    {/* Delete button */}
-                                                                    <button
-                                                                        onClick={() => handleDeleteSubmission(String(sub.id), enrollment.student_name, sub.quiz_title)}
-                                                                        disabled={deletingSubmissionId === String(sub.id)}
-                                                                        title="Permanently delete this quiz result"
-                                                                        className="ml-auto inline-flex items-center justify-center w-5 h-5 rounded bg-transparent text-gray-300 hover:bg-rose-50 hover:text-rose-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer"
-                                                                    >
-                                                                        {deletingSubmissionId === String(sub.id)
-                                                                            ? <Loader2 className="w-3 h-3 animate-spin" />
-                                                                            : <Trash2 className="w-3 h-3" />
-                                                                        }
-                                                                    </button>
-                                                                </div>
-                                                                {sub.is_disqualified && (
-                                                                    <div className="pl-0">
-                                                                        <button
-                                                                            onClick={() => handleUndisqualify(String(sub.id), enrollment.student_name)}
-                                                                            disabled={undisqualifyingId === String(sub.id)}
-                                                                            title="Remove disqualification and reset warnings so student can retake"
-                                                                            className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300 disabled:opacity-60 disabled:cursor-not-allowed transition-all cursor-pointer"
-                                                                        >
-                                                                            {undisqualifyingId === String(sub.id) ? (
-                                                                                <><Loader2 className="w-2.5 h-2.5 animate-spin" /> Resetting…</>
-                                                                            ) : (
-                                                                                <><ShieldCheck className="w-2.5 h-2.5" /> Un-disqualify</>
-                                                                            )}
-                                                                        </button>
-                                                                        {sub.disqualification_reason && (
-                                                                            <p className="text-[9px] text-rose-500 mt-0.5 leading-tight max-w-36" title={sub.disqualification_reason}>
-                                                                                {sub.disqualification_reason}
-                                                                            </p>
-                                                                        )}
                                                                     </div>
-                                                                )}
-                                                            </div>
-                                                        ))}
+                                                                    <div className="flex items-center gap-1 shrink-0" onClick={e => e.stopPropagation()}>
+                                                                        {sub.warnings_count > 0 && (
+                                                                            <span
+                                                                                className="inline-flex items-center gap-0.5 px-1 bg-amber-50 text-amber-700 border border-amber-100 rounded text-[9px] font-bold"
+                                                                                title={`${sub.warnings_count} window focus warning(s)`}
+                                                                            >
+                                                                                ⚠️{sub.warnings_count}
+                                                                            </span>
+                                                                        )}
+                                                                        {sub.is_disqualified ? (
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    handleUndisqualify(String(sub.id), enrollment.student_name);
+                                                                                }}
+                                                                                disabled={undisqualifyingId === String(sub.id)}
+                                                                                className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-100 rounded text-[9px] font-bold cursor-pointer disabled:opacity-50"
+                                                                                title="Disqualified. Click to un-disqualify."
+                                                                            >
+                                                                                {undisqualifyingId === String(sub.id) ? (
+                                                                                    <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                                                                                ) : (
+                                                                                    <ShieldOff className="w-2.5 h-2.5" />
+                                                                                )}
+                                                                                DQ
+                                                                            </button>
+                                                                        ) : sub.completed_at ? (
+                                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Completed" />
+                                                                        ) : (
+                                                                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" title="In Progress" />
+                                                                        )}
+                                                                        {/* Quick Delete */}
+                                                                        <button
+                                                                            onClick={() => handleDeleteSubmission(String(sub.id), enrollment.student_name, sub.quiz_title)}
+                                                                            disabled={deletingSubmissionId === String(sub.id)}
+                                                                            title="Permanently delete this quiz result"
+                                                                            className="opacity-0 group-hover/score:opacity-100 inline-flex items-center justify-center w-4 h-4 rounded text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-all cursor-pointer"
+                                                                        >
+                                                                            {deletingSubmissionId === String(sub.id)
+                                                                                ? <Loader2 className="w-2.5 h-2.5 animate-spin" />
+                                                                                : <Trash2 className="w-2.5 h-2.5" />
+                                                                            }
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+
+                                                        {/* Link to see all quiz results */}
+                                                        <div className="pt-0.5 flex items-center justify-between">
+                                                            <button
+                                                                onClick={() => navigate(`/dashboard/instructor/my-courses/${id}/students/${enrollment.student.id}/quizzes`)}
+                                                                className="text-[11px] font-semibold text-violet-600 hover:text-violet-800 hover:underline inline-flex items-center gap-1 cursor-pointer"
+                                                            >
+                                                                {enrollment.quiz_submissions.length > 3
+                                                                    ? `View all ${enrollment.quiz_submissions.length} results →`
+                                                                    : 'View all results →'}
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 ) : (
                                                     <span className="text-gray-400">—</span>
@@ -396,6 +426,13 @@ export default function EnrolledStudentsPage() {
                                             {/* Actions */}
                                             <td className="px-5 py-3 whitespace-nowrap text-right">
                                                 <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={() => navigate(`/dashboard/instructor/my-courses/${id}/students/${enrollment.student.id}/quizzes`)}
+                                                        title="View All Student Quiz Results"
+                                                        className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-50 border border-gray-100 text-gray-500 hover:bg-violet-50 hover:border-violet-200 hover:text-violet-600 transition-colors cursor-pointer"
+                                                    >
+                                                        <Award className="w-3.5 h-3.5" />
+                                                    </button>
                                                     <a
                                                         href={`mailto:${enrollment.student.email}`}
                                                         title="Send Email"
