@@ -64,6 +64,7 @@ import CourseMaterialsPage from "./main/pages/dashboard/instructor/CourseMateria
 import CourseAnnouncementsPage from "./main/pages/dashboard/instructor/CourseAnnouncementsPage";
 import StudentMaterialsPage from "./main/pages/dashboard/student/StudentMaterialsPage";
 import StudentQuizSubmissionsPage from "./main/pages/dashboard/instructor/StudentQuizSubmissionsPage";
+import CourseAnalyticsPage from "./main/pages/dashboard/instructor/CourseAnalyticsPage";
 
 export const router = createBrowserRouter([
     {
@@ -309,6 +310,22 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['INSTRUCTOR', 'ADMIN']}>
                                 <StudentQuizSubmissionsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/my-courses/:id/analytics',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR', 'ADMIN']}>
+                                <CourseAnalyticsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/my-courses/:courseId/analytics',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR', 'ADMIN']}>
+                                <CourseAnalyticsPage />
                             </ProtectedRoute>
                         )
                     },

@@ -251,6 +251,13 @@ export function InstructorCourseDetailPage() {
                             <Users className="w-3.5 h-3.5" /> Enrolled Students
                         </Link>
 
+                        <button
+                            onClick={() => navigate(`/dashboard/instructor/my-courses/${id}/analytics`)}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border border-violet-100 rounded-lg hover:bg-violet-100 transition-colors cursor-pointer"
+                        >
+                            <BarChart className="w-3.5 h-3.5" /> Analytics
+                        </button>
+
                         <Link
                             to={`/dashboard/instructor/edit-course/${course.id}`}
                             className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:border-violet-300 hover:text-violet-700 transition-colors"
@@ -263,14 +270,6 @@ export function InstructorCourseDetailPage() {
                                 className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-white bg-violet-600 rounded-lg hover:bg-violet-700 transition-colors cursor-pointer"
                             >
                                 <CheckCircle className="w-3.5 h-3.5" /> Submit for Review
-                            </button>
-                        )}
-                        {course.status === 'PUBLISHED' && (
-                            <button
-                                onClick={() => navigate(`/dashboard/instructor/my-courses/${id}/analytics`)}
-                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border border-violet-100 rounded-lg hover:bg-violet-100 transition-colors cursor-pointer"
-                            >
-                                <BarChart className="w-3.5 h-3.5" /> Analytics
                             </button>
                         )}
                         <button
