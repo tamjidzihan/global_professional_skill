@@ -1,4 +1,4 @@
-from rest_framework import generics, permissions, status, viewsets
+from rest_framework import generics, permissions, status, viewsets, parsers
 from rest_framework.response import Response
 from django.utils import timezone
 from django.db import models
@@ -21,6 +21,7 @@ class SiteSettingsView(generics.RetrieveUpdateAPIView):
     """
 
     serializer_class = SiteSettingsSerializer
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser]
 
     def get_object(self):  # type: ignore
         return SiteSettings.get_settings()

@@ -420,6 +420,10 @@ export interface SiteSettings {
     bkash_qr_code: string | null;
     quiz_pass_percentage?: number;
     greenweb_sms_token?: string;
+    campus_tour_video?: string | null;
+    campus_tour_thumbnail?: string | null;
+    campus_tour_heading?: string | null;
+    campus_tour_subtext?: string | null;
     updated_at: string;
 }
 

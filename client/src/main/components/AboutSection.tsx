@@ -1,27 +1,73 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import {
-    // Award,
     Target,
-    // Users,
-    // TrendingUp,
-    // BookOpen,
     Globe,
     Sparkles,
     Rocket,
     CheckCircle,
     ArrowUpRight,
-    // Zap,
     Heart,
     Shield,
+    X,
+    Play,
 } from "lucide-react"
+import { getSiteSettings } from "../../lib/api"
+import type { SiteSettings } from "../../types"
 
-const AboutSection = () => {
-    // const achievements = [
-    //     { number: "50,000+", label: "Happy Students", icon: Users, color: "bg-blue-500" },
-    //     { number: "200+", label: "Expert Courses", icon: BookOpen, color: "bg-green-500" },
-    //     { number: "98%", label: "Success Rate", icon: TrendingUp, color: "bg-purple-500" },
-    //     { number: "18+", label: "Years Legacy", icon: Award, color: "bg-orange-500" },
-    // ]
+const AboutSection: React.FC = () => {
+    const [settings, setSettings] = useState<SiteSettings | null>(null)
+    const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
+    const videoRef = useRef<HTMLVideoElement | null>(null)
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await getSiteSettings()
+                if (res.data.success) {
+                    setSettings(res.data.data)
+                }
+            } catch (err) {
+                console.error("Failed to load site settings for campus tour video", err)
+            }
+        }
+        fetchSettings()
+    }, [])
+
+    // Close modal on Escape key
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                handleCloseModal()
+            }
+        }
+        if (isVideoModalOpen) {
+            window.addEventListener("keydown", handleKeyDown)
+            document.body.style.overflow = "hidden"
+        }
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown)
+            document.body.style.overflow = "unset"
+        }
+    }, [isVideoModalOpen])
+
+    const handleOpenModal = () => {
+        setIsVideoModalOpen(true)
+    }
+
+    const handleCloseModal = () => {
+        if (videoRef.current) {
+            videoRef.current.pause()
+            videoRef.current.currentTime = 0
+        }
+        setIsVideoModalOpen(false)
+    }
+
+    const videoUrl = settings?.campus_tour_video || null
+    const thumbnailUrl = settings?.campus_tour_thumbnail || null
+    const heading = settings?.campus_tour_heading?.trim() || "Virtual Campus Tour"
+    const subtext = settings?.campus_tour_subtext?.trim() || "Experience our state-of-the-art facilities"
 
     const highlights = [
         { text: "Industry-Aligned Curriculum", icon: CheckCircle },
@@ -83,7 +129,7 @@ const AboutSection = () => {
                     </div>
                 </div>
 
-                {/* Main Content Grid - Completely Different Layout */}
+                {/* Main Content Grid */}
                 <div className="grid lg:grid-cols-5 gap-8 mb-16">
                     {/* Left Column - 3/5 width */}
                     <div className="lg:col-span-3 space-y-6">
@@ -117,6 +163,7 @@ const AboutSection = () => {
                                 </div>
                             </div>
                         </div>
+
                         {/* Highlights Grid */}
                         <div className="grid grid-cols-2 gap-4">
                             {highlights.map((item, index) => {
@@ -143,35 +190,49 @@ const AboutSection = () => {
                         {/* Video/Image Card - Vertical */}
                         <div className="relative group">
                             <div className="absolute inset-0 bg-linear-to-br from-green-400 to-blue-500 rounded-3xl transform -rotate-2 group-hover:-rotate-3 transition-transform duration-300"></div>
-                            <div className="relative bg-linear-to-br from-blue-900 to-purple-900 rounded-3xl overflow-hidden shadow-2xl border-4 border-white h-100">
-                                {/* Pattern Overlay */}
-                                <div className="absolute inset-0 opacity-10">
-                                    <div className="absolute inset-0"
+                            
+                            <div
+                                onClick={handleOpenModal}
+                                className="relative bg-linear-to-br from-blue-900 to-purple-900 rounded-3xl overflow-hidden shadow-2xl border-4 border-white h-100 cursor-pointer select-none"
+                            >
+                                {/* Thumbnail Background if uploaded */}
+                                {thumbnailUrl && (
+                                    <img
+                                        src={thumbnailUrl}
+                                        alt={heading}
+                                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                )}
+
+                                {/* Pattern / Gradient Overlay */}
+                                <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/40 to-transparent"></div>
+
+                                <div className="absolute inset-0 opacity-10 pointer-events-none">
+                                    <div
+                                        className="absolute inset-0"
                                         style={{
                                             backgroundImage: `repeating-linear-gradient(45deg, white 0px, white 2px, transparent 2px, transparent 10px)`,
-                                        }}>
-                                    </div>
+                                        }}
+                                    />
                                 </div>
 
                                 {/* Play Button */}
-                                <button className="absolute inset-0 flex items-center justify-center group/play">
+                                <div className="absolute inset-0 flex items-center justify-center group/play">
                                     <div className="relative">
                                         <div className="absolute inset-0 bg-white rounded-full opacity-20 animate-ping"></div>
                                         <div className="relative w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl group-hover/play:scale-110 transition-transform">
-                                            <svg className="w-10 h-10 text-blue-600 ml-1" fill="currentColor" viewBox="0 0 24 24">
-                                                <path d="M8 5v14l11-7z" />
-                                            </svg>
+                                            <Play className="w-9 h-9 text-blue-600 fill-blue-600 ml-1" />
                                         </div>
                                     </div>
-                                </button>
+                                </div>
 
-                                {/* Content */}
-                                <div className="absolute bottom-0 left-0 right-0 p-6 bg-linear-to-t from-black/80 to-transparent">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Globe className="w-5 h-5 text-white" />
-                                        <span className="text-white font-bold text-lg">Virtual Campus Tour</span>
+                                {/* Dynamic Content / Labels */}
+                                <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
+                                    <div className="flex items-center gap-2 mb-1.5">
+                                        <Globe className="w-5 h-5 text-blue-400 shrink-0" />
+                                        <span className="text-white font-bold text-lg leading-snug line-clamp-1">{heading}</span>
                                     </div>
-                                    <p className="text-white/80 text-sm">Experience our state-of-the-art facilities</p>
+                                    <p className="text-white/80 text-sm line-clamp-2">{subtext}</p>
                                 </div>
                             </div>
                         </div>
@@ -204,69 +265,62 @@ const AboutSection = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* Achievement Cards - Horizontal Scroll on Mobile, Grid on Desktop */}
-                {/* <div className="relative">
-                    <div className="flex items-center gap-3 mb-8">
-                        <div className="bg-linear-to-r from-yellow-400 to-orange-400 p-3 rounded-xl">
-                            <Zap className="w-6 h-6 text-white" />
-                        </div>
-                        <h3 className="text-2xl font-bold text-black">Our Impact in Numbers</h3>
-                    </div>
-
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                        {achievements.map((achievement, index) => {
-                            const Icon = achievement.icon
-                            return (
-                                <div
-                                    key={index}
-                                    className="relative group"
-                                >
-                                    <div className={`absolute inset-0 ${achievement.color} opacity-0 group-hover:opacity-20 blur-2xl rounded-3xl transition-opacity duration-300`}></div>
-                                    <div className="relative bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-gray-200 group-hover:border-transparent group-hover:-translate-y-2">
-                                        <div className={`${achievement.color} p-3 sm:p-4 rounded-xl sm:rounded-2xl inline-flex mb-4 shadow-lg`}>
-                                            <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                                        </div>
-                                        <div className="text-3xl sm:text-4xl font-bold text-black mb-2">
-                                            {achievement.number}
-                                        </div>
-                                        <div className="text-sm sm:text-base font-semibold text-gray-600">
-                                            {achievement.label}
-                                        </div>
-                                        <div className="absolute top-4 right-4 w-2 h-2 bg-gray-300 rounded-full group-hover:bg-green-400 transition-colors"></div>
-                                        <div className="absolute top-4 right-8 w-2 h-2 bg-gray-200 rounded-full group-hover:bg-blue-400 transition-colors"></div>
-                                    </div>
-                                </div>
-                            )
-                        })}
-                    </div>
-                </div> */}
-
-                {/* Bottom Trust Bar */}
-                {/* <div className="mt-16 bg-white rounded-3xl p-8 shadow-xl border-2 border-gray-200">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                        <div className="flex items-center gap-4">
-                            <div className="bg-linear-to-br from-blue-500 to-purple-500 p-4 rounded-2xl">
-                                <Award className="w-8 h-8 text-white" />
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-black text-lg mb-1">Trusted & Accredited</h4>
-                                <p className="text-gray-600 text-sm">Recognized by leading organizations worldwide</p>
-                            </div>
-                        </div>
-                        <div className="flex flex-wrap items-center justify-center gap-3">
-                            {['ISO 9001', 'World Bank', 'BASIS', 'NTVQF'].map((badge, index) => (
-                                <div
-                                    key={index}
-                                    className="px-4 py-2 bg-linear-to-r from-gray-100 to-gray-200 rounded-xl font-bold text-gray-700 text-sm border-2 border-gray-300 hover:from-blue-100 hover:to-purple-100 hover:border-blue-300 transition-all"
-                                >
-                                    {badge}
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div> */}
             </div>
+
+            {/* ── Video Player Modal with Dark Blur Backdrop ── */}
+            {isVideoModalOpen && (
+                <div
+                    onClick={handleCloseModal}
+                    className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 md:p-10 animate-in fade-in duration-200"
+                >
+                    {/* Modal Container */}
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="relative w-full max-w-4xl bg-black rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-white/10"
+                    >
+                        {/* Header bar */}
+                        <div className="flex items-center justify-between px-5 py-3.5 bg-gray-950/80 border-b border-white/10 text-white">
+                            <div className="flex items-center gap-2 min-w-0 pr-4">
+                                <Globe className="w-4 h-4 text-blue-400 shrink-0" />
+                                <span className="font-semibold text-sm truncate">{heading}</span>
+                            </div>
+                            <button
+                                onClick={handleCloseModal}
+                                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                                title="Close (Esc)"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Video player or fallback */}
+                        <div className="relative aspect-video w-full bg-black flex items-center justify-center">
+                            {videoUrl ? (
+                                <video
+                                    ref={videoRef}
+                                    src={videoUrl}
+                                    controls
+                                    autoPlay
+                                    playsInline
+                                    className="w-full h-full object-contain"
+                                    poster={thumbnailUrl || undefined}
+                                />
+                            ) : (
+                                <div className="text-center p-8 text-white space-y-3">
+                                    <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center mx-auto">
+                                        <Play className="w-8 h-8 text-blue-400" />
+                                    </div>
+                                    <h4 className="text-lg font-bold">{heading}</h4>
+                                    <p className="text-xs text-white/60 max-w-md mx-auto">
+                                        No custom video file has been uploaded yet by the admin in the dashboard.
+                                        You can upload a video in <strong>Admin Dashboard → Platform Settings</strong>.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </section>
     )
 }

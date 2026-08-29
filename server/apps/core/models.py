@@ -30,6 +30,34 @@ class SiteSettings(models.Model):
         null=True,
         help_text="Token for Greenweb BD SMS API"
     )
+
+    # Virtual Campus Tour Video Settings (Homepage)
+    campus_tour_video = models.FileField(
+        upload_to='settings/videos/',
+        blank=True,
+        null=True,
+        help_text="Upload a video file for the Virtual Campus Tour on the homepage."
+    )
+    campus_tour_thumbnail = models.ImageField(
+        upload_to='settings/videos/',
+        blank=True,
+        null=True,
+        help_text="Optional custom thumbnail for the video card."
+    )
+    campus_tour_heading = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        default="Virtual Campus Tour",
+        help_text="Custom heading for the video card. Defaults to 'Virtual Campus Tour' if empty."
+    )
+    campus_tour_subtext = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        default="Experience our state-of-the-art facilities",
+        help_text="Custom subtext for the video card. Defaults to 'Experience our state-of-the-art facilities' if empty."
+    )
     
     # Metadata for singleton pattern
     updated_at = models.DateTimeField(auto_now=True)

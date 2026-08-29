@@ -10,6 +10,10 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
             'bkash_qr_code',
             'quiz_pass_percentage',
             'greenweb_sms_token',
+            'campus_tour_video',
+            'campus_tour_thumbnail',
+            'campus_tour_heading',
+            'campus_tour_subtext',
             'updated_at'
         ]
 
