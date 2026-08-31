@@ -111,7 +111,7 @@ const CheckoutPage: React.FC = () => {
         const paymentData: any = {
             course: course.id,
             amount: finalAmount,
-            currency: 'USD',
+            currency: 'BDT',
             payment_method: paymentMethod,
             transaction_id: transactionId,
             sender_number: senderNumber,

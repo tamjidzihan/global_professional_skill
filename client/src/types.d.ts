@@ -361,6 +361,7 @@ export interface Payment {
     user_email: string;
     course: string;
     course_title: string;
+    course_price?: string;
     course_thumbnail?: string;
     course_slug?: string;
     amount: string;
@@ -371,7 +372,16 @@ export interface Payment {
     payment_method: string;
     created_at: string;
     completed_at?: string;
-    metadata: any;
+    metadata?: {
+        student_name?: string;
+        course_title?: string;
+        promo_code?: string;
+        original_price?: string | number;
+        discount_percentage?: string | number;
+        discount_amount?: string | number;
+        rejection_reason?: string;
+        [key: string]: any;
+    };
 }
 
 export interface PaymentCreateData {

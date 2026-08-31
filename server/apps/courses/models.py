@@ -101,7 +101,7 @@ class Course(models.Model):
         max_digits=10,
         decimal_places=2,
         validators=[MinValueValidator(0)],
-        help_text="Course price in USD (0 for free)",
+        help_text="Course price in BDT (0 for free)",
     )
     is_free = models.BooleanField(default=False)
 

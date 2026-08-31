@@ -1,4 +1,4 @@
-import { CreditCard, Clock, ChevronRight, Hash, Phone } from 'lucide-react'
+import { CreditCard, Clock, ChevronRight, Hash, Phone, Tag } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { JSX } from 'react'
 import type { Payment } from '../../../../types'
@@ -65,12 +65,25 @@ export function PendingPaymentsCard({ payments, loading }: PendingPaymentsCardPr
                                             </p>
                                         </div>
                                     </div>
-                                    <span className="text-[11px] font-black text-gray-900">
-                                        TK. {parseFloat(payment.amount).toLocaleString()}
-                                    </span>
+                                    <div className="text-right">
+                                        {payment.metadata?.promo_code && (payment.metadata?.original_price || payment.course_price) && (
+                                            <span className="text-[9px] text-gray-400 line-through font-medium mr-1.5">
+                                                TK. {parseFloat(String(payment.metadata.original_price || payment.course_price)).toLocaleString()}
+                                            </span>
+                                        )}
+                                        <span className="text-[11px] font-black text-gray-900">
+                                            TK. {parseFloat(payment.amount).toLocaleString()}
+                                        </span>
+                                    </div>
                                 </div>
 
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                    {payment.metadata?.promo_code && (
+                                        <div className="flex items-center gap-1 text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-100">
+                                            <Tag className="w-2.5 h-2.5 text-amber-600" />
+                                            {payment.metadata.promo_code}
+                                        </div>
+                                    )}
                                     <div className="flex items-center gap-1 text-[9px] font-bold text-pink-600 bg-white px-1.5 py-0.5 rounded border border-pink-50">
                                         <Hash className="w-2.5 h-2.5" />
                                         {payment.transaction_id}

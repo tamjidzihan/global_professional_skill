@@ -16,6 +16,7 @@ import {
     X,
     DollarSign,
     Info,
+    Tag,
 } from 'lucide-react';
 import { usePayments } from '../../../../hooks/usePayments';
 import type { Payment } from '../../../../types';
@@ -54,12 +55,23 @@ function PaymentDrawer({
     const cfg = statusConfig[payment.status] || statusConfig['PENDING'];
     const Icon = cfg.icon;
 
+    const promoCode = payment.metadata?.promo_code;
+    const originalPrice = payment.metadata?.original_price || payment.course_price;
+    const discountPercentage = payment.metadata?.discount_percentage;
+    const discountAmount = payment.metadata?.discount_amount;
+
     const rows = [
         { label: 'Student Email', value: payment.user_email },
         { label: 'Sender Number', value: payment.sender_number },
         { label: 'Payment Method', value: payment.payment_method },
         { label: 'Course', value: payment.course_title },
-        { label: 'Amount', value: `TK. ${parseFloat(payment.amount).toLocaleString()}` },
+        ...(originalPrice && promoCode
+            ? [{ label: 'Original Course Price', value: `TK. ${parseFloat(String(originalPrice)).toLocaleString()}` }]
+            : []),
+        ...(promoCode ? [{ label: 'Promo Code Applied', value: promoCode }] : []),
+        ...(discountPercentage ? [{ label: 'Discount Rate', value: `-${parseFloat(String(discountPercentage))}%` }] : []),
+        ...(discountAmount ? [{ label: 'Discount Saved', value: `TK. ${parseFloat(String(discountAmount)).toLocaleString()}` }] : []),
+        { label: promoCode ? 'Final Paid Amount' : 'Amount', value: `TK. ${parseFloat(payment.amount).toLocaleString()}` },
         { label: 'Currency', value: payment.currency },
         { label: 'Submitted', value: new Date(payment.created_at).toLocaleString() },
     ];
@@ -99,6 +111,47 @@ function PaymentDrawer({
                         <p className="text-[10px] font-semibold uppercase tracking-widest text-violet-500 mb-1">Transaction ID</p>
                         <p className="text-2xl font-black text-violet-900 font-mono tracking-widest">{payment.transaction_id}</p>
                     </div>
+
+                    {/* Promo Code & Discount Breakdown Highlight */}
+                    {promoCode && (
+                        <div className="bg-gradient-to-br from-amber-50 to-orange-50/60 border border-amber-200/80 rounded-xl p-4 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-7 h-7 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700">
+                                        <Tag className="w-3.5 h-3.5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-600">Promo Code Applied</p>
+                                        <p className="text-sm font-black text-amber-900 tracking-wide font-mono">{promoCode}</p>
+                                    </div>
+                                </div>
+                                {discountPercentage && (
+                                    <span className="inline-flex items-center gap-0.5 px-2 py-0.5 text-xs font-black bg-amber-200 text-amber-900 rounded-full shadow-xs">
+                                        -{parseFloat(String(discountPercentage))}% OFF
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="pt-2 border-t border-amber-200/60 grid grid-cols-2 gap-2 text-xs">
+                                {originalPrice && (
+                                    <div>
+                                        <p className="text-[10px] text-amber-700/70 font-medium">Original Price</p>
+                                        <p className="font-semibold text-gray-700 line-through">TK. {parseFloat(String(originalPrice)).toLocaleString()}</p>
+                                    </div>
+                                )}
+                                {discountAmount && (
+                                    <div>
+                                        <p className="text-[10px] text-amber-700/70 font-medium">Discount Amount</p>
+                                        <p className="font-semibold text-amber-700">- TK. {parseFloat(String(discountAmount)).toLocaleString()}</p>
+                                    </div>
+                                )}
+                                <div className="col-span-2 bg-white/80 rounded-lg p-2.5 flex items-center justify-between border border-amber-200/50">
+                                    <span className="text-xs font-bold text-gray-700">Discounted Amount to Collect:</span>
+                                    <span className="text-sm font-black text-emerald-700">TK. {parseFloat(payment.amount).toLocaleString()}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Details list */}
                     <div className="bg-white rounded-xl border border-gray-100 divide-y divide-gray-50">
@@ -362,8 +415,24 @@ const PaymentManagementPage: React.FC = () => {
 
                                             {/* Transaction info */}
                                             <td className="px-5 py-3 whitespace-nowrap">
-                                                <p className="text-sm font-bold text-gray-900">TK. {parseFloat(payment.amount).toLocaleString()}</p>
-                                                <div className="flex gap-1.5 mt-1.5 flex-wrap">
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="text-sm font-bold text-gray-900">
+                                                        TK. {parseFloat(payment.amount).toLocaleString()}
+                                                    </span>
+                                                    {payment.metadata?.promo_code && (payment.metadata?.original_price || payment.course_price) && (
+                                                        <span className="text-xs text-gray-400 line-through font-normal">
+                                                            TK. {parseFloat(String(payment.metadata.original_price || payment.course_price)).toLocaleString()}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="flex gap-1.5 mt-1.5 flex-wrap items-center">
+                                                    {payment.metadata?.promo_code && (
+                                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200/80 px-1.5 py-0.5 rounded-md">
+                                                            <Tag className="w-2.5 h-2.5 text-amber-600" />
+                                                            {payment.metadata.promo_code}
+                                                            {payment.metadata.discount_percentage ? ` (-${parseFloat(String(payment.metadata.discount_percentage))}%)` : ''}
+                                                        </span>
+                                                    )}
                                                     <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-violet-50 text-violet-600 px-1.5 py-0.5 rounded-md">
                                                         <Hash className="w-2.5 h-2.5" />{payment.transaction_id}
                                                     </span>

@@ -26,7 +26,7 @@ class Payment(models.Model):
     
     # Amount details
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    currency = models.CharField(max_length=10, default="USD")
+    currency = models.CharField(max_length=10, default="BDT")
     
     # Status tracking
     status = models.CharField(

@@ -1,9 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { BookOpen, Clock } from "lucide-react";
+import { BookOpen, Clock, Tag } from "lucide-react";
 import { StatusBadge } from "./StatusBadge";
 
 // ── Pending Payment Card ──────────────────────────────────────────────────────
 function PendingPaymentCard({ payment }: { payment: any }) {
+    const promoCode = payment.metadata?.promo_code;
+    const originalPrice = payment.metadata?.original_price || payment.course_price;
+    const discountPercentage = payment.metadata?.discount_percentage;
+
     return (
         <div className="bg-white rounded-xl border border-yellow-100 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col overflow-hidden group relative">
             {/* Thumbnail */}
@@ -39,9 +42,26 @@ function PendingPaymentCard({ payment }: { payment: any }) {
                 </h3>
 
                 <div className="space-y-2 py-2 border-y border-gray-50 my-1">
+                    {promoCode && (
+                        <div className="flex items-center justify-between text-[11px] text-amber-800 bg-amber-50/80 px-2 py-1 rounded-md border border-amber-100">
+                            <span className="font-semibold flex items-center gap-1">
+                                <Tag className="w-3 h-3 text-amber-600" /> Promo Code:
+                            </span>
+                            <span className="font-bold font-mono">
+                                {promoCode} {discountPercentage ? `(-${parseFloat(String(discountPercentage))}%)` : ''}
+                            </span>
+                        </div>
+                    )}
                     <div className="flex items-center justify-between text-[11px] text-gray-500">
                         <span>Amount Paid:</span>
-                        <span className="font-bold text-gray-700">{payment.currency} {payment.amount}</span>
+                        <div className="flex items-center gap-1.5">
+                            {promoCode && originalPrice && (
+                                <span className="line-through text-gray-400 text-[10px]">
+                                    TK. {parseFloat(String(originalPrice)).toLocaleString()}
+                                </span>
+                            )}
+                            <span className="font-bold text-gray-700">{payment.currency} {parseFloat(payment.amount).toLocaleString()}</span>
+                        </div>
                     </div>
                     <div className="flex items-center justify-between text-[11px] text-gray-500">
                         <span>Method:</span>

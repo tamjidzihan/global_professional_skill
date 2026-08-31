@@ -59,7 +59,10 @@ export function generateId(length: number = 8) {
 /**
  * Format currency
  */
-export function formatCurrency(amount: number, currency: string = "USD") {
+export function formatCurrency(amount: number, currency: string = "BDT") {
+    if (currency === "BDT") {
+        return `TK. ${amount.toLocaleString()}`
+    }
     return new Intl.NumberFormat("en-US", {
         style: "currency",
         currency,

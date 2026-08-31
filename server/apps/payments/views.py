@@ -74,7 +74,10 @@ class PaymentViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         course = serializer.validated_data["course"]
-        promo_code_str = request.data.get("promo_code", "").strip()
+        promo_code_str = (
+            serializer.validated_data.get("promo_code")
+            or request.data.get("promo_code", "")
+        ).strip()
 
         amount_to_charge = serializer.validated_data.get("amount") or course.price
         metadata = serializer.validated_data.get("metadata", {}) or {}

@@ -8,6 +8,7 @@ class PaymentSerializer(serializers.ModelSerializer):
 
     user_email = serializers.EmailField(source="user.email", read_only=True)
     course_title = serializers.CharField(source="course.title", read_only=True)
+    course_price = serializers.DecimalField(source="course.price", max_digits=10, decimal_places=2, read_only=True)
     course_thumbnail = serializers.ImageField(source="course.thumbnail", read_only=True)
     course_slug = serializers.SlugField(source="course.slug", read_only=True)
 
@@ -19,6 +20,7 @@ class PaymentSerializer(serializers.ModelSerializer):
             "user_email",
             "course",
             "course_title",
+            "course_price",
             "course_thumbnail",
             "course_slug",
             "amount",
@@ -92,6 +94,11 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("This Transaction ID has already been submitted.")
             
         return value
+
+    def create(self, validated_data):
+        """Remove write-only non-model fields before model creation."""
+        validated_data.pop("promo_code", None)
+        return super().create(validated_data)
 
 
 class PromoCodeSerializer(serializers.ModelSerializer):
