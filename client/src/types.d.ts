@@ -9,6 +9,9 @@ export interface User {
     bio?: string;
     profile_picture?: string;
     phone_number?: string;
+    phone_verified?: boolean;
+    organization_name?: string;
+    employee_id?: string;
     email_verified: boolean;
     is_active?: boolean;
     date_joined?: string;

@@ -75,29 +75,48 @@ export function useAuth() {
             await api.post(endpoints.auth.register, data)
             return true
         } catch (err: any) {
-            setError(
-                err.response?.data?.error?.details?.email?.[0] ||
-                'Registration failed'
-            )
-            toast.error(
-                err.response?.data?.error?.details?.email?.[0] ||
-                'Registration failed'
-            )
+            const details = err.response?.data?.error?.details || err.response?.data || {}
+            let errorMessage = 'Registration failed'
+
+            if (details.phone_number?.[0]) {
+                errorMessage = details.phone_number[0]
+            } else if (details.email?.[0]) {
+                errorMessage = details.email[0]
+            } else if (details.employee_id?.[0]) {
+                errorMessage = details.employee_id[0]
+            } else if (details.password?.[0]) {
+                errorMessage = details.password[0]
+            } else if (details.non_field_errors?.[0]) {
+                errorMessage = details.non_field_errors[0]
+            } else if (err.response?.data?.error?.message) {
+                errorMessage = err.response.data.error.message
+            } else if (err.response?.data?.message) {
+                errorMessage = err.response.data.message
+            }
+
+            setError(errorMessage)
+            toast.error(errorMessage)
             return false
         } finally {
             setLoading(false)
         }
     }
 
-    const resendVerification = async (email: string) => {
+    const resendVerification = async (email: string, channel: 'email' | 'sms' | 'both' = 'both') => {
         setLoading(true)
         setError(null)
         try {
-            await api.post(endpoints.auth.resendVerification, { email })
-            toast.success('Verification email resent successfully.')
+            const response = await api.post(endpoints.auth.resendVerification, { email, channel })
+            const successMsg = response.data?.message || 'Verification message sent successfully.'
+            toast.success(successMsg)
             return true
         } catch (err: any) {
-            const message = err.response?.data?.error?.message || 'Failed to resend verification email'
+            const message =
+                err.response?.data?.error?.message ||
+                err.response?.data?.message ||
+                err.response?.data?.non_field_errors?.[0] ||
+                err.response?.data?.email?.[0] ||
+                'Failed to resend verification message'
             setError(message)
             toast.error(message)
             return false

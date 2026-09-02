@@ -15,6 +15,12 @@ logger = logging.getLogger(__name__)
 
 # Default templates fallback dictionary
 DEFAULT_TEMPLATES = {
+    NotificationTypeCode.SMS_REGISTRATION_VERIFICATION: {
+        "channel": NotificationChannel.SMS,
+        "name": "Registration Verification Link (SMS)",
+        "subject": "",
+        "body": "Global Professional Skill: আপনার অ্যাকাউন্ট যাচাই করতে নিচের লিংকে ক্লিক করুন: [Verification Link]",
+    },
     NotificationTypeCode.SMS_STUDENT_VERIFICATION: {
         "channel": NotificationChannel.SMS,
         "name": "Student Verification (SMS)",
@@ -124,6 +130,11 @@ def render_template(text: str, context: dict) -> str:
         "[Announcement Content]": context.get("announcement_content", ""),
         "[Site Name]": getattr(settings, "SITE_NAME", "Global Professional Institute"),
         "[Frontend URL]": getattr(settings, "FRONTEND_URL", ""),
+        "[Verification Link]": context.get("verification_url", context.get("verification_link", "")),
+        "[verification_url]": context.get("verification_url", context.get("verification_link", "")),
+        "[verification_link]": context.get("verification_url", context.get("verification_link", "")),
+        "{verification_link}": context.get("verification_url", context.get("verification_link", "")),
+        "[লিংক]": context.get("verification_url", context.get("verification_link", "")),
     }
 
     for placeholder, val in replacements.items():

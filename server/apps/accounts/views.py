@@ -60,7 +60,7 @@ class UserRegistrationView(generics.CreateAPIView):
         return Response(
             {
                 "success": True,
-                "message": "Registration successful. Please check your email to verify your account.",
+                "message": "Registration successful. Verification instructions have been sent to your email and mobile number via SMS.",
                 "data": {"user": UserSerializer(user).data},
             },
             status=status.HTTP_201_CREATED,
@@ -68,7 +68,7 @@ class UserRegistrationView(generics.CreateAPIView):
 
 
 class EmailVerificationView(generics.GenericAPIView):
-    """Email verification endpoint."""
+    """Email and Phone account verification endpoint."""
 
     serializer_class = EmailVerificationSerializer
     permission_classes = [AllowAny]
@@ -79,48 +79,60 @@ class EmailVerificationView(generics.GenericAPIView):
         token = serializer.validated_data["token"]
 
         try:
-            verification_token = EmailVerificationToken.objects.select_related(
-                "user"
-            ).get(token=token)
-
-            if verification_token.is_expired():
-                return Response(
-                    {
-                        "success": False,
-                        "error": {"message": "Verification token has expired."},
-                    },
-                    status=status.HTTP_400_BAD_REQUEST,
+            with transaction.atomic():
+                verification_token = (
+                    EmailVerificationToken.objects.select_for_update()
+                    .select_related("user")
+                    .get(token=token)
                 )
 
-            # Verify user email
-            user = verification_token.user
-            user.email_verified = True
-            user.save(update_fields=["email_verified"])
+                if verification_token.is_expired():
+                    return Response(
+                        {
+                            "success": False,
+                            "error": {"message": "Verification token has expired."},
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
-            # Delete used token
-            verification_token.delete()
+                # Verify user account (email & phone)
+                user = verification_token.user
+                was_already_verified = user.email_verified and user.phone_verified
 
-            logger.info(f"Email verified for user {user.email}")
+                user.email_verified = True
+                user.phone_verified = True
+                user.save(update_fields=["email_verified", "phone_verified"])
 
-            # Trigger notifications
-            try:
-                from apps.core.notification_service import dispatch_notification
-                dispatch_notification("SMS_STUDENT_VERIFICATION", user=user)
-                dispatch_notification("EMAIL_STUDENT_VERIFICATION", user=user)
-            except Exception as e:
-                logger.error(f"Error triggering verification notifications for {user.email}: {str(e)}")
+                # Delete used token immediately in transaction
+                verification_token.delete()
+
+            logger.info(f"Account verified for user {user.email}")
+
+            # Trigger confirmation notifications only on fresh verification
+            if not was_already_verified:
+                try:
+                    from apps.core.notification_service import dispatch_notification
+                    dispatch_notification("SMS_STUDENT_VERIFICATION", user=user)
+                    dispatch_notification("EMAIL_STUDENT_VERIFICATION", user=user)
+                except Exception as e:
+                    logger.error(f"Error triggering verification notifications for {user.email}: {str(e)}")
 
             return Response(
                 {
                     "success": True,
-                    "message": "Email verified successfully. You can now log in.",
+                    "message": "Account verified successfully. You can now log in.",
+                    "data": {
+                        "user": UserSerializer(user).data,
+                        "email_verified": True,
+                        "phone_verified": True,
+                    },
                 },
                 status=status.HTTP_200_OK,
             )
 
         except EmailVerificationToken.DoesNotExist:
             return Response(
-                {"success": False, "error": {"message": "Invalid verification token."}},
+                {"success": False, "error": {"message": "Invalid or already used verification token."}},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -508,7 +520,7 @@ class UserManagementViewSet(viewsets.ModelViewSet):
 
 
 class ResendVerificationEmailView(generics.GenericAPIView):
-    """Endpoint to resend verification email."""
+    """Endpoint to resend verification email and/or SMS."""
 
     serializer_class = ResendVerificationEmailSerializer
     permission_classes = [AllowAny]
@@ -518,10 +530,18 @@ class ResendVerificationEmailView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
+        channel = serializer.validated_data.get("channel", "both")
+        if channel == "sms":
+            msg = "Verification SMS has been resent. Please check your phone messages."
+        elif channel == "email":
+            msg = "Verification email has been resent. Please check your inbox."
+        else:
+            msg = "Verification instructions have been resent to your email and phone."
+
         return Response(
             {
                 "success": True,
-                "message": "Verification email has been resent. Please check your inbox.",
+                "message": msg,
             },
             status=status.HTTP_200_OK,
         )

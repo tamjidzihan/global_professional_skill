@@ -46,6 +46,8 @@ export function MyProfilePage() {
         first_name: profile?.first_name || '',
         last_name: profile?.last_name || '',
         phone_number: profile?.phone_number || '',
+        organization_name: profile?.organization_name || '',
+        employee_id: profile?.employee_id || '',
         bio: profile?.bio || '',
     }))
 
@@ -65,6 +67,8 @@ export function MyProfilePage() {
                 first_name: profile.first_name || '',
                 last_name: profile.last_name || '',
                 phone_number: profile.phone_number || '',
+                organization_name: profile.organization_name || '',
+                employee_id: profile.employee_id || '',
                 bio: profile.bio || '',
             })
         }
@@ -125,7 +129,15 @@ export function MyProfilePage() {
     }
 
     const handleCancel = () => {
-        if (profile) setForm({ first_name: profile.first_name || '', last_name: profile.last_name || '', phone_number: profile.phone_number || '', bio: profile.bio || '' })
+        if (profile)
+            setForm({
+                first_name: profile.first_name || '',
+                last_name: profile.last_name || '',
+                phone_number: profile.phone_number || '',
+                organization_name: profile.organization_name || '',
+                employee_id: profile.employee_id || '',
+                bio: profile.bio || '',
+            })
         setSelectedFile(null)
         setPreviewUrl(null)
         setIsEditing(false)
@@ -267,20 +279,29 @@ export function MyProfilePage() {
                         </div>
 
                         {/* Verification + edit */}
-                        <div className="flex items-center gap-2.5 shrink-0">
+                        <div className="flex flex-wrap items-center gap-2 shrink-0">
                             {displayData?.email_verified ? (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[11px] font-bold rounded-md border border-emerald-100">
-                                    <CheckCircle className="w-3.5 h-3.5" /> Verified
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[11px] font-bold rounded-md border border-emerald-100">
+                                    <CheckCircle className="w-3.5 h-3.5" /> Email Verified
                                 </span>
                             ) : (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 text-[11px] font-bold rounded-md border border-amber-100">
-                                    <AlertCircle className="w-3.5 h-3.5" /> Unverified
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 text-[11px] font-bold rounded-md border border-amber-100">
+                                    <AlertCircle className="w-3.5 h-3.5" /> Email Unverified
+                                </span>
+                            )}
+                            {displayData?.phone_verified ? (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 text-[11px] font-bold rounded-md border border-emerald-100">
+                                    <CheckCircle className="w-3.5 h-3.5" /> Mobile Verified
+                                </span>
+                            ) : (
+                                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-50 text-gray-600 text-[11px] font-semibold rounded-md border border-gray-200">
+                                    <AlertCircle className="w-3.5 h-3.5 text-gray-400" /> Mobile Unverified
                                 </span>
                             )}
                             {!isEditing && (
                                 <button
                                     onClick={() => { setIsEditing(true); setSelectedFile(null); setPreviewUrl(null) }}
-                                    className="inline-flex items-center gap-2 px-3 py-2 bg-violet-600 text-white text-xs font-semibold rounded-lg hover:bg-violet-700 transition-colors cursor-pointer shadow-sm"
+                                    className="inline-flex items-center gap-2 px-3 py-2 bg-violet-600 text-white text-xs font-semibold rounded-lg hover:bg-violet-700 transition-colors cursor-pointer shadow-sm ml-1"
                                 >
                                     <Pencil className="w-3.5 h-3.5" /> Edit Profile
                                 </button>
@@ -367,12 +388,32 @@ export function MyProfilePage() {
                                         <div>
                                             <label className="block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Phone Number</label>
                                             {isEditing ? (
-                                                <input type="tel" name="phone_number" value={form.phone_number} onChange={handleChange} maxLength={20} className={inputCls} placeholder="+1 (555) 000-0000" />
+                                                <input type="tel" name="phone_number" value={form.phone_number} onChange={handleChange} maxLength={20} className={inputCls} placeholder="+880 1712345678" />
                                             ) : (
                                                 <div className={readonlyCls}>
                                                     <Phone className="w-3.5 h-3.5 text-gray-300 shrink-0" />
                                                     <span>{displayData?.phone_number || '—'}</span>
                                                 </div>
+                                            )}
+                                        </div>
+
+                                        {/* Organization Name */}
+                                        <div>
+                                            <label className="block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Organization Name</label>
+                                            {isEditing ? (
+                                                <input type="text" name="organization_name" value={form.organization_name} onChange={handleChange} maxLength={255} className={inputCls} placeholder="Company or Institution" />
+                                            ) : (
+                                                <p className={readonlyCls}>{displayData?.organization_name || '—'}</p>
+                                            )}
+                                        </div>
+
+                                        {/* Employee ID */}
+                                        <div>
+                                            <label className="block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5">Employee ID</label>
+                                            {isEditing ? (
+                                                <input type="text" name="employee_id" value={form.employee_id} onChange={handleChange} maxLength={100} className={inputCls} placeholder="e.g. EMP-10492" />
+                                            ) : (
+                                                <p className={readonlyCls}>{displayData?.employee_id || '—'}</p>
                                             )}
                                         </div>
                                     </div>

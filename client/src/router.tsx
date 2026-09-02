@@ -22,6 +22,8 @@ import NotificationsPage from "./main/pages/NotificationsPage";
 import PrivacyPage from "./main/pages/PrivacyPage";
 import { RegisterPage } from "./main/pages/RegisterPage";
 import TermsPage from "./main/pages/TermsPage";
+import RefundPage from "./main/pages/RefundPage";
+import CookiePage from "./main/pages/CookiePage";
 import ContactPage from "./main/pages/ContactPage";
 import CareerPage from "./main/pages/CareerPage";
 import JobDetailPage from "./main/pages/JobDetailPage";
@@ -81,7 +83,13 @@ export const router = createBrowserRouter([
             { path: '/forgot-password', element: <ForgotPasswordPage /> },
             { path: '/reset-password', element: <ResetPasswordPage /> },
             { path: '/terms', element: <TermsPage /> },
+            { path: '/terms-and-conditions', element: <TermsPage /> },
             { path: '/privacy', element: <PrivacyPage /> },
+            { path: '/privacy-policy', element: <PrivacyPage /> },
+            { path: '/refund', element: <RefundPage /> },
+            { path: '/refund-policy', element: <RefundPage /> },
+            { path: '/cookies', element: <CookiePage /> },
+            { path: '/cookie-policy', element: <CookiePage /> },
             { path: '/contact', element: <ContactPage /> },
             { path: '/careers', element: <CareerPage /> },
             { path: '/careers/:id', element: <JobDetailPage /> },

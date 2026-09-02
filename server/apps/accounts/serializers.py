@@ -6,8 +6,22 @@ from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import authenticate
 from django.utils import timezone
-from .models import User, InstructorRequest, UserRole
-from .tasks import send_verification_email, send_password_reset_email
+from .models import User, InstructorRequest, UserRole, EmailVerificationToken
+import re
+import secrets
+from datetime import timedelta
+from .tasks import send_verification_email, send_verification_sms, send_password_reset_email
+
+
+def normalize_bd_phone(phone: str) -> str:
+    """Validate and normalize Bangladesh phone numbers to +8801XXXXXXXXX."""
+    if not phone:
+        return ""
+    cleaned = re.sub(r"[\s\-()]", "", str(phone).strip())
+    match = re.match(r"^(?:\+88|88)?(01[3-9]\d{8})$", cleaned)
+    if not match:
+        return ""
+    return f"+88{match.group(1)}"
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -27,6 +41,9 @@ class UserSerializer(serializers.ModelSerializer):
             "bio",
             "profile_picture",
             "phone_number",
+            "phone_verified",
+            "organization_name",
+            "employee_id",
             "email_verified",
             "is_active",
             "date_joined",
@@ -37,6 +54,7 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "role",
             "email_verified",
+            "phone_verified",
             "is_active",
             "date_joined",
             "last_login",
@@ -47,14 +65,54 @@ class UserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         if "phone_number" in validated_data and validated_data["phone_number"]:
-            from apps.core.notification_service import format_phone_number
-            validated_data["phone_number"] = format_phone_number(validated_data["phone_number"])
+            normalized = normalize_bd_phone(validated_data["phone_number"])
+            if not normalized:
+                raise serializers.ValidationError(
+                    {"phone_number": "Please enter a valid Bangladesh mobile number."}
+                )
+            if (
+                User.objects.filter(phone_number=normalized)
+                .exclude(id=instance.id)
+                .exists()
+            ):
+                raise serializers.ValidationError(
+                    {"phone_number": "A user with this mobile number already exists."}
+                )
+            validated_data["phone_number"] = normalized
+
+        if "employee_id" in validated_data and validated_data["employee_id"]:
+            emp_id = str(validated_data["employee_id"]).strip()
+            if (
+                emp_id
+                and User.objects.filter(employee_id__iexact=emp_id)
+                .exclude(id=instance.id)
+                .exists()
+            ):
+                raise serializers.ValidationError(
+                    {"employee_id": "A user with this Employee ID already exists."}
+                )
+            validated_data["employee_id"] = emp_id or None
+
         return super().update(instance, validated_data)
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """Serializer for user registration."""
 
+    phone_number = serializers.CharField(
+        required=True,
+        allow_blank=False,
+        error_messages={
+            "required": "Mobile number is required.",
+            "blank": "Mobile number cannot be blank.",
+        },
+    )
+    organization_name = serializers.CharField(
+        required=False, allow_blank=True, default="", max_length=255
+    )
+    employee_id = serializers.CharField(
+        required=False, allow_blank=True, default="", max_length=100
+    )
     password = serializers.CharField(
         write_only=True,
         required=True,
@@ -67,7 +125,43 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("email", "password", "password_confirm", "first_name", "last_name","phone_number")
+        fields = (
+            "email",
+            "password",
+            "password_confirm",
+            "first_name",
+            "last_name",
+            "phone_number",
+            "organization_name",
+            "employee_id",
+        )
+
+    def validate_phone_number(self, value):
+        if not value or not str(value).strip():
+            raise serializers.ValidationError("Mobile number is required.")
+
+        normalized = normalize_bd_phone(value)
+        if not normalized:
+            raise serializers.ValidationError(
+                "Please enter a valid Bangladesh mobile number (e.g., +8801712345678 or 01712345678)."
+            )
+
+        if User.objects.filter(phone_number=normalized).exists():
+            raise serializers.ValidationError(
+                "A user with this mobile number already exists."
+            )
+
+        return normalized
+
+    def validate_employee_id(self, value):
+        if value:
+            stripped = str(value).strip()
+            if stripped and User.objects.filter(employee_id__iexact=stripped).exists():
+                raise serializers.ValidationError(
+                    "A user with this Employee ID already exists."
+                )
+            return stripped
+        return ""
 
     def validate(self, attrs):
         """Validate password confirmation."""
@@ -82,23 +176,32 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         validated_data.pop("password_confirm")
 
         phone = validated_data.get("phone_number", "")
-        if phone:
-            from apps.core.notification_service import format_phone_number
-            phone = format_phone_number(phone)
+        org_name = validated_data.get("organization_name", "")
+        emp_id = validated_data.get("employee_id", "") or None
 
         user = User.objects.create_user(  # type: ignore
             email=validated_data["email"],
             password=validated_data["password"],
             phone_number=phone,
+            organization_name=org_name,
+            employee_id=emp_id,
             first_name=validated_data.get("first_name", ""),
             last_name=validated_data.get("last_name", ""),
             role=UserRole.STUDENT,  # Default role
             is_active=True,
             email_verified=False,
+            phone_verified=False,
         )
 
-        # Send verification email asynchronously
-        send_verification_email(user.id)
+        # Generate verification token & dispatch email and SMS
+        token = secrets.token_urlsafe(32)
+        expires_at = timezone.now() + timedelta(hours=24)
+        EmailVerificationToken.objects.create(
+            user=user, token=token, expires_at=expires_at
+        )
+
+        send_verification_email(user.id, token)
+        send_verification_sms(user.id, token)
 
         return user
 
@@ -356,29 +459,62 @@ class UserRoleUpdateSerializer(serializers.ModelSerializer):
 
 
 class ResendVerificationEmailSerializer(serializers.Serializer):
-    """Serializer for resending verification email."""
+    """Serializer for resending verification email and/or SMS."""
 
     email = serializers.EmailField(required=True)
+    channel = serializers.ChoiceField(
+        choices=["email", "sms", "both"], default="both", required=False
+    )
 
     def validate_email(self, value):
         """Validate that user with this email exists and is not verified."""
         try:
             user = User.objects.get(email=value)
             if user.email_verified:
-                raise serializers.ValidationError("This email is already verified.")
+                raise serializers.ValidationError("This account is already verified.")
             if not user.is_active:
                 raise serializers.ValidationError("This account is deactivated.")
             self.context["user"] = user
         except User.DoesNotExist:
-            # For security, we might not want to reveal if the email exists,
-            # but for a "resend" functionality, it's often better to be explicit
-            # or just return success even if not found.
-            # Here I'll be explicit as it's a specific "resend" action.
             raise serializers.ValidationError("No account found with this email address.")
         return value
 
-    def save(self):
-        """Resend verification email."""
+    def validate(self, attrs):
         user = self.context.get("user")
         if user:
-            send_verification_email(user.id)
+            # Check 60-second cooldown on verification token resends
+            from .models import EmailVerificationToken
+
+            last_token = (
+                EmailVerificationToken.objects.filter(user=user)
+                .order_by("-created_at")
+                .first()
+            )
+            if last_token:
+                elapsed_seconds = (timezone.now() - last_token.created_at).total_seconds()
+                if elapsed_seconds < 60:
+                    wait_seconds = int(60 - elapsed_seconds)
+                    raise serializers.ValidationError(
+                        f"Please wait {wait_seconds} seconds before requesting another verification message."
+                    )
+        return attrs
+
+    def save(self):
+        """Resend verification token via requested channel(s)."""
+        user = self.context.get("user")
+        channel = self.validated_data.get("channel", "both")
+        if user:
+            from .models import EmailVerificationToken
+
+            token = secrets.token_urlsafe(32)
+            expires_at = timezone.now() + timedelta(hours=24)
+            # Remove old tokens
+            EmailVerificationToken.objects.filter(user=user).delete()
+            EmailVerificationToken.objects.create(
+                user=user, token=token, expires_at=expires_at
+            )
+
+            if channel in ["email", "both"]:
+                send_verification_email(user.id, token)
+            if channel in ["sms", "both"]:
+                send_verification_sms(user.id, token)

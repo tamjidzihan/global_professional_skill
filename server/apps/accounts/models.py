@@ -81,11 +81,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     email_verified = models.BooleanField(default=False)
+    phone_verified = models.BooleanField(default=False)
 
     # Profile information
     bio = models.TextField(max_length=500, blank=True)
     profile_picture = models.ImageField(upload_to="profiles/", null=True, blank=True)
-    phone_number = models.CharField(max_length=20, blank=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True, db_index=True)
+    organization_name = models.CharField(max_length=255, blank=True, default="")
+    employee_id = models.CharField(max_length=100, blank=True, null=True, default=None, db_index=True)
 
     # Timestamps
     date_joined = models.DateTimeField(default=timezone.now)

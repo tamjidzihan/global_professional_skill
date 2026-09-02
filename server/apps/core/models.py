@@ -133,6 +133,7 @@ class NotificationChannel(models.TextChoices):
 
 class NotificationTypeCode(models.TextChoices):
     # SMS (Bangla)
+    SMS_REGISTRATION_VERIFICATION = "SMS_REGISTRATION_VERIFICATION", "SMS - Registration Verification Link"
     SMS_STUDENT_VERIFICATION = "SMS_STUDENT_VERIFICATION", "SMS - Student Verification"
     SMS_COURSE_APPROVAL = "SMS_COURSE_APPROVAL", "SMS - Course Purchase Approval"
     SMS_QUIZ_RESULT_PASS = "SMS_QUIZ_RESULT_PASS", "SMS - Quiz Result (Pass)"

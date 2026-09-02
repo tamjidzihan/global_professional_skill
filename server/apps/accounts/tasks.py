@@ -11,41 +11,90 @@ from .models import EmailVerificationToken, User
 logger = logging.getLogger(__name__)
 
 
-def send_verification_email(user_id):
-    """Send verification email using template."""
-    user = User.objects.get(id=user_id)
-    # Generate token
+def get_or_create_verification_token(user):
+    """Get active verification token or create a new one."""
+    active_token = (
+        EmailVerificationToken.objects.filter(user=user, expires_at__gt=timezone.now())
+        .order_by("-created_at")
+        .first()
+    )
+    if active_token:
+        return active_token.token
+
     token = secrets.token_urlsafe(32)
     expires_at = timezone.now() + timedelta(hours=24)
-
+    # Clean up old tokens for this user
+    EmailVerificationToken.objects.filter(user=user).delete()
     EmailVerificationToken.objects.create(user=user, token=token, expires_at=expires_at)
+    return token
 
-    # Prepare context
-    verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
-    context = {
-        "user": user,
-        "site_name": settings.SITE_NAME,
-        "site_url": settings.FRONTEND_URL,
-        "verification_url": verification_url,
-        "user_email": user.email,
-        "email_subtitle": "Email verification Request",
-        "subject": f"Verify your email - {settings.SITE_NAME}"
-    }
 
-    # Render templates
-    html_content = render_to_string("accounts/emails/verification_email.html", context)
-    text_content = strip_tags(html_content)
+def send_verification_email(user_id, token_str=None):
+    """Send verification email using template."""
+    try:
+        user = User.objects.get(id=user_id)
+        token = token_str or get_or_create_verification_token(user)
 
-    # Send email
-    subject = f"Verify your email - {settings.SITE_NAME}"
-    email = EmailMultiAlternatives(
-        subject=subject,
-        body=text_content,
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        to=[user.email],
-    )
-    email.attach_alternative(html_content, "text/html")
-    email.send()
+        # Prepare context
+        verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
+        context = {
+            "user": user,
+            "site_name": settings.SITE_NAME,
+            "site_url": settings.FRONTEND_URL,
+            "verification_url": verification_url,
+            "user_email": user.email,
+            "email_subtitle": "Email verification Request",
+            "subject": f"Verify your email - {settings.SITE_NAME}",
+        }
+
+        # Render templates
+        html_content = render_to_string("accounts/emails/verification_email.html", context)
+        text_content = strip_tags(html_content)
+
+        # Send email
+        subject = f"Verify your email - {settings.SITE_NAME}"
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body=text_content,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[user.email],
+        )
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+        logger.info(f"Verification email sent to {user.email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send verification email for user {user_id}: {str(e)}")
+        return False
+
+
+def send_verification_sms(user_id, token_str=None):
+    """Send verification link to user's phone via Bangla SMS."""
+    try:
+        user = User.objects.get(id=user_id)
+        if not user.phone_number:
+            logger.warning(f"No phone number found for user {user.email} to send verification SMS.")
+            return False
+
+        token = token_str or get_or_create_verification_token(user)
+        verification_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
+
+        from apps.core.notification_service import dispatch_notification
+
+        success = dispatch_notification(
+            "SMS_REGISTRATION_VERIFICATION",
+            user=user,
+            phone=user.phone_number,
+            context={"verification_url": verification_url},
+        )
+        if success:
+            logger.info(f"Verification SMS dispatched for {user.email} to {user.phone_number}")
+        else:
+            logger.warning(f"Verification SMS dispatch failed for {user.email}")
+        return success
+    except Exception as e:
+        logger.error(f"Failed to send verification SMS for user {user_id}: {str(e)}")
+        return False
 
 
 def send_password_reset_email(user_id):
