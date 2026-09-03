@@ -1,5 +1,12 @@
 from rest_framework import serializers
-from .models import SiteSettings, Announcement, NewsTickerItem, NotificationTemplate, NotificationLog
+from .models import (
+    SiteSettings,
+    AlbumPhoto,
+    Announcement,
+    NewsTickerItem,
+    NotificationTemplate,
+    NotificationLog,
+)
 from apps.accounts.serializers import UserSerializer
 
 class SiteSettingsSerializer(serializers.ModelSerializer):
@@ -14,8 +21,31 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
             'campus_tour_thumbnail',
             'campus_tour_heading',
             'campus_tour_subtext',
+            'album_heading',
+            'album_subtext',
             'updated_at'
         ]
+
+
+class AlbumPhotoSerializer(serializers.ModelSerializer):
+    created_by_detail = UserSerializer(source='created_by', read_only=True)
+
+    class Meta:
+        model = AlbumPhoto
+        fields = [
+            'id',
+            'title',
+            'caption',
+            'image',
+            'order',
+            'is_active',
+            'created_at',
+            'updated_at',
+            'created_by',
+            'created_by_detail'
+        ]
+        read_only_fields = ['created_by']
+
 
 class AnnouncementSerializer(serializers.ModelSerializer):
     created_by_detail = UserSerializer(source='created_by', read_only=True)

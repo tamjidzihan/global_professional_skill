@@ -2,6 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
     SiteSettingsView,
+    AlbumPhotoViewSet,
     AnnouncementViewSet,
     NewsTickerItemViewSet,
     NotificationTemplateViewSet,
@@ -9,6 +10,7 @@ from .views import (
 )
 
 router = DefaultRouter()
+router.register(r'album-photos', AlbumPhotoViewSet, basename='album-photos')
 router.register(r'announcements', AnnouncementViewSet, basename='announcements')
 router.register(r'news-ticker', NewsTickerItemViewSet, basename='news-ticker')
 router.register(r'notification-templates', NotificationTemplateViewSet, basename='notification-templates')
@@ -18,3 +20,4 @@ urlpatterns = [
     path('settings/', SiteSettingsView.as_view(), name='site-settings'),
     path('', include(router.urls)),
 ]
+

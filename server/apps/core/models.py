@@ -58,6 +58,22 @@ class SiteSettings(models.Model):
         default="Experience our state-of-the-art facilities",
         help_text="Custom subtext for the video card. Defaults to 'Experience our state-of-the-art facilities' if empty."
     )
+
+    # Photo Album Settings (About Section on Homepage)
+    album_heading = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        default="Campus & Event Gallery",
+        help_text="Custom heading for the Photo Album card in About section."
+    )
+    album_subtext = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        default="Explore our vibrant campus life, workshops, and student achievements",
+        help_text="Custom subtext for the Photo Album card."
+    )
     
     # Metadata for singleton pattern
     updated_at = models.DateTimeField(auto_now=True)
@@ -74,6 +90,36 @@ class SiteSettings(models.Model):
         """Helper to get the singleton settings object."""
         settings, created = cls.objects.get_or_create(id=1)
         return settings
+
+
+class AlbumPhoto(models.Model):
+    """Photos uploaded for the campus/event album showcase."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=200, blank=True, help_text="Short title or caption for the photo")
+    caption = models.TextField(blank=True, help_text="Optional longer description")
+    image = models.ImageField(upload_to="album/", help_text="Uploaded album photo file")
+    order = models.PositiveIntegerField(default=0, help_text="Display order sequence")
+    is_active = models.BooleanField(default=True, help_text="Show or hide this photo from the public album")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='album_photos'
+    )
+
+    class Meta:
+        db_table = "album_photos"
+        verbose_name = "Album Photo"
+        verbose_name_plural = "Album Photos"
+        ordering = ["order", "-created_at"]
+
+    def __str__(self):
+        return self.title or f"Album Photo {self.id}"
+
 
 class Announcement(models.Model):
     """Model for site-wide announcements."""

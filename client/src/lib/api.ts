@@ -31,9 +31,19 @@ import type {
     CourseMaterial,
     PromoCode,
     PromoCodeValidateResponse,
+    AlbumPhoto,
 } from '../types';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+
+export const getMediaUrl = (path?: string | null): string => {
+    if (!path) return '';
+    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('blob:') || path.startsWith('data:')) {
+        return path;
+    }
+    const backendOrigin = API_URL.replace(/\/api\/v1\/?$/, '');
+    return `${backendOrigin}${path.startsWith('/') ? '' : '/'}${path}`;
+};
 
 export const api = axios.create({
     baseURL: API_URL,
@@ -248,6 +258,10 @@ export const endpoints = {
         announcementDetail: (id: string) => `/core/announcements/${id}/`,
         newsTicker: '/core/news-ticker/',
         newsTickerDetail: (id: string) => `/core/news-ticker/${id}/`,
+        albumPhotos: '/core/album-photos/',
+        albumPhotoDetail: (id: string) => `/core/album-photos/${id}/`,
+        albumBatchUpload: '/core/album-photos/batch-upload/',
+        albumReorder: '/core/album-photos/reorder/',
     },
     careers: {
         jobs: '/careers/jobs/',
@@ -332,6 +346,26 @@ export const getSiteSettings = (): Promise<AxiosResponse<ApiResponse<any>>> =>
 
 export const updateSiteSettings = (data: FormData | any): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.patch<ApiResponse<any>>(endpoints.core.settings, data);
+
+// Album Photos API Calls
+export const getAlbumPhotos = (): Promise<AxiosResponse<ApiResponse<AlbumPhoto[]>>> =>
+    api.get<ApiResponse<AlbumPhoto[]>>(endpoints.core.albumPhotos);
+
+export const createAlbumPhoto = (data: FormData): Promise<AxiosResponse<ApiResponse<AlbumPhoto>>> =>
+    api.post<ApiResponse<AlbumPhoto>>(endpoints.core.albumPhotos, data);
+
+export const batchUploadAlbumPhotos = (data: FormData): Promise<AxiosResponse<ApiResponse<AlbumPhoto[]>>> =>
+    api.post<ApiResponse<AlbumPhoto[]>>(endpoints.core.albumBatchUpload, data);
+
+export const updateAlbumPhoto = (id: string, data: FormData | Partial<AlbumPhoto>): Promise<AxiosResponse<ApiResponse<AlbumPhoto>>> =>
+    api.patch<ApiResponse<AlbumPhoto>>(endpoints.core.albumPhotoDetail(id), data);
+
+export const deleteAlbumPhoto = (id: string): Promise<AxiosResponse<ApiResponse<void>>> =>
+    api.delete<ApiResponse<void>>(endpoints.core.albumPhotoDetail(id));
+
+export const reorderAlbumPhotos = (orders: { id: string; order: number }[]): Promise<AxiosResponse<ApiResponse<void>>> =>
+    api.post<ApiResponse<void>>(endpoints.core.albumReorder, { orders });
+
 
 // Payment API Calls
 export const getPayments = <T = ApiResponse<Payment[]>>(

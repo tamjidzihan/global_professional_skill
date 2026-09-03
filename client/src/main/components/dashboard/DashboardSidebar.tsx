@@ -16,6 +16,8 @@ import {
     Bell,
     Megaphone,
     Tag,
+    Video,
+    Images,
 } from 'lucide-react'
 import { useAuthContext } from '../../../context/AuthContext'
 import { useMyProfile } from '../../../hooks/useMyProfile'
@@ -78,7 +80,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
     const { profile, isLoading } = useMyProfile()
     const location = useLocation()
     const [isCollapsed, setIsCollapsed] = useState(false)
-    const [openGroups, setOpenGroups] = useState<string[]>(['courses', 'users'])
+    const [openGroups, setOpenGroups] = useState<string[]>(['courses', 'users', 'settings'])
 
     const isActive = (path: string, exact?: boolean) => {
         if (exact) return location.pathname === path
@@ -140,7 +142,20 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
 
         { name: 'Payment Management', path: '/dashboard/admin/payments', icon: CreditCard, badge: 'Review' },
         { name: 'Promo Codes', path: '/dashboard/admin/promo-codes', icon: Tag, badge: 'New' },
-        { name: 'Platform Settings', path: '/dashboard/admin/settings', icon: Settings },
+
+        // ── Platform Settings group ──
+        {
+            key: 'settings',
+            name: 'Platform Settings',
+            icon: Settings,
+            children: [
+                { name: 'Overview', path: '/dashboard/admin/settings', icon: Settings, exact: true },
+                { name: 'Homepage Video', path: '/dashboard/admin/settings/video', icon: Video },
+                { name: 'Photo Album', path: '/dashboard/admin/settings/album', icon: Images },
+                { name: 'Payment Details', path: '/dashboard/admin/settings/payment', icon: CreditCard },
+                { name: 'Quiz & Notifications', path: '/dashboard/admin/settings/notifications', icon: Bell },
+            ],
+        },
     ]
 
     const links: NavItem[] = profile?.role === 'ADMIN'

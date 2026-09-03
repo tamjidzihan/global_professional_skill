@@ -437,8 +437,24 @@ export interface SiteSettings {
     campus_tour_thumbnail?: string | null;
     campus_tour_heading?: string | null;
     campus_tour_subtext?: string | null;
+    album_heading?: string | null;
+    album_subtext?: string | null;
     updated_at: string;
 }
+
+export interface AlbumPhoto {
+    id: string;
+    title: string;
+    caption: string;
+    image: string;
+    order: number;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    created_by?: string;
+    created_by_detail?: User;
+}
+
 
 // Career Management Types
 export type JobType = 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERNSHIP';

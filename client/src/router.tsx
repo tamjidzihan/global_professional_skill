@@ -451,6 +451,38 @@ export const router = createBrowserRouter([
                         )
                     },
                     {
+                        path: 'admin/settings/video',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <SiteSettingsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/settings/album',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <SiteSettingsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/settings/payment',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <SiteSettingsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/settings/notifications',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <SiteSettingsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
                         path: 'admin/careers',
                         element: (
                             <ProtectedRoute allowedRoles={['ADMIN']}>

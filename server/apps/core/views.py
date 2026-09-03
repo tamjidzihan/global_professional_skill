@@ -1,10 +1,19 @@
 from rest_framework import generics, permissions, status, viewsets, parsers
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.utils import timezone
 from django.db import models
-from .models import SiteSettings, Announcement, NewsTickerItem, NotificationTemplate, NotificationLog
+from .models import (
+    SiteSettings,
+    AlbumPhoto,
+    Announcement,
+    NewsTickerItem,
+    NotificationTemplate,
+    NotificationLog,
+)
 from .serializers import (
     SiteSettingsSerializer,
+    AlbumPhotoSerializer,
     AnnouncementSerializer,
     NewsTickerItemSerializer,
     NotificationTemplateSerializer,
@@ -50,6 +59,149 @@ class SiteSettingsView(generics.RetrieveUpdateAPIView):
                 "data": serializer.data,
             }
         )
+
+
+class AlbumPhotoViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for Campus/Event Album Photos.
+    Public can view active photos.
+    Admins have full CRUD access, batch upload, and reordering.
+    """
+
+    queryset = AlbumPhoto.objects.all()
+    serializer_class = AlbumPhotoSerializer
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser]
+    pagination_class = None
+
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            return [permissions.AllowAny()]
+        return [IsAdmin()]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Non-admins only see active photos
+        if not (self.request.user.is_authenticated and getattr(self.request.user, "role", "") == "ADMIN"):
+            queryset = queryset.filter(is_active=True)
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user if self.request.user.is_authenticated else None)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(
+            {
+                "success": True,
+                "data": serializer.data,
+            }
+        )
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(
+            {
+                "success": True,
+                "data": serializer.data,
+            }
+        )
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(
+            {
+                "success": True,
+                "message": "Photo added to album successfully.",
+                "data": serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(
+            {
+                "success": True,
+                "message": "Album photo updated successfully.",
+                "data": serializer.data,
+            }
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(
+            {
+                "success": True,
+                "message": "Photo removed from album successfully.",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=False, methods=["post"], url_path="batch-upload")
+    def batch_upload(self, request, *args, **kwargs):
+        """Upload multiple photo files at once."""
+        files = request.FILES.getlist("images") or request.FILES.getlist("image")
+        if not files:
+            return Response(
+                {"success": False, "error": {"message": "No image files provided."}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        title_prefix = request.data.get("title_prefix", "").strip()
+        caption = request.data.get("caption", "").strip()
+        current_max_order = AlbumPhoto.objects.aggregate(max_order=models.Max("order"))["max_order"] or 0
+
+        created_photos = []
+        for idx, file_obj in enumerate(files):
+            order = current_max_order + idx + 1
+            title = f"{title_prefix} {idx + 1}" if title_prefix else file_obj.name.rsplit(".", 1)[0]
+            photo = AlbumPhoto.objects.create(
+                image=file_obj,
+                title=title[:200],
+                caption=caption,
+                order=order,
+                is_active=True,
+                created_by=request.user if request.user.is_authenticated else None,
+            )
+            created_photos.append(photo)
+
+        serializer = self.get_serializer(created_photos, many=True)
+        return Response(
+            {
+                "success": True,
+                "message": f"Successfully uploaded {len(created_photos)} photos.",
+                "data": serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=False, methods=["post"], url_path="reorder")
+    def reorder(self, request, *args, **kwargs):
+        """Reorder photos in bulk by providing an array of { id, order }."""
+        orders = request.data.get("orders", [])
+        if not isinstance(orders, list):
+            return Response(
+                {"success": False, "error": {"message": "Invalid orders data format."}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        for item in orders:
+            photo_id = item.get("id")
+            order = item.get("order")
+            if photo_id and order is not None:
+                AlbumPhoto.objects.filter(id=photo_id).update(order=order)
+
+        return Response({"success": True, "message": "Photo order updated successfully."})
+
 
 
 class AnnouncementViewSet(viewsets.ModelViewSet):

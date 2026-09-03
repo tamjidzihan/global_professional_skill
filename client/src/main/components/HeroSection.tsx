@@ -1,60 +1,61 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react"
-import { Search } from "lucide-react"
+import React, { useState, useEffect, useRef } from "react"
+import { Search, Play, Globe, X } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
-import { motion } from 'framer-motion'
 import { useAuth } from "../../hooks/useAuth"
+import { getSiteSettings } from "../../lib/api"
+import type { SiteSettings } from "../../types"
 
-
-const containerVariants = {
-    hidden: {
-        opacity: 0,
-    },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1,
-            delayChildren: 0.2,
-        },
-    },
-}
-const itemVariants = {
-    hidden: {
-        opacity: 0,
-        scale: 0.5,
-        y: 20,
-    },
-    visible: {
-        opacity: 1,
-        scale: 1,
-        y: 0,
-        transition: {
-            stiffness: 100,
-            damping: 15,
-        },
-    },
-}
-const floatAnimation = {
-    y: [0, -10, 0],
-    transition: {
-        duration: 3,
-        repeat: Infinity,
-        ease: "linear" as any,
-    },
-}
-const floatAnimationDelayed = {
-    y: [0, -15, 0],
-    transition: {
-        duration: 4,
-        repeat: Infinity,
-        ease: "linear" as any,
-        delay: 1,
-    },
-}
 const HeroSection = () => {
     const { user } = useAuth()
     const [searchQuery, setSearchQuery] = useState("")
+    const [settings, setSettings] = useState<SiteSettings | null>(null)
+    const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
+    const videoRef = useRef<HTMLVideoElement | null>(null)
     const navigate = useNavigate()
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const res = await getSiteSettings()
+                if (res.data.success) {
+                    setSettings(res.data.data)
+                }
+            } catch (err) {
+                console.error("Failed to load site settings for campus tour video", err)
+            }
+        }
+        fetchSettings()
+    }, [])
+
+    // Close modal on Escape key
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                handleCloseModal()
+            }
+        }
+        if (isVideoModalOpen) {
+            window.addEventListener("keydown", handleKeyDown)
+            document.body.style.overflow = "hidden"
+        }
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown)
+            document.body.style.overflow = "unset"
+        }
+    }, [isVideoModalOpen])
+
+    const handleOpenModal = () => {
+        setIsVideoModalOpen(true)
+    }
+
+    const handleCloseModal = () => {
+        if (videoRef.current) {
+            videoRef.current.pause()
+            videoRef.current.currentTime = 0
+        }
+        setIsVideoModalOpen(false)
+    }
 
     const handleSearch = () => {
         if (searchQuery.trim()) {
@@ -70,19 +71,24 @@ const HeroSection = () => {
         }
     }
 
+    const videoUrl = settings?.campus_tour_video || null
+    const thumbnailUrl = settings?.campus_tour_thumbnail || null
+    const heading = settings?.campus_tour_heading?.trim() || "Virtual Campus Tour"
+    const subtext = settings?.campus_tour_subtext?.trim() || "Experience our state-of-the-art facilities"
+
     return (
         <div className="bg-white">
-            <section className="bg-[#FCF8F1] bg-opacity-30 py-8 relative overflow-hidden">
+            <section className="bg-[#FCF8F1] bg-opacity-30 py-8 lg:py-14 relative overflow-hidden">
                 <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="grid items-center grid-cols-1 gap-12 lg:grid-cols-2">
 
                         {/* Left Content */}
                         <div>
-                            <h1 className="mt-4 text-4xl font-bold text-black lg:mt-8 sm:text-6xl xl:text-8xl">
+                            <h1 className="mt-4 text-4xl font-bold text-black lg:mt-8 sm:text-6xl xl:text-7xl leading-tight">
                                 Connect & learn from the experts
                             </h1>
 
-                            <p className="mt-4 text-base text-black lg:mt-8 sm:text-xl">
+                            <p className="mt-4 text-base text-black lg:mt-6 sm:text-xl">
                                 Grow your career fast with right mentor.
                             </p>
 
@@ -98,19 +104,18 @@ const HeroSection = () => {
                                 />
                                 <button
                                     onClick={handleSearch}
-                                    className="absolute top-1/2 right-2 -translate-y-1/2 h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:scale-105 transition"
+                                    className="absolute top-1/2 right-2 -translate-y-1/2 h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:scale-105 transition cursor-pointer"
                                 >
                                     <Search className="w-5 h-5" />
                                 </button>
                             </div>
-
 
                             {!user && (
                                 <div>
                                     <Link
                                         to={'/register'}
                                         title=""
-                                        className="inline-flex items-center px-6 py-4 mt-8 font-semibold text-black transition-all duration-200 bg-yellow-300 rounded-full lg:mt-16 hover:bg-yellow-400 focus:bg-yellow-400"
+                                        className="inline-flex items-center px-6 py-4 mt-8 font-semibold text-black transition-all duration-200 bg-yellow-300 rounded-full lg:mt-12 hover:bg-yellow-400 focus:bg-yellow-400"
                                         role="button"
                                     >
                                         Join for free
@@ -143,183 +148,120 @@ const HeroSection = () => {
                             )}
                         </div>
 
-                        {/* Right Image */}
-                        <div className=" hidden lg:block w-full mx-auto">
-                            {/* Main Relative Container - Aspect Ratio Square-ish */}
-                            <motion.div
-                                className="relative w-full aspect-square  mx-auto"
-                                variants={containerVariants}
-                                initial="hidden"
-                                animate="visible"
-                            >
-                                {/* 1. Man in Yellow Circle (Top-Left) */}
-                                <motion.div
-                                    variants={itemVariants}
-                                    className="absolute top-[3%] left-[2%] w-[30%] aspect-square rounded-full bg-[#FBBF24] overflow-hidden shadow-lg z-20"
-                                >
-                                    <img
-                                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face"
-                                        alt="Smiling man"
-                                        className="w-full h-full object-cover"
-                                    />
-                                </motion.div>
+                        {/* Right Column: Campus Tour Video / Image Card */}
+                        <div className="w-full max-w-lg mx-auto">
+                            <div className="relative group">
+                                {/* Tilted Glow Gradient */}
+                                <div className="absolute inset-0 bg-linear-to-br from-green-400 to-blue-500 rounded-3xl transform -rotate-2 group-hover:-rotate-3 transition-transform duration-300"></div>
 
-                                {/* 9. Small Circle Outline (Top-Center) */}
-                                <motion.div
-                                    variants={itemVariants}
-                                    animate={floatAnimation}
-                                    className="absolute top-[2%] left-[35%] z-10"
+                                <div
+                                    onClick={handleOpenModal}
+                                    className="relative bg-linear-to-br from-blue-900 to-purple-900 rounded-3xl overflow-hidden shadow-2xl border-4 border-white h-100 sm:h-110 cursor-pointer select-none"
                                 >
-                                    <svg
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                    >
-                                        <circle cx="12" cy="12" r="11" stroke="black" strokeWidth="2" />
-                                    </svg>
-                                </motion.div>
-
-                                {/* 2. 'Active Professionals' Black Circle (Top-Center/Right) */}
-                                <motion.div
-                                    variants={itemVariants}
-                                    className="absolute top-[8%] left-[35%] w-[35%] aspect-square bg-black text-white flex flex-col justify-center items-center p-4 z-10 shadow-xl"
-                                    style={{
-                                        borderTopLeftRadius: '6rem',
-                                        borderTopRightRadius: '6rem',
-                                        borderBottomLeftRadius: '6rem',   // rounded-2xl
-                                    }}
-                                >
-                                    <div className="text-center mb-2">
-                                        <span className="block text-sm md:text-lg leading-tight text-gray-200">
-                                            Active
-                                        </span>
-                                        <span className="block text-sm md:text-lg leading-tight text-gray-200">
-                                            Professionals
-                                        </span>
-                                    </div>
-                                    <span className="text-3xl md:text-5xl font-bold tracking-tight">
-                                        13,422
-                                    </span>
-                                </motion.div>
-
-                                {/* 3. Woman in Purple Pill (Top-Right) */}
-                                <motion.div
-                                    variants={itemVariants}
-                                    className="absolute top-[1%] right-[1%] w-[25%] h-[42%] rounded-[100px] bg-[#C084FC] overflow-hidden shadow-lg z-20"
-                                >
-                                    <img
-                                        src="https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=300&h=400&fit=crop&crop=face"
-                                        alt="Smiling woman"
-                                        className="w-full h-full object-cover"
-                                    />
-                                </motion.div>
-
-                                {/* 4. Woman in Blue Rounded Square (Bottom-Left - Largest) */}
-                                <motion.div
-                                    variants={itemVariants}
-                                    className="absolute bottom-[18%] left-[0%] w-[40%] h-[40%] bg-[#3B5EF5] overflow-hidden shadow-xl z-10"
-                                    style={{
-                                        borderTopLeftRadius: '2rem',
-                                        borderTopRightRadius: '2rem',
-                                        borderBottomLeftRadius: '2rem',
-                                        borderBottomRightRadius: '180px'
-                                    }}
-                                >
-                                    <img
-                                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=500&fit=crop&crop=face"
-                                        alt="Woman looking at camera"
-                                        className="w-full h-full object-cover"
-                                    />
-                                </motion.div>
-
-                                {/* 5. Starburst SVG (Center) */}
-                                <motion.div
-                                    variants={itemVariants}
-                                    animate={floatAnimationDelayed}
-                                    className="absolute top-[48%] left-[45%] w-[17%] rotate-10 aspect-square z-30"
-                                >
-                                    <svg
-                                        viewBox="0 0 100 100"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="w-full h-full text-black"
-                                    >
-                                        <path
-                                            d="M50 0L58 35L95 25L65 50L95 75L58 65L50 100L42 65L5 75L35 50L5 25L42 35L50 0Z"
-                                            stroke="currentColor"
-                                            strokeWidth="4"
-                                            strokeLinejoin="round"
+                                    {/* Thumbnail Background if uploaded */}
+                                    {thumbnailUrl && (
+                                        <img
+                                            src={thumbnailUrl}
+                                            alt={heading}
+                                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                         />
-                                    </svg>
-                                </motion.div>
+                                    )}
 
-                                {/* 6. Yellow Quarter Circle (Center-Right) */}
-                                <motion.div
-                                    variants={itemVariants}
-                                    className="absolute top-[45%] right-[15%] w-[20%] aspect-square bg-[#FBBF24] rounded-tr-[100%] rounded-tl-none rounded-bl-none rounded-br-[20px] z-0"
-                                />
+                                    {/* Pattern / Gradient Overlay */}
+                                    <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/40 to-transparent"></div>
 
-                                {/* 7. 'Online Courses' Mint Green Circle (Bottom-Center) */}
-                                <motion.div
-                                    variants={itemVariants}
-                                    className="absolute bottom-[0%] left-[32%] w-[32%] aspect-square bg-[#86EFAC] flex flex-col justify-center items-center p-4 z-20 shadow-lg"
-                                    style={{
-                                        borderTopLeftRadius: '6rem',
-                                        borderTopRightRadius: '6rem',
-                                        borderBottomRightRadius: '6rem',
-                                    }}
-                                >
-                                    <div className="text-center mb-1">
-                                        <span className="block text-sm md:text-base leading-tight text-gray-800 font-medium">
-                                            Online
-                                        </span>
-                                        <span className="block text-sm md:text-base leading-tight text-gray-800 font-medium">
-                                            Courses
-                                        </span>
-                                    </div>
-                                    <span className="text-2xl md:text-4xl font-bold tracking-tight text-black">
-                                        2,582
-                                    </span>
-                                </motion.div>
-
-                                {/* 8. Small Coral Red Circle (Bottom-Right) */}
-                                <motion.div
-                                    variants={itemVariants}
-                                    animate={floatAnimation}
-                                    className="absolute bottom-[10%] right-[15%] w-[18%] aspect-square rounded-full bg-[#FF5252] z-10"
-                                />
-
-                                {/* 10. Small Triangle Outline (Bottom) */}
-                                <motion.div
-                                    variants={itemVariants}
-                                    animate={floatAnimationDelayed}
-                                    className="absolute bottom-[5%] left-[65%] z-30"
-                                >
-                                    <svg
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="rotate-90"
-                                    >
-                                        <path
-                                            d="M12 2L22 20H2L12 2Z"
-                                            stroke="black"
-                                            strokeWidth="2.5"
-                                            strokeLinejoin="round"
+                                    <div className="absolute inset-0 opacity-10 pointer-events-none">
+                                        <div
+                                            className="absolute inset-0"
+                                            style={{
+                                                backgroundImage: `repeating-linear-gradient(45deg, white 0px, white 2px, transparent 2px, transparent 10px)`,
+                                            }}
                                         />
-                                    </svg>
-                                </motion.div>
-                            </motion.div>
+                                    </div>
+
+                                    {/* Play Button */}
+                                    <div className="absolute inset-0 flex items-center justify-center group/play">
+                                        <div className="relative">
+                                            <div className="absolute inset-0 bg-white rounded-full opacity-20 animate-ping"></div>
+                                            <div className="relative w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl group-hover/play:scale-110 transition-transform">
+                                                <Play className="w-9 h-9 text-blue-600 fill-blue-600 ml-1" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Dynamic Content / Labels */}
+                                    <div className="absolute bottom-0 left-0 right-0 p-6 z-10">
+                                        <div className="flex items-center gap-2 mb-1.5">
+                                            <Globe className="w-5 h-5 text-blue-400 shrink-0" />
+                                            <span className="text-white font-bold text-lg leading-snug line-clamp-1">{heading}</span>
+                                        </div>
+                                        <p className="text-white/80 text-sm line-clamp-2">{subtext}</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                     </div>
                 </div>
             </section>
+
+            {/* ── Video Player Modal with Dark Blur Backdrop ── */}
+            {isVideoModalOpen && (
+                <div
+                    onClick={handleCloseModal}
+                    className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 md:p-10 animate-in fade-in duration-200"
+                >
+                    {/* Modal Container */}
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="relative w-full max-w-4xl bg-black rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-white/10"
+                    >
+                        {/* Header bar */}
+                        <div className="flex items-center justify-between px-5 py-3.5 bg-gray-950/80 border-b border-white/10 text-white">
+                            <div className="flex items-center gap-2 min-w-0 pr-4">
+                                <Globe className="w-4 h-4 text-blue-400 shrink-0" />
+                                <span className="font-semibold text-sm truncate">{heading}</span>
+                            </div>
+                            <button
+                                onClick={handleCloseModal}
+                                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                                title="Close (Esc)"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Video player or fallback */}
+                        <div className="relative aspect-video w-full bg-black flex items-center justify-center">
+                            {videoUrl ? (
+                                <video
+                                    ref={videoRef}
+                                    src={videoUrl}
+                                    controls
+                                    autoPlay
+                                    playsInline
+                                    className="w-full h-full object-contain"
+                                    poster={thumbnailUrl || undefined}
+                                />
+                            ) : (
+                                <div className="text-center p-8 text-white space-y-3">
+                                    <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center mx-auto">
+                                        <Play className="w-8 h-8 text-blue-400" />
+                                    </div>
+                                    <h4 className="text-lg font-bold">{heading}</h4>
+                                    <p className="text-xs text-white/60 max-w-md mx-auto">
+                                        No custom video file has been uploaded yet by the admin in the dashboard.
+                                        You can upload a video in <strong>Admin Dashboard → Platform Settings</strong>.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
 
 export default HeroSection
+
