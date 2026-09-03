@@ -295,7 +295,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
             )}
 
             <aside className={cn(
-                'fixed top-0 left-0 z-20 h-screen flex flex-col',
+                'fixed top-0 left-0 z-20 flex flex-col',
                 'transform transition-all duration-300 ease-in-out',
                 'bg-white border-r border-gray-100',
                 'lg:static lg:translate-x-0',

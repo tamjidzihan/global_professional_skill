@@ -78,8 +78,8 @@ const HeroSection = () => {
 
     return (
         <div className="bg-white">
-            <section className="bg-[#FCF8F1] bg-opacity-30 py-8 lg:py-14 relative overflow-hidden">
-                <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+            <section className="bg-[#FCF8F1] bg-opacity-30 pb-8 lg:pb-10 pt-6 lg:pt-8 relative overflow-hidden">
+                <div className="mx-auto max-w-7xl px-4">
                     <div className="grid items-center grid-cols-1 gap-12 lg:grid-cols-2">
 
                         {/* Left Content */}
@@ -149,7 +149,7 @@ const HeroSection = () => {
                         </div>
 
                         {/* Right Column: Campus Tour Video / Image Card */}
-                        <div className="w-full max-w-lg mx-auto">
+                        <div className="w-full max-w-4xl mx-auto">
                             <div className="relative group">
                                 {/* Tilted Glow Gradient */}
                                 <div className="absolute inset-0 bg-linear-to-br from-green-400 to-blue-500 rounded-3xl transform -rotate-2 group-hover:-rotate-3 transition-transform duration-300"></div>
@@ -214,7 +214,7 @@ const HeroSection = () => {
                     {/* Modal Container */}
                     <div
                         onClick={(e) => e.stopPropagation()}
-                        className="relative w-full max-w-4xl bg-black rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-white/10"
+                        className="relative w-full max-w-6xl bg-black rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-white/10"
                     >
                         {/* Header bar */}
                         <div className="flex items-center justify-between px-5 py-3.5 bg-gray-950/80 border-b border-white/10 text-white">

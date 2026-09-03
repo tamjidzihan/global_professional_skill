@@ -606,7 +606,7 @@ const SiteSettingsPage: React.FC = () => {
     }
 
     return (
-        <div className="pb-16 px-4 md:px-6">
+        <div className="py-6 px-4 md:px-6">
             <SEO title={`${pageTitle} | Admin Dashboard`} noindex={true} />
             <div className="mb-6">
                 <h1 className="text-xl font-semibold text-gray-900 tracking-tight">{pageTitle}</h1>
