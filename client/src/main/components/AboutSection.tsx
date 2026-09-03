@@ -163,26 +163,6 @@ const AboutSection: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Highlights Grid */}
-                        <div className="grid grid-cols-2 gap-4">
-                            {highlights.map((item, index) => {
-                                const Icon = item.icon
-                                return (
-                                    <div
-                                        key={index}
-                                        className="bg-white rounded-2xl p-5 border-2 border-gray-200 hover:border-green-400 transition-all duration-300 group hover:shadow-lg"
-                                    >
-                                        <div className="flex items-center gap-3">
-                                            <div className="bg-green-100 p-2 rounded-xl group-hover:bg-green-500 transition-colors">
-                                                <Icon className="w-5 h-5 text-green-600 group-hover:text-white transition-colors" />
-                                            </div>
-                                            <span className="font-semibold text-gray-800 text-sm">{item.text}</span>
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                        </div>
                     </div>
 
                     {/* Right Column - 2/5 width */}
@@ -190,7 +170,7 @@ const AboutSection: React.FC = () => {
                         {/* Video/Image Card - Vertical */}
                         <div className="relative group">
                             <div className="absolute inset-0 bg-linear-to-br from-green-400 to-blue-500 rounded-3xl transform -rotate-2 group-hover:-rotate-3 transition-transform duration-300"></div>
-                            
+
                             <div
                                 onClick={handleOpenModal}
                                 className="relative bg-linear-to-br from-blue-900 to-purple-900 rounded-3xl overflow-hidden shadow-2xl border-4 border-white h-100 cursor-pointer select-none"
@@ -233,33 +213,6 @@ const AboutSection: React.FC = () => {
                                         <span className="text-white font-bold text-lg leading-snug line-clamp-1">{heading}</span>
                                     </div>
                                     <p className="text-white/80 text-sm line-clamp-2">{subtext}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* CTA Card */}
-                        <div className="bg-linear-to-br from-orange-500 via-red-500 to-pink-500 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20"></div>
-                            <div className="relative">
-                                <Heart className="w-12 h-12 mb-4" />
-                                <h3 className="text-2xl font-black mb-3">Join 50,000+ Learners</h3>
-                                <p className="text-white/90 mb-6 leading-relaxed">
-                                    Start your journey to becoming a tech professional today.
-                                </p>
-                                <div className="flex flex-col gap-3">
-                                    <Link
-                                        to="/about"
-                                        className="bg-white text-gray-900 px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition-colors inline-flex items-center justify-center group"
-                                    >
-                                        Learn More
-                                        <ArrowUpRight className="w-5 h-5 ml-2 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                                    </Link>
-                                    <Link
-                                        to="/courses"
-                                        className="border-2 border-white text-white px-6 py-3 rounded-xl font-bold hover:bg-white/10 transition-colors inline-flex items-center justify-center"
-                                    >
-                                        Browse Courses
-                                    </Link>
                                 </div>
                             </div>
                         </div>
