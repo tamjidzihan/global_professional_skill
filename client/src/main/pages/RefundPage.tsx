@@ -12,7 +12,7 @@ import {
 import { LegalLayout, type TocItem } from '../components/LegalLayout';
 
 const tocItems: TocItem[] = [
-    { id: 'guarantee', title: '1. 7-Day Money-Back Guarantee Overview' },
+    { id: 'guarantee', title: '1. 1-Month Money-Back Guarantee Overview' },
     { id: 'eligibility', title: '2. Refund Eligibility Conditions' },
     { id: 'course-types', title: '3. Policies by Course & Program Type' },
     { id: 'non-refundable', title: '4. Non-Refundable Circumstances' },
@@ -28,7 +28,7 @@ export const RefundPage: React.FC = () => {
     return (
         <LegalLayout
             title="Refund Policy"
-            subtitle="Transparent guidelines regarding our 7-day course satisfaction guarantee, eligibility rules, processing timelines, and payout methods."
+            subtitle="Transparent guidelines regarding our 1-month course satisfaction guarantee, eligibility rules, processing timelines, and payout methods."
             lastUpdated="September 2026"
             effectiveDate="January 1, 2026"
             version="2.3"
@@ -44,10 +44,10 @@ export const RefundPage: React.FC = () => {
                     </div>
                     <div>
                         <h4 className="text-sm font-bold text-emerald-950 mb-1">
-                            100% Student Satisfaction Guarantee (7 Days)
+                            100% Student Satisfaction Guarantee (1 Month)
                         </h4>
                         <p className="text-xs text-emerald-800 leading-relaxed">
-                            We stand behind the quality of our curriculum. If a recorded self-paced course doesn't meet your learning expectations, you can request a full refund within <strong>7 calendar days</strong> of purchase, provided you have watched less than 20% of the lessons.
+                            We stand behind the quality of our curriculum. If a recorded self-paced course doesn't meet your learning expectations, you can request a full refund within <strong>1 month (30 calendar days)</strong> of purchase, provided you have watched less than 20% of the lessons.
                         </p>
                     </div>
                 </div>
@@ -56,7 +56,7 @@ export const RefundPage: React.FC = () => {
             {/* Section 1 */}
             <section id="guarantee" className="mb-10">
                 <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-2 mb-4">
-                    1. 7-Day Money-Back Guarantee Overview
+                    1. 1-Month Money-Back Guarantee Overview
                 </h2>
                 <p>
                     At <strong>Global Professional Skill (GPI)</strong>, we want to ensure you are thoroughly satisfied with your learning investment. We provide a straightforward, transparent refund policy for all qualifying digital course enrollments.
@@ -80,7 +80,7 @@ export const RefundPage: React.FC = () => {
                         <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                         <div>
                             <strong className="text-emerald-950 block mb-0.5">Timeframe Limit</strong>
-                            <p className="text-emerald-800">Submitted within 7 calendar days (168 hours) from the exact purchase timestamp.</p>
+                            <p className="text-emerald-800">Submitted within 1 month (30 calendar days) from the exact purchase timestamp.</p>
                         </div>
                     </div>
 
@@ -119,7 +119,7 @@ export const RefundPage: React.FC = () => {
                     <div className="p-4 bg-white border border-gray-200 rounded-xl shadow-xs">
                         <h4 className="font-bold text-sm text-gray-900 mb-1">A. Self-Paced Video Courses</h4>
                         <p className="text-gray-600 leading-relaxed">
-                            Eligible for 100% refund within 7 days if &lt;20% consumed and no certificate generated.
+                            Eligible for 100% refund within 1 month if &lt;20% consumed and no certificate generated.
                         </p>
                     </div>
 
@@ -146,7 +146,7 @@ export const RefundPage: React.FC = () => {
                 </h2>
                 <p>A refund request will be declined under the following circumstances:</p>
                 <ul className="list-disc pl-5 space-y-1.5 text-sm">
-                    <li>The request is submitted after the 7-day guarantee window has elapsed.</li>
+                    <li>The request is submitted after the 1-month guarantee window has elapsed.</li>
                     <li>More than 20% of the course lectures have been streamed or marked completed.</li>
                     <li>The student has attempted quizzes or earned a verifiable certificate of completion.</li>
                     <li>The user account has been banned or suspended for violating our <a href="/terms">Terms of Service</a> or academic integrity rules.</li>
