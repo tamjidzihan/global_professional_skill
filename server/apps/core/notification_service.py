@@ -2,7 +2,6 @@ import logging
 import requests
 from django.conf import settings
 from django.core.mail import send_mail
-from decouple import config
 from .models import (
     SiteSettings,
     NotificationTemplate,
@@ -25,31 +24,31 @@ DEFAULT_TEMPLATES = {
         "channel": NotificationChannel.SMS,
         "name": "Student Verification (SMS)",
         "subject": "",
-        "body": "GPI-তে আপনার অ্যাকাউন্ট ভেরিফিকেশন সফল হয়েছে। এখন আপনি লগইন করে কোর্সে এনরোল করতে পারবেন। — Global Professional Institute (gpibd.com)",
+        "body": "Global Professional Institute এ অ্যাকাউন্ট করার জন্য ধন্যবাদ ।ভিজিট: gpibd.com",
     },
     NotificationTypeCode.SMS_COURSE_APPROVAL: {
         "channel": NotificationChannel.SMS,
         "name": "Course Purchase Approval (SMS)",
         "subject": "",
-        "body": "আপনার [কোর্সের নাম] কোর্সে এনরোলমেন্ট অনুমোদিত হয়েছে। এখন আপনি আপনার ড্যাশবোর্ড থেকে কোর্সটি অ্যাক্সেস করতে পারবেন। — GPI (gpibd.com)",
+        "body": "[কোর্সের নাম] কোর্সে ভর্তির জন্য ধন্যবাদ ।ভিজিট: gpibd.com",
     },
     NotificationTypeCode.SMS_QUIZ_RESULT_PASS: {
         "channel": NotificationChannel.SMS,
         "name": "Quiz Result Pass (SMS)",
         "subject": "",
-        "body": "অভিনন্দন! আপনি [কুইজের নাম] পরীক্ষায় পাস করেছেন। আপনার স্কোর: [স্কোর]%. — Global Professional Institute (gpibd.com)",
+        "body": "অভিনন্দন! [কুইজের নাম] কোর্সে আপনার স্কোর: [স্কোর]%. ভিজিট: gpibd.com",
     },
     NotificationTypeCode.SMS_QUIZ_RESULT_FAIL: {
         "channel": NotificationChannel.SMS,
         "name": "Quiz Result Fail (SMS)",
         "subject": "",
-        "body": "আপনি [কুইজের নাম] পরীক্ষায় উত্তীর্ণ হতে পারেননি। আপনার স্কোর: [স্কোর]%. আবার চেষ্টা করুন। — GPI (gpibd.com)",
+        "body": " [কুইজের নাম] কোর্সে আপনার স্কোর: [স্কোর]%. আবার চেষ্টা করুন। ভিজিট: gpibd.com",
     },
     NotificationTypeCode.EMAIL_STUDENT_VERIFICATION: {
         "channel": NotificationChannel.EMAIL,
         "name": "Student Verification Confirmation (Email)",
         "subject": "Your GPI Account Has Been Verified",
-        "body": "Dear [Student Name], your account at Global Professional Institute (GPI) has been successfully verified. You can now log in and enroll in courses. Welcome aboard! — gpibd.com",
+        "body": "Dear [Student Name], your account at Global Professional Institute (GPI) has been successfully verified. visit  gpibd.com",
     },
     NotificationTypeCode.EMAIL_COURSE_PURCHASE: {
         "channel": NotificationChannel.EMAIL,
@@ -79,7 +78,7 @@ DEFAULT_TEMPLATES = {
         "channel": NotificationChannel.EMAIL,
         "name": "Course Completion Confirmation (Email)",
         "subject": "Congratulations! You've Completed [Course Name] — GPI",
-        "body": "Dear [Student Name], congratulations on successfully completing [Course Name]! Your certificate is now available for download from your student dashboard. Keep up the great work! — Global Professional Institute (gpibd.com)",
+        "body": "Dear [Student Name], congratulations on successfully completing [Course Name]! Your certificate is now available for download from your student dashboard. — Global Professional Institute (gpibd.com)",
     },
 }
 
