@@ -18,13 +18,13 @@ DEFAULT_TEMPLATES = {
         "channel": NotificationChannel.SMS,
         "name": "Registration Verification Link (SMS)",
         "subject": "",
-        "body": "Global Professional Skill: আপনার অ্যাকাউন্ট যাচাই করতে নিচের লিংকে ক্লিক করুন: [Verification Link]",
+        "body": "GPI অ্যাকাউন্ট যাচাই করতে নিচের লিংকে ক্লিক করুন: [Verification Link]",
     },
     NotificationTypeCode.SMS_STUDENT_VERIFICATION: {
         "channel": NotificationChannel.SMS,
         "name": "Student Verification (SMS)",
         "subject": "",
-        "body": "Global Professional Institute এ অ্যাকাউন্ট করার জন্য ধন্যবাদ ।ভিজিট: gpibd.com",
+        "body":  "Global Professional Institute এ অ্যাকাউন্ট করার জন্য ধন্যবাদ ।ভিজিট: gpibd.com",
     },
     NotificationTypeCode.SMS_COURSE_APPROVAL: {
         "channel": NotificationChannel.SMS,
@@ -42,7 +42,7 @@ DEFAULT_TEMPLATES = {
         "channel": NotificationChannel.SMS,
         "name": "Quiz Result Fail (SMS)",
         "subject": "",
-        "body": " [কুইজের নাম] কোর্সে আপনার স্কোর: [স্কোর]%. আবার চেষ্টা করুন। ভিজিট: gpibd.com",
+        "body": "[কুইজের নাম] কোর্সে আপনার স্কোর: [স্কোর]%. আবার চেষ্টা করুন। ভিজিট: gpibd.com",
     },
     NotificationTypeCode.EMAIL_STUDENT_VERIFICATION: {
         "channel": NotificationChannel.EMAIL,
