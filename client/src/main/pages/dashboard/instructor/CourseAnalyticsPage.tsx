@@ -7,7 +7,7 @@ import {
     Award, BarChart2, Download,
     Search, Filter, ChevronRight, Layers, FileText,
     AlertCircle, AlertTriangle, ShieldOff, Eye, Megaphone,
-    TrendingUp,
+    TrendingUp, Building2, IdCard,
 } from 'lucide-react'
 import {
     ResponsiveContainer,
@@ -242,10 +242,12 @@ export const CourseAnalyticsPage: React.FC = () => {
     })
 
     const handleExportCSV = () => {
-        const headers = ['Student Name', 'Email', 'Enrolled Date', 'Progress %', 'Completed Lessons', 'Status']
+        const headers = ['Student Name', 'Email', 'Organization', 'Employee ID', 'Enrolled Date', 'Progress %', 'Completed Lessons', 'Status']
         const rows = enrollments.map(e => [
             e.student_name,
             e.student?.email || 'N/A',
+            e.student?.organization_name || 'N/A',
+            e.student?.employee_id || 'N/A',
             new Date(e.enrolled_at).toLocaleDateString(),
             `${e.progress_percentage || 0}%`,
             e.completed_lessons || 0,
@@ -735,7 +737,7 @@ export const CourseAnalyticsPage: React.FC = () => {
                         <table className="min-w-full">
                             <thead>
                                 <tr className="border-b border-gray-100">
-                                    {['Student', 'Enrolled Date', 'Progress', 'Quiz Submissions', 'Status', ''].map(h => (
+                                    {['Student', 'Enrolled Date', 'Progress', 'Quiz Submissions', ''].map(h => (
                                         <th key={h} className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-gray-400">{h}</th>
                                     ))}
                                 </tr>
@@ -775,6 +777,22 @@ export const CourseAnalyticsPage: React.FC = () => {
                                                                 {enrollment.student?.email}
                                                             </p>
                                                         </div>
+                                                    </div>
+                                                </td>
+
+                                                {/* Organization */}
+                                                <td className="px-5 py-3 whitespace-nowrap text-xs text-gray-600">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <Building2 className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                                        <span className="truncate max-w-35">{enrollment.student?.organization_name || '—'}</span>
+                                                    </div>
+                                                </td>
+
+                                                {/* Employee ID */}
+                                                <td className="px-5 py-3 whitespace-nowrap text-xs text-gray-600">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <IdCard className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                                        <span>{enrollment.student?.employee_id || '—'}</span>
                                                     </div>
                                                 </td>
 
@@ -842,7 +860,7 @@ export const CourseAnalyticsPage: React.FC = () => {
                                     })
                                 ) : (
                                     <tr>
-                                        <td colSpan={6} className="py-12 text-center text-gray-400 text-xs">
+                                        <td colSpan={8} className="py-12 text-center text-gray-400 text-xs">
                                             No enrolled students found matching your search.
                                         </td>
                                     </tr>

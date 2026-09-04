@@ -695,6 +695,8 @@ class QuizSubmissionSerializer(serializers.ModelSerializer):
 
     student_name = serializers.CharField(source="student.get_full_name", read_only=True)
     student_email = serializers.EmailField(source="student.email", read_only=True)
+    student_organization_name = serializers.CharField(source="student.organization_name", read_only=True)
+    student_employee_id = serializers.CharField(source="student.employee_id", read_only=True)
     quiz_title = serializers.CharField(source="quiz.title", read_only=True)
     course_title = serializers.CharField(source="quiz.course.title", read_only=True)
     course = serializers.CharField(source="quiz.course.id", read_only=True)
@@ -711,6 +713,8 @@ class QuizSubmissionSerializer(serializers.ModelSerializer):
             "student",
             "student_name",
             "student_email",
+            "student_organization_name",
+            "student_employee_id",
             "score",
             "total_questions",
             "warnings_count",

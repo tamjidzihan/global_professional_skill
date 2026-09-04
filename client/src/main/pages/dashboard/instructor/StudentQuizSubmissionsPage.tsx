@@ -5,7 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import {
     ArrowLeft, Search, Download, Mail, Phone,
     CheckCircle, Clock, Filter, AlertCircle,
-    ShieldOff, Loader2, Trash2, Award, Eye,
+    ShieldOff, Loader2, Trash2, Award, Eye, Building2, IdCard,
 } from 'lucide-react'
 import { api, undisqualifyStudent, deleteQuizSubmission, getAnswerSheet } from '../../../../lib/api'
 import { extractErrorMessage } from '../../../../lib/errorUtils'
@@ -165,11 +165,15 @@ export const StudentQuizSubmissionsPage: React.FC = () => {
     })
 
     const handleExportCSV = () => {
-        const headers = ['Quiz Title', 'Score', 'Total Questions', 'Percentage', 'Status', 'Warnings', 'Started At', 'Completed At']
+        const headers = ['Student Name', 'Email', 'Organization', 'Employee ID', 'Quiz Title', 'Score', 'Total Questions', 'Percentage', 'Status', 'Warnings', 'Started At', 'Completed At']
         const rows = filteredSubmissions.map(s => {
             const pct = s.total_questions > 0 ? ((s.score / s.total_questions) * 100).toFixed(1) : '0'
             const status = s.is_disqualified ? 'Disqualified' : s.completed_at ? 'Completed' : 'In Progress'
             return [
+                studentFullName,
+                student?.email || 'N/A',
+                student?.organization_name || 'N/A',
+                student?.employee_id || 'N/A',
                 s.quiz_title || s.quiz?.title || 'Quiz',
                 s.score,
                 s.total_questions,
@@ -259,6 +263,18 @@ export const StudentQuizSubmissionsPage: React.FC = () => {
                                 <div className="flex items-center gap-1 text-[11px] text-gray-400">
                                     <Phone className="w-3 h-3 shrink-0" />
                                     <span>{student.phone_number}</span>
+                                </div>
+                            )}
+                            {student?.organization_name && (
+                                <div className="flex items-center gap-1 text-[11px] text-gray-400">
+                                    <Building2 className="w-3 h-3 shrink-0" />
+                                    <span>{student.organization_name}</span>
+                                </div>
+                            )}
+                            {student?.employee_id && (
+                                <div className="flex items-center gap-1 text-[11px] text-gray-400">
+                                    <IdCard className="w-3 h-3 shrink-0" />
+                                    <span>ID: {student.employee_id}</span>
                                 </div>
                             )}
                         </div>

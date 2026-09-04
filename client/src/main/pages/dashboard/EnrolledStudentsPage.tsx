@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
     Users, ArrowLeft, Search, Download, Mail, Phone,
     Calendar, CheckCircle, Clock, Filter, AlertCircle,
-    ShieldOff, Loader2, Trash2, Award,
+    ShieldOff, Loader2, Trash2, Award, Building2, IdCard,
 } from 'lucide-react'
 import { useEnrollments } from '../../../hooks/useEnrollments'
 import { useCourses } from '../../../hooks/useCourses'
@@ -57,9 +58,10 @@ export default function EnrolledStudentsPage() {
     })
 
     const handleExport = () => {
-        const headers = ['Student Name', 'Email', 'Phone', 'Enrollment Date', 'Progress', 'Completion Date']
+        const headers = ['Student Name', 'Email', 'Phone', 'Organization', 'Employee ID', 'Enrollment Date', 'Progress', 'Completion Date']
         const rows = filteredEnrollments.map(e => [
             e.student_name, e.student.email, e.student.phone_number || 'N/A',
+            e.student.organization_name || 'N/A', e.student.employee_id || 'N/A',
             new Date(e.enrolled_at).toLocaleDateString(),
             `${e.progress_percentage || 0}%`,
             e.completed_at ? new Date(e.completed_at).toLocaleDateString() : 'In Progress',
@@ -231,7 +233,7 @@ export default function EnrolledStudentsPage() {
                     <table className="min-w-full">
                         <thead>
                             <tr className="border-b border-gray-100">
-                                {['Student', 'Enrolled', 'Progress', 'Quiz Scores', 'Status', ''].map(h => (
+                                {['Student', 'Organization', 'Employee ID', 'Enrolled', 'Progress', 'Quiz Scores', 'Status', ''].map(h => (
                                     <th key={h} className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-gray-400">{h}</th>
                                 ))}
                             </tr>
@@ -240,7 +242,7 @@ export default function EnrolledStudentsPage() {
                             {loading ? (
                                 [...Array(4)].map((_, i) => (
                                     <tr key={i}>
-                                        <td colSpan={6} className="px-5 py-3">
+                                        <td colSpan={8} className="px-5 py-3">
                                             <div className="animate-pulse h-10 bg-gray-50 rounded-lg" />
                                         </td>
                                     </tr>
@@ -288,6 +290,22 @@ export default function EnrolledStudentsPage() {
                                                             )}
                                                         </div>
                                                     </button>
+                                                </div>
+                                            </td>
+
+                                            {/* Organization */}
+                                            <td className="px-5 py-3 whitespace-nowrap text-xs text-gray-600">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Building2 className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                                    <span className="truncate max-w-35">{enrollment.student.organization_name || '—'}</span>
+                                                </div>
+                                            </td>
+
+                                            {/* Employee ID */}
+                                            <td className="px-5 py-3 whitespace-nowrap text-xs text-gray-600">
+                                                <div className="flex items-center gap-1.5">
+                                                    <IdCard className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                                    <span>{enrollment.student.employee_id || '—'}</span>
                                                 </div>
                                             </td>
 
@@ -447,7 +465,7 @@ export default function EnrolledStudentsPage() {
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan={6} className="py-14 text-center">
+                                    <td colSpan={8} className="py-14 text-center">
                                         <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center mx-auto mb-3">
                                             <Users className="w-5 h-5 text-gray-300" />
                                         </div>

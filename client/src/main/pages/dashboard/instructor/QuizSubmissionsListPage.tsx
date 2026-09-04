@@ -10,7 +10,7 @@ import {
 import {
     ArrowLeft, Download, CheckCircle, Clock,
     Award, Search, Filter, AlertTriangle, ShieldOff,
-    Eye, Trash2, Loader2, Mail, FileText,
+    Eye, Trash2, Loader2, Mail, FileText, Building2, IdCard,
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import LoadingSpinner from '../../../components/ui/LoadingSpinner'
@@ -150,13 +150,15 @@ export const QuizSubmissionsListPage: React.FC = () => {
     })
 
     const handleExportCSV = () => {
-        const headers = ['Student Name', 'Email', 'Score', 'Total Questions', 'Percentage', 'Status', 'Warnings', 'Started At', 'Completed At']
+        const headers = ['Student Name', 'Email', 'Organization', 'Employee ID', 'Score', 'Total Questions', 'Percentage', 'Status', 'Warnings', 'Started At', 'Completed At']
         const rows = filteredSubmissions.map(s => {
             const pct = s.total_questions > 0 ? ((s.score / s.total_questions) * 100).toFixed(1) : '0'
             const status = s.is_disqualified ? 'Disqualified' : s.completed_at ? 'Completed' : 'In Progress'
             return [
                 s.student_name || 'N/A',
                 s.student_email || 'N/A',
+                (s as any).student_organization_name || 'N/A',
+                (s as any).student_employee_id || 'N/A',
                 s.score,
                 s.total_questions,
                 `${pct}%`,
@@ -310,7 +312,7 @@ export const QuizSubmissionsListPage: React.FC = () => {
                     <table className="min-w-full">
                         <thead>
                             <tr className="border-b border-gray-100">
-                                {['Student', 'Score', 'Accuracy', 'Warnings', 'Status', 'Started', 'Completed', ''].map(h => (
+                                {['Student', 'Score', 'Accuracy', 'Warnings', 'Started', 'Completed', ''].map(h => (
                                     <th key={h} className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-gray-400">{h}</th>
                                 ))}
                             </tr>
@@ -345,6 +347,22 @@ export const QuizSubmissionsListPage: React.FC = () => {
                                                             <span className="truncate max-w-44">{sub.student_email}</span>
                                                         </div>
                                                     </div>
+                                                </div>
+                                            </td>
+
+                                            {/* Organization */}
+                                            <td className="px-5 py-3 whitespace-nowrap text-xs text-gray-600">
+                                                <div className="flex items-center gap-1.5">
+                                                    <Building2 className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                                    <span className="truncate max-w-35">{(sub as any).student_organization_name || '—'}</span>
+                                                </div>
+                                            </td>
+
+                                            {/* Employee ID */}
+                                            <td className="px-5 py-3 whitespace-nowrap text-xs text-gray-600">
+                                                <div className="flex items-center gap-1.5">
+                                                    <IdCard className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                                    <span>{(sub as any).student_employee_id || '—'}</span>
                                                 </div>
                                             </td>
 
@@ -471,7 +489,7 @@ export const QuizSubmissionsListPage: React.FC = () => {
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan={8} className="py-14 text-center">
+                                    <td colSpan={10} className="py-14 text-center">
                                         <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center mx-auto mb-3">
                                             <AlertTriangle className="w-5 h-5 text-gray-300" />
                                         </div>

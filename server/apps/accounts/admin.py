@@ -15,6 +15,8 @@ class UserAdmin(BaseUserAdmin):
     list_display = (
         "email",
         "full_name_display",
+        "organization_name",
+        "employee_id",
         "role",
         "email_verified",
         "is_active",
@@ -35,6 +37,8 @@ class UserAdmin(BaseUserAdmin):
                     "bio",
                     "profile_picture",
                     "phone_number",
+                    "organization_name",
+                    "employee_id",   
                 )
             },
         ),

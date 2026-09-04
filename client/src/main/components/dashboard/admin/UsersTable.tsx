@@ -18,7 +18,10 @@ import {
     Mail,
     Phone,
     Calendar,
-    Clock
+    Clock,
+    Download,
+    Building2,
+    IdCard
 } from 'lucide-react';
 import { useUsers } from '../../../../hooks/useUsers';
 import type { User } from '../../../../types';
@@ -78,6 +81,8 @@ function UserProfileDrawer({ user, onClose, onDeactivate, onActivate, onDelete }
     const meta = [
         { icon: Mail, label: 'Email', value: user.email },
         { icon: Phone, label: 'Phone', value: user.phone_number || '—' },
+        { icon: UserIcon, label: 'Organization', value: user.organization_name || '—' },
+        { icon: UserIcon, label: 'Employee ID', value: user.employee_id || '—' },
         { icon: Calendar, label: 'Joined', value: formatDate(user.date_joined) },
         { icon: Clock, label: 'Last Login', value: formatDateTime(user.last_login) },
     ];
@@ -272,6 +277,7 @@ export function UsersTable(): JSX.Element {
     const [filterRole, setFilterRole] = useState<FilterRole>('ALL');
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [downloading, setDownloading] = useState(false);
 
     useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
@@ -291,6 +297,27 @@ export function UsersTable(): JSX.Element {
         if (!window.confirm('Permanently delete this user?')) return;
         try { await api.delete(`/accounts/users/${userId}/`); toast.success('User deleted'); fetchUsers(); }
         catch { toast.error('Failed to delete user'); }
+    };
+
+    const handleDownloadUsers = async () => {
+        setDownloading(true);
+        try {
+            const response = await api.get('/accounts/users/download/', { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `all_users_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+            toast.success('Users downloaded successfully');
+        } catch (error) {
+            console.error('Download failed:', error);
+            toast.error('Failed to download users');
+        } finally {
+            setDownloading(false);
+        }
     };
 
     const filteredUsers = users.filter((user: User) => {
@@ -313,6 +340,25 @@ export function UsersTable(): JSX.Element {
                     </div>
 
                     <div className="flex items-center gap-2">
+                        {/* Download Button */}
+                        <button
+                            onClick={handleDownloadUsers}
+                            disabled={downloading}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:border-violet-300 hover:text-violet-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {downloading ? (
+                                <>
+                                    <div className="w-3.5 h-3.5 border-2 border-gray-300 border-t-violet-600 rounded-full animate-spin" />
+                                    Downloading...
+                                </>
+                            ) : (
+                                <>
+                                    <Download className="w-3.5 h-3.5" />
+                                    Export All Users
+                                </>
+                            )}
+                        </button>
+
                         {/* Search */}
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
@@ -367,7 +413,7 @@ export function UsersTable(): JSX.Element {
                     <table className="min-w-full">
                         <thead>
                             <tr className="border-b border-gray-100">
-                                {['User', 'Phone', 'Role', 'Verified', 'Status', ''].map(h => (
+                                {['User', 'Phone', 'Role', 'Verified', ''].map(h => (
                                     <th key={h} className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-gray-400">
                                         {h}
                                     </th>
@@ -400,6 +446,22 @@ export function UsersTable(): JSX.Element {
                                                     <p className="text-sm font-semibold text-gray-800 truncate">{user.full_name}</p>
                                                     <p className="text-xs text-gray-400 truncate">{user.email}</p>
                                                 </div>
+                                            </div>
+                                        </td>
+
+                                        {/* Organization */}
+                                        <td className="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
+                                            <div className="flex items-center gap-1.5">
+                                                <Building2 className="w-3.5 h-3.5 text-gray-400" />
+                                                <span className="truncate max-w-37.5">{user.organization_name || '—'}</span>
+                                            </div>
+                                        </td>
+
+                                        {/* Employee ID */}
+                                        <td className="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
+                                            <div className="flex items-center gap-1.5">
+                                                <IdCard className="w-3.5 h-3.5 text-gray-400" />
+                                                <span>{user.employee_id || '—'}</span>
                                             </div>
                                         </td>
 

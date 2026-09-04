@@ -518,6 +518,60 @@ class UserManagementViewSet(viewsets.ModelViewSet):
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
         )
 
+    @action(detail=False, methods=["get"])
+    def download(self, request):
+        """Download all users as CSV with organization_name and employee_id."""
+        import csv
+        from django.http import HttpResponse
+
+        # Get all users (no pagination)
+        queryset = self.filter_queryset(self.get_queryset())
+        
+        # Create CSV response
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = 'attachment; filename="all_users.csv"'
+        
+        writer = csv.writer(response)
+        
+        # Write header
+        writer.writerow([
+            "ID",
+            "Email",
+            "First Name",
+            "Last Name",
+            "Full Name",
+            "Role",
+            "Organization Name",
+            "Employee ID",
+            "Phone Number",
+            "Email Verified",
+            "Phone Verified",
+            "Is Active",
+            "Date Joined",
+            "Last Login",
+        ])
+        
+        # Write user data
+        for user in queryset:
+            writer.writerow([
+                str(user.id),
+                user.email,
+                user.first_name,
+                user.last_name,
+                user.get_full_name(),
+                user.role,
+                user.organization_name or "",
+                user.employee_id or "",
+                user.phone_number or "",
+                "Yes" if user.email_verified else "No",
+                "Yes" if user.phone_verified else "No",
+                "Yes" if user.is_active else "No",
+                user.date_joined.strftime("%Y-%m-%d %H:%M:%S") if user.date_joined else "",
+                user.last_login.strftime("%Y-%m-%d %H:%M:%S") if user.last_login else "",
+            ])
+        
+        return response
+
 
 class ResendVerificationEmailView(generics.GenericAPIView):
     """Endpoint to resend verification email and/or SMS."""

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { toast } from 'react-hot-toast';
@@ -228,6 +229,8 @@ export const downloadResultPDF = async ({ submission, course, api }: DownloadPDF
           <div><strong>Quiz:</strong> ${escapeHtml(submission.quiz_title || 'N/A')}</div>
           <div><strong>Instructor:</strong> ${escapeHtml(course?.instructor?.full_name || 'N/A')}</div>
           <div><strong>Student:</strong> ${escapeHtml(submission.student_name || 'N/A')}</div>
+          <div><strong>Organization:</strong> ${escapeHtml((submission as any).student_organization_name || 'N/A')}</div>
+          <div><strong>Employee ID:</strong> ${escapeHtml((submission as any).student_employee_id || 'N/A')}</div>
         </div>
       </div>
 

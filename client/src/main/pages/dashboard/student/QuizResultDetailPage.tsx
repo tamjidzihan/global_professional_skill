@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
     ArrowLeft, Download, CheckCircle, AlertTriangle, Clock,
-    Award, Mail, User as UserIcon, ShieldOff, Check, X,
+    Award, Mail, User as UserIcon, ShieldOff, Check, X, Building2, IdCard,
 } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import LoadingSpinner from '../../../components/ui/LoadingSpinner'
@@ -173,12 +173,26 @@ export const QuizResultDetailPage: React.FC = () => {
                         </div>
                         <div className="min-w-0">
                             <p className="text-sm font-semibold text-gray-800 truncate">{studentName}</p>
-                            {submission.student_email && (
-                                <div className="flex items-center gap-1 text-[11px] text-gray-400 mt-0.5">
-                                    <Mail className="w-3 h-3 shrink-0" />
-                                    <span>{submission.student_email}</span>
-                                </div>
-                            )}
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
+                                {submission.student_email && (
+                                    <div className="flex items-center gap-1 text-[11px] text-gray-400">
+                                        <Mail className="w-3 h-3 shrink-0" />
+                                        <span>{submission.student_email}</span>
+                                    </div>
+                                )}
+                                {(submission as any).student_organization_name && (
+                                    <div className="flex items-center gap-1 text-[11px] text-gray-400">
+                                        <Building2 className="w-3 h-3 shrink-0" />
+                                        <span>{(submission as any).student_organization_name}</span>
+                                    </div>
+                                )}
+                                {(submission as any).student_employee_id && (
+                                    <div className="flex items-center gap-1 text-[11px] text-gray-400">
+                                        <IdCard className="w-3 h-3 shrink-0" />
+                                        <span>ID: {(submission as any).student_employee_id}</span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">

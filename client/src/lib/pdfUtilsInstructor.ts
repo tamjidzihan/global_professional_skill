@@ -28,6 +28,8 @@ export interface QuizSubmission {
     id: string | number;
     student_name: string;
     student_email?: string;
+    student_organization_name?: string;
+    student_employee_id?: string;
     score: number | null;
     total_questions: number;
     started_at: string;
@@ -51,6 +53,8 @@ export interface AnswerSheetData {
     quiz_title: string;
     student_name: string;
     student_email: string;
+    student_organization_name?: string;
+    student_employee_id?: string;
     score: number;
     total_questions: number;
     warnings_count: number;
@@ -163,7 +167,7 @@ export const downloadSubmissionsListPDF = ({
         doc.text(`Course: ${courseTitle || ''}`, 14, 28);
 
         // Table columns
-        const tableColumn = ['Student', 'Email', 'Score', 'Started At', 'Completed At', 'Status'];
+        const tableColumn = ['Student', 'Email', 'Organization', 'Employee ID', 'Score', 'Started At', 'Completed At', 'Status'];
         const tableRows: string[][] = [];
 
         submissions.forEach((sub) => {
@@ -179,6 +183,8 @@ export const downloadSubmissionsListPDF = ({
             tableRows.push([
                 sub.student_name || 'N/A',
                 sub.student_email || '',
+                sub.student_organization_name || 'N/A',
+                sub.student_employee_id || 'N/A',
                 scoreDisplay,
                 sub.started_at ? formatDate(sub.started_at) : '',
                 completed,
@@ -369,6 +375,8 @@ export const generateAnswerSheetPDF = async (data: AnswerSheetData, studentName:
                     <div><strong>Quiz:</strong> ${escapeHtml(data.quiz_title || 'N/A')}</div>
                     <div><strong>Student:</strong> ${escapeHtml(data.student_name || 'N/A')}</div>
                     <div><strong>Email:</strong> ${escapeHtml(data.student_email || 'N/A')}</div>
+                    <div><strong>Organization:</strong> ${escapeHtml(data.student_organization_name || 'N/A')}</div>
+                    <div><strong>Employee ID:</strong> ${escapeHtml(data.student_employee_id || 'N/A')}</div>
                 </div>
             </div>
 
@@ -690,6 +698,8 @@ export const downloadDetailedResultPDF = async ({
                     <div><strong>Quiz:</strong> ${escapeHtml(submission.quiz_title || 'N/A')}</div>
                     <div><strong>Instructor:</strong> ${escapeHtml(course?.instructor?.full_name || 'N/A')}</div>
                     <div><strong>Student:</strong> ${escapeHtml(submission.student_name || 'N/A')}</div>
+                    <div><strong>Organization:</strong> ${escapeHtml(submission.student_organization_name || 'N/A')}</div>
+                    <div><strong>Employee ID:</strong> ${escapeHtml(submission.student_employee_id || 'N/A')}</div>
                 </div>
             </div>
 
