@@ -93,7 +93,7 @@ const AboutPage = () => {
                     <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl"></div>
                 </div>
 
-                <div className="container mx-auto px-4 relative z-10">
+                <div className="container mx-auto px-4 relative">
                     {/* Introduction */}
                     <div className="max-w-4xl mx-auto text-center mb-16">
                         <div className="inline-flex items-center gap-2 px-5 py-2 bg-linear-to-r from-blue-500 to-purple-500 text-white rounded-full text-sm font-bold mb-6 shadow-lg">
@@ -350,7 +350,7 @@ const AboutPage = () => {
                             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
                             <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
 
-                            <div className="relative z-10">
+                            <div className="relative">
                                 <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-bold mb-6">
                                     <Heart className="w-4 h-4" />
                                     Join Our Community
