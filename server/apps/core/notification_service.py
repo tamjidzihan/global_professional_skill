@@ -30,7 +30,7 @@ DEFAULT_TEMPLATES = {
         "channel": NotificationChannel.SMS,
         "name": "Course Purchase Approval (SMS)",
         "subject": "",
-        "body": "[কোর্সের নাম] কোর্সে ভর্তির জন্য ধন্যবাদ ।ভিজিট: gpibd.com",
+        "body": "[কোর্সের নাম] কোর্সে ভর্তির জন্য ধন্যবাদ। ভিজিট: gpibd.com",
     },
     NotificationTypeCode.SMS_QUIZ_RESULT_PASS: {
         "channel": NotificationChannel.SMS,

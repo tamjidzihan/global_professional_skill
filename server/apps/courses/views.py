@@ -1315,6 +1315,7 @@ class QuizViewSet(viewsets.ModelViewSet):
 
             ctx = {
                 "quiz_name": quiz.title,
+                "course_name": quiz.course.title if getattr(quiz, "course", None) else quiz.title,
                 "score": str(percentage_score),
                 "student_name": user.get_full_name() or user.email,
             }
@@ -1409,11 +1410,11 @@ class MyQuizSubmissionsViewSet(viewsets.ReadOnlyModelViewSet):
         user = self.request.user
         if not user.is_authenticated:
             return QuizSubmission.objects.none()
-        if user.is_admin_user:
+        if user.is_admin_user: # type: ignore
             return QuizSubmission.objects.all().select_related(
                 "quiz", "quiz__course", "student"
             )
-        if user.is_instructor:
+        if user.is_instructor: # type: ignore
             return QuizSubmission.objects.filter(
                 Q(student=user) | Q(quiz__course__instructor=user)
             ).select_related("quiz", "quiz__course", "student")
