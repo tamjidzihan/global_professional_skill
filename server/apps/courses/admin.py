@@ -70,6 +70,7 @@ class CourseAdmin(admin.ModelAdmin):
     search_fields = ("title", "description", "instructor__email", "venue", "schedule")
     prepopulated_fields = {"slug": ["title"]}
     readonly_fields = (
+        "total_reviews",
         "total_sections_display",
         "created_at",
         "updated_at",

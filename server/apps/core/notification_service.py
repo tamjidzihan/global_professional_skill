@@ -18,7 +18,7 @@ DEFAULT_TEMPLATES = {
         "channel": NotificationChannel.SMS,
         "name": "Registration Verification Link (SMS)",
         "subject": "",
-        "body": "GPI অ্যাকাউন্ট যাচাই করতে নিচের লিংকে ক্লিক করুন: [Verification Link]",
+        "body": "GPI আপনার অ্যাকাউন্ট যাচাই করতে নিচের লিংকে ক্লিক করুন: [Verification Link]",
     },
     NotificationTypeCode.SMS_STUDENT_VERIFICATION: {
         "channel": NotificationChannel.SMS,
@@ -30,7 +30,7 @@ DEFAULT_TEMPLATES = {
         "channel": NotificationChannel.SMS,
         "name": "Course Purchase Approval (SMS)",
         "subject": "",
-        "body": "[কোর্সের নাম] কোর্সে ভর্তির জন্য ধন্যবাদ। ভিজিট: gpibd.com",
+        "body": "[কোর্সের নাম] কোর্সে ভর্তির জন্য ধন্যবাদ ।ভিজিট: gpibd.com",
     },
     NotificationTypeCode.SMS_QUIZ_RESULT_PASS: {
         "channel": NotificationChannel.SMS,
