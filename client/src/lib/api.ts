@@ -34,7 +34,12 @@ import type {
     AlbumPhoto,
 } from '../types';
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+const configuredApiUrl = import.meta.env.VITE_API_BASE_URL;
+const API_URL = import.meta.env.PROD
+    ? (configuredApiUrl && !configuredApiUrl.includes('localhost')
+        ? configuredApiUrl
+        : 'https://api.gpibd.com/api/v1')
+    : configuredApiUrl || 'http://localhost:8000/api/v1';
 
 export const getMediaUrl = (path?: string | null): string => {
     if (!path) return '';
@@ -81,6 +86,18 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+
+        // cPanel may need a moment to wake the Python application after deployment.
+        // Retry safe read requests so the first page load does not depend on refreshes.
+        const isReadRequest = originalRequest?.method?.toLowerCase() === 'get';
+        const isTransientFailure = !error.response || error.response.status >= 500;
+        const retryCount = originalRequest?._retryCount || 0;
+
+        if (isReadRequest && isTransientFailure && retryCount < 2) {
+            originalRequest._retryCount = retryCount + 1;
+            await new Promise((resolve) => setTimeout(resolve, 500 * 2 ** retryCount));
+            return api(originalRequest);
+        }
 
         if (error.response?.status === 401 && !originalRequest._retry) {
             if (isRefreshing) {
