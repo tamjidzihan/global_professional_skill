@@ -7,8 +7,9 @@ import {
     Filter,
     TrendingUp,
     CheckCircle,
+    ArrowLeft,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useEnrollments } from '../../../../hooks/useEnrollments';
 import { usePayments } from '../../../../hooks/usePayments';
 import SEO from '../../../components/SEO';
@@ -20,6 +21,7 @@ const STATUS_TABS: FilterStatus[] = ['ALL', 'IN_PROGRESS', 'NOT_STARTED', 'COMPL
 
 // ── Main Component ────────────────────────────────────────────────────────────
 const MyEnrollmentsPage = () => {
+    const navigate = useNavigate();
     const { enrollments, getMyEnrollments, loading: enrollmentsLoading } = useEnrollments();
     const { payments, fetchPayments, loading: paymentsLoading } = usePayments();
     const [searchQuery, setSearchQuery] = useState('');
@@ -69,6 +71,12 @@ const MyEnrollmentsPage = () => {
 
             {/* ── Page header ── */}
             <div>
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors mb-2 cursor-pointer"
+                >
+                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
+                </button>
                 <h1 className="text-xl font-semibold text-gray-900 tracking-tight">My Learning</h1>
                 <p className="text-sm text-gray-400 mt-0.5">Manage and track your enrolled courses.</p>
             </div>

@@ -329,15 +329,14 @@ const AdminCourseDetailPage = () => {
 
                 {/* ── Top nav bar ── */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 flex-wrap">
                         <button
                             onClick={() => navigate('/dashboard/admin/courses')}
-                            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors w-fit cursor-pointer"
+                            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors cursor-pointer"
                         >
-                            <ArrowLeft className="w-4 h-4" /> Back to Courses
+                            <ArrowLeft className="w-3.5 h-3.5" /> Back to Courses
                         </button>
                     </div>
-
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">

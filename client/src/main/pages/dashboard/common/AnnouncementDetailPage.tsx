@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, Calendar, User, Clock, Bell, ArrowLeft } from 'lucide-react';
+import { Calendar, User, Clock, Bell, ArrowLeft } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { getAnnouncementDetail } from '../../../../lib/api';
 import type { Announcement } from '../../../../types';
@@ -88,13 +88,15 @@ const AnnouncementDetailPage: React.FC = () => {
             <SEO title={announcement.title} noindex={true} />
 
             {/* Back Button */}
-            <Link
-                to={user?.role === 'ADMIN' ? '/dashboard/admin/announcements' : '/dashboard/announcements'}
-                className="inline-flex items-center gap-1.5 mb-4 text-xs font-semibold text-gray-400 hover:text-violet-600 transition-colors"
-            >
-                <ChevronLeft className="w-3.5 h-3.5" />
-                Back to {user?.role === 'ADMIN' ? ' Announcements Management' : 'Announcements'}
-            </Link>
+            <div className="mb-4">
+                <Link
+                    to={user?.role === 'ADMIN' ? '/dashboard/admin/announcements' : '/dashboard/announcements'}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-violet-600 transition-colors"
+                >
+                    <ArrowLeft className="w-3.5 h-3.5" />
+                    {user?.role === 'ADMIN' ? 'Back to Announcements Management' : 'Back to Announcements'}
+                </Link>
+            </div>
 
             {/* Main Card */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">

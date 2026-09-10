@@ -264,7 +264,7 @@ const CourseEditDetailPage: React.FC = () => {
         {/* ── Page header ── */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               <Link
                 to="/dashboard/instructor/my-courses"
                 className="text-xs text-gray-400 hover:text-violet-600 transition-colors"

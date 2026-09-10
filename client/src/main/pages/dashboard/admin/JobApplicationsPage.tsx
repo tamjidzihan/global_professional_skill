@@ -82,19 +82,19 @@ const JobApplicationsPage = () => {
 
             {/* Page header */}
             <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => navigate('/dashboard/admin/careers')}
-                        className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors cursor-pointer"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                    </button>
-                    <div>
-                        <h1 className="text-xl font-semibold text-gray-900 tracking-tight">
-                            {job ? `Applications: ${job.title}` : 'All Applications'}
-                        </h1>
-                        <p className="text-sm text-gray-400 mt-0.5">Review and manage candidate submissions</p>
+                <div>
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <button
+                            onClick={() => navigate('/dashboard/admin/careers')}
+                            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors cursor-pointer"
+                        >
+                            <ArrowLeft className="w-3.5 h-3.5" /> Back to Careers
+                        </button>
                     </div>
+                    <h1 className="text-xl font-semibold text-gray-900 tracking-tight">
+                        {job ? `Applications: ${job.title}` : 'All Applications'}
+                    </h1>
+                    <p className="text-sm text-gray-400 mt-0.5">Review and manage candidate submissions</p>
                 </div>
             </div>
 

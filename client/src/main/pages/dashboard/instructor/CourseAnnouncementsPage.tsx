@@ -143,12 +143,14 @@ const CourseAnnouncementsPage: React.FC = () => {
             <div className="mb-6">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                     <div>
-                        <Link
-                            to={`/dashboard/instructor/my-courses/${courseId}`}
-                            className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors mb-2"
-                        >
-                            <ArrowLeft className="w-3.5 h-3.5" /> Back to Course
-                        </Link>
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            <Link
+                                to={`/dashboard/instructor/my-courses/${courseId}`}
+                                className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors cursor-pointer"
+                            >
+                                <ArrowLeft className="w-3.5 h-3.5" /> Back to Course
+                            </Link>
+                        </div>
                         <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Course Announcements</h1>
                         <p className="text-sm text-gray-400 mt-0.5 truncate max-w-sm">
                             {course?.title || 'Loading...'}

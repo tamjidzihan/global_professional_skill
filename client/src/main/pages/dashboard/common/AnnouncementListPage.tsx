@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Bell, Calendar, ChevronRight, Search, Megaphone } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Bell, Calendar, ChevronRight, Search, Megaphone, ArrowLeft } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { getAnnouncements } from '../../../../lib/api';
 import type { Announcement } from '../../../../types';
 import SEO from '../../../components/SEO';
 
 const AnnouncementListPage: React.FC = () => {
+    const navigate = useNavigate();
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -56,6 +57,12 @@ const AnnouncementListPage: React.FC = () => {
 
             {/* Header */}
             <div className="mb-6">
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors mb-2 cursor-pointer"
+                >
+                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
+                </button>
                 <div className="flex items-center gap-2 mb-1">
                     <Bell className="w-5 h-5 text-violet-500" />
                     <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Announcements</h1>

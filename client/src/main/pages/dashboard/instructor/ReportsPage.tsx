@@ -8,11 +8,13 @@ import {
     Bell,
     Lock,
     ArrowRight,
+    ArrowLeft,
 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import SEO from '../../../components/SEO'
 
 export function ReportsPage() {
+    const navigate = useNavigate()
     const card = 'bg-white rounded-xl border border-gray-100 shadow-sm'
     const cardHeader = 'flex items-center justify-between px-5 py-4 border-b border-gray-100'
     const cardBody = 'p-5'
@@ -36,6 +38,12 @@ export function ReportsPage() {
 
             {/* Page header */}
             <div className="mb-6">
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors mb-2 cursor-pointer"
+                >
+                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
+                </button>
                 <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Reports</h1>
                 <p className="text-sm text-gray-400 mt-0.5">Platform analytics and performance insights</p>
             </div>

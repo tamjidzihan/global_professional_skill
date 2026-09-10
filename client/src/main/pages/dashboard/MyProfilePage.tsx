@@ -21,6 +21,7 @@ import {
     Star,
     Lock,
     RefreshCw,
+    ArrowLeft,
 } from 'lucide-react'
 import { useMyProfile } from '../../../hooks/useMyProfile'
 import { useAuth } from '../../../hooks/useAuth'
@@ -220,6 +221,16 @@ export function MyProfilePage() {
                     <button onClick={() => window.location.reload()} className="text-rose-600 hover:text-rose-800 text-xs font-semibold cursor-pointer">Dismiss</button>
                 </div>
             )}
+
+            {/* Back to Dashboard */}
+            <div className="mb-3">
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors cursor-pointer"
+                >
+                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
+                </button>
+            </div>
 
             {/* ── Profile header card ── */}
             <div className={`${card} mb-5`}>

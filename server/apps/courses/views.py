@@ -157,6 +157,15 @@ class CourseViewSet(viewsets.ModelViewSet):
             return [AllowAny()]
         return [IsAuthenticated()]
 
+    def paginate_queryset(self, queryset):
+        if (
+            self.request.query_params.get("all") == "true"
+            or self.request.query_params.get("no_page") == "true"
+            or self.request.query_params.get("page_size") == "all"
+        ):
+            return None
+        return super().paginate_queryset(queryset)
+
     def list(self, request, *args, **kwargs):
         """List courses."""
         queryset = self.filter_queryset(self.get_queryset())
@@ -303,6 +312,7 @@ class MyCoursesViewSet(viewsets.ModelViewSet):
     """
 
     permission_classes = [IsInstructor]
+    pagination_class = None
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = [
         "category",
@@ -347,14 +357,6 @@ class MyCoursesViewSet(viewsets.ModelViewSet):
     def list(self, request, *args, **kwargs):
         """List instructor's courses."""
         queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(
-                {"success": True, "data": serializer.data}
-            )
-
         serializer = self.get_serializer(queryset, many=True)
         return Response({"success": True, "data": serializer.data})
 

@@ -17,7 +17,9 @@ import {
     DollarSign,
     Info,
     Tag,
+    ArrowLeft,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { usePayments } from '../../../../hooks/usePayments';
 import type { Payment } from '../../../../types';
 import SEO from '../../../components/SEO';
@@ -231,7 +233,8 @@ function PaymentDrawer({
 }
 
 // ── Main Page ────────────────────────────────────────────────────────────────
-const PaymentManagementPage: React.FC = () => {
+export function PaymentManagementPage() {
+    const navigate = useNavigate();
     const { payments, loading, pagination, fetchPayments, approvePayment, rejectPayment } = usePayments();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<string>('PENDING');
@@ -281,6 +284,12 @@ const PaymentManagementPage: React.FC = () => {
 
             {/* Page header */}
             <div className="mb-6">
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors mb-2 cursor-pointer"
+                >
+                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
+                </button>
                 <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Payment Management</h1>
                 <p className="text-sm text-gray-400 mt-0.5">Verify and manage student course payments</p>
             </div>

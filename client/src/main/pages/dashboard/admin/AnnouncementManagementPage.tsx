@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Plus, Edit2, Trash2, Eye, EyeOff, Clock, ChevronRight, X, Megaphone } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Edit2, Trash2, Eye, EyeOff, Clock, ChevronRight, X, Megaphone, ArrowLeft } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { useAnnouncements } from '../../../../hooks/useAnnouncements';
 import type { Announcement, AnnouncementCreateUpdateData } from '../../../../types';
@@ -8,6 +9,7 @@ import SEO from '../../../components/SEO';
 import AnnouncementDetailModal from '../../../components/dashboard/admin/AnnouncementDetailModal';
 
 const AnnouncementManagementPage: React.FC = () => {
+    const navigate = useNavigate();
     const {
         announcements,
         loading,
@@ -189,6 +191,12 @@ const AnnouncementManagementPage: React.FC = () => {
             <div className="mb-6">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                     <div>
+                        <button
+                            onClick={() => navigate('/dashboard')}
+                            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors mb-2 cursor-pointer"
+                        >
+                            <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
+                        </button>
                         <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Announcement Management</h1>
                         <p className="text-sm text-gray-400 mt-0.5">Create and manage site-wide announcements for students and instructors.</p>
                     </div>

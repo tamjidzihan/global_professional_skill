@@ -221,25 +221,25 @@ export default function CourseMaterialsPage() {
 
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <Link
-                        to={`/dashboard/instructor/my-courses/${courseId}`}
-                        className="p-2 bg-white rounded-xl border border-gray-100 hover:border-gray-200 shadow-sm transition-all"
-                    >
-                        <ArrowLeft className="w-5 h-5 text-gray-600" />
-                    </Link>
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Course Materials</h1>
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-violet-50 text-violet-700">
-                                <Sparkles className="w-3 h-3 text-violet-500 animate-pulse" />
-                                Premium
-                            </span>
-                        </div>
-                        <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                            Upload and manage materials for <span className="font-semibold text-gray-800">{course.title}</span>
-                        </p>
+                <div>
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <Link
+                            to={`/dashboard/instructor/my-courses/${courseId}`}
+                            className="flex items-center gap-1 text-xs text-gray-400 hover:text-violet-600 transition-colors cursor-pointer"
+                        >
+                            <ArrowLeft className="w-3.5 h-3.5" /> Back to Course
+                        </Link>
                     </div>
+                    <div className="flex items-center gap-2">
+                        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Course Materials</h1>
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-violet-50 text-violet-700">
+                            <Sparkles className="w-3 h-3 text-violet-500 animate-pulse" />
+                            Premium
+                        </span>
+                    </div>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                        Upload and manage materials for <span className="font-semibold text-gray-800">{course.title}</span>
+                    </p>
                 </div>
             </div>
 

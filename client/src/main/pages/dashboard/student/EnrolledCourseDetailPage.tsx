@@ -142,18 +142,14 @@ export default function EnrolledCourseDetailPage() {
             <SEO title={`Learning: ${course.title}`} noindex />
 
             {/* Breadcrumbs & Back */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Link to="/dashboard/student/my-courses" className="hover:text-violet-600 transition-colors">My Courses</Link>
-                    <ChevronRight className="w-4 h-4" />
+            <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2 text-xs text-gray-500 flex-wrap">
+                    <Link to="/dashboard/student/my-courses" className="flex items-center gap-1 hover:text-violet-600 transition-colors">
+                        <ArrowLeft className="w-3.5 h-3.5" /> My Courses
+                    </Link>
+                    <ChevronRight className="w-3.5 h-3.5 text-gray-400" />
                     <span className="text-gray-900 font-medium truncate max-w-50 md:max-w-none">{course.title}</span>
                 </div>
-                <Link
-                    to="/dashboard/student/my-courses"
-                    className="text-sm font-semibold text-violet-600 hover:text-violet-700 flex items-center gap-1.5"
-                >
-                    <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">All Courses</span>
-                </Link>
             </div>
 
             {/* Header Section */}

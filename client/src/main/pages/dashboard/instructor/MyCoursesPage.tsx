@@ -18,6 +18,7 @@ import {
     ExternalLink,
     AlertCircle,
     RefreshCw,
+    ArrowLeft,
 } from 'lucide-react';
 import SEO from '../../../components/SEO';
 
@@ -265,6 +266,12 @@ const MyCoursesPage = (): JSX.Element => {
             {/* ── Page header ── */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
+                    <button
+                        onClick={() => navigate('/dashboard')}
+                        className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors mb-2 cursor-pointer"
+                    >
+                        <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
+                    </button>
                     <h1 className="text-xl font-semibold text-gray-900 tracking-tight">My Courses</h1>
                     <p className="text-sm text-gray-400 mt-0.5">Manage and monitor your course offerings.</p>
                 </div>

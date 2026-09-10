@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from 'react';
-import { Plus, Search, MapPin, Edit, Trash2, Eye, Filter, Briefcase } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Plus, Search, MapPin, Edit, Trash2, Eye, Filter, Briefcase, ArrowLeft } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import { getJobs, deleteJob } from '../../../../lib/api';
 import type { Job } from '../../../../types';
 import { format } from 'date-fns';
@@ -29,6 +29,7 @@ function getJobTypeLabel(type: string) {
 }
 
 const JobManagementPage = () => {
+    const navigate = useNavigate();
     const [jobs, setJobs] = useState<Job[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -75,6 +76,12 @@ const JobManagementPage = () => {
             {/* Page header */}
             <div className="flex items-center justify-between mb-6">
                 <div>
+                    <button
+                        onClick={() => navigate('/dashboard')}
+                        className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors mb-2 cursor-pointer"
+                    >
+                        <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
+                    </button>
                     <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Job Management</h1>
                     <p className="text-sm text-gray-400 mt-0.5">Post and manage career opportunities</p>
                 </div>

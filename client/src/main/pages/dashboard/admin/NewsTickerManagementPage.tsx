@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Plus, Edit2, Trash2, Eye, EyeOff, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, Edit2, Trash2, Eye, EyeOff, X, ArrowLeft } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { useNewsTickerItems } from '../../../../hooks/useNewsTickerItems';
 import type { NewsTickerItem, NewsTickerItemCreateUpdateData } from '../../../../types';
@@ -16,6 +17,7 @@ const COLOR_OPTIONS = [
 ];
 
 const NewsTickerManagementPage: React.FC = () => {
+    const navigate = useNavigate();
     const {
         items,
         loading,
@@ -131,6 +133,12 @@ const NewsTickerManagementPage: React.FC = () => {
             <div className="mb-6">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                     <div>
+                        <button
+                            onClick={() => navigate('/dashboard')}
+                            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors mb-2 cursor-pointer"
+                        >
+                            <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
+                        </button>
                         <h1 className="text-xl font-semibold text-gray-900 tracking-tight">News Ticker Management</h1>
                         <p className="text-sm text-gray-400 mt-0.5">Manage messages that appear in the site-wide news ticker.</p>
                     </div>

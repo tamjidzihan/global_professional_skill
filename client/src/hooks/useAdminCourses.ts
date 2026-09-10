@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useCallback } from 'react';
 import type {
-    CourseListResponse,
     CoursesSummary,
     CourseDetail
 } from '../types';
@@ -22,21 +21,27 @@ export const useAdminCourses = () => {
         setLoading(true);
         setError(null);
         try {
-            const params: Record<string, string> = {};
+            const params: Record<string, string> = { all: 'true' };
             if (status !== 'ALL') {
                 params.status = status;
             }
 
-            const response = await getCourses<CourseListResponse>(
+            const response = await getCourses<any>(
                 pageUrl ? undefined : params,
                 pageUrl || undefined
             );
 
             const responseData = response.data;
-            setCourses(responseData.results.data ?? []);
-            setTotalCount(responseData.count || 0);
-            setNextPage(responseData.next);
-            setPrevPage(responseData.previous);
+            const coursesList =
+                responseData?.results?.data ||
+                responseData?.data ||
+                (Array.isArray(responseData?.results) ? responseData.results : null) ||
+                (Array.isArray(responseData) ? responseData : []);
+
+            setCourses(coursesList);
+            setTotalCount(responseData?.count ?? coursesList.length);
+            setNextPage(responseData?.next ?? null);
+            setPrevPage(responseData?.previous ?? null);
         } catch (err: any) {
             setError(err.response?.data?.error?.message || 'Failed to fetch courses');
             setCourses([]);

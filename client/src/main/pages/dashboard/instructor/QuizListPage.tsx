@@ -180,17 +180,17 @@ const QuizListPage: React.FC = () => {
 
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => navigate(`/dashboard/instructor/my-courses/${course.id}/curriculum`)}
-                        className="w-10 h-10 flex items-center justify-center rounded-xl border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-all cursor-pointer"
-                    >
-                        <ArrowLeft className="w-5 h-5" />
-                    </button>
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Course Quizzes</h1>
-                        <p className="text-sm text-gray-500 mt-1">Manage quizzes for: <span className="font-medium text-gray-700">{course.title}</span></p>
+                <div>
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <button
+                            onClick={() => navigate(`/dashboard/instructor/my-courses/${course.id}/curriculum`)}
+                            className="flex items-center gap-1 text-xs text-gray-400 hover:text-violet-600 transition-colors cursor-pointer"
+                        >
+                            <ArrowLeft className="w-3.5 h-3.5" /> Back to Curriculum
+                        </button>
                     </div>
+                    <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Course Quizzes</h1>
+                    <p className="text-sm text-gray-500 mt-1">Manage quizzes for: <span className="font-medium text-gray-700">{course.title}</span></p>
                 </div>
 
                 <button

@@ -10,11 +10,19 @@ export function useEnrollments() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
+    const extractEnrollments = (resData: any): Enrollment[] => {
+        if (Array.isArray(resData)) return resData
+        if (Array.isArray(resData?.results)) return resData.results
+        if (Array.isArray(resData?.data)) return resData.data
+        if (Array.isArray(resData?.results?.data)) return resData.results.data
+        return []
+    }
+
     const getMyEnrollments = useCallback(async () => {
         setLoading(true)
         try {
-            const response = await getEnrollments()
-            setEnrollments(response.data.results)
+            const response = await getEnrollments<any>()
+            setEnrollments(extractEnrollments(response.data))
         } catch (err: unknown) {
             if (isAxiosError(err)) {
                 setError(err.response?.data?.message || 'Failed to fetch enrollments')
@@ -32,9 +40,10 @@ export function useEnrollments() {
         setLoading(true)
         setError(null)
         try {
-            const response = await getEnrollments(params)
-            setEnrollments(response.data.results)
-            return response.data
+            const response = await getEnrollments<any>(params)
+            const list = extractEnrollments(response.data)
+            setEnrollments(list)
+            return list
         } catch (err: unknown) {
             let msg = 'Failed to fetch enrollments'
             if (isAxiosError(err)) {

@@ -192,12 +192,14 @@ export const QuizSubmissionsListPage: React.FC = () => {
             {/* ── Page header ── */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="min-w-0">
-                    <button
-                        onClick={() => navigate(`/dashboard/instructor/my-courses/${effectiveCourseId}/quizzes`)}
-                        className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors mb-2 cursor-pointer"
-                    >
-                        <ArrowLeft className="w-3.5 h-3.5" /> Back to Quizzes
-                    </button>
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <button
+                            onClick={() => navigate(`/dashboard/instructor/my-courses/${effectiveCourseId}/quizzes`)}
+                            className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors cursor-pointer"
+                        >
+                            <ArrowLeft className="w-3.5 h-3.5" /> Back to Quizzes
+                        </button>
+                    </div>
                     <h1 className="text-xl font-semibold text-gray-900 tracking-tight">Quiz Submissions</h1>
                     <p className="text-sm text-gray-400 mt-0.5 truncate">
                         {quiz?.title || 'Quiz'} · {course?.title || 'Course'}

@@ -31,6 +31,7 @@ import {
     Bell,
     ChevronRight,
     LayoutGrid,
+    ArrowLeft,
 } from 'lucide-react'
 import {
     getSiteSettings,
@@ -609,8 +610,14 @@ const SiteSettingsPage: React.FC = () => {
         <div className="py-6 px-4 md:px-6">
             <SEO title={`${pageTitle} | Admin Dashboard`} noindex={true} />
             <div className="mb-6">
+                <button
+                    onClick={() => navigate('/dashboard')}
+                    className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors mb-2 cursor-pointer"
+                >
+                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
+                </button>
                 <h1 className="text-xl font-semibold text-gray-900 tracking-tight">{pageTitle}</h1>
-                <p className="text-sm text-gray-400 mt-0.5">Manage Easily manage your homepage interactive video tour, event photo album, student payment details, and automated quiz evaluation from the sub-menus below. .</p>
+                <p className="text-sm text-gray-400 mt-0.5">Manage your homepage interactive video tour, event photo album, student payment details, and automated quiz evaluation from the sub-menus below.</p>
             </div>
 
             {/* ── Modern Sub-Menu Horizontal Tabs Navigation Bar ── */}

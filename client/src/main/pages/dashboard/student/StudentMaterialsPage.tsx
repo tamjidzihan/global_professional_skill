@@ -150,19 +150,19 @@ export default function StudentMaterialsPage() {
             <SEO title={`Download Materials: ${course.title}`} noindex />
 
             {/* Header */}
-            <div className="flex items-center gap-3">
-                <Link
-                    to={`/dashboard/student/my-courses/${courseId}`}
-                    className="p-2 bg-white rounded-xl border border-gray-100 hover:border-gray-200 shadow-sm transition-all"
-                >
-                    <ArrowLeft className="w-5 h-5 text-gray-600" />
-                </Link>
-                <div>
-                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Course Materials</h1>
-                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                        View and download resources for <span className="font-semibold text-gray-800">{course.title}</span>
-                    </p>
+            <div>
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <Link
+                        to={`/dashboard/student/my-courses/${courseId}`}
+                        className="flex items-center gap-1 text-xs text-gray-400 hover:text-violet-600 transition-colors cursor-pointer"
+                    >
+                        <ArrowLeft className="w-3.5 h-3.5" /> Back to Course
+                    </Link>
                 </div>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Course Materials</h1>
+                <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                    View and download resources for <span className="font-semibold text-gray-800">{course.title}</span>
+                </p>
             </div>
 
             {materials.length > 0 ? (

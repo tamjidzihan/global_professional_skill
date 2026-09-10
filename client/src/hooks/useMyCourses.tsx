@@ -13,17 +13,26 @@ export function useMyCourses() {
         previous: null as string | null,
     });
 
+    const extractCourses = (resData: any): CoursesSummary[] => {
+        if (Array.isArray(resData)) return resData;
+        if (Array.isArray(resData?.data)) return resData.data;
+        if (Array.isArray(resData?.results?.data)) return resData.results.data;
+        if (Array.isArray(resData?.results)) return resData.results;
+        return [];
+    };
+
     const fetchMyCourses = useCallback(
         async (filters?: CourseFilters, pageUrl?: string | null) => {
             setLoading(true);
             setError(null);
             try {
-                const response = await getMyCourses(filters, pageUrl);
-                setCourses(response.data.results.data);
+                const response = await getMyCourses<any>(filters, pageUrl);
+                const list = extractCourses(response.data);
+                setCourses(list);
                 setPagination({
-                    count: response.data.count,
-                    next: response.data.next,
-                    previous: response.data.previous,
+                    count: response.data?.count ?? list.length,
+                    next: response.data?.next ?? null,
+                    previous: response.data?.previous ?? null,
                 });
             } catch (err: any) {
                 setError(err.response?.data?.error?.message || err.response?.data?.message || 'An error occurred');

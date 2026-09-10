@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     BookOpen,
     CheckCircle,
@@ -6,7 +7,8 @@ import {
     Search,
     PlayCircle,
     Layers,
-    AlertCircle
+    AlertCircle,
+    ArrowLeft,
 } from 'lucide-react';
 import { useCourses } from '../../../../hooks/useCourses';
 import { useMyCourses } from '../../../../hooks/useMyCourses';
@@ -14,6 +16,7 @@ import SEO from '../../../components/SEO';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 
 export default function CourseProgressPage() {
+    const navigate = useNavigate();
     const { course, fetchCourseDetail, toggleLessonProgress } = useCourses();
     const { courses, fetchMyCourses, loading: coursesLoading } = useMyCourses();
     const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
@@ -55,6 +58,12 @@ export default function CourseProgressPage() {
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
+                    <button
+                        onClick={() => navigate('/dashboard')}
+                        className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors mb-2 cursor-pointer"
+                    >
+                        <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard
+                    </button>
                     <h1 className="text-xl font-bold text-gray-900 tracking-tight">Course Progress</h1>
                     <p className="text-sm text-gray-500">Update completion status for online classes.</p>
                 </div>
