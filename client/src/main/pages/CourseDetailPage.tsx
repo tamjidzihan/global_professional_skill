@@ -700,7 +700,7 @@ export function CourseDetailPage() {
                                     </div>
 
                                     {course.materials && course.materials.length > 0 ? (
-                                        <div className="divide-y divide-gray-150 border border-gray-200 rounded-lg overflow-hidden shadow-sm bg-white">
+                                        <div className="divide-y divide-gray-100 border border-gray-200 rounded-lg overflow-hidden shadow-sm bg-white">
                                             {course.materials.map((mat) => (
                                                 <div key={mat.id} className="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
                                                     <div className="flex items-center gap-3 min-w-0">

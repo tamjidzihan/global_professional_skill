@@ -30,7 +30,9 @@ class AdminAnalyticsView(APIView):
 
     def get(self, request):
         from apps.accounts.models import User, InstructorRequest
-        from apps.payments.models import Payment, PaymentStatus
+        from apps.payments.models import Payment, PaymentStatus, PromoCode
+        from apps.courses.models import Course, Category
+        from apps.careers.models import Job
 
         course_status_distribution = (
             Course.objects.values("status")
@@ -38,23 +40,39 @@ class AdminAnalyticsView(APIView):
             .order_by("status")
         )
 
+        total_revenue = Payment.objects.filter(
+            status=PaymentStatus.COMPLETED
+        ).aggregate(total=Sum("amount"))["total"] or 0
+
+        pending_payments_amount = Payment.objects.filter(
+            status=PaymentStatus.PENDING
+        ).aggregate(total=Sum("amount"))["total"] or 0
+
         stats = {
             "total_users": User.objects.count(),
             "total_students": User.objects.filter(role="STUDENT").count(),
             "total_instructors": User.objects.filter(role="INSTRUCTOR").count(),
+            "total_admins": User.objects.filter(role="ADMIN").count(),
             "total_courses": Course.objects.count(),
             "published_courses": Course.objects.filter(status="PUBLISHED").count(),
             "pending_courses": Course.objects.filter(status="PENDING").count(),
+            "draft_courses": Course.objects.filter(status="DRAFT").count(),
+            "total_categories": Category.objects.count(),
             "total_enrollments": Enrollment.objects.count(),
+            "total_revenue": float(total_revenue),
+            "pending_payments_amount": float(pending_payments_amount),
             "pending_instructor_requests": InstructorRequest.objects.filter(
                 status="PENDING"
             ).count(),
             "pending_payments": Payment.objects.filter(
                 status=PaymentStatus.PENDING
             ).count(),
+            "total_active_jobs": Job.objects.filter(is_active=True).count(),
+            "total_promo_codes": PromoCode.objects.filter(is_active=True).count(),
             "course_status_distribution": {
                 item["status"]: item["count"] for item in course_status_distribution
             },
         }
 
         return Response({"success": True, "data": stats})
+

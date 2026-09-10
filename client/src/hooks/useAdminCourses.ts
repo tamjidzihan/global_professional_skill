@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import type {
     CoursesSummary,
     CourseDetail
@@ -7,6 +7,13 @@ import type {
 import { getCourses, reviewCourse, getCourseDetail } from '../lib/api';
 
 type FilterStatus = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'PUBLISHED' | 'DRAFT';
+
+export interface FetchCoursesOptions {
+    page?: number;
+    search?: string;
+    all?: boolean;
+    pageSize?: number;
+}
 
 export const useAdminCourses = () => {
     const [courses, setCourses] = useState<CoursesSummary[]>([]);
@@ -16,14 +23,44 @@ export const useAdminCourses = () => {
     const [totalCount, setTotalCount] = useState<number>(0);
     const [nextPage, setNextPage] = useState<string | null>(null);
     const [prevPage, setPrevPage] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [pageSize, setPageSize] = useState<number>(12);
 
-    const fetchCourses = useCallback(async (status: FilterStatus = 'ALL', pageUrl: string | null = null) => {
+    const currentStatusRef = useRef<FilterStatus>('ALL');
+    const currentSearchRef = useRef<string>('');
+
+    const fetchCourses = useCallback(async (
+        status: FilterStatus = 'ALL',
+        pageUrl: string | null = null,
+        options?: FetchCoursesOptions
+    ) => {
         setLoading(true);
         setError(null);
+        currentStatusRef.current = status;
+        if (options?.search !== undefined) {
+            currentSearchRef.current = options.search;
+        }
+
         try {
-            const params: Record<string, string> = { all: 'true' };
+            const params: Record<string, any> = {};
+
+            if (options?.all) {
+                params.all = 'true';
+            } else {
+                if (options?.page) {
+                    params.page = options.page;
+                }
+                if (options?.pageSize) {
+                    params.page_size = options.pageSize;
+                }
+            }
+
             if (status !== 'ALL') {
                 params.status = status;
+            }
+
+            if (currentSearchRef.current) {
+                params.search = currentSearchRef.current;
             }
 
             const response = await getCourses<any>(
@@ -39,13 +76,37 @@ export const useAdminCourses = () => {
                 (Array.isArray(responseData) ? responseData : []);
 
             setCourses(coursesList);
-            setTotalCount(responseData?.count ?? coursesList.length);
+            const count = responseData?.count ?? coursesList.length;
+            setTotalCount(count);
             setNextPage(responseData?.next ?? null);
             setPrevPage(responseData?.previous ?? null);
+
+            if (options?.pageSize) {
+                setPageSize(options.pageSize);
+            }
+
+            // Determine page number
+            if (options?.page) {
+                setCurrentPage(options.page);
+            } else if (pageUrl) {
+                try {
+                    const parsedUrl = new URL(pageUrl, window.location.origin);
+                    const pageParam = parsedUrl.searchParams.get('page');
+                    if (pageParam) {
+                        setCurrentPage(parseInt(pageParam, 10));
+                    }
+                } catch {
+                    // ignore URL parsing fallback
+                }
+            } else {
+                setCurrentPage(1);
+            }
         } catch (err: any) {
             setError(err.response?.data?.error?.message || 'Failed to fetch courses');
             setCourses([]);
             setTotalCount(0);
+            setNextPage(null);
+            setPrevPage(null);
         } finally {
             setLoading(false);
         }
@@ -77,11 +138,10 @@ export const useAdminCourses = () => {
         setError(null);
         try {
             await reviewCourse(id, data);
-            // If we're currently viewing this course, refresh its details
             if (selectedCourse?.id === id) {
                 await fetchCourseDetail(id);
             }
-            fetchCourses('PENDING');
+            fetchCourses('PENDING', null, { all: true });
         } catch (err: any) {
             setError(err.response?.data?.error?.message || 'Failed to review course');
             throw err;
@@ -92,39 +152,50 @@ export const useAdminCourses = () => {
 
     const loadNextPage = useCallback(() => {
         if (nextPage) {
-            fetchCourses('ALL', nextPage);
+            fetchCourses(currentStatusRef.current, nextPage);
         }
     }, [nextPage, fetchCourses]);
 
     const loadPrevPage = useCallback(() => {
         if (prevPage) {
-            fetchCourses('ALL', prevPage);
+            fetchCourses(currentStatusRef.current, prevPage);
         }
     }, [prevPage, fetchCourses]);
+
+    const goToPage = useCallback((pageNumber: number) => {
+        fetchCourses(currentStatusRef.current, null, {
+            page: pageNumber,
+            search: currentSearchRef.current,
+            pageSize,
+        });
+    }, [fetchCourses, pageSize]);
 
     const clearSelectedCourse = useCallback(() => {
         setSelectedCourse(null);
     }, []);
 
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
     return {
-        // Existing state
+        // State
         courses,
         loading,
         error,
         totalCount,
         nextPage,
         prevPage,
-
-        // New state
+        currentPage,
+        pageSize,
+        totalPages,
         selectedCourse,
 
-        // Existing functions
+        // Actions
         fetchCourses,
         reviewCourseAction,
         loadNextPage,
         loadPrevPage,
-
-        // New functions
+        goToPage,
+        setPageSize,
         fetchCourseDetail,
         clearSelectedCourse,
     };

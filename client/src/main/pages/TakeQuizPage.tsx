@@ -394,7 +394,7 @@ const TakeQuizPage: React.FC = () => {
         return (
             <div className="max-w-xl mx-auto px-4 py-16 text-center animate-in fade-in duration-200">
                 <SEO title={`Quiz Result - ${quizInfo.title}`} description="Quiz attempt completed" />
-                <div className="bg-white border border-gray-150 rounded-3xl p-8 shadow-md">
+                <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-md">
                     <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-6">
                         {isDisq ? (
                             <XCircle className="w-10 h-10 text-rose-500 animate-pulse" />
@@ -412,7 +412,7 @@ const TakeQuizPage: React.FC = () => {
                         <div className="bg-gray-50 p-4 rounded-2xl">
                             <div className="text-xs font-bold text-gray-400 uppercase">Your Score</div>
                             <div className="text-3xl font-extrabold text-violet-600 mt-1">
-                                {submissionResult.score} <span className="text-sm text-gray-450 font-normal">/ {submissionResult.total_questions}</span>
+                                {submissionResult.score} <span className="text-sm text-gray-400 font-normal">/ {submissionResult.total_questions}</span>
                             </div>
                         </div>
 
@@ -471,15 +471,15 @@ const TakeQuizPage: React.FC = () => {
         return (
             <div className="max-w-md mx-auto px-4 py-20 animate-in fade-in duration-200">
                 <SEO title={`Unlock Quiz - ${quizInfo.title}`} description="Enter PIN to start quiz" />
-                <div className="bg-white border border-gray-150 rounded-3xl p-8 shadow-md text-center">
+                <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-md text-center">
                     <div className="w-12 h-12 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-5">
                         <Lock className="w-6 h-6" />
                     </div>
 
                     <h2 className="text-xl font-bold text-gray-900 mb-1">{quizInfo.title}</h2>
-                    <p className="text-xs text-gray-455 mb-6">Course Quiz Access Gate</p>
+                    <p className="text-xs text-gray-400 mb-6">Course Quiz Access Gate</p>
 
-                    <div className="space-y-4 text-left mb-6 text-sm text-gray-650 bg-gray-50 p-4 rounded-2xl">
+                    <div className="space-y-4 text-left mb-6 text-sm text-gray-600 bg-gray-50 p-4 rounded-2xl">
                         <div className="flex items-center gap-2">
                             <Clock className="w-4 h-4 text-gray-400" />
                             <span>Duration: <strong>{quizInfo.duration_minutes} minutes</strong></span>
@@ -555,7 +555,7 @@ const TakeQuizPage: React.FC = () => {
             )}
 
             {/* Header: Timer and Progress */}
-            <div className="flex items-center justify-between gap-4 mb-6 bg-white border border-gray-150 p-4 rounded-2xl shadow-sm">
+            <div className="flex items-center justify-between gap-4 mb-6 bg-white border border-gray-100 p-4 rounded-2xl shadow-sm">
                 <div>
                     <h2 className="text-base font-bold text-gray-900 line-clamp-1">{quizInfo.title}</h2>
                     <p className="text-xs text-gray-400 mt-0.5">
@@ -590,7 +590,7 @@ const TakeQuizPage: React.FC = () => {
 
             {/* Question Card */}
             {currentQuestion && (
-                <div className="bg-white border border-gray-150 rounded-3xl p-6 md:p-8 shadow-sm mb-6 min-h-75 flex flex-col justify-between">
+                <div className="bg-white border border-gray-100 rounded-3xl p-6 md:p-8 shadow-sm mb-6 min-h-75 flex flex-col justify-between">
                     <div>
                         <div className="text-[10px] uppercase font-bold text-violet-600 tracking-wider mb-2">Question {currentQuestionIndex + 1}</div>
                         <h3 className="text-lg font-semibold text-gray-800 leading-relaxed whitespace-pre-line mb-8">

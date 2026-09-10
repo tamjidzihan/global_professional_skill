@@ -195,7 +195,7 @@ const QuizQuestionsPage: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 {/* Form Column - 5 Cols */}
-                <div className="lg:col-span-5 bg-white border border-gray-150 rounded-2xl shadow-sm overflow-hidden p-6 sticky top-8">
+                <div className="lg:col-span-5 bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden p-6 sticky top-8">
                     <h3 className="text-base font-bold text-gray-900 border-b border-gray-50 pb-3 mb-4">
                         {editingQuestion ? 'Edit Question' : 'Add New Question'}
                     </h3>
@@ -296,7 +296,7 @@ const QuizQuestionsPage: React.FC = () => {
 
                 {/* Question List Column - 7 Cols */}
                 <div className="lg:col-span-7 space-y-4">
-                    <div className="bg-white border border-gray-150 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+                    <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm flex items-center justify-between">
                         <span className="text-sm font-bold text-gray-900">
                             Questions Pool
                         </span>
@@ -320,7 +320,7 @@ const QuizQuestionsPage: React.FC = () => {
                                     key={q.id}
                                     className={`bg-white border rounded-2xl p-5 shadow-sm transition-all ${editingQuestion?.id === q.id
                                             ? 'border-violet-500 ring-2 ring-violet-500/10'
-                                            : 'border-gray-150 hover:border-gray-200'
+                                            : 'border-gray-100 hover:border-gray-200'
                                         }`}
                                 >
                                     {/* Question Text */}
@@ -337,7 +337,7 @@ const QuizQuestionsPage: React.FC = () => {
                                         <div className="flex items-center gap-1 shrink-0">
                                             <button
                                                 onClick={() => handleSelectQuestionForEdit(q)}
-                                                className="p-1.5 text-gray-550 hover:text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
+                                                className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
                                                 title="Edit Question"
                                             >
                                                 <Edit2 className="w-3.5 h-3.5" />
@@ -366,8 +366,8 @@ const QuizQuestionsPage: React.FC = () => {
                                                 <div
                                                     key={opt.label}
                                                     className={`flex items-center gap-2 px-3 py-2 border rounded-xl text-xs font-medium transition-colors ${isCorrect
-                                                            ? 'border-emerald-250 bg-emerald-50/50 text-emerald-800'
-                                                            : 'border-gray-150 bg-white text-gray-600'
+                                                            ? 'border-emerald-200 bg-emerald-50/50 text-emerald-800'
+                                                            : 'border-gray-100 bg-white text-gray-600'
                                                         }`}
                                                 >
                                                     <span className={`w-5 h-5 flex items-center justify-center font-bold text-[10px] rounded-lg shrink-0 ${isCorrect

@@ -60,11 +60,19 @@ export function InstructorRequestFilters({
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
                     <input
                         type="text"
-                        placeholder="Search requests..."
+                        placeholder="Search by name, email, qualifications..."
                         value={searchQuery}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        className="w-full pl-8 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-700 placeholder-gray-400 outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-50 transition-all"
+                        className="w-full pl-8 pr-8 py-2 text-xs bg-gray-50/80 border border-gray-200 rounded-xl text-gray-700 placeholder-gray-400 outline-none focus:border-violet-400 focus:bg-white focus:ring-2 focus:ring-violet-50 transition-all"
                     />
+                    {searchQuery && (
+                        <button
+                            onClick={() => onSearchChange('')}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs cursor-pointer"
+                        >
+                            ✕
+                        </button>
+                    )}
                 </div>
 
                 {/* Status dropdown */}

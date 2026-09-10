@@ -223,7 +223,7 @@ const QuizListPage: React.FC = () => {
                     {quizzes.map((quiz) => {
                         const quizUrl = `${window.location.origin}/quiz/${quiz.id}/take`;
                         return (
-                            <div key={quiz.id} className="bg-white border border-gray-150 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                            <div key={quiz.id} className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
                                 <div>
                                     <div className="flex items-start justify-between gap-3 mb-4">
                                         <h3 className="text-lg font-bold text-gray-900 line-clamp-2 leading-tight">
