@@ -1,7 +1,5 @@
 import { type JSX, useState } from 'react'
 import {
-    Globe,
-    MousePointerClick,
     User,
     Mail,
     Phone,
@@ -16,11 +14,9 @@ import {
     ShieldCheck,
     Check,
     Smartphone,
-    Laptop,
     Sparkles,
     ChevronDown,
     ChevronUp,
-    ExternalLink,
     GraduationCap,
     ArrowDown,
     Layers,
@@ -34,7 +30,7 @@ export function RegistrationInfographic(): JSX.Element {
     return (
         <div className="w-full bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden text-slate-800 font-sans transition-all">
             {/* Top Accent Strip with GPI Brand Colors */}
-            <div className="h-2 w-full bg-gradient-to-r from-[#0F2C59] via-[#0066CC] via-[#76C043] via-[#7C3AED] via-[#F59E0B] to-[#EF4444]" />
+            <div className="h-2 w-full bg-linear-to-r from-[#0F2C59] via-[#0066CC] to-[#EF4444]" />
 
             {/* Mobile Header / Quick Toggle for small screens */}
             <div className="lg:hidden p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
@@ -95,7 +91,7 @@ export function RegistrationInfographic(): JSX.Element {
                     <div className="group relative bg-slate-50/70 hover:bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 hover:border-emerald-300 hover:shadow-md transition-all duration-200">
                         <div className="flex items-start gap-3.5">
                             {/* Number Badge */}
-                            <div className="shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-[#76C043] to-[#16A34A] text-white flex items-center justify-center font-black text-sm shadow-sm">
+                            <div className="shrink-0 w-9 h-9 rounded-xl bg-linear-to-br from-[#76C043] to-[#16A34A] text-white flex items-center justify-center font-black text-sm shadow-sm">
                                 01
                             </div>
                             <div className="grow">
@@ -185,11 +181,10 @@ export function RegistrationInfographic(): JSX.Element {
                     <button
                         type="button"
                         onClick={() => setShowFullGuide(!showFullGuide)}
-                        className={`group relative overflow-hidden rounded-full font-bold text-white shadow-md transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg cursor-pointer ${
-                            showFullGuide
-                                ? 'bg-slate-700 hover:bg-slate-800'
-                                : 'bg-blue-600 hover:bg-blue-700'
-                        }`}
+                        className={`group relative overflow-hidden rounded-full font-bold text-white shadow-md transition-all duration-300 transform hover:-translate-y-0.5 hover:shadow-lg cursor-pointer ${showFullGuide
+                            ? 'bg-slate-700 hover:bg-slate-800'
+                            : 'bg-blue-600 hover:bg-blue-700'
+                            }`}
                     >
                         <div className="relative z-10 flex items-center gap-3 px-8 py-4">
                             {/* Left icon bubble */}
@@ -238,7 +233,7 @@ export function RegistrationInfographic(): JSX.Element {
                         <div className="group relative bg-slate-50/70 hover:bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 hover:border-purple-300 hover:shadow-md transition-all duration-200">
                             <div className="flex items-start gap-3.5">
                                 {/* Number Badge */}
-                                <div className="shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#9333EA] text-white flex items-center justify-center font-black text-sm shadow-sm">
+                                <div className="shrink-0 w-9 h-9 rounded-xl bg-linear-to-br from-[#7C3AED] to-[#9333EA] text-white flex items-center justify-center font-black text-sm shadow-sm">
                                     02
                                 </div>
                                 <div className="grow">
@@ -290,7 +285,7 @@ export function RegistrationInfographic(): JSX.Element {
                         <div className="group relative bg-slate-50/70 hover:bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 hover:border-amber-300 hover:shadow-md transition-all duration-200">
                             <div className="flex items-start gap-3.5">
                                 {/* Number Badge */}
-                                <div className="shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-[#F59E0B] to-[#EA580C] text-white flex items-center justify-center font-black text-sm shadow-sm">
+                                <div className="shrink-0 w-9 h-9 rounded-xl bg-linear-to-br from-[#F59E0B] to-[#EA580C] text-white flex items-center justify-center font-black text-sm shadow-sm">
                                     03
                                 </div>
                                 <div className="grow">
@@ -317,7 +312,7 @@ export function RegistrationInfographic(): JSX.Element {
                                                 <span className="text-[10px] text-slate-500">Explore Curriculum &amp; Modules</span>
                                             </div>
                                         </div>
-                                        <span className="px-2.5 py-1 bg-gradient-to-r from-[#76C043] to-emerald-600 text-white text-xs font-bold rounded-lg shadow-xs shrink-0">
+                                        <span className="px-2.5 py-1 bg-linear-to-r from-[#76C043] to-emerald-600 text-white text-xs font-bold rounded-lg shadow-xs shrink-0">
                                             Enroll Now
                                         </span>
                                     </div>
@@ -329,7 +324,7 @@ export function RegistrationInfographic(): JSX.Element {
                         <div className="group relative bg-slate-50/70 hover:bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/80 hover:border-indigo-300 hover:shadow-md transition-all duration-200">
                             <div className="flex items-start gap-3.5">
                                 {/* Number Badge */}
-                                <div className="shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-[#4F46E5] to-[#0066CC] text-white flex items-center justify-center font-black text-sm shadow-sm">
+                                <div className="shrink-0 w-9 h-9 rounded-xl bg-linear-to-br from-[#4F46E5] to-[#0066CC] text-white flex items-center justify-center font-black text-sm shadow-sm">
                                     04
                                 </div>
                                 <div className="grow">
@@ -407,7 +402,7 @@ export function RegistrationInfographic(): JSX.Element {
                 )}
 
                 {/* ─── IMPORTANT INSTRUCTION BOX ─── */}
-                <div className="rounded-2xl bg-gradient-to-br from-red-50 via-amber-50 to-orange-50 border-2 border-red-200/90 p-4 sm:p-5 shadow-sm">
+                <div className="rounded-2xl bg-linear-to-br from-red-50 via-amber-50 to-orange-50 border-2 border-red-200/90 p-4 sm:p-5 shadow-sm">
                     <div className="flex items-start gap-3">
                         <div className="w-9 h-9 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
                             <AlertTriangle className="w-5 h-5" />
