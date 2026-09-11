@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef, useCallback, type JSX } from 'react';
 import {
-    Filter,
     Search,
     ChevronLeft,
     ChevronRight,
@@ -237,21 +236,7 @@ export function AdminCourseCatalog(): JSX.Element {
                                 <X className="w-3.5 h-3.5" />
                             </button>
                         )}
-                    </div>
-
-                    {/* Dropdown filter for mobile */}
-                    <div className="relative sm:hidden">
-                        <select
-                            value={filterStatus}
-                            onChange={e => handleStatusFilter(e.target.value as FilterStatus)}
-                            className="appearance-none pl-3 pr-8 py-2 text-xs bg-gray-50 border border-gray-200 rounded-xl text-gray-700 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/10 transition-all cursor-pointer"
-                        >
-                            {STATUS_TABS.map(s => (
-                                <option key={s} value={s}>{s === 'ALL' ? 'All Statuses' : s}</option>
-                            ))}
-                        </select>
-                        <Filter className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-                    </div>
+                    </div>                 
                 </div>
             </div>
 
@@ -264,10 +249,10 @@ export function AdminCourseCatalog(): JSX.Element {
                         <button
                             key={status}
                             onClick={() => handleStatusFilter(status)}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold rounded-lg whitespace-nowrap transition-all duration-150 cursor-pointer ${active
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] rounded-lg whitespace-nowrap transition-all duration-150 cursor-pointer ${active
                                 ? status === 'ALL'
                                     ? 'bg-gray-900 text-white shadow-xs'
-                                    : `${cfg?.badge} ring-2 ring-violet-500/20 shadow-xs font-extrabold`
+                                    : `${cfg?.badge} ring-2 ring-violet-500/20 shadow-xs`
                                 : 'bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900 border border-gray-200/80 shadow-2xs'
                                 }`}
                         >
@@ -310,7 +295,7 @@ export function AdminCourseCatalog(): JSX.Element {
                                             <div className="min-w-0 max-w-xs sm:max-w-md">
                                                 <Link
                                                     to={`/dashboard/admin/courses/${course.id}`}
-                                                    className="text-xs sm:text-sm font-bold text-gray-900 hover:text-violet-600 transition-colors truncate block"
+                                                    className="text-xs sm:text-sm font-semibold text-gray-900 hover:text-violet-600 transition-colors truncate block"
                                                     title={course.title}
                                                 >
                                                     {course.title}
@@ -322,7 +307,7 @@ export function AdminCourseCatalog(): JSX.Element {
 
                                     {/* Instructor */}
                                     <td className="px-5 py-3.5 whitespace-nowrap">
-                                        <p className="text-xs font-medium text-gray-700">{course.instructor_name || '—'}</p>
+                                        <p className="text-[14px] font-medium text-gray-700">{course.instructor_name || '—'}</p>
                                     </td>
 
                                     {/* Enrollments */}
@@ -331,10 +316,10 @@ export function AdminCourseCatalog(): JSX.Element {
                                             to={`/dashboard/admin/courses/${course.id}/students`}
                                             className="inline-flex items-center gap-1 text-xs font-semibold text-gray-600 hover:text-violet-600 transition-colors"
                                         >
-                                            <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-md font-mono font-bold text-[11px]">
+                                            <span className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-md font-mono font-bold text-[13px]">
                                                 {course.enrollment_count ?? 0}
                                             </span>
-                                            <span className="text-[10px] text-gray-400">students</span>
+                                            <span className="text-[12px] text-gray-400">students</span>
                                         </Link>
                                     </td>
 

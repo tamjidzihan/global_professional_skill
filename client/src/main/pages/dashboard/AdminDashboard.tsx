@@ -27,7 +27,6 @@ import { getStatusBadge, getStatusColor } from '../../../utils/statusHelpers'
 import { InstructorRequestModal } from '../../components/dashboard/admin/InstructorRequestModal'
 import { CourseReviewModal } from '../../components/dashboard/admin/CourseReviewModal'
 import { CourseStatusPanel } from '../../components/dashboard/admin/CourseStatusPanel'
-import { AdminQuickActions } from '../../components/dashboard/admin/AdminQuickActions'
 import { PlatformHealthCard } from '../../components/dashboard/admin/PlatformHealthCard'
 import SEO from '../../components/SEO'
 
@@ -353,14 +352,7 @@ export function AdminDashboard(): JSX.Element {
             {/* ── 2. Metric Statistics Section ── */}
             <StatsSection data={data} />
 
-            {/* ── 3. Admin Command Center (1-Click Modules) ── */}
-            <AdminQuickActions 
-                pendingPaymentsCount={pendingPaymentsCount}
-                pendingCoursesCount={pendingCoursesCount}
-                pendingRequestsCount={pendingRequestsCount}
-            />
-
-            {/* ── 4. Main Operations Grid & Sidebar ── */}
+            {/* ── 3. Main Operations Grid & Sidebar ── */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 
                 {/* Left 8 Cols: Operational Cards */}
