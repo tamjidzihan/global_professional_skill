@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { GraduationCap, BookOpen, Shield, Award, Users, ChevronRight } from 'lucide-react'
+import { RegistrationInfographic } from '../components/RegistrationInfographic'
 
 interface AuthLayoutProps {
     children: React.ReactNode
@@ -22,79 +23,79 @@ export function AuthLayout({ children, type }: AuthLayoutProps) {
         <main className="grow relative bg-[#FCF8F1]">
             <div className="container mx-auto px-4 py-8 md:py-12">
                 <div className="max-w-7xl mx-auto">
-                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
-                        {/* Left Side - Hero Info */}
-                        <div className="hidden lg:block relative">
-                            <div className="bg-linear-to-br from-yellow-50 via-yellow-100 to-yellow-150 rounded-3xl p-10 shadow-lg relative overflow-hidden h-full">
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-200/30 rounded-full animate-spin-slow"></div>
-                                <div className="absolute bottom-0 left-0 w-48 h-48 bg-yellow-300/20 rounded-full animate-pulse-slow"></div>
+                    <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+                        {/* Left Side - Hero Info or Registration Infographic */}
+                        <div className="lg:col-span-6 xl:col-span-7">
+                            {isRegister ? (
+                                <RegistrationInfographic />
+                            ) : (
+                                <div className="hidden lg:block relative bg-linear-to-br from-yellow-50 via-yellow-100 to-yellow-150 rounded-3xl p-10 shadow-lg overflow-hidden h-full">
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-200/30 rounded-full animate-spin-slow"></div>
+                                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-yellow-300/20 rounded-full animate-pulse-slow"></div>
 
-                                <div className="flex items-center space-x-3 mb-6">
-                                    <div className="p-2 bg-white/20 rounded-full">
-                                        <GraduationCap className="w-6 h-6 text-yellow-700" />
-                                    </div>
-                                    <div>
-                                        <div className="text-yellow-900 font-semibold text-sm">
-                                            GPI-BD Learning Portal
+                                    <div className="flex items-center space-x-3 mb-6">
+                                        <div className="p-2 bg-white/20 rounded-full">
+                                            <GraduationCap className="w-6 h-6 text-yellow-700" />
                                         </div>
-                                        <div className="text-yellow-900/70 text-xs">
-                                            Secure Student Access
+                                        <div>
+                                            <div className="text-yellow-900 font-semibold text-sm">
+                                                GPI-BD Learning Portal
+                                            </div>
+                                            <div className="text-yellow-900/70 text-xs">
+                                                Secure Student Access
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <h1 className="text-3xl md:text-4xl font-bold text-yellow-900 mb-4">
-                                    {isLogin
-                                        ? 'Sign in to your account'
-                                        : isRegister
-                                            ? 'Create Your Account'
+                                    <h1 className="text-3xl md:text-4xl font-bold text-yellow-900 mb-4">
+                                        {isLogin
+                                            ? 'Sign in to your account'
                                             : 'Welcome to GPI-BD'}
-                                </h1>
-                                <p className="text-yellow-800 mb-8">
-                                    {isLogin
-                                        ? 'Access all your courses and learning materials securely.'
-                                        : isRegister
-                                            ? 'Start your IT career journey with us.'
+                                    </h1>
+                                    <p className="text-yellow-800 mb-8">
+                                        {isLogin
+                                            ? 'Access all your courses and learning materials securely.'
                                             : 'Your secure pathway to knowledge and growth.'}
-                                </p>
-
-                                <div className="space-y-2 mb-8">
-                                    {['Access all course materials', 'Track your progress', 'Connect with instructors', 'Get career support'].map((feature, i) => (
-                                        <div key={i} className="flex items-center space-x-2">
-                                            <div className="w-2 h-2 bg-yellow-800 rounded-full"></div>
-                                            <span className="text-yellow-900 text-sm">{feature}</span>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4 mb-8">
-                                    <div className="text-center p-3 bg-white/10 rounded-lg">
-                                        <div className="text-xl font-bold text-yellow-900">60K+</div>
-                                        <div className="text-xs text-yellow-800">Students</div>
-                                    </div>
-                                    <div className="text-center p-3 bg-white/10 rounded-lg">
-                                        <div className="text-xl font-bold text-yellow-900">98%</div>
-                                        <div className="text-xs text-yellow-800">Success Rate</div>
-                                    </div>
-                                </div>
-
-                                <div className="border-t border-yellow-200 pt-6 relative">
-                                    <p className="text-yellow-800 text-sm mb-4">
-                                        {isLogin ? "Don't have an account?" : "Already have an account?"}
                                     </p>
-                                    <Link
-                                        to={isLogin ? '/register' : '/login'}
-                                        className="inline-flex items-center space-x-2 px-4 py-2 bg-yellow-400 text-yellow-900 font-medium rounded-full hover:bg-yellow-500 transition-colors cursor-pointer"
-                                    >
-                                        <span>{isLogin ? 'Create Account' : 'Sign In'}</span>
-                                        <ChevronRight className="w-4 h-4" />
-                                    </Link>
+
+                                    <div className="space-y-2 mb-8">
+                                        {['Access all course materials', 'Track your progress', 'Connect with instructors', 'Get career support'].map((feature, i) => (
+                                            <div key={i} className="flex items-center space-x-2">
+                                                <div className="w-2 h-2 bg-yellow-800 rounded-full"></div>
+                                                <span className="text-yellow-900 text-sm">{feature}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4 mb-8">
+                                        <div className="text-center p-3 bg-white/10 rounded-lg">
+                                            <div className="text-xl font-bold text-yellow-900">60K+</div>
+                                            <div className="text-xs text-yellow-800">Students</div>
+                                        </div>
+                                        <div className="text-center p-3 bg-white/10 rounded-lg">
+                                            <div className="text-xl font-bold text-yellow-900">98%</div>
+                                            <div className="text-xs text-yellow-800">Success Rate</div>
+                                        </div>
+                                    </div>
+
+                                    <div className="border-t border-yellow-200 pt-6 relative">
+                                        <p className="text-yellow-800 text-sm mb-4">
+                                            {isLogin ? "Don't have an account?" : "Already have an account?"}
+                                        </p>
+                                        <Link
+                                            to={isLogin ? '/register' : '/login'}
+                                            className="inline-flex items-center space-x-2 px-4 py-2 bg-yellow-400 text-yellow-900 font-medium rounded-full hover:bg-yellow-500 transition-colors cursor-pointer"
+                                        >
+                                            <span>{isLogin ? 'Create Account' : 'Sign In'}</span>
+                                            <ChevronRight className="w-4 h-4" />
+                                        </Link>
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
 
                         {/* Right Side - Form */}
-                        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-10 relative">
+                        <div className="lg:col-span-6 xl:col-span-5 bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-10 relative">
                             {/* Mobile Header */}
                             <div className="lg:hidden mb-8">
                                 <div className="flex items-center space-x-3 mb-6">
@@ -154,3 +155,4 @@ export function AuthLayout({ children, type }: AuthLayoutProps) {
         </main>
     )
 }
+
