@@ -344,9 +344,9 @@ export const QuizResultDetailPage: React.FC = () => {
                             const options = [
                                 { label: 'A', text: question.option_a },
                                 { label: 'B', text: question.option_b },
-                                { label: 'C', text: question.option_c },
-                                { label: 'D', text: question.option_d },
-                            ]
+                                { label: 'C', text: question.option_c || '' },
+                                { label: 'D', text: question.option_d || '' },
+                            ].filter((opt) => !!opt.text?.trim())
 
                             return (
                                 <div key={question.id} className={index === 0 ? '' : 'pt-4'}>

@@ -1695,6 +1695,7 @@ class AnswerSheetView(APIView):
                 {
                     "index": idx,
                     "question_id": q_id_str,
+                    "question_type": q.question_type,
                     "question_text": q.question_text,
                     "option_a": q.option_a,
                     "option_b": q.option_b,
@@ -1773,6 +1774,7 @@ class QuestionSheetView(APIView):
             entry = {
                 "index": idx,
                 "question_id": str(q.id),
+                "question_type": q.question_type,
                 "question_text": q.question_text,
                 "option_a": q.option_a,
                 "option_b": q.option_b,

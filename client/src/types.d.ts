@@ -587,11 +587,12 @@ export interface Quiz {
 export interface QuizQuestion {
     id: string;
     quiz: string;
+    question_type?: 'MCQ' | 'TRUE_FALSE';
     question_text: string;
     option_a: string;
     option_b: string;
-    option_c: string;
-    option_d: string;
+    option_c?: string;
+    option_d?: string;
     correct_option: 'A' | 'B' | 'C' | 'D';
     created_at: string;
 }

@@ -13,8 +13,8 @@ export interface QuizQuestion {
   question_text: string;
   option_a: string;
   option_b: string;
-  option_c: string;
-  option_d: string;
+  option_c?: string;
+  option_d?: string;
   correct_option: string;
 }
 
@@ -148,7 +148,7 @@ export const downloadResultPDF = async ({ submission, course, api }: DownloadPDF
           { label: 'B', text: question.option_b || '' },
           { label: 'C', text: question.option_c || '' },
           { label: 'D', text: question.option_d || '' },
-        ];
+        ].filter((opt) => !!opt.text?.trim());
 
         const optionsHtml = options.map((opt) => {
           const isSelected = opt.label === selectedOption;

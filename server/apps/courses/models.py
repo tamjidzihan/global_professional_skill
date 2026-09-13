@@ -521,15 +521,22 @@ class Quiz(models.Model):
 
 
 class QuizQuestion(models.Model):
-    """MCQ Quiz Question model."""
+    """MCQ or True/False Quiz Question model."""
+
+    class QuestionType(models.TextChoices):
+        MCQ = "MCQ", "Multiple Choice (4 Options)"
+        TRUE_FALSE = "TRUE_FALSE", "True / False (2 Options)"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name="questions")
+    question_type = models.CharField(
+        max_length=20, choices=QuestionType.choices, default=QuestionType.MCQ
+    )
     question_text = models.TextField()
     option_a = models.CharField(max_length=255)
     option_b = models.CharField(max_length=255)
-    option_c = models.CharField(max_length=255)
-    option_d = models.CharField(max_length=255)
+    option_c = models.CharField(max_length=255, blank=True, default="")
+    option_d = models.CharField(max_length=255, blank=True, default="")
 
     class CorrectOption(models.TextChoices):
         A = "A", "Option A"

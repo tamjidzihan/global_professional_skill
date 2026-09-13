@@ -1622,79 +1622,88 @@ export const AdminUserDetailPage: React.FC = () => {
                                     {/* Questions Breakdown */}
                                     <div className="space-y-4">
                                         <h4 className="text-xs font-bold uppercase tracking-widest text-gray-400">
-                                            Questions & Responses ({answerSheetData.questions?.length || 0})
+                                            Questions & Responses ({(answerSheetData.answer_sheet || answerSheetData.questions || []).length})
                                         </h4>
 
-                                        {answerSheetData.questions?.map((q: any, idx: number) => (
-                                            <div
-                                                key={q.id || idx}
-                                                className={`p-4 rounded-xl border transition-all ${q.is_correct
-                                                        ? 'bg-emerald-50/30 border-emerald-100'
-                                                        : 'bg-rose-50/30 border-rose-100'
-                                                    }`}
-                                            >
-                                                <div className="flex items-start justify-between gap-3 mb-3">
-                                                    <div className="flex items-start gap-2">
-                                                        <span className="w-5 h-5 rounded-md bg-white border border-gray-200 text-[11px] font-bold text-gray-700 flex items-center justify-center shrink-0 mt-0.5">
-                                                            {idx + 1}
-                                                        </span>
-                                                        <p className="text-xs font-bold text-gray-900 leading-relaxed">{q.question_text}</p>
-                                                    </div>
-                                                    <div className="shrink-0 flex items-center gap-1.5">
-                                                        {q.is_correct ? (
-                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-100 text-emerald-800">
-                                                                <Check className="w-3 h-3" /> +{q.marks_awarded || q.marks || 1}
+                                        {(answerSheetData.answer_sheet || answerSheetData.questions || []).map((q: any, idx: number) => {
+                                            const optionsList = q.options ? q.options : [
+                                                { label: 'A', text: q.option_a, is_correct: q.correct_option === 'A', is_selected: q.selected_option === 'A' },
+                                                { label: 'B', text: q.option_b, is_correct: q.correct_option === 'B', is_selected: q.selected_option === 'B' },
+                                                { label: 'C', text: q.option_c, is_correct: q.correct_option === 'C', is_selected: q.selected_option === 'C' },
+                                                { label: 'D', text: q.option_d, is_correct: q.correct_option === 'D', is_selected: q.selected_option === 'D' },
+                                            ].filter((opt: any) => !!opt.text?.trim());
+
+                                            return (
+                                                <div
+                                                    key={q.question_id || q.id || idx}
+                                                    className={`p-4 rounded-xl border transition-all ${q.is_correct
+                                                            ? 'bg-emerald-50/30 border-emerald-100'
+                                                            : 'bg-rose-50/30 border-rose-100'
+                                                        }`}
+                                                >
+                                                    <div className="flex items-start justify-between gap-3 mb-3">
+                                                        <div className="flex items-start gap-2">
+                                                            <span className="w-5 h-5 rounded-md bg-white border border-gray-200 text-[11px] font-bold text-gray-700 flex items-center justify-center shrink-0 mt-0.5">
+                                                                {idx + 1}
                                                             </span>
-                                                        ) : (
-                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-md bg-rose-100 text-rose-800">
-                                                                <X className="w-3 h-3" /> 0 Marks
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* Options */}
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                                                    {q.options?.map((opt: any, oIdx: number) => {
-                                                        const isSelected = String(q.selected_option_id) === String(opt.id) || q.student_answer === opt.text;
-                                                        const isCorrect = opt.is_correct || String(q.correct_option_id) === String(opt.id);
-
-                                                        let optClass = 'bg-white border-gray-200 text-gray-700';
-                                                        if (isCorrect) {
-                                                            optClass = 'bg-emerald-100/70 border-emerald-300 text-emerald-900 font-bold';
-                                                        } else if (isSelected && !isCorrect) {
-                                                            optClass = 'bg-rose-100/70 border-rose-300 text-rose-900 line-through';
-                                                        }
-
-                                                        return (
-                                                            <div
-                                                                key={opt.id || oIdx}
-                                                                className={`px-3 py-2 text-xs rounded-lg border flex items-center justify-between gap-2 ${optClass}`}
-                                                            >
-                                                                <span className="flex items-center gap-2 min-w-0">
-                                                                    <span className="text-[10px] font-semibold text-gray-400 uppercase">
-                                                                        {String.fromCharCode(65 + oIdx)}.
-                                                                    </span>
-                                                                    <span className="truncate">{opt.text}</span>
+                                                            <p className="text-xs font-bold text-gray-900 leading-relaxed">{q.question_text}</p>
+                                                        </div>
+                                                        <div className="shrink-0 flex items-center gap-1.5">
+                                                            {q.is_correct ? (
+                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-100 text-emerald-800">
+                                                                    <Check className="w-3 h-3" /> +{q.marks_awarded || q.marks || 1}
                                                                 </span>
-                                                                {isSelected && (
-                                                                    <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-gray-900 text-white shrink-0">
-                                                                        Chosen
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-
-                                                {q.explanation && (
-                                                    <div className="mt-3 p-2.5 rounded-lg bg-gray-50 border border-gray-100 text-[11px] text-gray-600">
-                                                        <span className="font-semibold text-gray-800">Explanation: </span>
-                                                        {q.explanation}
+                                                            ) : (
+                                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-md bg-rose-100 text-rose-800">
+                                                                    <X className="w-3 h-3" /> 0 Marks
+                                                                </span>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                )}
-                                            </div>
-                                        ))}
+
+                                                    {/* Options */}
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                                                        {optionsList.map((opt: any, oIdx: number) => {
+                                                            const isSelected = opt.is_selected ?? (String(q.selected_option_id) === String(opt.id) || q.student_answer === opt.text || q.selected_option === opt.label);
+                                                            const isCorrect = opt.is_correct ?? (opt.is_correct || String(q.correct_option_id) === String(opt.id) || q.correct_option === opt.label);
+
+                                                            let optClass = 'bg-white border-gray-200 text-gray-700';
+                                                            if (isCorrect) {
+                                                                optClass = 'bg-emerald-100/70 border-emerald-300 text-emerald-900 font-bold';
+                                                            } else if (isSelected && !isCorrect) {
+                                                                optClass = 'bg-rose-100/70 border-rose-300 text-rose-900 line-through';
+                                                            }
+
+                                                            return (
+                                                                <div
+                                                                    key={opt.id || opt.label || oIdx}
+                                                                    className={`px-3 py-2 text-xs rounded-lg border flex items-center justify-between gap-2 ${optClass}`}
+                                                                >
+                                                                    <span className="flex items-center gap-2 min-w-0">
+                                                                        <span className="text-[10px] font-semibold text-gray-400 uppercase">
+                                                                            {opt.label || String.fromCharCode(65 + oIdx)}.
+                                                                        </span>
+                                                                        <span className="truncate">{opt.text}</span>
+                                                                    </span>
+                                                                    {isSelected && (
+                                                                        <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-gray-900 text-white shrink-0">
+                                                                            Chosen
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+
+                                                    {q.explanation && (
+                                                        <div className="mt-3 p-2.5 rounded-lg bg-gray-50 border border-gray-100 text-[11px] text-gray-600">
+                                                            <span className="font-semibold text-gray-800">Explanation: </span>
+                                                            {q.explanation}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </>
                             ) : (

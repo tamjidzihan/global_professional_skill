@@ -641,6 +641,7 @@ class QuizQuestionSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "quiz",
+            "question_type",
             "question_text",
             "option_a",
             "option_b",
@@ -651,13 +652,63 @@ class QuizQuestionSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "quiz", "created_at")
 
+    def validate(self, attrs):
+        question_type = attrs.get(
+            "question_type",
+            getattr(self.instance, "question_type", QuizQuestion.QuestionType.MCQ),
+        )
+        option_a = attrs.get(
+            "option_a", getattr(self.instance, "option_a", "")
+        )
+        option_b = attrs.get(
+            "option_b", getattr(self.instance, "option_b", "")
+        )
+        option_c = attrs.get(
+            "option_c", getattr(self.instance, "option_c", "")
+        )
+        option_d = attrs.get(
+            "option_d", getattr(self.instance, "option_d", "")
+        )
+        correct_option = attrs.get(
+            "correct_option", getattr(self.instance, "correct_option", "A")
+        )
+
+        if question_type == QuizQuestion.QuestionType.TRUE_FALSE:
+            # For True/False, option_a and option_b can default to True / False if empty
+            if not option_a:
+                attrs["option_a"] = "True"
+            if not option_b:
+                attrs["option_b"] = "False"
+            attrs["option_c"] = ""
+            attrs["option_d"] = ""
+            if correct_option not in ["A", "B"]:
+                raise serializers.ValidationError(
+                    {"correct_option": "For True/False questions, correct option must be A (True) or B (False)."}
+                )
+        else:
+            # For MCQ, all 4 options must be present
+            if not option_a or not option_b or not option_c or not option_d:
+                raise serializers.ValidationError(
+                    "All 4 options (A, B, C, D) are required for Multiple Choice questions."
+                )
+
+        return attrs
+
 
 class QuizStudentQuestionSerializer(serializers.ModelSerializer):
     """Stripped question serializer for students (omits correct_option)."""
 
     class Meta:
         model = QuizQuestion
-        fields = ("id", "question_text", "option_a", "option_b", "option_c", "option_d")
+        fields = (
+            "id",
+            "question_type",
+            "question_text",
+            "option_a",
+            "option_b",
+            "option_c",
+            "option_d",
+        )
         read_only_fields = ("id",)
 
 

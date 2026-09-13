@@ -29,6 +29,7 @@ const QuizQuestionsPage: React.FC = () => {
 
     // Form states
     const [editingQuestion, setEditingQuestion] = useState<QuizQuestion | null>(null);
+    const [questionType, setQuestionType] = useState<'MCQ' | 'TRUE_FALSE'>('MCQ');
     const [questionText, setQuestionText] = useState('');
     const [optionA, setOptionA] = useState('');
     const [optionB, setOptionB] = useState('');
@@ -63,17 +64,20 @@ const QuizQuestionsPage: React.FC = () => {
     }, [courseId, quizId]);
 
     const handleSelectQuestionForEdit = (q: QuizQuestion) => {
+        const isTF = q.question_type === 'TRUE_FALSE' || (!q.option_c?.trim() && !q.option_d?.trim());
         setEditingQuestion(q);
+        setQuestionType(isTF ? 'TRUE_FALSE' : 'MCQ');
         setQuestionText(q.question_text);
         setOptionA(q.option_a);
         setOptionB(q.option_b);
-        setOptionC(q.option_c);
-        setOptionD(q.option_d);
+        setOptionC(q.option_c || '');
+        setOptionD(q.option_d || '');
         setCorrectOption(q.correct_option);
     };
 
     const handleResetForm = () => {
         setEditingQuestion(null);
+        setQuestionType('MCQ');
         setQuestionText('');
         setOptionA('');
         setOptionB('');
@@ -82,23 +86,56 @@ const QuizQuestionsPage: React.FC = () => {
         setCorrectOption('A');
     };
 
+    const handleQuestionTypeChange = (type: 'MCQ' | 'TRUE_FALSE') => {
+        setQuestionType(type);
+        if (type === 'TRUE_FALSE') {
+            setOptionA('True');
+            setOptionB('False');
+            setOptionC('');
+            setOptionD('');
+            if (correctOption !== 'A' && correctOption !== 'B') {
+                setCorrectOption('A');
+            }
+        } else {
+            if (optionA === 'True') setOptionA('');
+            if (optionB === 'False') setOptionB('');
+        }
+    };
+
     const handleSaveQuestion = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!courseId || !quizId) return;
 
-        if (!questionText.trim() || !optionA.trim() || !optionB.trim() || !optionC.trim() || !optionD.trim()) {
-            toast.error('All fields are required');
+        if (!questionText.trim()) {
+            toast.error('Question text is required');
             return;
+        }
+
+        if (questionType === 'TRUE_FALSE') {
+            if (!optionA.trim() || !optionB.trim()) {
+                toast.error('True and False option texts are required');
+                return;
+            }
+            if (correctOption !== 'A' && correctOption !== 'B') {
+                toast.error('Correct option must be True or False');
+                return;
+            }
+        } else {
+            if (!optionA.trim() || !optionB.trim() || !optionC.trim() || !optionD.trim()) {
+                toast.error('All 4 options (A, B, C, D) are required for Multiple Choice questions');
+                return;
+            }
         }
 
         setIsSaving(true);
         try {
             const payload = {
+                question_type: questionType,
                 question_text: questionText.trim(),
                 option_a: optionA.trim(),
                 option_b: optionB.trim(),
-                option_c: optionC.trim(),
-                option_d: optionD.trim(),
+                option_c: questionType === 'TRUE_FALSE' ? '' : optionC.trim(),
+                option_d: questionType === 'TRUE_FALSE' ? '' : optionD.trim(),
                 correct_option: correctOption
             };
 
@@ -172,7 +209,7 @@ const QuizQuestionsPage: React.FC = () => {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <SEO title={`Quiz Questions Setup - ${quiz.title}`} description="Manage multiple choice questions for quiz" />
+            <SEO title={`Quiz Questions Setup - ${quiz.title}`} description="Manage multiple choice & true/false questions for quiz" />
 
             {/* Top Navigation */}
             <div className="flex items-center gap-3 mb-8">
@@ -200,6 +237,35 @@ const QuizQuestionsPage: React.FC = () => {
                         {editingQuestion ? 'Edit Question' : 'Add New Question'}
                     </h3>
 
+                    {/* Question Format Selector */}
+                    <div className="mb-4">
+                        <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">Question Format</label>
+                        <div className="grid grid-cols-2 gap-2 p-1 bg-gray-50 rounded-xl border border-gray-200/70">
+                            <button
+                                type="button"
+                                onClick={() => handleQuestionTypeChange('MCQ')}
+                                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer text-center ${
+                                    questionType === 'MCQ'
+                                        ? 'bg-white text-violet-700 shadow-xs border border-violet-200/50'
+                                        : 'text-gray-500 hover:text-gray-900'
+                                }`}
+                            >
+                                Multiple Choice (4)
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleQuestionTypeChange('TRUE_FALSE')}
+                                className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer text-center ${
+                                    questionType === 'TRUE_FALSE'
+                                        ? 'bg-white text-violet-700 shadow-xs border border-violet-200/50'
+                                        : 'text-gray-500 hover:text-gray-900'
+                                }`}
+                            >
+                                True / False (2)
+                            </button>
+                        </div>
+                    </div>
+
                     <form onSubmit={handleSaveQuestion} className="space-y-4">
                         <div>
                             <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Question Text</label>
@@ -213,52 +279,79 @@ const QuizQuestionsPage: React.FC = () => {
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Option A</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={optionA}
-                                    onChange={(e) => setOptionA(e.target.value)}
-                                    placeholder="Option A"
-                                    className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/25 transition-all"
-                                />
+                        {questionType === 'TRUE_FALSE' ? (
+                            <div className="grid grid-cols-2 gap-4 bg-violet-50/40 p-3.5 rounded-xl border border-violet-100">
+                                <div>
+                                    <label className="block text-[11px] font-bold text-violet-700 uppercase mb-1">Option A</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={optionA}
+                                        onChange={(e) => setOptionA(e.target.value)}
+                                        placeholder="True"
+                                        className="w-full px-3 py-2 text-sm bg-white border border-violet-200 rounded-lg focus:outline-none focus:border-violet-500 font-semibold text-gray-800"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-bold text-violet-700 uppercase mb-1">Option B</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={optionB}
+                                        onChange={(e) => setOptionB(e.target.value)}
+                                        placeholder="False"
+                                        className="w-full px-3 py-2 text-sm bg-white border border-violet-200 rounded-lg focus:outline-none focus:border-violet-500 font-semibold text-gray-800"
+                                    />
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Option B</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={optionB}
-                                    onChange={(e) => setOptionB(e.target.value)}
-                                    placeholder="Option B"
-                                    className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/25 transition-all"
-                                />
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Option A</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={optionA}
+                                        onChange={(e) => setOptionA(e.target.value)}
+                                        placeholder="Option A"
+                                        className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/25 transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Option B</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={optionB}
+                                        onChange={(e) => setOptionB(e.target.value)}
+                                        placeholder="Option B"
+                                        className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/25 transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Option C</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={optionC}
+                                        onChange={(e) => setOptionC(e.target.value)}
+                                        placeholder="Option C"
+                                        className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/25 transition-all"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Option D</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={optionD}
+                                        onChange={(e) => setOptionD(e.target.value)}
+                                        placeholder="Option D"
+                                        className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/25 transition-all"
+                                    />
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Option C</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={optionC}
-                                    onChange={(e) => setOptionC(e.target.value)}
-                                    placeholder="Option C"
-                                    className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/25 transition-all"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Option D</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={optionD}
-                                    onChange={(e) => setOptionD(e.target.value)}
-                                    placeholder="Option D"
-                                    className="w-full px-3.5 py-2.5 text-sm border border-gray-200 rounded-xl focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/25 transition-all"
-                                />
-                            </div>
-                        </div>
+                        )}
 
                         <div>
                             <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Correct Answer Option</label>
@@ -267,10 +360,14 @@ const QuizQuestionsPage: React.FC = () => {
                                 onChange={(e) => setCorrectOption(e.target.value as 'A' | 'B' | 'C' | 'D')}
                                 className="w-full px-3.5 py-2.5 text-sm border border-gray-200 bg-white rounded-xl focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/25 transition-all cursor-pointer font-medium"
                             >
-                                <option value="A">Option A</option>
-                                <option value="B">Option B</option>
-                                <option value="C">Option C</option>
-                                <option value="D">Option D</option>
+                                <option value="A">Option A {questionType === 'TRUE_FALSE' ? `(${optionA || 'True'})` : ''}</option>
+                                <option value="B">Option B {questionType === 'TRUE_FALSE' ? `(${optionB || 'False'})` : ''}</option>
+                                {questionType === 'MCQ' && (
+                                    <>
+                                        <option value="C">Option C</option>
+                                        <option value="D">Option D</option>
+                                    </>
+                                )}
                             </select>
                         </div>
                         <div className="flex items-center justify-end gap-2.5 pt-3">
@@ -310,82 +407,100 @@ const QuizQuestionsPage: React.FC = () => {
                             <HelpCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                             <h4 className="text-base font-semibold text-gray-900 mb-1">No Questions Added</h4>
                             <p className="text-gray-500 text-sm max-w-xs mx-auto">
-                                Use the form on the left to add your first Multiple Choice Question (MCQ) for this quiz.
+                                Use the form on the left to add your first Multiple Choice or True / False Question for this quiz.
                             </p>
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {questions.map((q, index) => (
-                                <div
-                                    key={q.id}
-                                    className={`bg-white border rounded-2xl p-5 shadow-sm transition-all ${editingQuestion?.id === q.id
-                                            ? 'border-violet-500 ring-2 ring-violet-500/10'
-                                            : 'border-gray-100 hover:border-gray-200'
-                                        }`}
-                                >
-                                    {/* Question Text */}
-                                    <div className="flex items-start justify-between gap-4 mb-4">
-                                        <div className="flex gap-2.5">
-                                            <span className="w-6 h-6 shrink-0 flex items-center justify-center bg-gray-100 text-gray-600 text-xs font-bold rounded-lg mt-0.5">
-                                                {index + 1}
-                                            </span>
-                                            <p className="text-sm font-semibold text-gray-800 leading-relaxed whitespace-pre-line">
-                                                {q.question_text}
-                                            </p>
-                                        </div>
+                            {questions.map((q, index) => {
+                                const isTF = q.question_type === 'TRUE_FALSE' || (!q.option_c?.trim() && !q.option_d?.trim());
+                                const activeOptions = [
+                                    { label: 'A', text: q.option_a },
+                                    { label: 'B', text: q.option_b },
+                                    ...(isTF ? [] : [
+                                        { label: 'C', text: q.option_c || '' },
+                                        { label: 'D', text: q.option_d || '' }
+                                    ])
+                                ].filter(opt => !!opt.text?.trim());
 
-                                        <div className="flex items-center gap-1 shrink-0">
-                                            <button
-                                                onClick={() => handleSelectQuestionForEdit(q)}
-                                                className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
-                                                title="Edit Question"
-                                            >
-                                                <Edit2 className="w-3.5 h-3.5" />
-                                            </button>
-                                            <button
-                                                disabled={deletingId === q.id}
-                                                onClick={() => handleDeleteQuestion(q.id)}
-                                                className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors disabled:opacity-50"
-                                                title="Delete Question"
-                                            >
-                                                <Trash2 className="w-3.5 h-3.5" />
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Options Details */}
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-8">
-                                        {[
-                                            { label: 'A', text: q.option_a },
-                                            { label: 'B', text: q.option_b },
-                                            { label: 'C', text: q.option_c },
-                                            { label: 'D', text: q.option_d }
-                                        ].map((opt) => {
-                                            const isCorrect = q.correct_option === opt.label;
-                                            return (
-                                                <div
-                                                    key={opt.label}
-                                                    className={`flex items-center gap-2 px-3 py-2 border rounded-xl text-xs font-medium transition-colors ${isCorrect
-                                                            ? 'border-emerald-200 bg-emerald-50/50 text-emerald-800'
-                                                            : 'border-gray-100 bg-white text-gray-600'
-                                                        }`}
-                                                >
-                                                    <span className={`w-5 h-5 flex items-center justify-center font-bold text-[10px] rounded-lg shrink-0 ${isCorrect
-                                                            ? 'bg-emerald-100 text-emerald-700'
-                                                            : 'bg-gray-100 text-gray-500'
+                                return (
+                                    <div
+                                        key={q.id}
+                                        className={`bg-white border rounded-2xl p-5 shadow-sm transition-all ${editingQuestion?.id === q.id
+                                                ? 'border-violet-500 ring-2 ring-violet-500/10'
+                                                : 'border-gray-100 hover:border-gray-200'
+                                            }`}
+                                    >
+                                        {/* Question Text & Badges */}
+                                        <div className="flex items-start justify-between gap-4 mb-4">
+                                            <div className="flex gap-2.5">
+                                                <span className="w-6 h-6 shrink-0 flex items-center justify-center bg-gray-100 text-gray-600 text-xs font-bold rounded-lg mt-0.5">
+                                                    {index + 1}
+                                                </span>
+                                                <div>
+                                                    <div className="flex items-center gap-2 mb-1.5">
+                                                        <span className={`px-2 py-0.5 text-[10px] font-bold rounded-md uppercase tracking-wider ${
+                                                            isTF
+                                                                ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                                                : 'bg-violet-50 text-violet-700 border border-violet-100'
                                                         }`}>
-                                                        {opt.label}
-                                                    </span>
-                                                    <span className="truncate">{opt.text}</span>
-                                                    {isCorrect && (
-                                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 ml-auto shrink-0" />
-                                                    )}
+                                                            {isTF ? 'True / False' : 'MCQ (4 Options)'}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm font-semibold text-gray-800 leading-relaxed whitespace-pre-line">
+                                                        {q.question_text}
+                                                    </p>
                                                 </div>
-                                            );
-                                        })}
+                                            </div>
+
+                                            <div className="flex items-center gap-1 shrink-0">
+                                                <button
+                                                    onClick={() => handleSelectQuestionForEdit(q)}
+                                                    className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg cursor-pointer transition-colors"
+                                                    title="Edit Question"
+                                                >
+                                                    <Edit2 className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button
+                                                    disabled={deletingId === q.id}
+                                                    onClick={() => handleDeleteQuestion(q.id)}
+                                                    className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors disabled:opacity-50"
+                                                    title="Delete Question"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* Options Details */}
+                                        <div className={`grid gap-3 pl-8 ${isTF ? 'grid-cols-2' : 'grid-cols-1 sm:grid-cols-2'}`}>
+                                            {activeOptions.map((opt) => {
+                                                const isCorrect = q.correct_option === opt.label;
+                                                return (
+                                                    <div
+                                                        key={opt.label}
+                                                        className={`flex items-center gap-2 px-3 py-2 border rounded-xl text-xs font-medium transition-colors ${isCorrect
+                                                                ? 'border-emerald-200 bg-emerald-50/50 text-emerald-800'
+                                                                : 'border-gray-100 bg-white text-gray-600'
+                                                            }`}
+                                                    >
+                                                        <span className={`w-5 h-5 flex items-center justify-center font-bold text-[10px] rounded-lg shrink-0 ${isCorrect
+                                                                ? 'bg-emerald-100 text-emerald-700'
+                                                                : 'bg-gray-100 text-gray-500'
+                                                            }`}>
+                                                            {opt.label}
+                                                        </span>
+                                                        <span className="truncate font-semibold">{opt.text}</span>
+                                                        {isCorrect && (
+                                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 ml-auto shrink-0" />
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
