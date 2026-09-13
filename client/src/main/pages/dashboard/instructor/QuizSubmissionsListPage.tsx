@@ -314,7 +314,7 @@ export const QuizSubmissionsListPage: React.FC = () => {
                     <table className="min-w-full">
                         <thead>
                             <tr className="border-b border-gray-100">
-                                {['Student', 'Score', 'Accuracy', 'Warnings', 'Started', 'Completed', ''].map(h => (
+                                {['Student','Organization','Employee Id', 'Score', 'Accuracy', 'Warnings','Status', 'Started', 'Completed', 'Actions'].map(h => (
                                     <th key={h} className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-gray-400">{h}</th>
                                 ))}
                             </tr>

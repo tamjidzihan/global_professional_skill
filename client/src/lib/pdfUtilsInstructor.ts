@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // pdfUtilsInstructor.ts
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -156,18 +155,46 @@ export const downloadSubmissionsListPDF = ({
     submissions,
 }: DownloadSubmissionsListOptions): void => {
     try {
-        const doc = new jsPDF();
+        // ---------- Document setup (Landscape A4) ----------
+        const doc = new jsPDF({
+            orientation: 'landscape',
+            unit: 'mm',
+            format: 'a4',
+        });
 
-        // Header
+        const pageWidth = doc.internal.pageSize.getWidth();   // ~297mm
+        const pageHeight = doc.internal.pageSize.getHeight(); // ~210mm
+        const marginX = 8;                                    // tight side margins
+        const contentWidth = pageWidth - marginX * 2;         // ~281mm
+
+        // ---------- Header ----------
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
-        doc.text(`Quiz Submissions: ${quizTitle || 'Unknown Quiz'}`, 14, 20);
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`Course: ${courseTitle || ''}`, 14, 28);
+        doc.setTextColor(30, 30, 30);
+        doc.text(`Quiz Submissions: ${quizTitle || 'Unknown Quiz'}`, marginX, 14);
 
-        // Table columns
-        const tableColumn = ['Student', 'Email', 'Organization', 'Employee ID', 'Score', 'Started At', 'Completed At', 'Status'];
+        doc.setFontSize(10.5);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(90, 90, 100);
+        doc.text(`Course: ${courseTitle || '—'}`, marginX, 21);
+
+        // Separator line (full width)
+        doc.setDrawColor(225, 225, 230);
+        doc.setLineWidth(0.3);
+        doc.line(marginX, 25, pageWidth - marginX, 25);
+
+        // ---------- Table data ----------
+        const tableColumn = [
+            'Student',
+            'Email',
+            'Organization',
+            'Employee ID',
+            'Score',
+            'Started At',
+            'Completed At',
+            'Status',
+        ];
+
         const tableRows: string[][] = [];
 
         submissions.forEach((sub) => {
@@ -176,52 +203,127 @@ export const downloadSubmissionsListPDF = ({
             if (sub.is_disqualified) status = 'Disqualified';
             else if (!sub.completed_at) status = 'Ongoing';
 
-            const scoreDisplay = sub.score !== null && sub.total_questions
-                ? `${sub.score}/${sub.total_questions}`
-                : '-';
+            const scoreDisplay =
+                sub.score !== null && sub.total_questions
+                    ? `${sub.score}/${sub.total_questions}`
+                    : '-';
 
             tableRows.push([
                 sub.student_name || 'N/A',
-                sub.student_email || '',
+                sub.student_email || '—',
                 sub.student_organization_name || 'N/A',
                 sub.student_employee_id || 'N/A',
                 scoreDisplay,
-                sub.started_at ? formatDate(sub.started_at) : '',
+                sub.started_at ? formatDate(sub.started_at) : '—',
                 completed,
                 status,
             ]);
         });
 
-        // Generate table
+        // ---------- Column widths (sum = contentWidth ≈ 281mm) ----------
+        // Adjust these if you want to redistribute space.
+        const colWidths = [
+            34,   // Student
+            62,   // Email
+            50,   // Organization
+            24,   // Employee ID
+            18,   // Score
+            34,   // Started At
+            34,   // Completed At
+            25,   // Status
+        ]; // total = 281mm ✔ matches contentWidth
+
+        // ---------- Generate table ----------
         autoTable(doc, {
             head: [tableColumn],
             body: tableRows,
-            startY: 35,
+            startY: 29,
             theme: 'grid',
+            tableWidth: contentWidth,           // <-- force full page width
+            margin: {
+                top: 29,
+                right: marginX,
+                bottom: 16,
+                left: marginX,
+            },
             styles: {
-                fontSize: 9,
-                cellPadding: 3,
+                fontSize: 8.2,
+                cellPadding: { top: 2.2, right: 2.5, bottom: 2.2, left: 2.5 },
+                overflow: 'linebreak',
+                valign: 'middle',
+                lineColor: [228, 230, 238],
+                lineWidth: 0.1,
+                textColor: [35, 40, 50],
+                halign: 'left',
             },
             headStyles: {
                 fillColor: [79, 70, 229],
                 textColor: [255, 255, 255],
-                fontSize: 10,
+                fontSize: 8.8,
                 fontStyle: 'bold',
+                halign: 'left',
+                valign: 'middle',
+                cellPadding: { top: 3, right: 2.5, bottom: 3, left: 2.5 },
+                lineColor: [79, 70, 229],
+                lineWidth: 0.1,
             },
-            didDrawPage: (data: any) => {
+            alternateRowStyles: {
+                fillColor: [249, 250, 253],
+            },
+            columnStyles: {
+                0: { cellWidth: colWidths[0] },
+                1: { cellWidth: colWidths[1] },
+                2: { cellWidth: colWidths[2] },
+                3: { cellWidth: colWidths[3] },
+                4: { cellWidth: colWidths[4], halign: 'center', fontStyle: 'bold' },
+                5: { cellWidth: colWidths[5] },
+                6: { cellWidth: colWidths[6] },
+                7: { cellWidth: colWidths[7], halign: 'center', fontStyle: 'bold' },
+            },
+            didParseCell: (data) => {
+                // Color-code the Status column
+                if (data.section === 'body' && data.column.index === 7) {
+                    const status = String(data.cell.raw || '').toLowerCase();
+                    if (status === 'completed') {
+                        data.cell.styles.textColor = [21, 128, 61];
+                    } else if (status === 'disqualified') {
+                        data.cell.styles.textColor = [185, 28, 28];
+                    } else if (status === 'ongoing') {
+                        data.cell.styles.textColor = [180, 120, 20];
+                    }
+                }
+            },
+            didDrawPage: () => {
                 const pageCount = doc.getNumberOfPages();
-                const currentPage = data.pageNumber || 1;
-                doc.setFontSize(8);
-                doc.setTextColor(150);
+                const currentPage = doc.getCurrentPageInfo().pageNumber || 1;
+
+                // Footer divider (full width)
+                doc.setDrawColor(230, 232, 238);
+                doc.setLineWidth(0.3);
+                doc.line(marginX, pageHeight - 11, pageWidth - marginX, pageHeight - 11);
+
+                doc.setFontSize(7.8);
+                doc.setFont('helvetica', 'normal');
+                doc.setTextColor(140, 145, 155);
+
+                // Left: brand
                 doc.text(
-                    `Generated by Global Professional Skills Platform - Page ${currentPage} of ${pageCount}`,
-                    doc.internal.pageSize.getWidth() / 2,
-                    doc.internal.pageSize.getHeight() - 10,
-                    { align: 'center' }
+                    'Generated by Global Professional Skills Platform',
+                    marginX,
+                    pageHeight - 6
+                );
+
+                // Right: page indicator
+                doc.text(
+                    `Page ${currentPage} of ${pageCount}`,
+                    pageWidth - marginX,
+                    pageHeight - 6,
+                    { align: 'right' }
                 );
             },
         });
 
+        // ---------- Save ----------
         const sanitizedTitle = sanitizeFilename(quizTitle || 'quiz');
         const dateStr = formatDateForFilename();
         const filename = `quiz_submissions_${sanitizedTitle}_${dateStr}.pdf`;
@@ -234,7 +336,6 @@ export const downloadSubmissionsListPDF = ({
         throw error;
     }
 };
-
 // ==========================================
 // Student Answer Sheet PDF Generator (FIXED - Using html2canvas)
 // ==========================================
