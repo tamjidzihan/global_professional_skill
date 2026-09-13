@@ -659,3 +659,81 @@ export interface PromoCodeValidateResponse {
     };
 }
 
+export interface UserDetailEnrollment {
+    id: string;
+    course_id: string;
+    course_title: string;
+    course_slug?: string;
+    course_thumbnail?: string | null;
+    course_price: string;
+    delivery_mode: string;
+    instructor_name: string;
+    category_name: string;
+    progress_percentage: number;
+    completed_lessons_count: number;
+    total_lessons_count: number;
+    enrolled_at: string;
+    last_accessed: string;
+    completed_at: string | null;
+    is_completed: boolean;
+    certificate?: {
+        id: string;
+        certificate_number: string;
+        issued_at: string;
+    } | null;
+}
+
+export interface UserDetailQuizSubmission {
+    id: string;
+    quiz_id: string;
+    quiz_title: string;
+    course_id: string;
+    course_title: string;
+    score: number;
+    total_marks: number;
+    percentage: number;
+    passed: boolean;
+    is_disqualified: boolean;
+    disqualification_reason?: string | null;
+    warnings_count: number;
+    copy_count: number;
+    blur_count: number;
+    fullscreen_exit_count: number;
+    attempt_number: number;
+    started_at?: string;
+    submitted_at?: string;
+    completed_at?: string | null;
+}
+
+export interface UserDetailPayment {
+    id: string;
+    course_id: string;
+    course_title: string;
+    amount: number;
+    payment_method: string;
+    transaction_id: string;
+    sender_number: string;
+    status: 'PENDING' | 'COMPLETED' | 'REJECTED' | 'FAILED' | 'REFUNDED';
+    metadata?: any;
+    created_at: string;
+    completed_at?: string | null;
+}
+
+export interface UserDetailStats {
+    total_enrollments: number;
+    completed_courses: number;
+    in_progress_courses: number;
+    total_quizzes_taken: number;
+    average_quiz_score: number;
+    total_spent: number;
+}
+
+export interface AdminUserFullDetail {
+    user: User;
+    stats: UserDetailStats;
+    enrollments: UserDetailEnrollment[];
+    quiz_submissions: UserDetailQuizSubmission[];
+    payments: UserDetailPayment[];
+}
+
+

@@ -35,6 +35,7 @@ import ErrorPage from "./main/pages/ErrorPage";
 import DashboardIndex from "./DashboardIndex";
 import { CourseManagementPage } from "./main/pages/dashboard/admin/CourseManagementPage";
 import { UserManagementPage } from "./main/pages/dashboard/admin/UserManagementPage";
+import AdminUserDetailPage from "./main/pages/dashboard/admin/AdminUserDetailPage";
 import { CategoryManagementPage } from "./main/pages/dashboard/admin/CategoryManagementPage";
 import PaymentManagementPage from "./main/pages/dashboard/admin/PaymentManagementPage";
 import SiteSettingsPage from "./main/pages/dashboard/admin/SiteSettingsPage";
@@ -391,6 +392,14 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['ADMIN']}>
                                 <UserManagementPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/users/:userId',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <AdminUserDetailPage />
                             </ProtectedRoute>
                         )
                     },

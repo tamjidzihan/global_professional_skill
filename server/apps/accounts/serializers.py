@@ -96,6 +96,54 @@ class UserSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+class AdminUserUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for Admin updating any User fields."""
+
+    class Meta:
+        model = User
+        fields = (
+            "email",
+            "first_name",
+            "last_name",
+            "role",
+            "bio",
+            "phone_number",
+            "phone_verified",
+            "organization_name",
+            "employee_id",
+            "email_verified",
+            "is_active",
+        )
+
+    def validate_phone_number(self, value):
+        if not value:
+            return ""
+        normalized = normalize_bd_phone(value)
+        if not normalized:
+            raise serializers.ValidationError("Please enter a valid Bangladesh mobile number.")
+        user_id = self.instance.id if self.instance else None
+        if User.objects.filter(phone_number=normalized).exclude(id=user_id).exists():
+            raise serializers.ValidationError("A user with this mobile number already exists.")
+        return normalized
+
+    def validate_employee_id(self, value):
+        if not value:
+            return None
+        emp_id = str(value).strip()
+        user_id = self.instance.id if self.instance else None
+        if emp_id and User.objects.filter(employee_id__iexact=emp_id).exclude(id=user_id).exists():
+            raise serializers.ValidationError("A user with this Employee ID already exists.")
+        return emp_id or None
+
+    def validate_email(self, value):
+        email = value.lower().strip()
+        user_id = self.instance.id if self.instance else None
+        if User.objects.filter(email__iexact=email).exclude(id=user_id).exists():
+            raise serializers.ValidationError("A user with this email address already exists.")
+        return email
+
+
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """Serializer for user registration."""
 

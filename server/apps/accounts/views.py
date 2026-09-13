@@ -33,11 +33,15 @@ from .serializers import (
     UserRegistrationSerializer,
     UserRoleUpdateSerializer,
     UserSerializer,
+    AdminUserUpdateSerializer,
     ResendVerificationEmailSerializer,
 )
 from .tasks import (
     send_instructor_request_decision_email,
     send_instructor_request_notification,
+    send_verification_email,
+    send_verification_sms,
+    send_password_reset_email,
 )
 
 logger = logging.getLogger(__name__)
@@ -424,7 +428,7 @@ class InstructorRequestViewSet(viewsets.ModelViewSet):
 class UserManagementViewSet(viewsets.ModelViewSet):
     """
     User management viewset (Admin only).
-    Admins can view, update roles, and manage users.
+    Admins can view, update roles, manage users, and execute full administrative actions.
     """
 
     serializer_class = UserSerializer
@@ -435,6 +439,11 @@ class UserManagementViewSet(viewsets.ModelViewSet):
     ordering_fields = ["date_joined", "last_login", "email"]
     ordering = ["-date_joined"]
     queryset = User.objects.all()
+
+    def get_serializer_class(self):
+        if self.action in ["update", "partial_update"]:
+            return AdminUserUpdateSerializer
+        return UserSerializer
 
     @action(detail=True, methods=["patch"])
     @transaction.atomic
@@ -493,6 +502,267 @@ class UserManagementViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+    @action(detail=True, methods=["get"])
+    def full_detail(self, request, pk=None):
+        """
+        Get complete user profile with enrolled courses, quiz submissions,
+        payment transactions, and aggregated platform stats.
+        """
+        from django.db import models
+        user = self.get_object()
+        from apps.enrollments.models import Enrollment, Certificate
+        from apps.courses.models import Course, Lesson, QuizSubmission
+        from apps.payments.models import Payment
+
+        # 1. Enrolled Courses
+        enrollments = Enrollment.objects.filter(student=user).select_related(
+            "course", "course__category", "course__instructor"
+        ).order_by("-enrolled_at")
+
+        enrollments_data = []
+        for e in enrollments:
+            course = e.course
+            total_lessons = (
+                course.sections.aggregate(total=models.Count("lessons"))["total"] or 0
+            )
+            completed_lessons_count = e.lesson_progress.filter(completed=True).count()
+            cert = Certificate.objects.filter(enrollment=e).first()
+
+            enrollments_data.append({
+                "id": str(e.id),
+                "course_id": str(course.id),
+                "course_title": course.title,
+                "course_slug": getattr(course, "slug", ""),
+                "course_thumbnail": request.build_absolute_uri(course.thumbnail.url) if course.thumbnail else None,
+                "course_price": str(course.price),
+                "delivery_mode": course.delivery_mode,
+                "instructor_name": course.instructor.get_full_name() or course.instructor.email if course.instructor else "GPI Instructor",
+                "category_name": course.category.name if course.category else "Uncategorized",
+                "progress_percentage": float(e.progress_percentage),
+                "completed_lessons_count": completed_lessons_count,
+                "total_lessons_count": total_lessons,
+                "enrolled_at": e.enrolled_at,
+                "last_accessed": e.last_accessed,
+                "completed_at": e.completed_at,
+                "is_completed": bool(e.completed_at or e.progress_percentage >= 100),
+                "certificate": {
+                    "id": str(cert.id),
+                    "certificate_number": cert.certificate_number,
+                    "issued_at": cert.issued_at,
+                } if cert else None,
+            })
+
+        # 2. Quiz Submissions
+        from apps.core.models import SiteSettings
+        site_settings = SiteSettings.get_settings()
+        pass_percentage = float(site_settings.quiz_pass_percentage or 50.0)
+
+        quiz_submissions = QuizSubmission.objects.filter(student=user).select_related(
+            "quiz", "quiz__course"
+        ).order_by("-completed_at", "-started_at")
+
+        submissions_data = []
+        for s in quiz_submissions:
+            total_q = s.total_questions or (s.quiz.questions.count() if s.quiz else 0)
+            score_val = s.score or 0
+            pct = round((score_val / total_q * 100), 1) if total_q > 0 else 0.0
+            is_passed = pct >= pass_percentage and not s.is_disqualified and bool(s.completed_at)
+
+            submissions_data.append({
+                "id": str(s.id),
+                "quiz_id": str(s.quiz.id) if s.quiz else None,
+                "quiz_title": s.quiz.title if s.quiz else "Quiz",
+                "course_id": str(s.quiz.course.id) if (s.quiz and s.quiz.course) else None,
+                "course_title": s.quiz.course.title if (s.quiz and s.quiz.course) else "N/A",
+                "score": score_val,
+                "total_marks": total_q,
+                "percentage": pct,
+                "passed": is_passed,
+                "is_disqualified": bool(s.is_disqualified),
+                "disqualification_reason": s.disqualification_reason or ("Excessive Warnings" if s.is_disqualified else None),
+                "warnings_count": s.warnings_count or 0,
+                "copy_count": 0,
+                "blur_count": s.warnings_count or 0,
+                "fullscreen_exit_count": 0,
+                "attempt_number": 1,
+                "started_at": s.started_at,
+                "submitted_at": s.completed_at,
+                "completed_at": s.completed_at,
+            })
+
+        # 3. Payments
+        payments = Payment.objects.filter(user=user).select_related("course").order_by("-created_at")
+        payments_data = []
+        for p in payments:
+            payments_data.append({
+                "id": str(p.id),
+                "course_id": str(p.course.id) if p.course else None,
+                "course_title": p.course.title if p.course else "N/A",
+                "amount": float(p.amount),
+                "payment_method": p.payment_method,
+                "transaction_id": p.transaction_id,
+                "sender_number": p.sender_number,
+                "status": p.status,
+                "metadata": p.metadata,
+                "created_at": p.created_at,
+                "completed_at": p.completed_at,
+            })
+
+        # 4. Computed Stats
+        total_enrollments = len(enrollments_data)
+        completed_courses = sum(1 for e in enrollments_data if e["is_completed"])
+        in_progress_courses = total_enrollments - completed_courses
+        total_quizzes = len(submissions_data)
+        avg_score = (
+            sum(s["percentage"] for s in submissions_data) / total_quizzes
+            if total_quizzes > 0
+            else 0.0
+        )
+        total_spent = sum(p["amount"] for p in payments_data if p["status"] == "COMPLETED")
+
+        stats = {
+            "total_enrollments": total_enrollments,
+            "completed_courses": completed_courses,
+            "in_progress_courses": in_progress_courses,
+            "total_quizzes_taken": total_quizzes,
+            "average_quiz_score": round(avg_score, 1),
+            "total_spent": round(total_spent, 2),
+        }
+
+        return Response(
+            {
+                "success": True,
+                "data": {
+                    "user": UserSerializer(user, context={"request": request}).data,
+                    "stats": stats,
+                    "enrollments": enrollments_data,
+                    "quiz_submissions": submissions_data,
+                    "payments": payments_data,
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["post"])
+    @transaction.atomic
+    def manual_enroll(self, request, pk=None):
+        """Manually enroll user in a course."""
+        user = self.get_object()
+        course_id = request.data.get("course_id")
+        if not course_id:
+            return Response(
+                {"success": False, "error": {"message": "course_id is required."}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        from apps.courses.models import Course
+        from apps.enrollments.models import Enrollment
+
+        try:
+            course = Course.objects.get(id=course_id)
+        except Course.DoesNotExist:
+            return Response(
+                {"success": False, "error": {"message": "Course not found."}},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        enrollment, created = Enrollment.objects.get_or_create(student=user, course=course)
+        if created:
+            course.enrollment_count += 1
+            course.decrease_available_seats()
+            course.save(update_fields=["enrollment_count"])
+
+        return Response(
+            {
+                "success": True,
+                "message": f"User successfully enrolled in {course.title}." if created else "User is already enrolled in this course.",
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["post"])
+    @transaction.atomic
+    def unenroll(self, request, pk=None):
+        """Unenroll user from a course."""
+        user = self.get_object()
+        course_id = request.data.get("course_id")
+        if not course_id:
+            return Response(
+                {"success": False, "error": {"message": "course_id is required."}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        from apps.enrollments.models import Enrollment
+
+        try:
+            enrollment = Enrollment.objects.get(student=user, course_id=course_id)
+            course = enrollment.course
+            enrollment.delete()
+            if course.enrollment_count > 0:
+                course.enrollment_count -= 1
+                course.save(update_fields=["enrollment_count"])
+            return Response(
+                {"success": True, "message": "User unenrolled successfully."},
+                status=status.HTTP_200_OK,
+            )
+        except Enrollment.DoesNotExist:
+            return Response(
+                {"success": False, "error": {"message": "Enrollment not found."}},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+    @action(detail=True, methods=["post"])
+    @transaction.atomic
+    def toggle_verification(self, request, pk=None):
+        """Toggle or set email_verified or phone_verified for a user."""
+        user = self.get_object()
+        field_type = request.data.get("type", "email")
+        new_status = request.data.get("status")
+
+        if field_type == "email":
+            user.email_verified = not user.email_verified if new_status is None else bool(new_status)
+            user.save(update_fields=["email_verified"])
+            msg = f"Email verification set to {user.email_verified}."
+        elif field_type == "phone":
+            user.phone_verified = not user.phone_verified if new_status is None else bool(new_status)
+            user.save(update_fields=["phone_verified"])
+            msg = f"Phone verification set to {user.phone_verified}."
+        else:
+            return Response(
+                {"success": False, "error": {"message": "Invalid type. Must be 'email' or 'phone'."}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(
+            {"success": True, "message": msg, "data": UserSerializer(user).data},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(detail=True, methods=["post"])
+    def send_password_reset(self, request, pk=None):
+        """Send password reset email to user."""
+        user = self.get_object()
+        success = send_password_reset_email(str(user.id))
+        if success:
+            return Response(
+                {"success": True, "message": f"Password reset email sent to {user.email}."},
+                status=status.HTTP_200_OK,
+            )
+        return Response(
+            {"success": False, "error": {"message": "Failed to send password reset email."}},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    @action(detail=True, methods=["post"])
+    def send_verification(self, request, pk=None):
+        """Send verification email and SMS to user."""
+        user = self.get_object()
+        send_verification_email(str(user.id))
+        if user.phone_number:
+            send_verification_sms(str(user.id))
+        return Response(
+            {"success": True, "message": f"Verification instructions dispatched to {user.email}."},
+            status=status.HTTP_200_OK,
+        )
+
     def list(self, request, *args, **kwargs):
         """List users."""
         queryset = self.filter_queryset(self.get_queryset())
@@ -516,6 +786,23 @@ class UserManagementViewSet(viewsets.ModelViewSet):
 
         return Response(
             {"success": True, "data": serializer.data}, status=status.HTTP_200_OK
+        )
+
+    def update(self, request, *args, **kwargs):
+        """Admin update user profile."""
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(
+            {
+                "success": True,
+                "message": "User updated successfully.",
+                "data": UserSerializer(instance).data,
+            },
+            status=status.HTTP_200_OK,
         )
 
     @action(detail=False, methods=["get"])

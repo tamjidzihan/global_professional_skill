@@ -32,6 +32,7 @@ import type {
     PromoCode,
     PromoCodeValidateResponse,
     AlbumPhoto,
+    AdminUserFullDetail,
 } from '../types';
 
 const configuredApiUrl = import.meta.env.VITE_API_BASE_URL;
@@ -800,5 +801,28 @@ export const deletePromoCode = (id: string): Promise<AxiosResponse<void>> =>
 
 export const validatePromoCode = (code: string, courseId: string): Promise<AxiosResponse<PromoCodeValidateResponse>> =>
     api.post<PromoCodeValidateResponse>(endpoints.payments.promoCodes.validate, { code, course_id: courseId });
+
+// Admin User Full Detail & Operations API Calls
+export const getUserFullDetail = (userId: string): Promise<AxiosResponse<ApiResponse<AdminUserFullDetail>>> =>
+    api.get<ApiResponse<AdminUserFullDetail>>(`/accounts/users/${userId}/full_detail/`);
+
+export const adminUpdateUser = (userId: string, data: Partial<User>): Promise<AxiosResponse<ApiResponse<User>>> =>
+    api.patch<ApiResponse<User>>(`/accounts/users/${userId}/`, data);
+
+export const adminManualEnroll = (userId: string, courseId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(`/accounts/users/${userId}/manual_enroll/`, { course_id: courseId });
+
+export const adminUnenroll = (userId: string, courseId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(`/accounts/users/${userId}/unenroll/`, { course_id: courseId });
+
+export const adminToggleVerification = (userId: string, fieldType: 'email' | 'phone', status?: boolean): Promise<AxiosResponse<ApiResponse<User>>> =>
+    api.post<ApiResponse<User>>(`/accounts/users/${userId}/toggle_verification/`, { type: fieldType, status });
+
+export const adminSendPasswordReset = (userId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(`/accounts/users/${userId}/send_password_reset/`);
+
+export const adminSendVerification = (userId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(`/accounts/users/${userId}/send_verification/`);
+
 
 

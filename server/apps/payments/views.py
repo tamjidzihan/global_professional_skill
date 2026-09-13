@@ -121,17 +121,19 @@ class PaymentViewSet(viewsets.ModelViewSet):
             metadata=metadata,
         )
 
-        # Trigger Course Purchase Confirmation Email
+        # Trigger Course Purchase Confirmation Email to Student and Notification to Admission
         try:
-            from apps.core.notification_service import dispatch_notification
+            from apps.core.notification_service import dispatch_notification, send_admission_enrollment_notification
             dispatch_notification(
                 "EMAIL_COURSE_PURCHASE",
                 user=request.user,
                 context={"course_name": payment.course.title}
             )
+            # Send notification email to admission@gpibd.com
+            send_admission_enrollment_notification(payment)
         except Exception as e:
             import logging
-            logging.getLogger(__name__).error(f"Failed to send course purchase email: {str(e)}")
+            logging.getLogger(__name__).error(f"Failed to send course purchase/admission notification emails: {str(e)}")
 
         return Response(
             {

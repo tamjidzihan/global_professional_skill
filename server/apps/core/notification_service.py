@@ -300,3 +300,88 @@ def dispatch_notification(
         )
 
     return success
+
+
+def send_admission_enrollment_notification(payment) -> bool:
+    """
+    Sends an enrollment notification email to admission@gpibd.com when a student creates a checkout payment.
+    """
+    try:
+        user = payment.user
+        course = payment.course
+        recipient = "admission@gpibd.com"
+        subject = f"New Course Enrollment Request: {course.title} — {user.get_full_name() or user.email}"
+        
+        frontend_url = getattr(settings, "FRONTEND_URL", "https://gpibd.com")
+        admin_payment_url = f"{frontend_url}/dashboard/admin/payments"
+        admin_user_url = f"{frontend_url}/dashboard/admin/users/{user.id}"
+        
+        promo_info = ""
+        if payment.metadata and isinstance(payment.metadata, dict) and payment.metadata.get("promo_code"):
+            promo_info = f"\n• Promo Code Applied: {payment.metadata.get('promo_code')} (Discount: ৳{payment.metadata.get('discount_amount', '0')})"
+
+        created_str = payment.created_at.strftime('%Y-%m-%d %I:%M %p') if getattr(payment, 'created_at', None) else 'Just now'
+
+        body = (
+            f"Dear Admissions Team,\n\n"
+            f"A new course enrollment request has been submitted through checkout.\n\n"
+            f"--- Student Details ---\n"
+            f"• Full Name: {user.get_full_name() or 'N/A'}\n"
+            f"• Email: {user.email}\n"
+            f"• Phone: {user.phone_number or 'N/A'}\n"
+            f"• Organization: {user.organization_name or 'N/A'}\n"
+            f"• Employee ID: {user.employee_id or 'N/A'}\n\n"
+            f"--- Course & Payment Details ---\n"
+            f"• Course Title: {course.title}\n"
+            f"• Course Price: ৳{course.price}\n"
+            f"• Amount Payable: ৳{payment.amount}{promo_info}\n"
+            f"• Payment Method: {payment.payment_method}\n"
+            f"• Transaction ID: {payment.transaction_id or 'N/A'}\n"
+            f"• Sender Number: {payment.sender_number or 'N/A'}\n"
+            f"• Payment Status: {payment.status}\n"
+            f"• Submission Time: {created_str}\n\n"
+            f"--- Administrative Links ---\n"
+            f"• View Payments: {admin_payment_url}\n"
+            f"• View Student Profile: {admin_user_url}\n\n"
+            f"— Global Professional Institute (GPI) Automated System"
+        )
+        
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@gpibd.com")
+        send_mail(
+            subject=subject,
+            message=body,
+            from_email=from_email,
+            recipient_list=[recipient],
+            fail_silently=False,
+        )
+        
+        NotificationLog.objects.create(
+            recipient_user=None,
+            recipient_email=recipient,
+            recipient_phone="",
+            channel=NotificationChannel.EMAIL,
+            notification_type="EMAIL_ADMIN_ANNOUNCEMENT",
+            subject=subject,
+            body=body,
+            status="SENT",
+            response_data="Sent to admission@gpibd.com successfully",
+        )
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send admission notification email to admission@gpibd.com: {str(e)}")
+        try:
+            NotificationLog.objects.create(
+                recipient_user=None,
+                recipient_email="admission@gpibd.com",
+                recipient_phone="",
+                channel=NotificationChannel.EMAIL,
+                notification_type="EMAIL_ADMIN_ANNOUNCEMENT",
+                subject=f"New Course Enrollment Request: {getattr(payment.course, 'title', 'Course')}",
+                body=str(e),
+                status="FAILED",
+                response_data=str(e),
+            )
+        except Exception:
+            pass
+        return False
+

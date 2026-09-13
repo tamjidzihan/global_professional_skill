@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, type JSX } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     Filter,
     Search,
@@ -21,7 +22,8 @@ import {
     Clock,
     Download,
     Building2,
-    IdCard
+    IdCard,
+    ExternalLink,
 } from 'lucide-react';
 import { useUsers } from '../../../../hooks/useUsers';
 import type { User } from '../../../../types';
@@ -180,6 +182,14 @@ function UserProfileDrawer({ user, onClose, onDeactivate, onActivate, onDelete }
 
                 {/* Footer actions */}
                 <div className="px-5 py-4 border-t border-gray-100 shrink-0 space-y-2">
+                    <button
+                        onClick={() => {
+                            window.location.href = `/dashboard/admin/users/${user.id}`;
+                        }}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-violet-600 text-white text-sm font-semibold rounded-lg hover:bg-violet-700 transition-colors cursor-pointer shadow-xs"
+                    >
+                        <ExternalLink className="w-4 h-4" /> View Full User Details & Courses
+                    </button>
                     {user.is_active ? (
                         <button
                             onClick={() => { onDeactivate(user.id); onClose(); }}
@@ -208,12 +218,13 @@ function UserProfileDrawer({ user, onClose, onDeactivate, onActivate, onDelete }
 }
 
 // ── Action Dropdown ──────────────────────────────────────────────────────────
-function ActionDropdown({ user, onViewProfile, onDeactivate, onActivate, onDelete }: {
+function ActionDropdown({ user, onViewProfile, onDeactivate, onActivate, onDelete, onNavigateDetail }: {
     user: User;
     onViewProfile: () => void;
     onDeactivate: (id: string) => void;
     onActivate: (id: string) => void;
     onDelete: (id: string) => void;
+    onNavigateDetail: (id: string) => void;
 }) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
@@ -228,7 +239,13 @@ function ActionDropdown({ user, onViewProfile, onDeactivate, onActivate, onDelet
 
     const items = [
         {
-            label: 'View Profile',
+            label: 'View Full Detail',
+            icon: ExternalLink,
+            onClick: () => { onNavigateDetail(user.id); setOpen(false); },
+            cls: 'text-violet-700 bg-violet-50/50 hover:bg-violet-50 font-bold',
+        },
+        {
+            label: 'Quick Profile Drawer',
             icon: Eye,
             onClick: () => { onViewProfile(); setOpen(false); },
             cls: 'text-gray-700 hover:bg-gray-50',
@@ -273,6 +290,7 @@ function ActionDropdown({ user, onViewProfile, onDeactivate, onActivate, onDelet
 
 // ── Main Table ───────────────────────────────────────────────────────────────
 export function UsersTable(): JSX.Element {
+    const navigate = useNavigate();
     const { users, fetchUsers, loading, totalCount, nextPage, prevPage, loadNextPage, loadPrevPage } = useUsers();
     const [filterRole, setFilterRole] = useState<FilterRole>('ALL');
     const [searchQuery, setSearchQuery] = useState<string>('');
@@ -438,12 +456,12 @@ export function UsersTable(): JSX.Element {
                                         {/* User */}
                                         <td
                                             className="px-5 py-3 whitespace-nowrap"
-                                            onClick={() => setSelectedUser(user)}
+                                            onClick={() => navigate(`/dashboard/admin/users/${user.id}`)}
                                         >
-                                            <div className="flex items-center gap-3 cursor-pointer ">
+                                            <div className="flex items-center gap-3 cursor-pointer group-hover:text-violet-600 transition-colors">
                                                 <AvatarCircle user={user} size="md" />
                                                 <div className="min-w-0">
-                                                    <p className="text-sm font-semibold text-gray-800 truncate">{user.full_name}</p>
+                                                    <p className="text-sm font-semibold text-gray-800 group-hover:text-violet-700 truncate transition-colors">{user.full_name}</p>
                                                     <p className="text-xs text-gray-400 truncate">{user.email}</p>
                                                 </div>
                                             </div>
@@ -510,6 +528,7 @@ export function UsersTable(): JSX.Element {
                                                 onDeactivate={handleDeactivate}
                                                 onActivate={handleActivate}
                                                 onDelete={handleDelete}
+                                                onNavigateDetail={(id) => navigate(`/dashboard/admin/users/${id}`)}
                                             />
                                         </td>
                                     </tr>
