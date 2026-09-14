@@ -7,7 +7,7 @@ import {
     CheckCircle, Clock, Filter, AlertCircle,
     ShieldOff, Loader2, Trash2, Award, Eye, Building2, IdCard,
 } from 'lucide-react'
-import { api, undisqualifyStudent, deleteQuizSubmission, getAnswerSheet } from '../../../../lib/api'
+import { api, undisqualifyStudent, deleteQuizSubmission, getAnswerSheet, getSiteSettings } from '../../../../lib/api'
 import { extractErrorMessage } from '../../../../lib/errorUtils'
 import SEO from '../../../components/SEO'
 import LoadingSpinner from '../../../components/ui/LoadingSpinner'
@@ -31,6 +31,7 @@ export const StudentQuizSubmissionsPage: React.FC = () => {
     const [course, setCourse] = useState<CourseDetail | null>(null)
     const [student, setStudent] = useState<any>(null)
     const [submissions, setSubmissions] = useState<any[]>([])
+    const [passPercentage, setPassPercentage] = useState<number>(50)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
@@ -49,6 +50,15 @@ export const StudentQuizSubmissionsPage: React.FC = () => {
         setLoading(true)
         setError(null)
         try {
+            // Load site settings for quiz pass percentage
+            getSiteSettings()
+                .then(res => {
+                    if (res.data?.success && res.data.data?.quiz_pass_percentage !== undefined) {
+                        setPassPercentage(Number(res.data.data.quiz_pass_percentage) || 50)
+                    }
+                })
+                .catch(() => null)
+
             // 1. Course Details
             const courseRes = await api.get(`/courses/courses/${effectiveCourseId}/`)
             if (courseRes.data.success) {
@@ -165,23 +175,37 @@ export const StudentQuizSubmissionsPage: React.FC = () => {
     })
 
     const handleExportCSV = () => {
-        const headers = ['Student Name', 'Email', 'Organization', 'Employee ID', 'Quiz Title', 'Score', 'Total Questions', 'Percentage', 'Status', 'Warnings', 'Started At', 'Completed At']
+        const headers = ['Student Name', 'Email', 'Organization', 'Employee ID', 'Quiz Title', 'Score', 'Total Questions', 'Passing Mark', 'Percentage', 'Result', 'Status', 'Warnings']
+        const escapeCsv = (val: any) => `"${String(val ?? '').replace(/"/g, '""')}"`
+
         const rows = filteredSubmissions.map(s => {
-            const pct = s.total_questions > 0 ? ((s.score / s.total_questions) * 100).toFixed(1) : '0'
+            const totalQ = s.total_questions || 0
+            const pct = totalQ > 0 ? ((s.score / totalQ) * 100).toFixed(1) : '0'
+            const passMark = totalQ > 0 ? Math.ceil((totalQ * passPercentage) / 100) : 0
             const status = s.is_disqualified ? 'Disqualified' : s.completed_at ? 'Completed' : 'In Progress'
+
+            let result = 'Fail'
+            if (s.is_disqualified) {
+                result = 'Disqualified'
+            } else if (!s.completed_at) {
+                result = 'In Progress'
+            } else if (Number(pct) >= passPercentage) {
+                result = 'Pass'
+            }
+
             return [
-                studentFullName,
-                student?.email || 'N/A',
-                student?.organization_name || 'N/A',
-                student?.employee_id || 'N/A',
-                s.quiz_title || s.quiz?.title || 'Quiz',
-                s.score,
-                s.total_questions,
-                `${pct}%`,
-                status,
+                escapeCsv(studentFullName),
+                escapeCsv(student?.email || 'N/A'),
+                escapeCsv(student?.organization_name || 'N/A'),
+                escapeCsv(student?.employee_id || 'N/A'),
+                escapeCsv(s.quiz_title || s.quiz?.title || 'Quiz'),
+                s.score ?? 0,
+                totalQ,
+                escapeCsv(totalQ > 0 ? `${passMark} (${passPercentage}%)` : `${passPercentage}%`),
+                escapeCsv(`${pct}%`),
+                escapeCsv(result),
+                escapeCsv(status),
                 s.warnings_count || 0,
-                s.started_at ? new Date(s.started_at).toLocaleString() : 'N/A',
-                s.completed_at ? new Date(s.completed_at).toLocaleString() : 'N/A',
             ]
         })
         const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')

@@ -41,6 +41,7 @@ import {
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import SEO from '../../../components/SEO';
+import { getLogoDataUrl, addWatermarkToPdf } from '../../../../lib/pdfUtilsInstructor';
 
 const AdminCourseDetailPage = () => {
     const { id } = useParams<{ id: string }>();
@@ -151,7 +152,7 @@ const AdminCourseDetailPage = () => {
         return h > 0 ? `${h}h ${m}m` : `${m}m`;
     };
 
-    const handleExportPDF = () => {
+    const handleExportPDF = async () => {
         if (!selectedCourse) return;
 
         const doc = new jsPDF();
@@ -211,6 +212,10 @@ const AdminCourseDetailPage = () => {
                 headStyles: { fillColor: [124, 58, 237] }
             });
         }
+
+        // Add Watermark to each page
+        const logoDataUrl = await getLogoDataUrl();
+        addWatermarkToPdf(doc, logoDataUrl);
 
         doc.save(`${selectedCourse.slug || 'course'}_report.pdf`);
     };

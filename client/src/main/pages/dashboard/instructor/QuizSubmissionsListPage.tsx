@@ -5,7 +5,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useCourses } from '../../../../hooks/useCourses'
 import {
     getQuizDetail, getQuizSubmissionsForInstructor, getAnswerSheet,
-    undisqualifyStudent, deleteQuizSubmission,
+    undisqualifyStudent, deleteQuizSubmission, getSiteSettings,
 } from '../../../../lib/api'
 import {
     ArrowLeft, Download, CheckCircle, Clock,
@@ -36,6 +36,7 @@ export const QuizSubmissionsListPage: React.FC = () => {
 
     const [quiz, setQuiz] = useState<any>(null)
     const [submissions, setSubmissions] = useState<any[]>([])
+    const [passPercentage, setPassPercentage] = useState<number>(50)
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL')
@@ -56,13 +57,20 @@ export const QuizSubmissionsListPage: React.FC = () => {
     const loadData = async () => {
         setLoading(true)
         try {
-            const quizRes = await getQuizDetail(effectiveCourseId!, effectiveQuizId!)
+            const [quizRes, subRes, settingsRes] = await Promise.all([
+                getQuizDetail(effectiveCourseId!, effectiveQuizId!),
+                getQuizSubmissionsForInstructor(effectiveCourseId!, effectiveQuizId!),
+                getSiteSettings().catch(() => null),
+            ])
+
             if (quizRes.data.success) {
                 setQuiz(quizRes.data.data)
             }
-            const subRes = await getQuizSubmissionsForInstructor(effectiveCourseId!, effectiveQuizId!)
             if (subRes.data.success) {
                 setSubmissions(subRes.data.data || [])
+            }
+            if (settingsRes?.data?.success && settingsRes.data.data?.quiz_pass_percentage !== undefined) {
+                setPassPercentage(Number(settingsRes.data.data.quiz_pass_percentage) || 50)
             }
         } catch (error) {
             toast.error(extractErrorMessage(error) || 'Failed to load submissions')
@@ -76,6 +84,8 @@ export const QuizSubmissionsListPage: React.FC = () => {
             quizTitle: quiz?.title || 'Unknown Quiz',
             courseTitle: course?.title || '',
             submissions: submissions,
+            passPercentage: passPercentage,
+            totalQuestions: quiz?.question_count || (submissions[0]?.total_questions ?? 0),
         })
     }
 
@@ -150,22 +160,36 @@ export const QuizSubmissionsListPage: React.FC = () => {
     })
 
     const handleExportCSV = () => {
-        const headers = ['Student Name', 'Email', 'Organization', 'Employee ID', 'Score', 'Total Questions', 'Percentage', 'Status', 'Warnings', 'Started At', 'Completed At']
+        const headers = ['Student Name', 'Email', 'Organization', 'Employee ID', 'Score', 'Total Questions', 'Passing Mark', 'Percentage', 'Result', 'Status', 'Warnings']
+        const escapeCsv = (val: any) => `"${String(val ?? '').replace(/"/g, '""')}"`
+
         const rows = filteredSubmissions.map(s => {
-            const pct = s.total_questions > 0 ? ((s.score / s.total_questions) * 100).toFixed(1) : '0'
+            const totalQ = s.total_questions || quiz?.question_count || 0
+            const pct = totalQ > 0 ? ((s.score / totalQ) * 100).toFixed(1) : '0'
+            const passMark = totalQ > 0 ? Math.ceil((totalQ * passPercentage) / 100) : 0
             const status = s.is_disqualified ? 'Disqualified' : s.completed_at ? 'Completed' : 'In Progress'
+
+            let result = 'Fail'
+            if (s.is_disqualified) {
+                result = 'Disqualified'
+            } else if (!s.completed_at) {
+                result = 'In Progress'
+            } else if (Number(pct) >= passPercentage) {
+                result = 'Pass'
+            }
+
             return [
-                s.student_name || 'N/A',
-                s.student_email || 'N/A',
-                (s as any).student_organization_name || 'N/A',
-                (s as any).student_employee_id || 'N/A',
-                s.score,
-                s.total_questions,
-                `${pct}%`,
-                status,
+                escapeCsv(s.student_name || 'N/A'),
+                escapeCsv(s.student_email || 'N/A'),
+                escapeCsv((s as any).student_organization_name || 'N/A'),
+                escapeCsv((s as any).student_employee_id || 'N/A'),
+                s.score ?? 0,
+                totalQ,
+                escapeCsv(totalQ > 0 ? `${passMark} (${passPercentage}%)` : `${passPercentage}%`),
+                escapeCsv(`${pct}%`),
+                escapeCsv(result),
+                escapeCsv(status),
                 s.warnings_count || 0,
-                s.started_at ? new Date(s.started_at).toLocaleString() : 'N/A',
-                s.completed_at ? new Date(s.completed_at).toLocaleString() : 'N/A',
             ]
         })
         const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')

@@ -3,7 +3,64 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import html2canvas from 'html2canvas';
 import { toast } from 'react-hot-toast';
+import gpiLogo from '../assets/gpilogo_1.png';
 
+let cachedLogoDataUrl: string | null = null;
+
+export const getLogoDataUrl = async (): Promise<string | null> => {
+    if (cachedLogoDataUrl) return cachedLogoDataUrl;
+    try {
+        const response = await fetch(gpiLogo);
+        const blob = await response.blob();
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                cachedLogoDataUrl = reader.result as string;
+                resolve(cachedLogoDataUrl);
+            };
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+        });
+    } catch {
+        return null;
+    }
+};
+export const addWatermarkToPdf = (doc: jsPDF, logoDataUrl: string | null): void => {
+    if (!logoDataUrl) return;
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+
+        // Target 75% of the smaller page dimension so it fits either orientation
+        const targetSize = Math.min(pageWidth, pageHeight) * 0.75;
+        const aspectRatio = 0.68; // height / width of the logo
+
+        let wmWidth = targetSize;
+        let wmHeight = wmWidth * aspectRatio;
+
+        // If the height exceeds 75% of page height, constrain by height instead
+        if (wmHeight > pageHeight * 0.75) {
+            wmHeight = pageHeight * 0.75;
+            wmWidth = wmHeight / aspectRatio;
+        }
+
+        const x = (pageWidth - wmWidth) / 2;
+        const y = (pageHeight - wmHeight) / 2;
+
+        try {
+            doc.saveGraphicsState();
+            if ((doc as any).GState) {
+                doc.setGState(new (doc as any).GState({ opacity: 0.08 }));
+            }
+            doc.addImage(logoDataUrl, 'PNG', x, y, wmWidth, wmHeight, undefined, 'FAST');
+            doc.restoreGraphicsState();
+        } catch {
+            // Ignore if transparency not supported
+        }
+    }
+};
 // ==========================================
 // Type Definitions
 // ==========================================
@@ -120,7 +177,7 @@ const sanitizeFilename = (str: string): string => {
 /**
  * Formats a date string for display.
  */
-const formatDate = (dateStr: string | null): string => {
+export const formatDate = (dateStr: string | null): string => {
     if (!dateStr) return 'N/A';
     try {
         return new Date(dateStr).toLocaleString();
@@ -144,17 +201,25 @@ export interface DownloadSubmissionsListOptions {
     quizTitle: string;
     courseTitle: string;
     submissions: QuizSubmission[];
+    passPercentage?: number;
+    totalQuestions?: number;
 }
 
 /**
  * Generates and downloads a PDF containing a list of quiz submissions.
  */
-export const downloadSubmissionsListPDF = ({
+export const downloadSubmissionsListPDF = async ({
     quizTitle,
     courseTitle,
     submissions,
-}: DownloadSubmissionsListOptions): void => {
+    passPercentage = 50,
+    totalQuestions,
+}: DownloadSubmissionsListOptions): Promise<void> => {
     try {
+        const thresholdPct = Number(passPercentage) || 50;
+        const derivedTotalQuestions = totalQuestions || submissions.reduce((max, s) => Math.max(max, s.total_questions || 0), 0) || 0;
+        const globalPassMark = derivedTotalQuestions > 0 ? Math.ceil((derivedTotalQuestions * thresholdPct) / 100) : 0;
+
         // ---------- Document setup (Landscape A4) ----------
         const doc = new jsPDF({
             orientation: 'landscape',
@@ -173,10 +238,13 @@ export const downloadSubmissionsListPDF = ({
         doc.setTextColor(30, 30, 30);
         doc.text(`Quiz Submissions: ${quizTitle || 'Unknown Quiz'}`, marginX, 14);
 
-        doc.setFontSize(10.5);
+        doc.setFontSize(9.5);
         doc.setFont('helvetica', 'normal');
         doc.setTextColor(90, 90, 100);
-        doc.text(`Course: ${courseTitle || '—'}`, marginX, 21);
+        const passMarkHeader = derivedTotalQuestions > 0
+            ? `Pass Mark: ${globalPassMark}/${derivedTotalQuestions} (${thresholdPct}%)`
+            : `Passing Threshold: ${thresholdPct}%`;
+        doc.text(`Course: ${courseTitle || '—'}    |    ${passMarkHeader}`, marginX, 21);
 
         // Separator line (full width)
         doc.setDrawColor(225, 225, 230);
@@ -190,23 +258,39 @@ export const downloadSubmissionsListPDF = ({
             'Organization',
             'Employee ID',
             'Score',
-            'Started At',
-            'Completed At',
+            'Passing Mark',
+            'Percentage',
+            'Result',
             'Status',
         ];
 
         const tableRows: string[][] = [];
 
         submissions.forEach((sub) => {
-            const completed = sub.completed_at ? formatDate(sub.completed_at) : 'In Progress';
             let status = 'Completed';
             if (sub.is_disqualified) status = 'Disqualified';
-            else if (!sub.completed_at) status = 'Ongoing';
+            else if (!sub.completed_at) status = 'In Progress';
+
+            const totalQ = sub.total_questions || derivedTotalQuestions;
+            const subScore = sub.score ?? 0;
+            const pct = totalQ > 0 ? ((subScore / totalQ) * 100).toFixed(1) : '0';
+            const passMark = totalQ > 0 ? Math.ceil((totalQ * thresholdPct) / 100) : 0;
 
             const scoreDisplay =
-                sub.score !== null && sub.total_questions
-                    ? `${sub.score}/${sub.total_questions}`
+                sub.score !== null && sub.score !== undefined && totalQ > 0
+                    ? `${sub.score}/${totalQ}`
                     : '-';
+
+            const passMarkDisplay = totalQ > 0 ? `${passMark} (${thresholdPct}%)` : `${thresholdPct}%`;
+
+            let result = 'Fail';
+            if (sub.is_disqualified) {
+                result = 'Disqualified';
+            } else if (!sub.completed_at) {
+                result = 'In Progress';
+            } else if (Number(pct) >= thresholdPct) {
+                result = 'Pass';
+            }
 
             tableRows.push([
                 sub.student_name || 'N/A',
@@ -214,24 +298,25 @@ export const downloadSubmissionsListPDF = ({
                 sub.student_organization_name || 'N/A',
                 sub.student_employee_id || 'N/A',
                 scoreDisplay,
-                sub.started_at ? formatDate(sub.started_at) : '—',
-                completed,
+                passMarkDisplay,
+                totalQ > 0 ? `${pct}%` : '—',
+                result,
                 status,
             ]);
         });
 
         // ---------- Column widths (sum = contentWidth ≈ 281mm) ----------
-        // Adjust these if you want to redistribute space.
         const colWidths = [
-            34,   // Student
-            62,   // Email
-            50,   // Organization
-            24,   // Employee ID
-            18,   // Score
-            34,   // Started At
-            34,   // Completed At
-            25,   // Status
-        ]; // total = 281mm ✔ matches contentWidth
+            36,   // Student
+            54,   // Email
+            44,   // Organization
+            26,   // Employee ID
+            20,   // Score
+            26,   // Passing Mark
+            22,   // Percentage
+            23,   // Result
+            30,   // Status
+        ]; // total = 281mm
 
         // ---------- Generate table ----------
         autoTable(doc, {
@@ -276,19 +361,31 @@ export const downloadSubmissionsListPDF = ({
                 2: { cellWidth: colWidths[2] },
                 3: { cellWidth: colWidths[3] },
                 4: { cellWidth: colWidths[4], halign: 'center', fontStyle: 'bold' },
-                5: { cellWidth: colWidths[5] },
-                6: { cellWidth: colWidths[6] },
+                5: { cellWidth: colWidths[5], halign: 'center' },
+                6: { cellWidth: colWidths[6], halign: 'center' },
                 7: { cellWidth: colWidths[7], halign: 'center', fontStyle: 'bold' },
+                8: { cellWidth: colWidths[8], halign: 'center', fontStyle: 'bold' },
             },
             didParseCell: (data) => {
-                // Color-code the Status column
+                // Color-code the Result column
                 if (data.section === 'body' && data.column.index === 7) {
+                    const res = String(data.cell.raw || '').toLowerCase();
+                    if (res === 'pass') {
+                        data.cell.styles.textColor = [21, 128, 61];
+                    } else if (res === 'fail' || res === 'disqualified') {
+                        data.cell.styles.textColor = [185, 28, 28];
+                    } else if (res === 'in progress') {
+                        data.cell.styles.textColor = [180, 120, 20];
+                    }
+                }
+                // Color-code the Status column
+                if (data.section === 'body' && data.column.index === 8) {
                     const status = String(data.cell.raw || '').toLowerCase();
                     if (status === 'completed') {
                         data.cell.styles.textColor = [21, 128, 61];
                     } else if (status === 'disqualified') {
                         data.cell.styles.textColor = [185, 28, 28];
-                    } else if (status === 'ongoing') {
+                    } else if (status === 'in progress') {
                         data.cell.styles.textColor = [180, 120, 20];
                     }
                 }
@@ -308,7 +405,7 @@ export const downloadSubmissionsListPDF = ({
 
                 // Left: brand
                 doc.text(
-                    'Generated by Global Professional Skills Platform',
+                    'Generated by Global Professional Institute Platform',
                     marginX,
                     pageHeight - 6
                 );
@@ -322,6 +419,10 @@ export const downloadSubmissionsListPDF = ({
                 );
             },
         });
+
+        // Add Watermark to each page
+        const logoDataUrl = await getLogoDataUrl();
+        addWatermarkToPdf(doc, logoDataUrl);
 
         // ---------- Save ----------
         const sanitizedTitle = sanitizeFilename(quizTitle || 'quiz');
@@ -508,18 +609,6 @@ export const generateAnswerSheetPDF = async (data: AnswerSheetData, studentName:
                 </div>
             ` : ''}
 
-            <!-- Time Information -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                <div style="background: #f8fafc; border-radius: 10px; padding: 12px 14px; border: 1px solid #e2e8f0;">
-                    <div style="font-size: 11px; color: #64748b; font-weight: 600;">Started At</div>
-                    <div style="font-size: 13px; font-weight: 600;">${data.started_at ? escapeHtml(formatDate(data.started_at)) : 'N/A'}</div>
-                </div>
-                <div style="background: #f8fafc; border-radius: 10px; padding: 12px 14px; border: 1px solid #e2e8f0;">
-                    <div style="font-size: 11px; color: #64748b; font-weight: 600;">Completed At</div>
-                    <div style="font-size: 13px; font-weight: 600;">${data.completed_at ? escapeHtml(formatDate(data.completed_at)) : 'N/A'}</div>
-                </div>
-            </div>
-
             <!-- Questions Section -->
             <div style="margin-top: 20px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
                 <h3 style="font-size: 17px; font-weight: bold; color: #1e293b; margin: 0 0 16px; display: flex; align-items: center; gap: 8px;">
@@ -530,7 +619,7 @@ export const generateAnswerSheetPDF = async (data: AnswerSheetData, studentName:
 
             <!-- Footer -->
             <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 10px; color: #94a3b8;">
-                <p style="margin: 0;">Generated by Global Professional Skills Platform</p>
+                <p style="margin: 0;">Generated by Global Professional Institute Platform</p>
                 <p style="margin: 2px 0 0;">Document ID: ${escapeHtml(String(data.student_email || 'unknown'))}</p>
             </div>
         `;
@@ -624,6 +713,10 @@ export const generateAnswerSheetPDF = async (data: AnswerSheetData, studentName:
             sourceY += chunkHeightPx;
             pageCount++;
         }
+
+        // Add Watermark to each page
+        const logoDataUrl = await getLogoDataUrl();
+        addWatermarkToPdf(pdf, logoDataUrl);
 
         // Save file
         const sanitizedStudent = sanitizeFilename(studentName || 'student');
@@ -836,22 +929,6 @@ export const downloadDetailedResultPDF = async ({
                 </div>
             ` : ''}
 
-            <!-- Time Information -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 24px;">
-                <div style="background: #f8fafc; border-radius: 10px; padding: 14px; border: 1px solid #e2e8f0;">
-                    <div style="font-size: 11px; color: #64748b; font-weight: 600; margin-bottom: 2px;">Started At</div>
-                    <div style="font-size: 13px; font-weight: 600;">
-                        ${submission.started_at ? escapeHtml(formatDate(submission.started_at)) : 'N/A'}
-                    </div>
-                </div>
-                <div style="background: #f8fafc; border-radius: 10px; padding: 14px; border: 1px solid #e2e8f0;">
-                    <div style="font-size: 11px; color: #64748b; font-weight: 600; margin-bottom: 2px;">Completed At</div>
-                    <div style="font-size: 13px; font-weight: 600;">
-                        ${submission.completed_at ? escapeHtml(formatDate(submission.completed_at)) : 'Incomplete'}
-                    </div>
-                </div>
-            </div>
-
             <!-- Detailed Breakdown -->
             <div style="margin-top: 24px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
                 <h3 style="font-size: 17px; font-weight: bold; color: #1e293b; margin: 0 0 16px; display: flex; align-items: center; gap: 8px;">
@@ -862,7 +939,7 @@ export const downloadDetailedResultPDF = async ({
 
             <!-- Footer -->
             <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 10px; color: #94a3b8;">
-                <p style="margin: 0;">Generated by Global Professional Skills Platform</p>
+                <p style="margin: 0;">Generated by Global Professional Institute Platform</p>
                 <p style="margin: 2px 0 0;">Document ID: ${escapeHtml(String(submission.id))}</p>
             </div>
         `;
@@ -952,6 +1029,10 @@ export const downloadDetailedResultPDF = async ({
             sourceY += chunkHeightPx;
             pageCount++;
         }
+
+        // Add Watermark to each page
+        const logoDataUrl = await getLogoDataUrl();
+        addWatermarkToPdf(pdf, logoDataUrl);
 
         const timestamp = formatDateForFilename();
         const sanitizedTitle = sanitizeFilename(submission.quiz_title || 'quiz');

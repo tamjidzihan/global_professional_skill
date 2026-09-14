@@ -147,4 +147,10 @@ All future user dashboard pages, tables, and detail screens must strictly follow
   - Disqualified: `inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold bg-rose-50 text-rose-700 rounded-md border border-rose-100`
 - **Row Actions**:
   - Container: `<div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">`
-  - Square Action Buttons: `w-7 h-7 flex items-center justify-center rounded-lg bg-gray-50 border border-gray-100 text-gray-500 hover:bg-violet-50 hover:border-violet-200 hover:text-violet-600 transition-colors`
+  - Square Action Buttons: `w-7 h-7 flex items-center justify-center rounded-lg bg-gray-50 border border-gray-100 text-gray-500 hover:bg-violet-50 hover:border-violet-200 hover:text-violet-600 transition-colors`
+
+### 4.5 Quiz Submissions & Reports Export Standards (PDF & CSV)
+- **PDF Watermark**: All downloaded PDFs apply the `gpilogo_1.png` logo as a centered, semi-transparent watermark on every page via `addWatermarkToPdf`.
+- **Omitted Columns**: `Started At` and `Completed At` are omitted from export tables.
+- **Passing Mark Calculation**: Calculated dynamically using the Admin configured `quiz_pass_percentage` (from `SiteSettings`, default 50%) applied to the quiz total questions: `Math.ceil((totalQuestions * passPercentage) / 100)`.
+- **Columns Included**: `Student`, `Email`, `Organization`, `Employee ID`, `Score`, `Passing Mark`, `Percentage`, `Result` (Pass/Fail/Disqualified), `Status` (Completed/In Progress/Disqualified).
