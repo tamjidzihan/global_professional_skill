@@ -27,17 +27,15 @@ export function CourseReviewModal({
     if (!isOpen) return null
 
     return (
-        <>
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-xs transition-all duration-200"
+            onClick={onClose}
+        >
             <div
-                className="fixed inset-0 z-40 bg-gray-900/20 backdrop-blur-[2px] transition-all duration-200"
-                onClick={onClose}
-            />
-
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-                <div
-                    ref={modalRef}
-                    className="relative bg-white rounded-xl w-full max-w-2xl max-h-[85vh] overflow-hidden shadow-2xl border border-gray-200 pointer-events-auto animate-in fade-in zoom-in-95 duration-200"
-                >
+                ref={modalRef}
+                className="relative bg-white rounded-xl w-full max-w-2xl max-h-[85vh] overflow-hidden shadow-2xl border border-gray-200 animate-in fade-in zoom-in-95 duration-200"
+                onClick={(e) => e.stopPropagation()}
+            >
                     {/* Header */}
                     <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
                         <div className="flex items-center justify-between">
@@ -129,6 +127,5 @@ export function CourseReviewModal({
                     </div>
                 </div>
             </div>
-        </>
     )
 }

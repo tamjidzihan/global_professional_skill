@@ -279,8 +279,18 @@ const AdminCourseDetailPage = () => {
 
             {/* ── Status Modal ── */}
             {showStatusModal && statusAction && (
-                <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className={`${card} max-w-md w-full`}>
+                <div
+                    className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                    onClick={() => {
+                        if (!actionLoading) {
+                            setShowStatusModal(false);
+                            setStatusAction(null);
+                            setFeedback('');
+                            setActionError(null);
+                        }
+                    }}
+                >
+                    <div className={`${card} max-w-md w-full`} onClick={(e) => e.stopPropagation()}>
                         <div className={cardHeader}>
                             <div>
                                 <p className={sectionTitle}>{statusModalConfig[statusAction].title}</p>

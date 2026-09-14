@@ -1000,8 +1000,11 @@ export function CourseDetailPage() {
 
             {/* Admin Review Modal */}
             {showAdminReviewModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg max-w-lg w-full p-6">
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+                    onClick={() => setShowAdminReviewModal(false)}
+                >
+                    <div className="bg-white rounded-lg max-w-lg w-full p-6" onClick={(e) => e.stopPropagation()}>
                         <h3 className="text-xl font-bold text-gray-800 mb-4">Review Course</h3>
 
                         <div className="space-y-4">
@@ -1077,8 +1080,11 @@ export function CourseDetailPage() {
 
             {/* Add Review Modal */}
             {showReviewModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg max-w-lg w-full p-6">
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+                    onClick={() => setShowReviewModal(false)}
+                >
+                    <div className="bg-white rounded-lg max-w-lg w-full p-6" onClick={(e) => e.stopPropagation()}>
                         <h3 className="text-xl font-bold text-gray-800 mb-4">Write a Review</h3>
 
                         <div className="space-y-4">

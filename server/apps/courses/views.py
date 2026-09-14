@@ -44,6 +44,7 @@ from .serializers import (
 )
 from apps.accounts.permissions import IsInstructor, IsAdmin, IsInstructorOrAdmin
 from .permissions import IsCourseInstructorOrAdmin, IsEnrolledOrInstructor
+from .quiz_import_parser import parse_and_validate_quiz_file
 import logging
 
 logger = logging.getLogger(__name__)
@@ -1394,6 +1395,103 @@ class QuizQuestionViewSet(viewsets.ModelViewSet):
                 "success": True,
                 "message": "Question created successfully.",
                 "data": serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(detail=False, methods=["post"], url_path="validate-bulk")
+    def validate_bulk(self, request, *args, **kwargs):
+        """
+        Validates an uploaded Excel or CSV file containing questions without saving to database.
+        Returns preview of valid rows and detailed row-by-row error diagnostics.
+        """
+        uploaded_file = request.FILES.get("file")
+        if not uploaded_file:
+            return Response(
+                {"success": False, "message": "No file uploaded. Please provide a CSV or Excel file."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            result = parse_and_validate_quiz_file(uploaded_file, uploaded_file.name)
+            return Response(result, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"success": False, "message": str(e)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    @action(detail=False, methods=["post"], url_path="bulk-import")
+    @transaction.atomic
+    def bulk_import(self, request, *args, **kwargs):
+        """
+        Bulk creates questions for the quiz.
+        Can accept either a file or a JSON payload of pre-validated questions.
+        """
+        quiz_id = self.kwargs.get("quiz_pk")
+        try:
+            quiz = Quiz.objects.get(id=quiz_id)
+        except Quiz.DoesNotExist:
+            return Response(
+                {"success": False, "message": "Quiz not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        questions_to_create = []
+
+        # Option A: Direct file upload
+        if "file" in request.FILES:
+            uploaded_file = request.FILES["file"]
+            result = parse_and_validate_quiz_file(uploaded_file, uploaded_file.name)
+            raw_questions = result.get("valid_questions", [])
+            if not raw_questions:
+                return Response(
+                    {
+                        "success": False,
+                        "message": "No valid questions found in the file to import.",
+                        "errors": result.get("errors", []),
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        # Option B: JSON payload with pre-validated questions list
+        elif "questions" in request.data:
+            raw_questions = request.data.get("questions", [])
+            if not isinstance(raw_questions, list) or not raw_questions:
+                return Response(
+                    {"success": False, "message": "Questions list is empty or invalid."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else:
+            return Response(
+                {"success": False, "message": "Please provide either a 'file' or 'questions' list."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        for q in raw_questions:
+            q_type = q.get("question_type", QuizQuestion.QuestionType.MCQ)
+            if q_type not in [QuizQuestion.QuestionType.MCQ, QuizQuestion.QuestionType.TRUE_FALSE]:
+                q_type = QuizQuestion.QuestionType.MCQ
+
+            questions_to_create.append(
+                QuizQuestion(
+                    quiz=quiz,
+                    question_type=q_type,
+                    question_text=str(q.get("question_text", "")).strip(),
+                    option_a=str(q.get("option_a", "")).strip(),
+                    option_b=str(q.get("option_b", "")).strip(),
+                    option_c=str(q.get("option_c", "")).strip() if q_type == QuizQuestion.QuestionType.MCQ else "",
+                    option_d=str(q.get("option_d", "")).strip() if q_type == QuizQuestion.QuestionType.MCQ else "",
+                    correct_option=str(q.get("correct_option", "A")).strip().upper(),
+                )
+            )
+
+        created_instances = QuizQuestion.objects.bulk_create(questions_to_create)
+
+        return Response(
+            {
+                "success": True,
+                "message": f"Successfully imported {len(created_instances)} questions.",
+                "imported_count": len(created_instances),
             },
             status=status.HTTP_201_CREATED,
         )

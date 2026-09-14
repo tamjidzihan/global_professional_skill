@@ -18,6 +18,7 @@ import type { Quiz } from '../../../../types';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { extractErrorMessage } from '../../../../lib/errorUtils';
 import SEO from '../../../components/SEO';
+import QuizTemplateDownloadButton from '../../../components/ui/QuizTemplateDownloadButton';
 
 const QuizListPage: React.FC = () => {
     const { courseId } = useParams<{ courseId: string }>();
@@ -193,13 +194,16 @@ const QuizListPage: React.FC = () => {
                     <p className="text-sm text-gray-500 mt-1">Manage quizzes for: <span className="font-medium text-gray-700">{course.title}</span></p>
                 </div>
 
-                <button
-                    onClick={handleOpenCreateModal}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-xl transition-all shadow-sm hover:shadow cursor-pointer text-sm"
-                >
-                    <Plus className="w-4.5 h-4.5" />
-                    Add New Quiz
-                </button>
+                <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+                    <QuizTemplateDownloadButton />
+                    <button
+                        onClick={handleOpenCreateModal}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-xl transition-all shadow-sm hover:shadow cursor-pointer text-sm shrink-0"
+                    >
+                        <Plus className="w-4.5 h-4.5" />
+                        Add New Quiz
+                    </button>
+                </div>
             </div>
 
             {/* Quizzes List */}
@@ -210,13 +214,16 @@ const QuizListPage: React.FC = () => {
                     <p className="text-gray-500 text-sm max-w-sm mx-auto mb-6">
                         Quizzes are standalone exams. Create a quiz, add questions, and share the generated link with your students.
                     </p>
-                    <button
-                        onClick={handleOpenCreateModal}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-xl transition-colors cursor-pointer"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Create First Quiz
-                    </button>
+                    <div className="flex items-center justify-center gap-3 flex-wrap">
+                        <QuizTemplateDownloadButton />
+                        <button
+                            onClick={handleOpenCreateModal}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-xl transition-colors cursor-pointer"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Create First Quiz
+                        </button>
+                    </div>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -340,8 +347,14 @@ const QuizListPage: React.FC = () => {
 
             {/* Create/Edit Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-150">
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm"
+                    onClick={() => !isSaving && setIsModalOpen(false)}
+                >
+                    <div
+                        className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-xl border border-gray-100 animate-in fade-in zoom-in-95 duration-150"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
                             <h3 className="text-lg font-bold text-gray-900">
                                 {editingQuiz ? 'Edit Quiz Details' : 'Create New Quiz'}

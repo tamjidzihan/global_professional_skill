@@ -526,8 +526,14 @@ export function PromoCodeManagementPage() {
 
             {/* ── Create / Edit Modal ── */}
             {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-                    <div className="bg-white rounded-xl max-w-lg w-full p-5 shadow-2xl border border-gray-100 overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs"
+                    onClick={() => !submitting && setShowModal(false)}
+                >
+                    <div
+                        className="bg-white rounded-xl max-w-lg w-full p-5 shadow-2xl border border-gray-100 overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-150"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
                             <div className="flex items-center gap-2">
                                 <div className="w-7 h-7 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center">

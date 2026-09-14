@@ -320,6 +320,10 @@ export const endpoints = {
             `/courses/courses/${courseId}/quizzes/${quizId}/questions/${questionId}/`,
         delete: (courseId: string, quizId: string, questionId: string) =>
             `/courses/courses/${courseId}/quizzes/${quizId}/questions/${questionId}/`,
+        validateBulk: (courseId: string, quizId: string) =>
+            `/courses/courses/${courseId}/quizzes/${quizId}/questions/validate-bulk/`,
+        bulkImport: (courseId: string, quizId: string) =>
+            `/courses/courses/${courseId}/quizzes/${quizId}/questions/bulk-import/`,
     },
     courseMaterials: {
         list: (courseId: string) => `/courses/courses/${courseId}/materials/`,
@@ -762,6 +766,35 @@ export const updateQuizQuestion = (courseId: string, quizId: string, questionId:
 
 export const deleteQuizQuestion = (courseId: string, quizId: string, questionId: string): Promise<AxiosResponse<ApiResponse<void>>> =>
     api.delete<ApiResponse<void>>(endpoints.quizQuestions.detail(courseId, quizId, questionId));
+
+export const validateBulkQuizQuestions = (
+    courseId: string,
+    quizId: string,
+    file: File
+): Promise<AxiosResponse<any>> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<any>(endpoints.quizQuestions.validateBulk(courseId, quizId), formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    });
+};
+
+export const bulkImportQuizQuestions = (
+    courseId: string,
+    quizId: string,
+    payload: { questions: any[] } | FormData
+): Promise<AxiosResponse<ApiResponse<any>>> => {
+    if (payload instanceof FormData) {
+        return api.post<ApiResponse<any>>(endpoints.quizQuestions.bulkImport(courseId, quizId), payload, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+    }
+    return api.post<ApiResponse<any>>(endpoints.quizQuestions.bulkImport(courseId, quizId), payload);
+};
 
 // Course Materials API Calls
 export const getCourseMaterials = (courseId: string): Promise<AxiosResponse<ApiResponse<CourseMaterial[]>>> =>

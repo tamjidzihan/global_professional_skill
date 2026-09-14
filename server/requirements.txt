@@ -20,8 +20,9 @@ django-cors-headers==4.3.1
 # Filtering & Search
 django-filter==23.5
 
-# Image Processing
+# Image & File Processing
 Pillow==10.1.0
+openpyxl==3.1.2
 
 # Validation
 email-validator==2.1.0
