@@ -2,11 +2,11 @@
 import { useEffect, useRef, useState, type JSX } from 'react'
 import { format } from 'date-fns'
 import { toast } from 'react-hot-toast'
-import { 
-    RefreshCw, 
-    CheckCircle2, 
-    Calendar as CalendarIcon, 
-    Sparkles, 
+import {
+    RefreshCw,
+    CheckCircle2,
+    Calendar as CalendarIcon,
+    Sparkles,
     ArrowRight
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -280,9 +280,6 @@ export function AdminDashboard(): JSX.Element {
                         <h1 className="text-2xl sm:text-2xl font-bold tracking-tight text-gray-900">
                             {timeGreeting}, <span className="text-violet-600 font-extrabold">Admin</span> 👋
                         </h1>
-                        <p className="text-xs sm:text-sm text-gray-500 mt-1 max-w-xl">
-                            Real-time platform metrics, course review queue, payment verifications, and system management.
-                        </p>
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
@@ -354,7 +351,7 @@ export function AdminDashboard(): JSX.Element {
 
             {/* ── 3. Main Operations Grid & Sidebar ── */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                
+
                 {/* Left 8 Cols: Operational Cards */}
                 <div className="lg:col-span-8 space-y-6">
 
@@ -412,12 +409,12 @@ export function AdminDashboard(): JSX.Element {
                     <CourseStatusPanel />
 
                     {/* Platform Resource Health Card */}
-                    <PlatformHealthCard 
+                    <PlatformHealthCard
                         totalCategories={data?.total_categories}
                         activeJobs={data?.total_active_jobs}
                         activePromoCodes={data?.total_promo_codes}
                         totalAdmins={data?.total_admins}
-                    />                   
+                    />
                 </div>
             </div>
 
