@@ -8,6 +8,7 @@ import {
     ArrowLeft,
     Bell,
     CheckCircle,
+    CheckCircle2,
     XCircle,
     Clock,
     Eye,
@@ -37,11 +38,24 @@ import {
     Award,
     MonitorPlay,
     Layers,
+    Sparkles,
+    Maximize2,
+    X,
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import SEO from '../../../components/SEO';
 import { getLogoDataUrl, addWatermarkToPdf } from '../../../../lib/pdfUtilsInstructor';
+import {
+    getCourseCertificateConfig,
+    getCourseCertificateCandidates,
+} from '../../../../lib/api';
+import { CertificatePreview } from '../../../components/certificate/CertificatePreview';
+import {
+    type CourseCertificateConfig,
+    type CertificateData,
+    GPI_CERTIFICATE_CONSTANTS,
+} from '../../../components/certificate/types';
 
 const AdminCourseDetailPage = () => {
     const { id } = useParams<{ id: string }>();
@@ -62,10 +76,82 @@ const AdminCourseDetailPage = () => {
     const [actionError, setActionError] = useState<string | null>(null);
     const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
+    // Certificate state
+    const [certConfig, setCertConfig] = useState<CourseCertificateConfig | null>(null);
+    const [certCandidatesSummary, setCertCandidatesSummary] = useState<{
+        total_candidates: number;
+        issued_count: number;
+        eligible_count: number;
+        not_eligible_count: number;
+    } | null>(null);
+    const [certLoading, setCertLoading] = useState<boolean>(true);
+    const [showCertModal, setShowCertModal] = useState<boolean>(false);
+
     useEffect(() => {
-        if (id) fetchCourseDetail(id);
+        if (id) {
+            fetchCourseDetail(id);
+            fetchCertificateDetails(id);
+        }
         return () => clearSelectedCourse();
     }, [id, fetchCourseDetail, clearSelectedCourse]);
+
+    const fetchCertificateDetails = async (courseId: string) => {
+        setCertLoading(true);
+        try {
+            const [configRes, candRes] = await Promise.allSettled([
+                getCourseCertificateConfig(courseId),
+                getCourseCertificateCandidates(courseId),
+            ]);
+
+            if (configRes.status === 'fulfilled' && configRes.value.data.success && configRes.value.data.data) {
+                setCertConfig(configRes.value.data.data);
+            } else {
+                setCertConfig(null);
+            }
+
+            if (candRes.status === 'fulfilled' && candRes.value.data.success && candRes.value.data.data?.summary) {
+                setCertCandidatesSummary(candRes.value.data.data.summary);
+            }
+        } catch {
+            setCertConfig(null);
+        } finally {
+            setCertLoading(false);
+        }
+    };
+
+    const getTemplateLabel = (templateId?: string) => {
+        switch (templateId) {
+            case 'template_1':
+                return 'GPI Academic (Navy & Gold)';
+            case 'template_2':
+                return 'Professional Classic (Ornate)';
+            case 'template_3':
+                return 'Modern Minimal (Clean)';
+            case 'template_4':
+                return 'Premium Corporate (Dark Navy)';
+            default:
+                return 'Academic Standard';
+        }
+    };
+
+    const sampleCertData: CertificateData = {
+        studentName: 'Candidate Name (Sample)',
+        courseName: selectedCourse?.title || certConfig?.course_title || 'Course Title',
+        organizationName: certConfig?.organization_name || GPI_CERTIFICATE_CONSTANTS.ORGANIZATION_NAME,
+        certificateNumber: 'GPI-SJO-4484-487641',
+        issueDate: new Date().toISOString().split('T')[0],
+        templateId: certConfig?.template_id || 'template_1',
+        authorizerName: certConfig?.authorizer_name || 'Academic Director',
+        authorizerPosition: certConfig?.authorizer_position || 'Director & Academic Head',
+        signatureUrl: certConfig?.signature_url || null,
+        signatureSize: certConfig?.signature_size || 100,
+        logoUrl: certConfig?.logo_url || null,
+        logoSize: certConfig?.logo_size || 100,
+        verificationUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/certificate-verify/GPI-SJO-4484-487641`,
+        website: GPI_CERTIFICATE_CONSTANTS.WEBSITE,
+        email: GPI_CERTIFICATE_CONSTANTS.EMAIL,
+        mobile: GPI_CERTIFICATE_CONSTANTS.MOBILE,
+    };
 
     const toggleSection = (sectionId: string) => {
         const next = new Set(expandedSections);
@@ -368,12 +454,18 @@ const AdminCourseDetailPage = () => {
                                     <h1 className="text-base font-semibold text-gray-900 leading-snug">{selectedCourse.title}</h1>
                                     <p className={sectionSub}>Course Overview</p>
                                 </div>
-                                <div className=' space-x-3'>
+                                <div className='flex items-center gap-2 flex-wrap'>
                                     <button
                                         onClick={() => navigate(`/dashboard/admin/courses/${id}/students`)}
                                         className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-violet-700 bg-violet-50 border border-violet-100 rounded-lg hover:bg-violet-100 transition-colors cursor-pointer"
                                     >
-                                        <Users className="w-3.5 h-3.5" />View Enrolled Students
+                                        <Users className="w-3.5 h-3.5" />Enrolled Students
+                                    </button>
+                                    <button
+                                        onClick={() => navigate(`/dashboard/admin/courses/${id}/certificate`)}
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors cursor-pointer"
+                                    >
+                                        <Award className="w-3.5 h-3.5 text-amber-600" />Certificate Settings
                                     </button>
                                     {getDifficultyBadge(selectedCourse.difficulty_level)}
                                 </div>
@@ -837,6 +929,169 @@ const AdminCourseDetailPage = () => {
                             </div>
                         </div>
 
+                        {/* ══════════════════════════════════════════════
+                            ISSUE CERTIFICATE SECTION (Under Instructor)
+                        ══════════════════════════════════════════════ */}
+                        <div className={`${card} border-amber-100/80 shadow-sm overflow-hidden`}>
+                            <div className={`${cardHeader} bg-linear-to-r from-amber-50/50 via-white to-transparent`}>
+                                <div>
+                                    <div className="flex items-center gap-1.5">
+                                        <p className={sectionTitle}>Issue Certificate</p>
+                                        {certConfig?.is_active ? (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                                                <CheckCircle2 className="w-3 h-3" /> Issued & Active
+                                            </span>
+                                        ) : certConfig ? (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                                                <Clock className="w-3 h-3" /> Configured (Inactive)
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600">
+                                                Not Configured
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className={sectionSub}>Institutional credential setup & live preview</p>
+                                </div>
+                                <div className={iconBox('bg-amber-50')}>
+                                    <Award className="w-4 h-4 text-amber-600" />
+                                </div>
+                            </div>
+                            <div className={cardBody}>
+                                {certLoading ? (
+                                    <div className="py-6 flex flex-col items-center justify-center text-gray-400">
+                                        <LoadingSpinner size={24} text="Checking certificate status..." />
+                                    </div>
+                                ) : certConfig ? (
+                                    <div className="space-y-4">
+                                        {/* Live Preview Container with scaled rendering */}
+                                        <div className="relative group rounded-xl overflow-hidden border border-amber-200/60 bg-slate-900/5 shadow-inner">
+                                            <div className="px-3 py-1.5 bg-slate-900/85 text-white flex items-center justify-between text-[11px] font-medium backdrop-blur-xs">
+                                                <span className="flex items-center gap-1.5 font-semibold text-amber-300">
+                                                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                                                    Certificate Preview
+                                                </span>
+                                                <span className="text-[10px] text-gray-300 font-mono truncate max-w-[140px]">
+                                                    {getTemplateLabel(certConfig.template_id)}
+                                                </span>
+                                            </div>
+
+                                            <div className="p-2 flex justify-center bg-gray-100/70">
+                                                <CertificatePreview
+                                                    data={sampleCertData}
+                                                    templateId={certConfig.template_id}
+                                                    className="w-full drop-shadow-sm"
+                                                />
+                                            </div>
+
+                                            {/* Expand Preview Hover overlay */}
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowCertModal(true)}
+                                                className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-semibold backdrop-blur-[1px] cursor-pointer"
+                                            >
+                                                <Maximize2 className="w-4 h-4" /> Click to Expand Preview
+                                            </button>
+                                        </div>
+
+                                        {/* Candidate / Issuance Stats */}
+                                        {certCandidatesSummary && (
+                                            <div className="grid grid-cols-3 gap-2">
+                                                <div className="p-2 rounded-lg bg-gray-50 border border-gray-100 text-center">
+                                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400">Enrolled</p>
+                                                    <p className="text-base font-bold text-gray-900">{certCandidatesSummary.total_candidates}</p>
+                                                </div>
+                                                <div className="p-2 rounded-lg bg-emerald-50 border border-emerald-100 text-center">
+                                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700">Issued</p>
+                                                    <p className="text-base font-bold text-emerald-800">{certCandidatesSummary.issued_count}</p>
+                                                </div>
+                                                <div className="p-2 rounded-lg bg-amber-50 border border-amber-100 text-center">
+                                                    <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-700">Eligible</p>
+                                                    <p className="text-base font-bold text-amber-800">{certCandidatesSummary.eligible_count}</p>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Config metadata summary */}
+                                        <div className="space-y-1.5 text-xs text-gray-600 bg-gray-50/80 p-3 rounded-lg border border-gray-100">
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-gray-400">Organization:</span>
+                                                <span className="font-semibold text-gray-800 truncate max-w-[170px]">
+                                                    {certConfig.organization_name || 'GPI'}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-gray-400">Signatory:</span>
+                                                <span className="font-medium text-gray-800 truncate max-w-[170px]">
+                                                    {certConfig.authorizer_name || 'Academic Head'} ({certConfig.authorizer_position || 'Director'})
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-gray-400">Assets:</span>
+                                                <div className="flex items-center gap-1.5 text-[10px] font-medium">
+                                                    {certConfig.signature_url ? (
+                                                        <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                                            ✓ Signature
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+                                                            No signature
+                                                        </span>
+                                                    )}
+                                                    {certConfig.logo_url ? (
+                                                        <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                                            ✓ Logo
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">
+                                                            Default Logo
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Action buttons */}
+                                        <div className="space-y-2 pt-1">
+                                            <button
+                                                type="button"
+                                                onClick={() => navigate(`/dashboard/admin/courses/${id}/certificate`)}
+                                                className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 bg-linear-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white text-xs font-semibold rounded-lg shadow-xs transition-all cursor-pointer"
+                                            >
+                                                <Award className="w-4 h-4" /> Configure & Issue Certificate
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => navigate(`/dashboard/admin/courses/${id}/certificate?tab=candidates`)}
+                                                className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 border border-gray-200 text-xs font-medium rounded-lg transition-colors cursor-pointer"
+                                            >
+                                                <Users className="w-3.5 h-3.5 text-gray-500" /> View Certified Candidates ({certCandidatesSummary?.issued_count || 0})
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3.5 text-center py-3">
+                                        <div className="w-11 h-11 mx-auto rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shadow-2xs">
+                                            <Award className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold text-gray-900">Certificate Not Yet Configured</p>
+                                            <p className="text-[11px] text-gray-500 mt-1 max-w-[240px] mx-auto leading-relaxed">
+                                                Configure template design, institutional branding & signatory details to enable certificate issuance for eligible students.
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate(`/dashboard/admin/courses/${id}/certificate`)}
+                                            className="w-full flex items-center justify-center gap-2 px-3.5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg transition-colors shadow-2xs cursor-pointer"
+                                        >
+                                            <Sparkles className="w-4 h-4" /> Setup & Issue Certificate
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
                         {/* Thumbnail */}
                         {selectedCourse.thumbnail && (
                             <div className={card}>
@@ -957,6 +1212,71 @@ const AdminCourseDetailPage = () => {
                     </div>
                 </div>
             </div>
+
+            {/* ── Full Certificate Preview Modal ── */}
+            {showCertModal && certConfig && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto"
+                    onClick={() => setShowCertModal(false)}
+                >
+                    <div
+                        className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-4xl w-full p-6 space-y-4 my-8"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-3">
+                            <div className="flex items-center gap-2">
+                                <Award className="w-5 h-5 text-amber-600" />
+                                <div>
+                                    <h3 className="text-sm font-bold text-gray-900">
+                                        Certificate Full Preview — {getTemplateLabel(certConfig.template_id)}
+                                    </h3>
+                                    <p className="text-xs text-gray-400">High-resolution institutional certificate rendering</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowCertModal(false)}
+                                className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="py-2 flex justify-center bg-slate-900/5 rounded-xl border border-gray-100 overflow-hidden">
+                            <CertificatePreview
+                                data={sampleCertData}
+                                templateId={certConfig.template_id}
+                                className="w-full"
+                            />
+                        </div>
+
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                            <p className="text-xs text-gray-500">
+                                This preview demonstrates how recipient certificates are formatted, signed, and branded upon course completion.
+                            </p>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowCertModal(false);
+                                        navigate(`/dashboard/admin/courses/${id}/certificate`);
+                                    }}
+                                    className="px-4 py-2 bg-amber-600 text-white rounded-lg text-xs font-semibold hover:bg-amber-700 transition-colors cursor-pointer flex items-center gap-1.5"
+                                >
+                                    <Award className="w-3.5 h-3.5" /> Edit Configuration
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCertModal(false)}
+                                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200 transition-colors cursor-pointer"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

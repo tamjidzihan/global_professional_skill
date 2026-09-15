@@ -41,6 +41,8 @@ import PaymentManagementPage from "./main/pages/dashboard/admin/PaymentManagemen
 import SiteSettingsPage from "./main/pages/dashboard/admin/SiteSettingsPage";
 import { PromoCodeManagementPage } from "./main/pages/dashboard/admin/PromoCodeManagementPage";
 import AdminCourseDetailPage from "./main/pages/dashboard/admin/AdminCourseDetailPage";
+import { AdminCourseCertificatePage } from "./main/pages/dashboard/admin/AdminCourseCertificatePage";
+import CertificateVerificationPage from "./main/pages/CertificateVerificationPage";
 import AdminCourseAnnouncementsPage from "./main/pages/dashboard/admin/AdminCourseAnnouncementsPage";
 import JobManagementPage from "./main/pages/dashboard/admin/JobManagementPage";
 import JobApplicationsPage from "./main/pages/dashboard/admin/JobApplicationsPage";
@@ -94,6 +96,8 @@ export const router = createBrowserRouter([
             { path: '/contact', element: <ContactPage /> },
             { path: '/careers', element: <CareerPage /> },
             { path: '/careers/:id', element: <JobDetailPage /> },
+            { path: '/certificate-verify', element: <CertificateVerificationPage /> },
+            { path: '/certificate-verify/:certificateNumber', element: <CertificateVerificationPage /> },
             { path: '/announcements', element: <AnnouncementListPage /> },
             { path: '/announcements/:id', element: <AnnouncementDetailPage /> },
             { path: '/quiz/:quizId/take', element: <ProtectedRoute allowedRoles={['STUDENT']}><TakeQuizPage /></ProtectedRoute> },
@@ -384,6 +388,14 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['ADMIN']}>
                                 <EnrolledStudentsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/courses/:courseId/certificate',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <AdminCourseCertificatePage />
                             </ProtectedRoute>
                         )
                     },

@@ -14,9 +14,11 @@ import {
     Heart,
     Star,
     Zap,
-    BookOpen
+    BookOpen,
+    ShieldCheck,
+    ArrowRight
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { getJobs } from '../../lib/api';
 import type { Job } from '../../types';
 import { formatDate } from 'date-fns';
@@ -25,10 +27,22 @@ import Breadcrumb from '../components/Breadcrumb';
 import SEO from '../components/SEO';
 
 const CareerPage = () => {
+    const navigate = useNavigate();
     const [jobs, setJobs] = useState<Job[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedType, setSelectedType] = useState<string>('');
+    const [certNumberInput, setCertNumberInput] = useState('');
+
+    const handleVerifySubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const cleaned = certNumberInput.trim().toUpperCase();
+        if (cleaned) {
+            navigate(`/certificate-verify/${encodeURIComponent(cleaned)}`);
+        } else {
+            navigate('/certificate-verify');
+        }
+    };
 
     useEffect(() => {
         const fetchJobs = async () => {
@@ -332,7 +346,74 @@ const CareerPage = () => {
                 </div>
             </section>
 
+            {/* Employer Credential Verification Section */}
+            <section className="py-16 bg-linear-to-b from-[#FCF8F1] to-white border-y border-gray-200">
+                <div className="container mx-auto px-4">
+                    <div className="max-w-5xl mx-auto">
+                        <div className="bg-linear-to-br from-[#0A192F] via-[#0F284E] to-[#0A192F] text-white rounded-3xl p-8 sm:p-12 shadow-2xl relative overflow-hidden">
+                            {/* Background Pattern */}
+                            <div className="absolute inset-0 opacity-10 pointer-events-none">
+                                <div
+                                    className="w-full h-full"
+                                    style={{
+                                        backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
+                                        backgroundSize: '24px 24px',
+                                    }}
+                                />
+                            </div>
 
+                            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                                <div className="lg:col-span-7 space-y-4">
+                                    <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/20 border border-amber-400/30 text-amber-300 text-xs font-semibold uppercase tracking-wider">
+                                        <ShieldCheck className="w-4 h-4 text-amber-400" />
+                                        For Employers & Hiring Partners
+                                    </div>
+                                    <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white leading-tight">
+                                        Verify Candidate <span className="text-amber-400">Credentials</span>
+                                    </h2>
+                                    <p className="text-slate-300 text-sm leading-relaxed">
+                                        Did an applicant present a GPI Certificate or Diploma? Instantly authenticate their qualification, issuance date, and course mastery through our official registry.
+                                    </p>
+                                </div>
+
+                                <div className="lg:col-span-5">
+                                    <form
+                                        onSubmit={handleVerifySubmit}
+                                        className="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/20 space-y-3"
+                                    >
+                                        <label className="block text-xs font-semibold text-slate-200">
+                                            Enter Certificate Serial Number
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={certNumberInput}
+                                                onChange={(e) => setCertNumberInput(e.target.value)}
+                                                placeholder="e.g. GPI-SJO-4484-487641"
+                                                className="w-full px-3.5 py-2.5 bg-white text-slate-900 placeholder:text-slate-400 font-mono text-xs sm:text-sm font-semibold rounded-xl outline-none focus:ring-2 focus:ring-amber-400"
+                                            />
+                                        </div>
+                                        <button
+                                            type="submit"
+                                            className="w-full py-2.5 px-4 bg-linear-to-r from-amber-500 to-yellow-500 hover:from-amber-600 hover:to-yellow-600 text-slate-950 font-bold rounded-xl transition-all shadow-md text-xs sm:text-sm flex items-center justify-center gap-2 cursor-pointer"
+                                        >
+                                            <ShieldCheck className="w-4 h-4" />
+                                            <span>Verify Credential Now</span>
+                                            <ArrowRight className="w-3.5 h-3.5" />
+                                        </button>
+                                        <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                                            <span>Instant Anti-Fraud Check</span>
+                                            <Link to="/certificate-verify" className="text-amber-300 hover:underline">
+                                                Verification Registry →
+                                            </Link>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             {/* Call to Action */}
             <section className="py-16">

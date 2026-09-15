@@ -1330,6 +1330,15 @@ class QuizViewSet(viewsets.ModelViewSet):
         except Exception as e:
             logger.error(f"Error sending quiz result SMS: {str(e)}")
 
+        # Check and automatically issue certificate if student has met all course requirements
+        try:
+            from apps.enrollments.models import Enrollment, check_and_issue_certificate
+            enrollment = Enrollment.objects.filter(student=user, course=quiz.course).first()
+            if enrollment:
+                check_and_issue_certificate(enrollment)
+        except Exception as e:
+            logger.error(f"Error checking certificate on quiz submission: {str(e)}")
+
         # Prepare and send response with required fields
         data = QuizSubmissionSerializer(submission).data
         data.update(

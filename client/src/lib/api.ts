@@ -857,5 +857,30 @@ export const adminSendPasswordReset = (userId: string): Promise<AxiosResponse<Ap
 export const adminSendVerification = (userId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.post<ApiResponse<any>>(`/accounts/users/${userId}/send_verification/`);
 
+// ==========================================
+// Certificate Management & Verification APIs
+// ==========================================
+export const getCourseCertificateConfig = (courseId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get<ApiResponse<any>>(`/enrollments/certificate-configs/course/${courseId}/`);
 
+export const saveCourseCertificateConfig = (courseId: string, data: FormData | Record<string, any>): Promise<AxiosResponse<ApiResponse<any>>> => {
+    const isFormData = data instanceof FormData;
+    return api.post<ApiResponse<any>>(`/enrollments/certificate-configs/course/${courseId}/`, data, {
+        headers: isFormData ? { 'Content-Type': 'multipart/form-data' } : undefined,
+    });
+};
 
+export const getCourseCertificateCandidates = (courseId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get<ApiResponse<any>>(`/enrollments/certificates/candidates/${courseId}/`);
+
+export const manualIssueCertificate = (enrollmentId: string, studentName?: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>('/enrollments/certificates/manual_issue/', { enrollment_id: enrollmentId, student_name: studentName });
+
+export const adminUpdateCertificate = (certificateId: string, data: Record<string, any>): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.patch<ApiResponse<any>>(`/enrollments/certificates/${certificateId}/`, data);
+
+export const getMyCertificates = (): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get<ApiResponse<any>>('/enrollments/certificates/my_certificates/');
+
+export const verifyCertificate = (certificateNumber: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.get<ApiResponse<any>>(`/enrollments/certificates/verify/${encodeURIComponent(certificateNumber)}/`);

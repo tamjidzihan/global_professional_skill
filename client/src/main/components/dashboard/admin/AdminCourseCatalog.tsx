@@ -12,6 +12,7 @@ import {
     Eye,
     EyeOff,
     ExternalLink,
+    Award,
     X,
 } from 'lucide-react';
 import { useAdminCourses } from '../../../../hooks/useAdminCourses';
@@ -74,6 +75,7 @@ function ActionDropdown({ course }: { course: CoursesSummary }) {
 
     const items = [
         { label: 'View Details', icon: ExternalLink, to: `/dashboard/admin/courses/${course.id}`, cls: 'text-gray-700 hover:bg-gray-50' },
+        { label: 'Certificate Settings', icon: Award, to: `/dashboard/admin/courses/${course.id}/certificate`, cls: 'text-amber-800 hover:bg-amber-50' },
         { label: 'Preview Course', icon: Eye, to: `/courses/${course.id}`, cls: 'text-gray-700 hover:bg-gray-50' },
         ...(course.status === 'PUBLISHED'
             ? [{ label: 'Unpublish', icon: EyeOff, cls: 'text-amber-700 hover:bg-amber-50' }]
