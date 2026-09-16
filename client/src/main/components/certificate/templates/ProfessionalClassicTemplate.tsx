@@ -29,18 +29,18 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
     return (
         <div
             id="certificate-render-canvas"
-            className="w-[1120px] h-[792px] relative bg-[#fdfbf7] select-none overflow-hidden text-slate-900 font-serif"
+            className="w-280 h-198 relative bg-[#fdfbf7] select-none overflow-hidden text-slate-900 font-serif"
             style={{ width: '1120px', height: '792px' }}
         >
             {/* Watermark */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[65%] h-[65%] flex justify-center items-center pointer-events-none z-[1]">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[65%] h-[65%] flex justify-center items-center pointer-events-none z-1">
                 <img src={logoSrc} alt="Watermark" className="w-full h-full object-contain opacity-[0.06]" />
             </div>
 
             {/* Classic Multi-Line Ornate Border */}
-            <div className="absolute inset-0 p-[14px] bg-[#f8f5ee] border-[12px] border-[#1a2e4c]">
-                <div className="w-full h-full relative p-[8px] border-2 border-[#b8860b] before:content-[''] before:absolute before:inset-[4px] before:border before:border-[#8b1e1e]/40">
-                    <div className="w-full h-full relative p-[12px] border border-[#b8860b]/60 bg-radial from-amber-50/40 via-white to-[#fdfbf7]">
+            <div className="absolute inset-0 p-3.5 bg-[#f8f5ee] border-12 border-[#1a2e4c]">
+                <div className="w-full h-full relative p-2 border-2 border-[#b8860b] before:content-[''] before:absolute before:inset-1 before:border before:border-[#8b1e1e]/40">
+                    <div className="w-full h-full relative p-3 border border-[#b8860b]/60 bg-radial from-amber-50/40 via-white to-[#fdfbf7]">
                         {/* Ornate Corner Accents */}
                         <div className="absolute top-2 left-2 text-[#b8860b] text-[32px] leading-none pointer-events-none select-none">❖</div>
                         <div className="absolute top-2 right-2 text-[#b8860b] text-[32px] leading-none pointer-events-none select-none">❖</div>
@@ -48,7 +48,7 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                         <div className="absolute bottom-2 right-2 text-[#b8860b] text-[32px] leading-none pointer-events-none select-none">❖</div>
 
                         {/* Top Header */}
-                        <header className="relative text-center pt-[14px] z-[2]">
+                        <header className="relative text-center pt-6 z-2">
                             <div className="flex items-center justify-center gap-4 mb-2">
                                 <div
                                     style={{
@@ -69,13 +69,13 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                                 </div>
                             </div>
 
-                            <div className="w-[500px] mx-auto my-3 flex items-center justify-center gap-3">
-                                <div className="h-[2px] flex-1 bg-linear-to-r from-transparent via-[#b8860b] to-[#b8860b]" />
+                            <div className="w-125 mx-auto my-3 flex items-center justify-center gap-3">
+                                <div className="h-0.5 flex-1 bg-linear-to-r from-transparent via-[#b8860b] to-[#b8860b]" />
                                 <span className="text-[#8b1e1e] text-[18px]">✦ ✤ ✦</span>
-                                <div className="h-[2px] flex-1 bg-linear-to-l from-transparent via-[#b8860b] to-[#b8860b]" />
+                                <div className="h-0.5 flex-1 bg-linear-to-l from-transparent via-[#b8860b] to-[#b8860b]" />
                             </div>
 
-                            <h2 className="text-[36px] font-normal tracking-[2px] text-[#8b1e1e] uppercase mt-2">
+                            <h2 className="text-[36px] font-normal tracking-[2px] text-[#8b1e1e] uppercase mt-6">
                                 Certificate of Completion
                             </h2>
                             <p className="text-[14px] font-sans tracking-[3px] text-[#555] uppercase mt-1">
@@ -84,17 +84,17 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                         </header>
 
                         {/* Recipient Section */}
-                        <main className="relative z-[2] text-center mt-3">
-                            <div className="min-h-[50px] mx-auto w-[75%] px-6 text-[34px] font-bold text-[#1a2e4c] whitespace-nowrap overflow-hidden text-ellipsis italic">
+                        <main className="relative z-2 text-center mt-3">
+                            <div className="min-h-12.5 mx-auto w-[75%] px-6 pt-3 text-[34px] font-bold text-[#1a2e4c] whitespace-nowrap overflow-hidden text-ellipsis italic">
                                 {data.studentName || 'Recipient Name'}
                             </div>
-                            <div className="w-[60%] h-[2px] mx-auto bg-linear-to-r from-transparent via-[#b8860b] to-transparent mb-3" />
+                            <div className="w-[60%] h-0.5 mx-auto bg-linear-to-r from-transparent via-[#b8860b] to-transparent mb-6" />
 
-                            <p className="text-[15px] text-[#444] max-w-[720px] mx-auto leading-relaxed">
+                            <p className="text-[15px] text-[#444] max-w-180 mx-auto leading-relaxed">
                                 for successfully fulfilling all academic requirements, curriculum coursework, and assessments for the program
                             </p>
 
-                            <div className="min-h-[36px] mt-2 mb-1 text-[22px] font-bold text-[#1a2e4c] tracking-wide">
+                            <div className="min-h-9 mt-2 mb-1 text-[27px] font-bold text-[#1a2e4c] tracking-wide">
                                 "{data.courseName || 'Course Title'}"
                             </div>
 
@@ -104,7 +104,7 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                         </main>
 
                         {/* Bottom Metadata & Signatures Grid */}
-                        <div className="absolute left-[36px] right-[36px] bottom-[34px] grid grid-cols-3 items-end z-[3]">
+                        <div className="absolute left-9 right-9 bottom-8.5 grid grid-cols-3 items-end z-3">
                             {/* Left: Verification & QR */}
                             <div className="flex items-center gap-3">
                                 {data.verificationUrl ? (
@@ -112,7 +112,7 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                                         <CertificateQRCode value={data.verificationUrl} size={54} color={{ dark: '#1a2e4c' }} />
                                     </div>
                                 ) : (
-                                    <div className="w-[54px] h-[54px] bg-gray-100 rounded border border-gray-200 flex items-center justify-center text-[10px] text-gray-400">
+                                    <div className="w-13.5 h-13.5 bg-gray-100 rounded border border-gray-200 flex items-center justify-center text-[10px] text-gray-400">
                                         QR
                                     </div>
                                 )}
@@ -124,24 +124,24 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                             </div>
 
                             {/* Center: Authentic Embossed Gold Medallion Seal */}
-                            <div className="flex flex-col items-center justify-center relative -top-20 z-[5]">
+                            <div className="flex flex-col items-center justify-center relative -top-20 z-5">
                                 {/* Classic Draped Ribbon Tails */}
-                                <div className="absolute top-[64px] flex justify-center items-center pointer-events-none z-[1]">
+                                <div className="absolute top-16 flex justify-center items-center pointer-events-none z-1">
                                     {/* Left Ribbon */}
-                                    <div className="w-[26px] h-[54px] bg-linear-to-b from-[#8b1e1e] via-[#6e1414] to-[#450a0a] -rotate-[22deg] origin-top-right shadow-md [clip-path:polygon(0%_0%,100%_0%,100%_100%,50%_80%,0%_100%)] border-l border-r border-[#d4af37]/60" />
+                                    <div className="w-6.5 h-13.5 bg-linear-to-b from-[#8b1e1e] via-[#6e1414] to-[#450a0a] -rotate-22 origin-top-right shadow-md [clip-path:polygon(0%_0%,100%_0%,100%_100%,50%_80%,0%_100%)] border-l border-r border-[#d4af37]/60" />
                                     {/* Right Ribbon */}
-                                    <div className="w-[26px] h-[54px] bg-linear-to-b from-[#8b1e1e] via-[#6e1414] to-[#450a0a] rotate-[22deg] origin-top-left shadow-md [clip-path:polygon(0%_0%,100%_0%,100%_100%,50%_80%,0%_100%)] border-l border-r border-[#d4af37]/60" />
+                                    <div className="w-6.5 h-13.5 bg-linear-to-b from-[#8b1e1e] via-[#6e1414] to-[#450a0a] rotate-22 origin-top-left shadow-md [clip-path:polygon(0%_0%,100%_0%,100%_100%,50%_80%,0%_100%)] border-l border-r border-[#d4af37]/60" />
                                 </div>
 
                                 {/* Embossed 24-Point Gold Foil Wafer Medallion */}
-                                <div className="relative z-[2] w-[100px] h-[100px] drop-shadow-[0_5px_10px_rgba(0,0,0,0.3)] flex items-center justify-center">
+                                <div className="relative z-2 w-25 h-25 drop-shadow-[0_5px_10px_rgba(0,0,0,0.3)] flex items-center justify-center">
                                     {/* Outer 24-point Scalloped Starburst Foil Border */}
-                                    <div className="w-[100px] h-[100px] absolute inset-0 flex items-center justify-center bg-[repeating-conic-gradient(from_0deg,#d4af37_0deg_7.5deg,#f3e5ab_7.5deg_15deg)] [clip-path:polygon(50%_0%,57%_8%,66%_4%,71%_13%,81%_12%,84%_22%,94%_25%,92%_35%,100%_42%,94%_50%,100%_59%,92%_66%,94%_76%,84%_79%,81%_89%,71%_87%,66%_96%,57%_92%,50%_100%,43%_92%,34%_96%,29%_87%,19%_89%,16%_79%,6%_76%,8%_66%,0%_59%,6%_50%,0%_42%,8%_35%,6%_25%,16%_22%,19%_12%,29%_13%,34%_4%,43%_8%)]" />
+                                    <div className="w-25 h-25 absolute inset-0 flex items-center justify-center bg-[repeating-conic-gradient(from_0deg,#d4af37_0deg_7.5deg,#f3e5ab_7.5deg_15deg)] [clip-path:polygon(50%_0%,57%_8%,66%_4%,71%_13%,81%_12%,84%_22%,94%_25%,92%_35%,100%_42%,94%_50%,100%_59%,92%_66%,94%_76%,84%_79%,81%_89%,71%_87%,66%_96%,57%_92%,50%_100%,43%_92%,34%_96%,29%_87%,19%_89%,16%_79%,6%_76%,8%_66%,0%_59%,6%_50%,0%_42%,8%_35%,6%_25%,16%_22%,19%_12%,29%_13%,34%_4%,43%_8%)]" />
 
                                     {/* Inner Metallic Gold Rim & Bevel */}
-                                    <div className="w-[82px] h-[82px] relative z-[3] rounded-full bg-linear-to-br from-[#fff2b2] via-[#d4af37] to-[#8b6508] p-[3px] shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.25)] flex items-center justify-center">
+                                    <div className="w-20.5 h-20.5 relative z-3 rounded-full bg-linear-to-br from-[#fff2b2] via-[#d4af37] to-[#8b6508] p-0.75 shadow-[inset_0_1px_2px_rgba(255,255,255,0.8),0_2px_4px_rgba(0,0,0,0.25)] flex items-center justify-center">
                                         {/* Rope / Beaded Dashed Security Ring */}
-                                        <div className="w-full h-full rounded-full border-[1.5px] border-dashed border-[#5a3e02]/70 bg-linear-to-b from-[#f9e8a2] via-[#e5be54] to-[#b8860b] p-[2px] flex items-center justify-center shadow-inner">
+                                        <div className="w-full h-full rounded-full border-[1.5px] border-dashed border-[#5a3e02]/70 bg-linear-to-b from-[#f9e8a2] via-[#e5be54] to-[#b8860b] p-0.5 flex items-center justify-center shadow-inner">
                                             {/* Core Embossed Gold Center */}
                                             <div className="w-full h-full rounded-full border border-[#ffeaa7] bg-[radial-gradient(circle_at_35%_30%,#fff9db_0%,#e0be53_40%,#b8860b_75%,#7a5203_100%)] flex flex-col items-center justify-center text-center select-none shadow-[inset_0_1px_1px_rgba(255,255,255,0.9),inset_0_-1px_2px_rgba(0,0,0,0.4)]">
                                                 <span className="text-[6.5px] font-sans font-black tracking-[1.5px] text-[#3d2703] drop-shadow-[0_0.5px_0_rgba(255,255,255,0.7)] uppercase leading-none">
@@ -167,7 +167,7 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                                 {data.signatureUrl ? (
                                     <div
                                         style={{ height: `${Math.round(44 * signatureScale)}px` }}
-                                        className="w-[200px] mb-1 flex items-end justify-center transition-all duration-200"
+                                        className="w-50 mb-1 flex items-end justify-center transition-all duration-200"
                                     >
                                         <img
                                             src={data.signatureUrl}
@@ -183,15 +183,15 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                                 ) : (
                                     <div
                                         style={{ height: `${Math.round(44 * signatureScale)}px` }}
-                                        className="w-[200px] mb-1 flex items-end justify-center font-serif italic text-gray-700 transition-all duration-200"
+                                        className="w-50 mb-1 flex items-end justify-center font-serif italic text-gray-700 transition-all duration-200"
                                     >
                                         <span style={{ fontSize: `${Math.round(16 * signatureScale)}px` }}>
                                             {data.authorizerName || 'Authorized Signatory'}
                                         </span>
                                     </div>
                                 )}
-                                <div className="w-[220px] h-[1.5px] bg-[#1a2e4c]" />
-                                <div className="w-[220px] text-center mt-1">
+                                <div className="w-55 h-[1.5px] bg-[#1a2e4c]" />
+                                <div className="w-55 text-center mt-1">
                                     <p className="text-[12px] font-bold text-[#1a2e4c]">{data.authorizerName || 'Academic Director'}</p>
                                     <p className="text-[10px] text-gray-500 font-sans">{data.authorizerPosition || 'Global Professional Institute'}</p>
                                 </div>
@@ -199,7 +199,7 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                         </div>
 
                         {/* Constant Footer Contact & Powered By */}
-                        <footer className="absolute left-[36px] right-[36px] bottom-[10px] flex flex-col items-center justify-center gap-0.5 z-[4]">
+                        <footer className="absolute left-9 right-9 bottom-2.5 flex flex-col items-center justify-center gap-0.5 z-4">
                             <div className="flex items-center justify-center gap-4 text-[10px] text-[#1a2e4c] font-sans">
                                 <span>Website: {website}</span>
                                 <span className="text-gray-400">•</span>
@@ -207,7 +207,7 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                                 <span className="text-gray-400">•</span>
                                 <span>Mobile: {mobile}</span>
                             </div>
-                            <p className="m-0 text-[8.5px] text-gray-500 font-sans tracking-wider">
+                            <p className="pt-2 text-[8.5px] text-gray-500 font-sans tracking-wider">
                                 {poweredBy}
                             </p>
                         </footer>

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
@@ -345,22 +346,20 @@ export const AdminCourseCertificatePage: React.FC = () => {
             <div className="flex border-b border-gray-200 gap-2">
                 <button
                     onClick={() => setActiveTab('config')}
-                    className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
-                        activeTab === 'config'
+                    className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${activeTab === 'config'
                             ? 'border-violet-600 text-violet-600'
                             : 'border-transparent text-gray-400 hover:text-gray-700'
-                    }`}
+                        }`}
                 >
                     <Award className="w-4 h-4" /> Certificate Setup & Templates
                 </button>
 
                 <button
                     onClick={() => setActiveTab('candidates')}
-                    className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${
-                        activeTab === 'candidates'
+                    className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer flex items-center gap-2 ${activeTab === 'candidates'
                             ? 'border-violet-600 text-violet-600'
                             : 'border-transparent text-gray-400 hover:text-gray-700'
-                    }`}
+                        }`}
                 >
                     <Users className="w-4 h-4" /> Certified Students & Candidates ({candidates.length})
                 </button>
@@ -632,11 +631,10 @@ export const AdminCourseCertificatePage: React.FC = () => {
                                 <button
                                     key={f.key}
                                     onClick={() => setCandidateFilter(f.key as any)}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
-                                        candidateFilter === f.key
+                                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${candidateFilter === f.key
                                             ? 'bg-gray-900 text-white shadow-xs'
                                             : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
-                                    }`}
+                                        }`}
                                 >
                                     {f.label}
                                 </button>
@@ -697,9 +695,8 @@ export const AdminCourseCertificatePage: React.FC = () => {
                                                         </div>
                                                         <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                                             <div
-                                                                className={`h-full rounded-full transition-all ${
-                                                                    c.progress_percentage >= 100 ? 'bg-emerald-500' : 'bg-blue-500'
-                                                                }`}
+                                                                className={`h-full rounded-full transition-all ${c.progress_percentage >= 100 ? 'bg-emerald-500' : 'bg-blue-500'
+                                                                    }`}
                                                                 style={{ width: `${Math.min(c.progress_percentage, 100)}%` }}
                                                             />
                                                         </div>
