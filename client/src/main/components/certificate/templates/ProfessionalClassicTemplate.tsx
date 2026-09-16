@@ -50,14 +50,19 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                         {/* Top Header */}
                         <header className="relative text-center pt-6 z-2">
                             <div className="flex items-center justify-center gap-4 mb-2">
-                                <div
-                                    style={{
-                                        width: `${Math.round(72 * logoScale)}px`,
-                                        height: `${Math.round(72 * logoScale)}px`,
-                                    }}
-                                    className="flex items-center justify-center transition-all duration-200"
-                                >
-                                    <img src={logoSrc} alt="Logo" className="w-full h-full object-contain" crossOrigin="anonymous" />
+                                <div className="w-35 h-25 flex items-center justify-center shrink-0 relative mr-4">
+                                    <img
+                                        src={logoSrc}
+                                        alt="Logo"
+                                        crossOrigin="anonymous"
+                                        className="object-contain absolute left-1/2 top-1/2"
+                                        style={{
+                                            width: `${Math.round(90 * logoScale)}px`,
+                                            height: `${Math.round(90 * logoScale)}px`,
+                                            transform: 'translate(-50%, -50%)',
+                                            transition: 'width 0.2s ease, height 0.2s ease',
+                                        }}
+                                    />
                                 </div>
                                 <div className="text-left">
                                     <h1 className="font-serif text-[24px] font-extrabold tracking-[1px] text-[#1a2e4c] leading-tight uppercase">
@@ -69,13 +74,13 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                                 </div>
                             </div>
 
-                            <div className="w-125 mx-auto my-3 flex items-center justify-center gap-3">
+                            <div className="w-125 mx-auto flex items-center justify-center gap-3">
                                 <div className="h-0.5 flex-1 bg-linear-to-r from-transparent via-[#b8860b] to-[#b8860b]" />
                                 <span className="text-[#8b1e1e] text-[18px]">✦ ✤ ✦</span>
                                 <div className="h-0.5 flex-1 bg-linear-to-l from-transparent via-[#b8860b] to-[#b8860b]" />
                             </div>
 
-                            <h2 className="text-[36px] font-normal tracking-[2px] text-[#8b1e1e] uppercase mt-6">
+                            <h2 className="text-[36px] font-normal tracking-[2px] text-[#8b1e1e] uppercase ">
                                 Certificate of Completion
                             </h2>
                             <p className="text-[14px] font-sans tracking-[3px] text-[#555] uppercase mt-1">
@@ -84,7 +89,7 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                         </header>
 
                         {/* Recipient Section */}
-                        <main className="relative z-2 text-center mt-3">
+                        <main className="relative z-2 text-center ">
                             <div className="min-h-12.5 mx-auto w-[75%] px-6 pt-3 text-[34px] font-bold text-[#1a2e4c] whitespace-nowrap overflow-hidden text-ellipsis italic">
                                 {data.studentName || 'Recipient Name'}
                             </div>

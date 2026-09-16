@@ -102,18 +102,21 @@ export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
 
                         {/* HEADER */}
                         <header className="relative text-center pt-[18px] z-[2]">
+                            {/* Fixed-height slot — layout never changes */}
                             <div
-                                style={{
-                                    width: `${Math.round(105 * logoScale)}px`,
-                                    height: `${Math.round(105 * logoScale)}px`,
-                                }}
-                                className="mx-auto mb-[4px] flex justify-center items-center transition-all duration-200"
+                                className="mx-auto mb-[4px] w-[105px] h-[105px] flex justify-center items-center relative"
+                                style={{ overflow: 'visible' }}
                             >
                                 <img
                                     src={logoSrc}
                                     alt="Logo"
-                                    className="w-full h-full object-contain"
+                                    className="max-w-full max-h-full object-contain"
                                     crossOrigin="anonymous"
+                                    style={{
+                                        transform: `scale(${logoScale})`,
+                                        transformOrigin: 'center center',
+                                        transition: 'transform 0.2s ease',
+                                    }}
                                 />
                             </div>
 
@@ -205,35 +208,32 @@ export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
 
                             {/* RIGHT: AUTHORIZER SIGNATURE */}
                             <div className="self-end text-center pl-[20px] flex flex-col items-end">
-                                {data.signatureUrl ? (
-                                    <div
-                                        style={{ height: `${Math.round(46 * signatureScale)}px` }}
-                                        className="w-[220px] mb-1 flex items-end justify-center transition-all duration-200"
-                                    >
+                                <div className="w-[220px] h-[46px] mb-1 flex items-end justify-center relative overflow-visible">
+                                    {data.signatureUrl ? (
                                         <img
                                             src={data.signatureUrl}
                                             alt="Signature"
-                                            style={{
-                                                maxHeight: `${Math.round(44 * signatureScale)}px`,
-                                                maxWidth: `${Math.round(200 * signatureScale)}px`,
-                                            }}
-                                            className="object-contain"
+                                            className="max-h-[44px] max-w-[200px] object-contain"
                                             crossOrigin="anonymous"
+                                            style={{
+                                                transform: `scale(${signatureScale})`,
+                                                transformOrigin: 'bottom center',
+                                                transition: 'transform 0.2s ease',
+                                            }}
                                         />
-                                    </div>
-                                ) : (
-                                    <div
-                                        style={{ height: `${Math.round(46 * signatureScale)}px` }}
-                                        className="w-[220px] mb-1 flex items-end justify-center transition-all duration-200"
-                                    >
+                                    ) : (
                                         <span
-                                            style={{ fontSize: `${Math.round(16 * signatureScale)}px` }}
                                             className="font-serif italic text-gray-700"
+                                            style={{
+                                                fontSize: '16px',
+                                                transform: `scale(${signatureScale})`,
+                                                transformOrigin: 'bottom center',
+                                            }}
                                         >
                                             {data.authorizerName || 'Authorized Signatory'}
                                         </span>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                                 <div className="w-[240px] h-[1px] bg-[#1b1b1b]" />
                                 <div className="w-[240px] mt-[5px] text-center">
                                     <p className="m-0 text-[13px] font-semibold text-[#111]">
