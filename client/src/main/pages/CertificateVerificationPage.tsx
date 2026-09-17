@@ -138,6 +138,11 @@ export const CertificateVerificationPage: React.FC = () => {
               authorizerPosition: result.authorizer_position || 'Academic Director',
               signatureUrl: result.signature_url,
               signatureSize: result.signature_size || 100,
+              enableAdditionalAuthorizer: Boolean(result.enable_additional_authorizer),
+              additionalAuthorizerName: result.additional_authorizer_name || undefined,
+              additionalAuthorizerPosition: result.additional_authorizer_position || undefined,
+              additionalSignatureUrl: result.additional_signature_url || null,
+              additionalSignatureSize: result.additional_signature_size || 100,
               logoUrl: result.logo_url || '/gpilogo_icon.png',
               logoSize: result.logo_size || 100,
               verificationUrl: result.verification_url || window.location.href,
@@ -385,6 +390,9 @@ export const CertificateVerificationPage: React.FC = () => {
                                     <h4 className="text-base font-bold text-white">{result.organization_name}</h4>
                                     <p className="text-xs text-slate-300 mt-0.5">
                                         Authorizer: {result.authorizer_name} ({result.authorizer_position})
+                                        {result.enable_additional_authorizer && result.additional_authorizer_name && (
+                                            <> • Secondary Authorizer: {result.additional_authorizer_name} ({result.additional_authorizer_position})</>
+                                        )}
                                     </p>
                                     <p className="text-[11px] text-amber-300 font-mono mt-1">Registry Ref: {result.certificate_number}</p>
                                 </div>

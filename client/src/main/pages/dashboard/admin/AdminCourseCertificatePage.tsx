@@ -65,6 +65,14 @@ export const AdminCourseCertificatePage: React.FC = () => {
     const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
     const [signatureSize, setSignatureSize] = useState<number>(100);
 
+    // Additional Authorizer & Signature
+    const [enableAdditionalAuthorizer, setEnableAdditionalAuthorizer] = useState(false);
+    const [additionalAuthorizerName, setAdditionalAuthorizerName] = useState('');
+    const [additionalAuthorizerPosition, setAdditionalAuthorizerPosition] = useState('Authorized Signatory');
+    const [additionalSignatureFile, setAdditionalSignatureFile] = useState<File | null>(null);
+    const [additionalSignaturePreview, setAdditionalSignaturePreview] = useState<string | null>(null);
+    const [additionalSignatureSize, setAdditionalSignatureSize] = useState<number>(100);
+
     // Candidate list data
     const [candidates, setCandidates] = useState<CertificateCandidate[]>([]);
     const [passThreshold, setPassThreshold] = useState<number>(50);
@@ -87,6 +95,7 @@ export const AdminCourseCertificatePage: React.FC = () => {
 
     const logoInputRef = useRef<HTMLInputElement | null>(null);
     const signatureInputRef = useRef<HTMLInputElement | null>(null);
+    const additionalSignatureInputRef = useRef<HTMLInputElement | null>(null);
 
     const loadData = async () => {
         if (!courseId) return;
@@ -109,6 +118,12 @@ export const AdminCourseCertificatePage: React.FC = () => {
                 if (conf.logo_size) setLogoSize(conf.logo_size);
                 if (conf.signature_url) setSignaturePreview(conf.signature_url);
                 if (conf.signature_size) setSignatureSize(conf.signature_size);
+
+                setEnableAdditionalAuthorizer(Boolean(conf.enable_additional_authorizer));
+                setAdditionalAuthorizerName(conf.additional_authorizer_name || '');
+                setAdditionalAuthorizerPosition(conf.additional_authorizer_position || 'Authorized Signatory');
+                if (conf.additional_signature_url) setAdditionalSignaturePreview(conf.additional_signature_url);
+                if (conf.additional_signature_size) setAdditionalSignatureSize(conf.additional_signature_size);
             }
 
             if (candidatesRes.data.success && candidatesRes.data.data) {
@@ -157,6 +172,16 @@ export const AdminCourseCertificatePage: React.FC = () => {
         }
     };
 
+    const handleAdditionalSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setAdditionalSignatureFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => setAdditionalSignaturePreview(reader.result as string);
+            reader.readAsDataURL(file);
+        }
+    };
+
     const handleSaveConfig = async () => {
         if (!courseId) return;
         setSaving(true);
@@ -170,8 +195,15 @@ export const AdminCourseCertificatePage: React.FC = () => {
             formData.append('logo_size', String(logoSize));
             formData.append('signature_size', String(signatureSize));
 
+            // Additional authorizer data
+            formData.append('enable_additional_authorizer', String(enableAdditionalAuthorizer));
+            formData.append('additional_authorizer_name', additionalAuthorizerName.trim());
+            formData.append('additional_authorizer_position', additionalAuthorizerPosition.trim() || 'Authorized Signatory');
+            formData.append('additional_signature_size', String(additionalSignatureSize));
+
             if (logoFile) formData.append('logo_image', logoFile);
             if (signatureFile) formData.append('signature_image', signatureFile);
+            if (additionalSignatureFile) formData.append('additional_signature_image', additionalSignatureFile);
 
             const res = await saveCourseCertificateConfig(courseId, formData);
             if (res.data.success) {
@@ -233,6 +265,11 @@ export const AdminCourseCertificatePage: React.FC = () => {
         logoSize,
         signatureUrl: signaturePreview,
         signatureSize,
+        enableAdditionalAuthorizer,
+        additionalAuthorizerName: additionalAuthorizerName || 'Co-Authorizer / Dean',
+        additionalAuthorizerPosition: additionalAuthorizerPosition || 'Director of Examinations',
+        additionalSignatureUrl: additionalSignaturePreview,
+        additionalSignatureSize,
         verificationUrl: `${window.location.origin}/certificate-verify/GPI-SJO-4484-487641`,
         website: GPI_CERTIFICATE_CONSTANTS.WEBSITE,
         email: GPI_CERTIFICATE_CONSTANTS.EMAIL,
@@ -589,6 +626,132 @@ export const AdminCourseCertificatePage: React.FC = () => {
                                         className="w-4 h-4 text-violet-600 rounded border-gray-300 focus:ring-violet-500 cursor-pointer"
                                     />
                                 </div>
+                            </div>
+
+                            {/* Additional Authorizer & Signature Card */}
+                            <div className="bg-white rounded-xl border border-gray-100 shadow-xs p-4 space-y-3">
+                                <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                                    <div className="flex items-center gap-2">
+                                        <Users className="w-3.5 h-3.5 text-violet-600" />
+                                        <h3 className="text-xs font-bold uppercase tracking-wider text-gray-700">
+                                            Additional Authorizer
+                                        </h3>
+                                    </div>
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={enableAdditionalAuthorizer}
+                                            onChange={(e) => setEnableAdditionalAuthorizer(e.target.checked)}
+                                            className="sr-only peer"
+                                        />
+                                        <div className="w-8 h-4 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-violet-600"></div>
+                                    </label>
+                                </div>
+
+                                <p className="text-[11px] text-gray-500 leading-relaxed">
+                                    Adds a secondary authorizer on the bottom-left of the certificate and moves the QR Code and Serial Number to the top-right.
+                                </p>
+
+                                {enableAdditionalAuthorizer ? (
+                                    <div className="space-y-3 pt-2 border-t border-gray-100 animate-in fade-in duration-200">
+                                        <div>
+                                            <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                                Secondary Signatory Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={additionalAuthorizerName}
+                                                onChange={(e) => setAdditionalAuthorizerName(e.target.value)}
+                                                className="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-50 font-medium text-gray-800"
+                                                placeholder="e.g. Prof. Jane Smith"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                                Secondary Signatory Position / Title
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={additionalAuthorizerPosition}
+                                                onChange={(e) => setAdditionalAuthorizerPosition(e.target.value)}
+                                                className="w-full px-3 py-2 text-xs bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-50 font-medium text-gray-800"
+                                                placeholder="e.g. Controller of Examinations"
+                                            />
+                                        </div>
+
+                                        {/* Signature Upload */}
+                                        <div>
+                                            <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                                                Secondary Signature Image
+                                            </label>
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-24 h-12 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center p-1 shrink-0 overflow-hidden">
+                                                    {additionalSignaturePreview ? (
+                                                        <img src={additionalSignaturePreview} alt="Secondary Signature" className="max-h-full object-contain" />
+                                                    ) : (
+                                                        <span className="text-[10px] italic text-gray-400">None</span>
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 space-y-1">
+                                                    <input
+                                                        ref={additionalSignatureInputRef}
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        onChange={handleAdditionalSignatureChange}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => additionalSignatureInputRef.current?.click()}
+                                                        className="px-3 py-1.5 text-xs font-semibold text-violet-700 bg-violet-50 border border-violet-100 rounded-lg hover:bg-violet-100 transition-colors cursor-pointer w-full text-center flex items-center justify-center gap-1.5"
+                                                    >
+                                                        <Upload className="w-3 h-3" /> Upload Signature
+                                                    </button>
+                                                    {additionalSignatureFile && (
+                                                        <p className="text-[10px] text-gray-400 truncate">{additionalSignatureFile.name}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Signature Size Slider */}
+                                        <div className="pt-2 border-t border-gray-100">
+                                            <div className="flex items-center justify-between mb-1.5">
+                                                <label className="text-[11px] font-semibold text-gray-600 uppercase tracking-wider flex items-center gap-1.5">
+                                                    Signature Size Scale
+                                                    <span className="text-[11px] font-mono text-violet-600 font-bold">({additionalSignatureSize}%)</span>
+                                                </label>
+                                                {additionalSignatureSize !== 100 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setAdditionalSignatureSize(100)}
+                                                        className="text-[10px] font-medium text-gray-400 hover:text-violet-600 transition-colors cursor-pointer"
+                                                    >
+                                                        Reset (100%)
+                                                    </button>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[10px] text-gray-400 font-medium">50%</span>
+                                                <input
+                                                    type="range"
+                                                    min="50"
+                                                    max="180"
+                                                    step="5"
+                                                    value={additionalSignatureSize}
+                                                    onChange={(e) => setAdditionalSignatureSize(Number(e.target.value))}
+                                                    className="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-violet-600"
+                                                />
+                                                <span className="text-[10px] text-gray-400 font-medium">180%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="p-3 bg-gray-50 rounded-lg text-center">
+                                        <p className="text-[11px] text-gray-400">Additional authorizer is currently disabled.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 

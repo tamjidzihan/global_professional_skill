@@ -204,6 +204,33 @@ class CourseCertificateConfig(models.Model):
         default=100,
         help_text="Custom signature size percentage (default 100)."
     )
+    # Additional Authorizer & Signature (Optional)
+    enable_additional_authorizer = models.BooleanField(
+        default=False,
+        help_text="When true, displays an additional authorizer & signature on the certificate."
+    )
+    additional_authorizer_name = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Name of the additional authorizer / signatory."
+    )
+    additional_authorizer_position = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Title / position of the additional authorizer."
+    )
+    additional_signature_image = models.ImageField(
+        upload_to="certificates/signatures/",
+        null=True,
+        blank=True,
+        help_text="Additional authorized signature image."
+    )
+    additional_signature_size = models.PositiveIntegerField(
+        default=100,
+        help_text="Additional signature scale percentage (default 100)."
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
@@ -320,6 +347,33 @@ class Certificate(models.Model):
     signature_size = models.PositiveIntegerField(
         default=100,
         help_text="Signature scale percentage (snapshot)."
+    )
+    # Additional Authorizer Snapshot
+    enable_additional_authorizer = models.BooleanField(
+        default=False,
+        help_text="Whether additional authorizer was enabled at time of issuance (snapshot)."
+    )
+    additional_authorizer_name = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Additional authorizer display name on certificate (snapshot)."
+    )
+    additional_authorizer_position = models.CharField(
+        max_length=255,
+        blank=True,
+        default="",
+        help_text="Additional authorizer position on certificate (snapshot)."
+    )
+    additional_signature_image = models.ImageField(
+        upload_to="certificates/issued_signatures/",
+        null=True,
+        blank=True,
+        help_text="Additional authorized signature image (snapshot)."
+    )
+    additional_signature_size = models.PositiveIntegerField(
+        default=100,
+        help_text="Additional signature scale percentage (snapshot)."
     )
     issue_date = models.DateField(
         default=timezone.now
@@ -493,6 +547,11 @@ def check_and_issue_certificate(enrollment, issued_by=None, custom_student_name=
         authorizer_position=config.authorizer_position,
         signature_image=config.signature_image,
         signature_size=config.signature_size or 100,
+        enable_additional_authorizer=getattr(config, "enable_additional_authorizer", False),
+        additional_authorizer_name=getattr(config, "additional_authorizer_name", "") or "",
+        additional_authorizer_position=getattr(config, "additional_authorizer_position", "") or "",
+        additional_signature_image=getattr(config, "additional_signature_image", None),
+        additional_signature_size=getattr(config, "additional_signature_size", 100) or 100,
         issue_date=timezone.now().date(),
         issued_by=issued_by,
     )

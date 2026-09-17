@@ -17,6 +17,8 @@ export const PremiumCorporateTemplate: React.FC<TemplateProps> = ({ data }) => {
 
     const logoScale = Math.max(0.4, Math.min(2.0, (data.logoSize || 100) / 100));
     const signatureScale = Math.max(0.4, Math.min(2.0, (data.signatureSize || 100) / 100));
+    const isDualAuthorizer = Boolean(data.enableAdditionalAuthorizer);
+    const additionalSignatureScale = Math.max(0.4, Math.min(2.0, (data.additionalSignatureSize || 100) / 100));
 
     const formatDateStr = (d?: string) => {
         if (!d) return 'September 16, 2026';
@@ -67,14 +69,35 @@ export const PremiumCorporateTemplate: React.FC<TemplateProps> = ({ data }) => {
                         </div>
                     </div>
 
-                    <div className="text-right">
-                        <span className="text-[19px] font-black text-[#0c1e38] tracking-widest uppercase block">
-                            PROFESSIONAL CREDENTIAL
-                        </span>
-                        <span className="text-[11px] font-mono font-bold text-slate-500">
-                            ID: {serial}
-                        </span>
-                    </div>
+                    {isDualAuthorizer ? (
+                        <div className="flex items-center gap-3">
+                            {data.verificationUrl && (
+                                <div className="p-1 bg-white border border-slate-200 rounded shrink-0 shadow-2xs">
+                                    <CertificateQRCode value={data.verificationUrl} size={42} color={{ dark: '#0c1e38' }} />
+                                </div>
+                            )}
+                            <div className="text-right leading-tight">
+                                <span className="text-[16px] font-black text-[#0c1e38] tracking-widest uppercase block">
+                                    PROFESSIONAL CREDENTIAL
+                                </span>
+                                <span className="text-[10.5px] font-mono font-bold text-slate-500 block mt-0.5">
+                                    ID: {serial}
+                                </span>
+                                <span className="text-[8.5px] font-semibold text-[#b8860b] uppercase">
+                                    Verified Record
+                                </span>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="text-right">
+                            <span className="text-[19px] font-black text-[#0c1e38] tracking-widest uppercase block">
+                                PROFESSIONAL CREDENTIAL
+                            </span>
+                            <span className="text-[11px] font-mono font-bold text-slate-500">
+                                ID: {serial}
+                            </span>
+                        </div>
+                    )}
                 </header>
 
                 {/* Main Body */}
@@ -108,19 +131,55 @@ export const PremiumCorporateTemplate: React.FC<TemplateProps> = ({ data }) => {
 
                 {/* Bottom Corporate Signature & Security Seal */}
                 <div className="relative z-[2] border-t border-slate-100 pt-3.5 grid grid-cols-3 items-end">
-                    {/* Left: Security QR */}
-                    <div className="flex items-center gap-3">
-                        {data.verificationUrl && (
-                            <div className="p-1.5 bg-white border border-slate-200 rounded shadow-xs shrink-0">
-                                <CertificateQRCode value={data.verificationUrl} size={50} color={{ dark: '#0c1e38' }} />
+                    {/* Left: Additional Authorizer (Dual Mode) OR Security QR (Single Mode) */}
+                    {isDualAuthorizer ? (
+                        <div className="flex flex-col items-start">
+                            {data.additionalSignatureUrl ? (
+                                <div
+                                    style={{ height: `${Math.round(42 * additionalSignatureScale)}px` }}
+                                    className="w-[190px] flex items-end justify-center mb-1 transition-all duration-200"
+                                >
+                                    <img
+                                        src={data.additionalSignatureUrl}
+                                        alt="Additional Signature"
+                                        style={{
+                                            maxHeight: `${Math.round(40 * additionalSignatureScale)}px`,
+                                            maxWidth: `${Math.round(180 * additionalSignatureScale)}px`,
+                                        }}
+                                        className="object-contain"
+                                        crossOrigin="anonymous"
+                                    />
+                                </div>
+                            ) : (
+                                <div
+                                    style={{ height: `${Math.round(42 * additionalSignatureScale)}px` }}
+                                    className="w-[190px] flex items-end justify-center mb-1 font-serif italic text-slate-700 transition-all duration-200"
+                                >
+                                    <span style={{ fontSize: `${Math.round(15 * additionalSignatureScale)}px` }}>
+                                        {data.additionalAuthorizerName || 'Authorized Signatory'}
+                                    </span>
+                                </div>
+                            )}
+                            <div className="w-[200px] h-[1.5px] bg-[#0c1e38]" />
+                            <div className="w-[200px] text-center mt-0.5">
+                                <p className="text-[11.5px] font-bold text-[#0c1e38]">{data.additionalAuthorizerName || 'Academic Head'}</p>
+                                <p className="text-[9.5px] text-slate-500">{data.additionalAuthorizerPosition || 'Executive Board'}</p>
                             </div>
-                        )}
-                        <div className="text-left text-[9.5px] text-slate-500 leading-tight">
-                            <p className="font-bold text-[#0c1e38] text-[10.5px]">AUTHENTICITY VERIFIED</p>
-                            <p className="mt-0.5">Scan to view the official online record.</p>
-                            <p className="text-[#b8860b] font-semibold mt-0.5">GPI Verified Credential</p>
                         </div>
-                    </div>
+                    ) : (
+                        <div className="flex items-center gap-3">
+                            {data.verificationUrl && (
+                                <div className="p-1.5 bg-white border border-slate-200 rounded shadow-xs shrink-0">
+                                    <CertificateQRCode value={data.verificationUrl} size={50} color={{ dark: '#0c1e38' }} />
+                                </div>
+                            )}
+                            <div className="text-left text-[9.5px] text-slate-500 leading-tight">
+                                <p className="font-bold text-[#0c1e38] text-[10.5px]">AUTHENTICITY VERIFIED</p>
+                                <p className="mt-0.5">Scan to view the official online record.</p>
+                                <p className="text-[#b8860b] font-semibold mt-0.5">GPI Verified Credential</p>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Center: Corporate Gold Emblem */}
                     <div className="flex justify-center">
@@ -186,3 +245,4 @@ export const PremiumCorporateTemplate: React.FC<TemplateProps> = ({ data }) => {
         </div>
     );
 };
+

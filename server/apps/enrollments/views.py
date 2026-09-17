@@ -442,6 +442,10 @@ class CertificateViewSet(viewsets.ModelViewSet):
         if cert.signature_image:
             signature_url = request.build_absolute_uri(cert.signature_image.url)
 
+        additional_signature_url = None
+        if cert.additional_signature_image:
+            additional_signature_url = request.build_absolute_uri(cert.additional_signature_image.url)
+
         is_valid = (cert.status == CertificateStatus.ISSUED)
 
         verification_data = {
@@ -458,6 +462,12 @@ class CertificateViewSet(viewsets.ModelViewSet):
             "has_signature": bool(cert.signature_image),
             "signature_url": signature_url,
             "signature_size": getattr(cert, "signature_size", 100) or 100,
+            "enable_additional_authorizer": getattr(cert, "enable_additional_authorizer", False),
+            "additional_authorizer_name": getattr(cert, "additional_authorizer_name", "") or "",
+            "additional_authorizer_position": getattr(cert, "additional_authorizer_position", "") or "",
+            "has_additional_signature": bool(cert.additional_signature_image),
+            "additional_signature_url": additional_signature_url,
+            "additional_signature_size": getattr(cert, "additional_signature_size", 100) or 100,
             "logo_url": logo_url,
             "logo_size": getattr(cert, "logo_size", 100) or 100,
             "issued_at": cert.issued_at,
@@ -471,4 +481,5 @@ class CertificateViewSet(viewsets.ModelViewSet):
             "valid": is_valid,
             "data": serializer.data
         })
+
 

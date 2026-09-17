@@ -19,14 +19,16 @@ export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
 
     const logoScale = Math.max(0.4, Math.min(2.0, (data.logoSize || 100) / 100));
     const signatureScale = Math.max(0.4, Math.min(2.0, (data.signatureSize || 100) / 100));
+    const isDualAuthorizer = Boolean(data.enableAdditionalAuthorizer);
+    const additionalSignatureScale = Math.max(0.4, Math.min(2.0, (data.additionalSignatureSize || 100) / 100));
 
     useEffect(() => {
         if (!barcodeRef.current || !serial) return;
         try {
             JsBarcode(barcodeRef.current, serial, {
                 format: 'CODE128',
-                width: 1.8,
-                height: 48,
+                width: isDualAuthorizer ? 1.4 : 1.8,
+                height: isDualAuthorizer ? 26 : 48,
                 displayValue: false,
                 margin: 0,
                 background: 'transparent',
@@ -35,7 +37,7 @@ export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
         } catch (error) {
             console.error('Barcode rendering error:', error);
         }
-    }, [serial]);
+    }, [serial, isDualAuthorizer]);
 
     const formatDay = (d?: string) => {
         if (!d) return '__';
@@ -90,14 +92,31 @@ export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
                             <span className="block">❧</span>
                         </div>
 
-                        {/* QR CODE (Top Right Corner inside border) */}
-                        {data.verificationUrl && (
-                            <div className="absolute top-[18px] right-[24px] z-[6] flex flex-col items-center bg-white/90 p-1.5 rounded border border-[#c79b43]/40 shadow-xs">
-                                <CertificateQRCode value={data.verificationUrl} size={54} color={{ dark: '#102f52' }} />
-                                <span className="text-[8px] font-sans font-semibold tracking-wider text-[#102f52] mt-0.5 uppercase">
-                                    Verify
-                                </span>
+                        {/* QR CODE & SERIAL (Top Right Corner inside border) */}
+                        {isDualAuthorizer ? (
+                            <div className="absolute top-[14px] right-[9px] z-[6] flex items-center gap-2.5 bg-white px-3 py-1.5 rounded-lg border border-[#c79b43]/50 shadow-xs">
+                                {data.verificationUrl && (
+                                    <div className="flex flex-col items-center">
+                                        <CertificateQRCode value={data.verificationUrl} size={46} color={{ dark: '#102f52' }} />
+                                    </div>
+                                )}
+                                <div className="text-left font-sans border-l border-gray-200 pl-2.5">
+                                    <p className="text-[8.5px] font-bold text-[#102f52] tracking-wider uppercase">Certificate Serial</p>
+                                    <p className="text-[10.5px] font-mono font-bold text-gray-900 leading-tight">{serial}</p>
+                                    <div className="w-[135px] h-[22px] overflow-hidden mt-0.5">
+                                        <svg ref={barcodeRef} className="w-[135px] h-[22px]" />
+                                    </div>
+                                </div>
                             </div>
+                        ) : (
+                            data.verificationUrl && (
+                                <div className="absolute top-[15px] right-[9px] z-[6] flex flex-col items-center bg-white p-1.5 rounded border border-[#c79b43]/40 shadow-xs">
+                                    <CertificateQRCode value={data.verificationUrl} size={54} color={{ dark: '#102f52' }} />
+                                    <span className="text-[8px] font-sans font-semibold tracking-wider text-[#102f52] mt-0.5 uppercase">
+                                        Verify
+                                    </span>
+                                </div>
+                            )
                         )}
 
                         {/* HEADER */}
@@ -178,20 +197,60 @@ export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
 
                         {/* BOTTOM SECTION */}
                         <section className="absolute left-[48px] right-[48px] bottom-[72px] h-[105px] grid grid-cols-[1fr_150px_1fr] items-center z-[3]">
-                            {/* LEFT: SERIAL & BARCODE */}
-                            <div className="self-end text-left">
-                                <div className="mb-[4px] font-sans text-[12px] font-medium text-[#161616]">
-                                    <strong className="font-[750]">Serial Number:</strong> {serial}
+                            {/* LEFT: ADDITIONAL AUTHORIZER (If enabled) or SERIAL & BARCODE */}
+                            {isDualAuthorizer ? (
+                                <div className="self-end text-center pr-[20px] flex flex-col items-start">
+                                    <div className="w-[220px] h-[46px] mb-1 flex items-end justify-center relative overflow-visible">
+                                        {data.additionalSignatureUrl ? (
+                                            <img
+                                                src={data.additionalSignatureUrl}
+                                                alt="Additional Signature"
+                                                className="max-h-[44px] max-w-[200px] object-contain"
+                                                crossOrigin="anonymous"
+                                                style={{
+                                                    transform: `scale(${additionalSignatureScale})`,
+                                                    transformOrigin: 'bottom center',
+                                                    transition: 'transform 0.2s ease',
+                                                }}
+                                            />
+                                        ) : (
+                                            <span
+                                                className="font-serif italic text-gray-700"
+                                                style={{
+                                                    fontSize: '16px',
+                                                    transform: `scale(${additionalSignatureScale})`,
+                                                    transformOrigin: 'bottom center',
+                                                }}
+                                            >
+                                                {data.additionalAuthorizerName || 'Authorized Signatory'}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="w-[240px] h-[1px] bg-[#1b1b1b]" />
+                                    <div className="w-[240px] mt-[5px] text-center">
+                                        <p className="m-0 text-[13px] font-semibold text-[#111]">
+                                            {data.additionalAuthorizerName || 'Authorized Signatory'}
+                                        </p>
+                                        <p className="m-0 text-[11px] text-[#555]">
+                                            {data.additionalAuthorizerPosition || 'Academic Head'}
+                                        </p>
+                                    </div>
                                 </div>
+                            ) : (
+                                <div className="self-end text-left">
+                                    <div className="mb-[4px] font-sans text-[12px] font-medium text-[#161616]">
+                                        <strong className="font-[750]">Serial Number:</strong> {serial}
+                                    </div>
 
-                                <div className="w-[240px] h-[48px] overflow-hidden">
-                                    <svg ref={barcodeRef} className="w-[240px] h-[48px]" />
-                                </div>
+                                    <div className="w-[240px] h-[48px] overflow-hidden">
+                                        <svg ref={barcodeRef} className="w-[240px] h-[48px]" />
+                                    </div>
 
-                                <div className="w-[240px] text-center mt-0.5 font-sans text-[10px] text-[#333] tracking-wider">
-                                    {serial}
+                                    <div className="w-[240px] text-center mt-0.5 font-sans text-[10px] text-[#333] tracking-wider">
+                                        {serial}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* CENTER: SCALLOPED GOLD SEAL */}
                             <div className="flex items-center justify-center">
@@ -206,7 +265,7 @@ export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
                                 </div>
                             </div>
 
-                            {/* RIGHT: AUTHORIZER SIGNATURE */}
+                            {/* RIGHT: PRIMARY AUTHORIZER SIGNATURE */}
                             <div className="self-end text-center pl-[20px] flex flex-col items-end">
                                 <div className="w-[220px] h-[46px] mb-1 flex items-end justify-center relative overflow-visible">
                                     {data.signatureUrl ? (
@@ -279,3 +338,4 @@ export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
         </div>
     );
 };
+

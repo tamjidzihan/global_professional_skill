@@ -21,6 +21,11 @@ export interface CertificateData {
     authorizerPosition?: string;
     signatureUrl?: string | null;
     signatureSize?: number; // scale percentage (e.g. 100 = 100%)
+    enableAdditionalAuthorizer?: boolean;
+    additionalAuthorizerName?: string;
+    additionalAuthorizerPosition?: string;
+    additionalSignatureUrl?: string | null;
+    additionalSignatureSize?: number;
     logoUrl?: string | null;
     logoSize?: number; // scale percentage (e.g. 100 = 100%)
     verificationUrl?: string;
@@ -44,6 +49,12 @@ export interface CourseCertificateConfig {
     signature_image?: string | null;
     signature_size?: number;
     signature_url?: string | null;
+    enable_additional_authorizer?: boolean;
+    additional_authorizer_name?: string;
+    additional_authorizer_position?: string;
+    additional_signature_image?: string | null;
+    additional_signature_size?: number;
+    additional_signature_url?: string | null;
     created_at?: string;
     updated_at?: string;
     created_by_name?: string;
@@ -89,6 +100,12 @@ export interface CertificateRecord {
     signature_image?: string | null;
     signature_size?: number;
     signature_url?: string | null;
+    enable_additional_authorizer?: boolean;
+    additional_authorizer_name?: string;
+    additional_authorizer_position?: string;
+    additional_signature_image?: string | null;
+    additional_signature_size?: number;
+    additional_signature_url?: string | null;
     issue_date: string;
     issued_at: string;
     verification_url: string;
@@ -110,6 +127,12 @@ export interface PublicVerificationResult {
     has_signature: boolean;
     signature_url?: string | null;
     signature_size?: number;
+    enable_additional_authorizer?: boolean;
+    additional_authorizer_name?: string;
+    additional_authorizer_position?: string;
+    has_additional_signature?: boolean;
+    additional_signature_url?: string | null;
+    additional_signature_size?: number;
     logo_url?: string | null;
     logo_size?: number;
     issued_at: string;
@@ -134,3 +157,4 @@ export interface StudentCertificateEnrollment {
     status_message: string;
     certificate?: CertificateRecord | null;
 }
+

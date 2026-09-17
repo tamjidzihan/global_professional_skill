@@ -17,6 +17,8 @@ export const ModernMinimalTemplate: React.FC<TemplateProps> = ({ data }) => {
 
     const logoScale = Math.max(0.4, Math.min(2.0, (data.logoSize || 100) / 100));
     const signatureScale = Math.max(0.4, Math.min(2.0, (data.signatureSize || 100) / 100));
+    const isDualAuthorizer = Boolean(data.enableAdditionalAuthorizer);
+    const additionalSignatureScale = Math.max(0.4, Math.min(2.0, (data.additionalSignatureSize || 100) / 100));
 
     const formatDateStr = (d?: string) => {
         if (!d) return 'September 16, 2026';
@@ -63,12 +65,30 @@ export const ModernMinimalTemplate: React.FC<TemplateProps> = ({ data }) => {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3 bg-slate-50 px-3.5 py-1.5 rounded-lg border border-slate-100">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="text-[11px] font-semibold text-slate-700 tracking-wider">
-                            VERIFIED & AUTHENTICATED
-                        </span>
-                    </div>
+                    {isDualAuthorizer ? (
+                        <div className="flex items-center gap-3 bg-slate-50 px-3.5 py-1.5 rounded-lg border border-slate-100">
+                            {data.verificationUrl && (
+                                <CertificateQRCode value={data.verificationUrl} size={38} color={{ dark: '#0f172a' }} />
+                            )}
+                            <div className="text-left leading-tight">
+                                <div className="flex items-center gap-1.5 mb-0.5">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                    <span className="text-[9.5px] font-bold text-slate-700 uppercase tracking-wider">
+                                        VERIFIED CREDENTIAL
+                                    </span>
+                                </div>
+                                <p className="text-[10.5px] font-mono font-bold text-emerald-600 leading-none">{serial}</p>
+                                <p className="text-[9px] text-slate-400 font-medium mt-0.5">Issued: {formatDateStr(data.issueDate)}</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-3 bg-slate-50 px-3.5 py-1.5 rounded-lg border border-slate-100">
+                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[11px] font-semibold text-slate-700 tracking-wider">
+                                VERIFIED & AUTHENTICATED
+                            </span>
+                        </div>
+                    )}
                 </header>
 
                 {/* Main Content Area */}
@@ -96,28 +116,73 @@ export const ModernMinimalTemplate: React.FC<TemplateProps> = ({ data }) => {
 
                 {/* Footer Information & Signatures */}
                 <div className="relative z-[2] border-t border-slate-100 pt-4 grid grid-cols-3 items-end">
-                    {/* Left: Metadata */}
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Issued:</span>
-                            <span className="text-[12px] font-bold text-slate-800">{formatDateStr(data.issueDate)}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Cert ID:</span>
-                            <span className="text-[12px] font-mono font-bold text-emerald-600">{serial}</span>
-                        </div>
-                    </div>
-
-                    {/* Center: QR Code block */}
-                    <div className="flex flex-col items-center justify-center">
-                        {data.verificationUrl && (
-                            <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-100">
-                                <CertificateQRCode value={data.verificationUrl} size={46} color={{ dark: '#0f172a' }} />
-                                <div className="text-left text-[9.5px] text-slate-500 leading-tight">
-                                    <p className="font-bold text-slate-800">Scan to Verify</p>
-                                    <p className="text-[8.5px] text-slate-400">Authentic Credential</p>
+                    {/* Left: Additional Authorizer (Dual Mode) OR Metadata (Single Mode) */}
+                    {isDualAuthorizer ? (
+                        <div className="flex flex-col items-start">
+                            {data.additionalSignatureUrl ? (
+                                <div
+                                    style={{ height: `${Math.round(42 * additionalSignatureScale)}px` }}
+                                    className="w-[180px] flex items-end justify-center mb-1 transition-all duration-200"
+                                >
+                                    <img
+                                        src={data.additionalSignatureUrl}
+                                        alt="Additional Signature"
+                                        style={{
+                                            maxHeight: `${Math.round(40 * additionalSignatureScale)}px`,
+                                            maxWidth: `${Math.round(170 * additionalSignatureScale)}px`,
+                                        }}
+                                        className="object-contain"
+                                        crossOrigin="anonymous"
+                                    />
                                 </div>
+                            ) : (
+                                <div
+                                    style={{ height: `${Math.round(42 * additionalSignatureScale)}px` }}
+                                    className="w-[180px] flex items-end justify-center mb-1 font-serif italic text-slate-700 transition-all duration-200"
+                                >
+                                    <span style={{ fontSize: `${Math.round(15 * additionalSignatureScale)}px` }}>
+                                        {data.additionalAuthorizerName || 'Authorized Signatory'}
+                                    </span>
+                                </div>
+                            )}
+                            <div className="w-[190px] h-[1.5px] bg-slate-300" />
+                            <div className="w-[190px] text-center mt-0.5">
+                                <p className="text-[11.5px] font-bold text-slate-900">{data.additionalAuthorizerName || 'Academic Head'}</p>
+                                <p className="text-[9.5px] text-slate-400 font-medium">{data.additionalAuthorizerPosition || 'Executive Board'}</p>
                             </div>
+                        </div>
+                    ) : (
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Issued:</span>
+                                <span className="text-[12px] font-bold text-slate-800">{formatDateStr(data.issueDate)}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Cert ID:</span>
+                                <span className="text-[12px] font-mono font-bold text-emerald-600">{serial}</span>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Center: Minimal Medallion (Dual Mode) OR QR Code block (Single Mode) */}
+                    <div className="flex flex-col items-center justify-center">
+                        {isDualAuthorizer ? (
+                            <div className="flex items-center gap-2 bg-emerald-50/60 px-3 py-1.5 rounded-full border border-emerald-100">
+                                <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                <span className="text-[10px] font-bold text-emerald-800 tracking-wider uppercase">
+                                    Official Credential
+                                </span>
+                            </div>
+                        ) : (
+                            data.verificationUrl && (
+                                <div className="flex items-center gap-2 bg-slate-50 p-1.5 rounded-lg border border-slate-100">
+                                    <CertificateQRCode value={data.verificationUrl} size={46} color={{ dark: '#0f172a' }} />
+                                    <div className="text-left text-[9.5px] text-slate-500 leading-tight">
+                                        <p className="font-bold text-slate-800">Scan to Verify</p>
+                                        <p className="text-[8.5px] text-slate-400">Authentic Credential</p>
+                                    </div>
+                                </div>
+                            )
                         )}
                     </div>
 
@@ -174,3 +239,4 @@ export const ModernMinimalTemplate: React.FC<TemplateProps> = ({ data }) => {
         </div>
     );
 };
+

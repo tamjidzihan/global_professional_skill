@@ -55,6 +55,7 @@ class CourseCertificateConfigSerializer(serializers.ModelSerializer):
     course_title = serializers.CharField(source='course.title', read_only=True)
     logo_url = serializers.SerializerMethodField()
     signature_url = serializers.SerializerMethodField()
+    additional_signature_url = serializers.SerializerMethodField()
     created_by_name = serializers.CharField(source='created_by.get_full_name', read_only=True)
 
     class Meta:
@@ -74,6 +75,12 @@ class CourseCertificateConfigSerializer(serializers.ModelSerializer):
             'signature_image',
             'signature_size',
             'signature_url',
+            'enable_additional_authorizer',
+            'additional_authorizer_name',
+            'additional_authorizer_position',
+            'additional_signature_image',
+            'additional_signature_size',
+            'additional_signature_url',
             'created_at',
             'updated_at',
             'created_by',
@@ -97,6 +104,14 @@ class CourseCertificateConfigSerializer(serializers.ModelSerializer):
             return obj.signature_image.url
         return None
 
+    def get_additional_signature_url(self, obj):
+        if obj.additional_signature_image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.additional_signature_image.url)
+            return obj.additional_signature_image.url
+        return None
+
 
 class CertificateSerializer(serializers.ModelSerializer):
     student_id = serializers.UUIDField(source='enrollment.student.id', read_only=True)
@@ -104,6 +119,7 @@ class CertificateSerializer(serializers.ModelSerializer):
     course_id = serializers.UUIDField(source='enrollment.course.id', read_only=True)
     logo_url = serializers.SerializerMethodField()
     signature_url = serializers.SerializerMethodField()
+    additional_signature_url = serializers.SerializerMethodField()
     verification_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -128,6 +144,12 @@ class CertificateSerializer(serializers.ModelSerializer):
             'signature_image',
             'signature_size',
             'signature_url',
+            'enable_additional_authorizer',
+            'additional_authorizer_name',
+            'additional_authorizer_position',
+            'additional_signature_image',
+            'additional_signature_size',
+            'additional_signature_url',
             'issue_date',
             'issued_at',
             'verification_url',
@@ -152,6 +174,14 @@ class CertificateSerializer(serializers.ModelSerializer):
             return obj.signature_image.url
         return None
 
+    def get_additional_signature_url(self, obj):
+        if obj.additional_signature_image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.additional_signature_image.url)
+            return obj.additional_signature_image.url
+        return None
+
     def get_verification_url(self, obj):
         frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000').rstrip('/')
         return f"{frontend_url}/certificate-verify/{obj.certificate_number}"
@@ -172,8 +202,15 @@ class PublicCertificateVerificationSerializer(serializers.Serializer):
     has_signature = serializers.BooleanField()
     signature_url = serializers.CharField(allow_null=True, allow_blank=True)
     signature_size = serializers.IntegerField(default=100)
+    enable_additional_authorizer = serializers.BooleanField(default=False)
+    additional_authorizer_name = serializers.CharField(allow_blank=True, required=False)
+    additional_authorizer_position = serializers.CharField(allow_blank=True, required=False)
+    has_additional_signature = serializers.BooleanField(default=False)
+    additional_signature_url = serializers.CharField(allow_null=True, allow_blank=True, required=False)
+    additional_signature_size = serializers.IntegerField(default=100, required=False)
     logo_url = serializers.CharField(allow_null=True, allow_blank=True)
     logo_size = serializers.IntegerField(default=100)
     issued_at = serializers.DateTimeField()
     verification_url = serializers.CharField()
+
 
