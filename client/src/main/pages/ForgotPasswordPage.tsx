@@ -39,17 +39,17 @@ const ForgotPasswordPage = () => {
         return (
             <AuthLayout type="login">
                 <SEO 
-                    title="Check Your Email" 
-                    description="A password reset link has been sent to your email address."
+                    title="Check Your Email & SMS" 
+                    description="A password reset link has been sent to your email address and SMS."
                 />
                 <div className="text-center">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6">
                         <CheckCircle2 className="h-8 w-8 text-green-600" />
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h1>
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">Check your email & SMS</h1>
                     <p className="text-gray-600 mb-8">
                         We've sent a password reset link to <span className="font-semibold text-gray-900">{email}</span>. 
-                        Please check your inbox and click the link to reset your password.
+                        Please check your email inbox and phone SMS messages, then click the link to reset your password.
                     </p>
                     <Link
                         to="/login"
@@ -71,7 +71,7 @@ const ForgotPasswordPage = () => {
             />
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Forgot Password?</h1>
-                <p className="text-gray-600">Enter your email address and we'll send you a link to reset your password.</p>
+                <p className="text-gray-600">Enter your email address or mobile number and we'll send you a link to reset your password via email and SMS.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -88,7 +88,7 @@ const ForgotPasswordPage = () => {
 
                 <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                        Email Address
+                        Email Address or Mobile Number
                     </label>
                     <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -96,11 +96,11 @@ const ForgotPasswordPage = () => {
                         </div>
                         <input
                             id="email"
-                            type="email"
+                            type="text"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent transition-all"
-                            placeholder="student@gpis.org.bd"
+                            placeholder="student@gpis.org.bd or 01XXXXXXXXX"
                             required
                         />
                     </div>

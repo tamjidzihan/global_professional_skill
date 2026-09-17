@@ -42,6 +42,8 @@ from .tasks import (
     send_verification_email,
     send_verification_sms,
     send_password_reset_email,
+    send_password_reset_sms,
+    get_or_create_password_reset_token,
 )
 
 logger = logging.getLogger(__name__)
@@ -738,16 +740,21 @@ class UserManagementViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=["post"])
     def send_password_reset(self, request, pk=None):
-        """Send password reset email to user."""
+        """Send password reset email and SMS to user."""
         user = self.get_object()
-        success = send_password_reset_email(str(user.id))
-        if success:
+        token = get_or_create_password_reset_token(user)
+        email_sent = send_password_reset_email(str(user.id), token_str=token)
+        sms_sent = False
+        if user.phone_number:
+            sms_sent = send_password_reset_sms(str(user.id), token_str=token)
+
+        if email_sent or sms_sent:
             return Response(
-                {"success": True, "message": f"Password reset email sent to {user.email}."},
+                {"success": True, "message": f"Password reset notification sent to {user.email}."},
                 status=status.HTTP_200_OK,
             )
         return Response(
-            {"success": False, "error": {"message": "Failed to send password reset email."}},
+            {"success": False, "error": {"message": "Failed to send password reset notification."}},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 

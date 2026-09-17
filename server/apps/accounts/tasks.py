@@ -97,22 +97,32 @@ def send_verification_sms(user_id, token_str=None):
         return False
 
 
-def send_password_reset_email(user_id):
+def get_or_create_password_reset_token(user):
+    """Get active password reset token or create a new one."""
+    from .models import PasswordResetToken
+
+    active_token = (
+        PasswordResetToken.objects.filter(user=user, expires_at__gt=timezone.now())
+        .order_by("-created_at")
+        .first()
+    )
+    if active_token:
+        return active_token.token
+
+    token = secrets.token_urlsafe(32)
+    expires_at = timezone.now() + timedelta(hours=1)
+    PasswordResetToken.objects.filter(user=user).delete()
+    PasswordResetToken.objects.create(user=user, token=token, expires_at=expires_at)
+    return token
+
+
+def send_password_reset_email(user_id, token_str=None):
     """Send password reset link to user with HTML template."""
-    from .models import PasswordResetToken, User
+    from .models import User
 
     try:
         user = User.objects.get(id=user_id)
-
-        # Generate reset token
-        token = secrets.token_urlsafe(32)
-        expires_at = timezone.now() + timedelta(hours=1)
-
-        # Delete existing tokens for this user
-        PasswordResetToken.objects.filter(user=user).delete()
-
-        # Create new token
-        PasswordResetToken.objects.create(user=user, token=token, expires_at=expires_at)
+        token = token_str or get_or_create_password_reset_token(user)
 
         # Create reset URL
         reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}"
@@ -153,6 +163,41 @@ def send_password_reset_email(user_id):
         return False
     except Exception as exc:
         logger.error(f"Error sending password reset email: {str(exc)}")
+        return False
+
+
+def send_password_reset_sms(user_id, token_str=None):
+    """Send password reset link to user's phone via Bangla SMS."""
+    from .models import User
+
+    try:
+        user = User.objects.get(id=user_id)
+        if not user.phone_number:
+            logger.warning(
+                f"No phone number found for user {user.email} to send password reset SMS."
+            )
+            return False
+
+        token = token_str or get_or_create_password_reset_token(user)
+        reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}"
+
+        from apps.core.notification_service import dispatch_notification
+
+        success = dispatch_notification(
+            "SMS_PASSWORD_RESET",
+            user=user,
+            phone=user.phone_number,
+            context={"reset_url": reset_url, "reset_link": reset_url},
+        )
+        if success:
+            logger.info(
+                f"Password reset SMS dispatched for {user.email} to {user.phone_number}"
+            )
+        else:
+            logger.warning(f"Password reset SMS dispatch failed for {user.email}")
+        return success
+    except Exception as e:
+        logger.error(f"Failed to send password reset SMS for user {user_id}: {str(e)}")
         return False
 
 

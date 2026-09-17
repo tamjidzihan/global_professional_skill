@@ -112,3 +112,61 @@ class RegistrationAndVerificationTests(TestCase):
         # Attempt to reuse token
         response2 = self.client.post("/api/v1/accounts/verify-email/", {"token": token})
         self.assertEqual(response2.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class PasswordResetTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            email="resetuser@example.com",
+            password="OldPassword123!@#",
+            phone_number="+8801799887766",
+            first_name="Reset",
+            last_name="Tester",
+        )
+
+    def test_password_reset_request_sends_email_and_sms(self):
+        from apps.accounts.models import PasswordResetToken
+
+        response = self.client.post(
+            "/api/v1/accounts/password-reset/",
+            {"email": "resetuser@example.com"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["success"])
+
+        # Verify token created
+        token_obj = PasswordResetToken.objects.filter(user=self.user).first()
+        self.assertIsNotNone(token_obj)
+
+        # Verify SMS NotificationLog created
+        sms_log = NotificationLog.objects.filter(
+            recipient_user=self.user,
+            channel="SMS",
+            notification_type="SMS_PASSWORD_RESET",
+        ).first()
+        self.assertIsNotNone(sms_log)
+        self.assertIn(token_obj.token, sms_log.body)
+        self.assertEqual(sms_log.recipient_phone, "+8801799887766")
+
+    def test_password_reset_request_by_phone_number(self):
+        from apps.accounts.models import PasswordResetToken
+
+        response = self.client.post(
+            "/api/v1/accounts/password-reset/",
+            {"email": "01799887766"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["success"])
+
+        token_obj = PasswordResetToken.objects.filter(user=self.user).first()
+        self.assertIsNotNone(token_obj)
+
+        sms_log = NotificationLog.objects.filter(
+            recipient_user=self.user,
+            channel="SMS",
+            notification_type="SMS_PASSWORD_RESET",
+        ).first()
+        self.assertIsNotNone(sms_log)
+        self.assertIn(token_obj.token, sms_log.body)
+

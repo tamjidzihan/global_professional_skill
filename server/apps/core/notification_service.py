@@ -20,6 +20,12 @@ DEFAULT_TEMPLATES = {
         "subject": "",
         "body": "GPI আপনার অ্যাকাউন্ট যাচাই করতে নিচের লিংকে ক্লিক করুন: [Verification Link]",
     },
+    NotificationTypeCode.SMS_PASSWORD_RESET: {
+        "channel": NotificationChannel.SMS,
+        "name": "Password Reset Link (SMS)",
+        "subject": "",
+        "body": "পাসওয়ার্ড রিসেট লিংক: [Reset Link]",
+    },
     NotificationTypeCode.SMS_STUDENT_VERIFICATION: {
         "channel": NotificationChannel.SMS,
         "name": "Student Verification (SMS)",
@@ -133,7 +139,12 @@ def render_template(text: str, context: dict) -> str:
         "[verification_url]": context.get("verification_url", context.get("verification_link", "")),
         "[verification_link]": context.get("verification_url", context.get("verification_link", "")),
         "{verification_link}": context.get("verification_url", context.get("verification_link", "")),
-        "[লিংক]": context.get("verification_url", context.get("verification_link", "")),
+        "[Reset Link]": context.get("reset_url", context.get("reset_link", "")),
+        "[reset_url]": context.get("reset_url", context.get("reset_link", "")),
+        "[reset_link]": context.get("reset_url", context.get("reset_link", "")),
+        "{reset_link}": context.get("reset_url", context.get("reset_link", "")),
+        "[রিসেট লিংক]": context.get("reset_url", context.get("reset_link", "")),
+        "[লিংক]": context.get("verification_url", context.get("reset_url", context.get("verification_link", ""))),
     }
 
     for placeholder, val in replacements.items():

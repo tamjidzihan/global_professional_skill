@@ -10,7 +10,13 @@ from .models import User, InstructorRequest, UserRole, EmailVerificationToken
 import re
 import secrets
 from datetime import timedelta
-from .tasks import send_verification_email, send_verification_sms, send_password_reset_email
+from .tasks import (
+    send_verification_email,
+    send_verification_sms,
+    send_password_reset_email,
+    send_password_reset_sms,
+    get_or_create_password_reset_token,
+)
 
 
 def normalize_bd_phone(phone: str) -> str:
@@ -353,25 +359,35 @@ class PasswordChangeSerializer(serializers.Serializer):
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):
-    """Serializer for password reset request."""
+    """Serializer for password reset request via email and SMS."""
 
-    email = serializers.EmailField(required=True)
+    email = serializers.CharField(required=True)
 
     def validate_email(self, value):
-        """Validate that user with this email exists."""
-        try:
-            user = User.objects.get(email=value, is_active=True)
+        """Validate that user with this email or phone number exists."""
+        val = str(value).strip()
+        user = None
+        if "@" in val:
+            user = User.objects.filter(email__iexact=val, is_active=True).first()
+        else:
+            normalized_phone = normalize_bd_phone(val)
+            if normalized_phone:
+                user = User.objects.filter(phone_number=normalized_phone, is_active=True).first()
+            if not user:
+                user = User.objects.filter(email__iexact=val, is_active=True).first()
+
+        if user:
             self.context["user"] = user
-        except User.DoesNotExist:
-            # Don't reveal if email exists or not for security
-            pass
         return value
 
     def save(self):  # type: ignore
-        """Send password reset email."""
+        """Send password reset email and SMS."""
         user = self.context.get("user")
         if user:
-            send_password_reset_email(user.id)
+            token = get_or_create_password_reset_token(user)
+            send_password_reset_email(user.id, token_str=token)
+            if user.phone_number:
+                send_password_reset_sms(user.id, token_str=token)
 
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
