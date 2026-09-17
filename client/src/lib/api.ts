@@ -884,3 +884,20 @@ export const getMyCertificates = (): Promise<AxiosResponse<ApiResponse<any>>> =>
 
 export const verifyCertificate = (certificateNumber: string): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.get<ApiResponse<any>>(`/enrollments/certificates/verify/${encodeURIComponent(certificateNumber)}/`);
+
+// ==========================================
+// Course Coordinators Management APIs
+// ==========================================
+export const getCourseCoordinators = (courseId: string): Promise<AxiosResponse<ApiResponse<User[]>>> =>
+    api.get<ApiResponse<User[]>>(`/courses/courses/${courseId}/coordinators/`);
+
+export const addCourseCoordinator = (courseId: string, instructorId: string): Promise<AxiosResponse<ApiResponse<User>>> =>
+    api.post<ApiResponse<User>>(`/courses/courses/${courseId}/coordinators/`, { instructor_id: instructorId });
+
+export const removeCourseCoordinator = (courseId: string, instructorId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
+    api.post<ApiResponse<any>>(`/courses/courses/${courseId}/remove-coordinator/`, { instructor_id: instructorId });
+
+export const getAvailableInstructors = (courseId: string, search?: string): Promise<AxiosResponse<ApiResponse<User[]>>> =>
+    api.get<ApiResponse<User[]>>(`/courses/courses/${courseId}/available-instructors/`, {
+        params: search ? { search } : undefined,
+    });

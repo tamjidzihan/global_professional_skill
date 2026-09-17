@@ -88,11 +88,12 @@ export default function StudentMaterialsPage() {
         }
     }, [materials, targetMaterialId]);
 
-    // Check if the user is enrolled or has permission (instructor/admin)
+    // Check if the user is enrolled or has permission (instructor/coordinator/admin)
     useEffect(() => {
         if (course && user && enrollments.length > 0) {
             const isEnrolled = enrollments.some(e => e.course.id === courseId);
-            const isInstructor = course.instructor.id === user.id;
+            const isCoordinator = course.coordinators?.some((c: any) => c.id === user.id);
+            const isInstructor = course.instructor.id === user.id || isCoordinator;
             const isAdmin = user.role === 'ADMIN';
 
             if (!isEnrolled && !isInstructor && !isAdmin) {

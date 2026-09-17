@@ -39,7 +39,8 @@ export default function EnrolledStudentsPage() {
 
     useEffect(() => {
         if (course && user) {
-            const allowed = user.role === 'ADMIN' || (user.role === 'INSTRUCTOR' && course.instructor.id === user.id)
+            const isCoordinator = course.coordinators?.some((c: any) => c.id === user.id);
+            const allowed = user.role === 'ADMIN' || (user.role === 'INSTRUCTOR' && (course.instructor.id === user.id || isCoordinator))
             if (!allowed) navigate('/dashboard')
         }
     }, [course, user, navigate])

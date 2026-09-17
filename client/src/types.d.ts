@@ -162,6 +162,7 @@ export interface CourseDetail {
     description: string;
     short_description: string;
     instructor: User;
+    coordinators?: User[];
     category: Category;
     difficulty_level: DifficultyLevel;
     delivery_mode: DeliveryMode;

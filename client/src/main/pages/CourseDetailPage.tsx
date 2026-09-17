@@ -381,7 +381,7 @@ export function CourseDetailPage() {
                                     </p>
                                 </div>
                                 <div className="flex gap-3">
-                                    {user?.role === 'INSTRUCTOR' && user.id === course.instructor.id && (
+                                    {user?.role === 'INSTRUCTOR' && (user.id === course.instructor.id || course.coordinators?.some((c: any) => c.id === user.id)) && (
                                         <>
                                             <Link
                                                 to={`/dashboard/instructor/edit-course/${course.id}`}
@@ -764,7 +764,7 @@ export function CourseDetailPage() {
                         <div className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm mb-6">
                             <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
                                 <Award className="w-5 h-5 mr-2 text-[#0066CC]" />
-                                Instructor
+                                Lead Instructor
                             </h3>
                             <div className="flex flex-col p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                                 <div className="flex justify-center mb-3">
@@ -796,6 +796,48 @@ export function CourseDetailPage() {
                                     )}
                                 </div>
                             </div>
+
+                            {/* Course Coordinators */}
+                            {course.coordinators && course.coordinators.length > 0 && (
+                                <div className="mt-6 pt-5 border-t border-gray-100">
+                                    <h4 className="text-sm font-bold uppercase tracking-wider text-gray-600 mb-3 flex items-center gap-1.5">
+                                        <Users className="w-4 h-4 text-[#0066CC]" />
+                                        Course Coordinators ({course.coordinators.length})
+                                    </h4>
+                                    <div className="space-y-3">
+                                        {course.coordinators.map((coordinator: any) => (
+                                            <div key={coordinator.id} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100/70 transition-colors">
+                                                {coordinator.profile_picture ? (
+                                                    <img
+                                                        src={coordinator.profile_picture}
+                                                        alt={coordinator.full_name || coordinator.email}
+                                                        className="w-10 h-10 rounded-full border border-blue-200 object-cover shrink-0 mt-0.5"
+                                                    />
+                                                ) : (
+                                                    <img
+                                                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                                            coordinator.full_name || coordinator.email
+                                                        )}&background=0066CC&color=fff`}
+                                                        alt={coordinator.full_name || coordinator.email}
+                                                        className="w-10 h-10 rounded-full border border-blue-200 shrink-0 mt-0.5"
+                                                    />
+                                                )}
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="font-semibold text-gray-800 text-sm truncate">
+                                                        {coordinator.full_name || coordinator.email}
+                                                    </p>
+                                                    <span className="inline-block text-[11px] font-medium text-[#0066CC] bg-blue-50 px-2 py-0.5 rounded mt-0.5">
+                                                        Coordinator
+                                                    </span>
+                                                    {coordinator.bio && (
+                                                        <p className="text-xs text-gray-500 line-clamp-2 mt-1">{coordinator.bio}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Who can Join */}
@@ -850,7 +892,7 @@ export function CourseDetailPage() {
                                 <h2 className="text-2xl font-bold text-gray-800">Course Announcements</h2>
                                 <p className="text-sm text-gray-500">Important updates from the instructor for enrolled students.</p>
                             </div>
-                            {user && (user.role === 'ADMIN' || (user.role === 'INSTRUCTOR' && user.id === course.instructor.id)) && (
+                            {user && (user.role === 'ADMIN' || (user.role === 'INSTRUCTOR' && (user.id === course.instructor.id || course.coordinators?.some((c: any) => c.id === user.id)))) && (
                                 <Link
                                     to={`/dashboard/instructor/my-courses/${course.id}/announcements`}
                                     className="text-sm font-semibold text-[#0066CC] hover:text-[#004c99]"

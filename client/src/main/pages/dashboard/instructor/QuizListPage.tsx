@@ -23,7 +23,7 @@ import QuizTemplateDownloadButton from '../../../components/ui/QuizTemplateDownl
 const QuizListPage: React.FC = () => {
     const { courseId } = useParams<{ courseId: string }>();
     const navigate = useNavigate();
-    const { course, fetchCourseDetail, loading: courseLoading } = useCourses();
+    const { course, fetchCourseDetail, loading: courseLoading, courseDetailFetched } = useCourses();
 
     const [quizzes, setQuizzes] = useState<Quiz[]>([]);
     const [loadingQuizzes, setLoadingQuizzes] = useState(true);
@@ -156,7 +156,7 @@ const QuizListPage: React.FC = () => {
         });
     };
 
-    if (courseLoading || (loadingQuizzes && quizzes.length === 0)) {
+    if (courseLoading || !courseDetailFetched || loadingQuizzes) {
         return (
             <div className="flex items-center justify-center min-h-100">
                 <LoadingSpinner />

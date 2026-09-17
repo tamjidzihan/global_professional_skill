@@ -6,34 +6,42 @@ from rest_framework import permissions
 
 
 class IsCourseInstructorOrAdmin(permissions.BasePermission):
-    """Permission for course instructor or admin."""
+    """Permission for course instructor, coordinator, or admin."""
 
     def has_object_permission(self, request, view, obj):  # type: ignore
         # Admin has full access
         if request.user.is_admin_user:
             return True
 
+        # Helper to check instructor or coordinator on a course
+        def is_instructor_or_coordinator(course):
+            if course.instructor == request.user:
+                return True
+            if hasattr(course, "coordinators") and course.coordinators.filter(id=request.user.id).exists():
+                return True
+            return False
+
         # For Course objects
         if hasattr(obj, "instructor"):
-            return obj.instructor == request.user
+            return is_instructor_or_coordinator(obj)
 
         # For Section objects
         if hasattr(obj, "course"):
-            return obj.course.instructor == request.user
+            return is_instructor_or_coordinator(obj.course)
 
         # For Lesson objects (through section)
         if hasattr(obj, "section"):
-            return obj.section.course.instructor == request.user
+            return is_instructor_or_coordinator(obj.section.course)
 
         # For QuizQuestion/QuizSubmission objects (through quiz)
         if hasattr(obj, "quiz"):
-            return obj.quiz.course.instructor == request.user
+            return is_instructor_or_coordinator(obj.quiz.course)
 
         return False
 
 
 class IsEnrolledOrInstructor(permissions.BasePermission):
-    """Permission for enrolled students, instructor, or admin."""
+    """Permission for enrolled students, instructor, coordinator, or admin."""
 
     def has_object_permission(self, request, view, obj):
         # Admin has full access
@@ -46,8 +54,10 @@ class IsEnrolledOrInstructor(permissions.BasePermission):
         else:
             course = obj
 
-        # Instructor has access
+        # Instructor or Coordinator has access
         if course.instructor == request.user:
+            return True
+        if hasattr(course, "coordinators") and course.coordinators.filter(id=request.user.id).exists():
             return True
 
         # Check if preview lesson
@@ -55,6 +65,6 @@ class IsEnrolledOrInstructor(permissions.BasePermission):
             return True
 
         # Check enrollment
-        from enrollments.models import Enrollment
+        from apps.enrollments.models import Enrollment
 
         return Enrollment.objects.filter(student=request.user, course=course).exists()

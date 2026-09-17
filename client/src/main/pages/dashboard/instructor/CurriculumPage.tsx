@@ -50,7 +50,7 @@ function LessonIcon({ type }: { type: string }) {
 const CurriculumPage: React.FC = () => {
     const { courseId } = useParams<{ courseId: string }>();
     const navigate = useNavigate();
-    const { course, fetchCourseDetail, addSection, removeSection, removeLesson, loading } = useCourses();
+    const { course, fetchCourseDetail, addSection, removeSection, removeLesson, loading, courseDetailFetched } = useCourses();
 
     const [openSection, setOpenSection] = useState<string | null>(null);
     const [isAddingSection, setIsAddingSection] = useState(false);
@@ -179,7 +179,7 @@ const CurriculumPage: React.FC = () => {
     const inputCls = 'w-full px-3 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-lg text-gray-800 placeholder-gray-400 outline-none focus:border-violet-300 focus:ring-2 focus:ring-violet-50 transition-all';
     const labelCls = 'block text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1.5';
 
-    if (loading && !course) return <LoadingSpinner fullscreen text="Loading curriculum..." />;
+    if (loading || !courseDetailFetched || (!course && !serverError)) return <LoadingSpinner fullscreen text="Loading curriculum..." />;
 
     if (!course) {
         return (

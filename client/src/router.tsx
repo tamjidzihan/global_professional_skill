@@ -42,6 +42,7 @@ import SiteSettingsPage from "./main/pages/dashboard/admin/SiteSettingsPage";
 import { PromoCodeManagementPage } from "./main/pages/dashboard/admin/PromoCodeManagementPage";
 import AdminCourseDetailPage from "./main/pages/dashboard/admin/AdminCourseDetailPage";
 import { AdminCourseCertificatePage } from "./main/pages/dashboard/admin/AdminCourseCertificatePage";
+import { CourseCoordinatorsPage } from "./main/pages/dashboard/CourseCoordinatorsPage";
 import CertificateVerificationPage from "./main/pages/CertificateVerificationPage";
 import AdminCourseAnnouncementsPage from "./main/pages/dashboard/admin/AdminCourseAnnouncementsPage";
 import JobManagementPage from "./main/pages/dashboard/admin/JobManagementPage";
@@ -343,6 +344,22 @@ export const router = createBrowserRouter([
                         )
                     },
                     {
+                        path: 'instructor/my-courses/:id/coordinators',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR', 'ADMIN']}>
+                                <CourseCoordinatorsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'instructor/my-courses/:courseId/coordinators',
+                        element: (
+                            <ProtectedRoute allowedRoles={['INSTRUCTOR', 'ADMIN']}>
+                                <CourseCoordinatorsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
                         path: 'instructor/reports',
                         element: (
                             <ProtectedRoute allowedRoles={['INSTRUCTOR']}>
@@ -388,6 +405,22 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['ADMIN']}>
                                 <EnrolledStudentsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/courses/:id/coordinators',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <CourseCoordinatorsPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/courses/:courseId/coordinators',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <CourseCoordinatorsPage />
                             </ProtectedRoute>
                         )
                     },

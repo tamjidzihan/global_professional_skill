@@ -66,7 +66,8 @@ export const CourseAnalyticsPage: React.FC = () => {
                 setCourse(c)
 
                 // Permission check
-                if (user && user.role === 'INSTRUCTOR' && c.instructor?.id !== user.id) {
+                const isCoordinator = c.coordinators?.some((coord: any) => coord.id === user?.id);
+                if (user && user.role === 'INSTRUCTOR' && c.instructor?.id !== user.id && !isCoordinator) {
                     navigate('/dashboard/instructor/my-courses')
                     return
                 }

@@ -54,10 +54,11 @@ export default function CourseMaterialsPage() {
         }
     }, [courseId, fetchCourseDetail, fetchMaterials]);
 
-    // Role verification: only instructor of course or admin can access
+    // Role verification: only instructor of course, coordinator, or admin can access
     useEffect(() => {
         if (course && user) {
-            const isInstructor = course.instructor.id === user.id;
+            const isCoordinator = course.coordinators?.some((c: any) => c.id === user.id);
+            const isInstructor = course.instructor.id === user.id || isCoordinator;
             const isAdmin = user.role === 'ADMIN';
             if (!isInstructor && !isAdmin) {
                 toast.error("Access denied. You do not have permission to manage materials for this course.");

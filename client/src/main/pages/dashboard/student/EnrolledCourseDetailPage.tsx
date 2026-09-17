@@ -22,6 +22,7 @@ import {
     Download,
     Megaphone,
     Link2,
+    Users,
 } from 'lucide-react';
 import { useEnrollments } from '../../../../hooks/useEnrollments';
 import { useCourses } from '../../../../hooks/useCourses';
@@ -612,7 +613,7 @@ export default function EnrolledCourseDetailPage() {
                     {/* Instructor Card */}
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
                         <h3 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                            <Award className="w-4 h-4 text-violet-500" /> Instructor
+                            <Award className="w-4 h-4 text-violet-500" /> Lead Instructor
                         </h3>
                         <div className="flex items-center gap-4 mb-4">
                             <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border-2 border-violet-50">
@@ -632,6 +633,38 @@ export default function EnrolledCourseDetailPage() {
                         <p className="text-xs text-gray-500 leading-relaxed line-clamp-3 italic">
                             {course.instructor.bio || "Industry professional dedicated to sharing practical knowledge with students."}
                         </p>
+
+                        {/* Course Coordinators */}
+                        {course.coordinators && course.coordinators.length > 0 && (
+                            <div className="mt-5 pt-4 border-t border-gray-100">
+                                <h4 className="text-xs font-bold text-gray-900 mb-3 flex items-center gap-1.5 uppercase tracking-wider">
+                                    <Users className="w-3.5 h-3.5 text-indigo-600" /> Course Coordinators ({course.coordinators.length})
+                                </h4>
+                                <div className="space-y-2.5">
+                                    {course.coordinators.map((coordinator: any) => (
+                                        <div key={coordinator.id} className="flex items-center gap-3 p-2.5 bg-violet-50/40 rounded-xl border border-violet-100/50">
+                                            <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 border border-violet-100">
+                                                {coordinator.profile_picture ? (
+                                                    <img src={coordinator.profile_picture} alt={coordinator.full_name || coordinator.email} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                                                        {coordinator.full_name?.[0] || coordinator.email?.[0] || 'C'}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <p className="font-bold text-gray-900 text-xs truncate">
+                                                    {coordinator.full_name || coordinator.email}
+                                                </p>
+                                                <p className="text-[10px] text-indigo-600 font-medium truncate">
+                                                    Course Coordinator
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Support Card */}

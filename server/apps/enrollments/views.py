@@ -45,7 +45,9 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
 
         if user.is_instructor:  # type: ignore
             return Enrollment.objects.filter(
-                models.Q(course__instructor=user) | models.Q(student=user)
+                models.Q(course__instructor=user)
+                | models.Q(course__coordinators=user)
+                | models.Q(student=user)
             ).select_related("course", "student", "certificate").distinct()
 
         return Enrollment.objects.filter(student=user).select_related(
@@ -203,8 +205,9 @@ class CertificateViewSet(viewsets.ModelViewSet):
 
         if user.is_instructor:  # type: ignore
             return Certificate.objects.filter(
-                enrollment__course__instructor=user
-            ).select_related("enrollment", "enrollment__student", "enrollment__course")
+                models.Q(enrollment__course__instructor=user)
+                | models.Q(enrollment__course__coordinators=user)
+            ).distinct().select_related("enrollment", "enrollment__student", "enrollment__course")
 
         return Certificate.objects.filter(
             enrollment__student=user

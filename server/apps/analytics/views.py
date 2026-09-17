@@ -10,14 +10,18 @@ class InstructorAnalyticsView(APIView):
     permission_classes = [IsInstructor]
 
     def get(self, request):
-        courses = Course.objects.filter(instructor=request.user)
+        from django.db.models import Q
+
+        courses = Course.objects.filter(
+            Q(instructor=request.user) | Q(coordinators=request.user)
+        ).distinct()
 
         stats = {
             "total_courses": courses.count(),
             "published_courses": courses.filter(status="PUBLISHED").count(),
             "total_enrollments": Enrollment.objects.filter(
-                course__instructor=request.user
-            ).count(),
+                Q(course__instructor=request.user) | Q(course__coordinators=request.user)
+            ).distinct().count(),
             "average_rating": courses.aggregate(avg=Avg("average_rating"))["avg"] or 0,
             "total_reviews": courses.aggregate(sum=Sum("total_reviews"))["sum"] or 0,
         }

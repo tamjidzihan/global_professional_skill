@@ -206,6 +206,7 @@ class CourseListSerializer(serializers.ModelSerializer):
     total_sections = serializers.SerializerMethodField()
     is_admission_open = serializers.SerializerMethodField()
     is_full = serializers.SerializerMethodField()
+    coordinator_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Course
@@ -215,6 +216,7 @@ class CourseListSerializer(serializers.ModelSerializer):
             "slug",
             "short_description",
             "instructor_name",
+            "coordinator_count",
             "category_name",
             "difficulty_level",
             "delivery_mode",
@@ -240,6 +242,9 @@ class CourseListSerializer(serializers.ModelSerializer):
             "created_at",
             "published_at",
         )
+
+    def get_coordinator_count(self, obj):
+        return obj.coordinators.count()
 
     def get_total_sections(self, obj):
         return obj.total_sections
@@ -328,13 +333,13 @@ class CourseMaterialSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if request and request.user and request.user.is_authenticated:
             user = request.user
-            # Check if user is course instructor, admin, or enrolled student
+            # Check if user is course instructor, coordinator, admin, or enrolled student
             from apps.enrollments.models import Enrollment
 
             is_enrolled = Enrollment.objects.filter(
                 student=user, course=instance.course
             ).exists()
-            is_instructor = instance.course.instructor == user
+            is_instructor = instance.course.instructor == user or instance.course.coordinators.filter(id=user.id).exists()
             is_admin = user.role == "ADMIN"
             if not (is_enrolled or is_instructor or is_admin):
                 rep["file"] = None
@@ -372,6 +377,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     """Detailed serializer for course."""
 
     instructor = UserSerializer(read_only=True)
+    coordinators = UserSerializer(many=True, read_only=True)
     category = CategorySerializer(read_only=True)
     sections = SectionSerializer(many=True, read_only=True)
     reviews = ReviewSerializer(many=True, read_only=True)
@@ -391,6 +397,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "description",
             "short_description",
             "instructor",
+            "coordinators",
             "category",
             "difficulty_level",
             "delivery_mode",
@@ -445,7 +452,8 @@ class CourseDetailSerializer(serializers.ModelSerializer):
 
         now = timezone.now()
 
-        if request.user.is_admin_user or obj.instructor == request.user:
+        is_coord = hasattr(obj, "coordinators") and obj.coordinators.filter(id=request.user.id).exists()
+        if request.user.is_admin_user or obj.instructor == request.user or is_coord:
             announcements = obj.announcements.all()
         else:
             if not Enrollment.objects.filter(student=request.user, course=obj).exists():

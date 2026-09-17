@@ -81,6 +81,13 @@ class Course(models.Model):
         related_name="courses",
         limit_choices_to={"role": "INSTRUCTOR"},
     )
+    coordinators = models.ManyToManyField(
+        User,
+        related_name="coordinated_courses",
+        blank=True,
+        limit_choices_to={"role": "INSTRUCTOR"},
+        help_text="Additional instructors assigned as course coordinators",
+    )
 
     # Category & Level
     category = models.ForeignKey(

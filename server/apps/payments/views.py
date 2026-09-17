@@ -51,7 +51,9 @@ class PaymentViewSet(viewsets.ModelViewSet):
             return Payment.objects.select_related("user", "course").all()
         
         if user.is_instructor: # type: ignore
-            return Payment.objects.filter(course__instructor=user).select_related("user", "course")
+            return Payment.objects.filter(
+                models.Q(course__instructor=user) | models.Q(course__coordinators=user)
+            ).distinct().select_related("user", "course")
 
         return Payment.objects.filter(user=user).select_related("user", "course")
 

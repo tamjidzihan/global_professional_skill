@@ -25,6 +25,7 @@ import {
     FileText,
     Megaphone,
     ClipboardList,
+    UserCheck,
 } from 'lucide-react'
 import { useAuth } from '../../../../hooks/useAuth'
 import { useCourses } from '../../../../hooks/useCourses'
@@ -99,7 +100,7 @@ export function InstructorCourseDetailPage() {
     const navigate = useNavigate()
     const { user } = useAuth()
     const {
-        course, loading, fetchCourseDetail,
+        course, loading, courseDetailFetched, error, fetchCourseDetail,
         submitForReview, fetchReviews,
         clearStates, removeCourse,
     } = useCourses()
@@ -121,7 +122,8 @@ export function InstructorCourseDetailPage() {
     }, [course?.sections, expandedModules.length])
 
     useEffect(() => {
-        if (course && user && course.instructor.id !== user.id)
+        const isCoordinator = course?.coordinators?.some(c => c.id === user?.id);
+        if (course && user && course.instructor.id !== user.id && !isCoordinator)
             navigate('/dashboard/instructor/my-courses')
     }, [course, user, navigate])
 
@@ -184,9 +186,9 @@ export function InstructorCourseDetailPage() {
         ? (course.enrollment_count || 0) * parseFloat(course.price)
         : 0
 
-    if (loading) return <CourseDetailSkeleton />
+    if (loading || !courseDetailFetched || (!course && !error)) return <CourseDetailSkeleton />
 
-    if (!course) {
+    if (error || !course) {
         return (
             <div className="py-6 px-4 md:px-6">
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm py-16 flex flex-col items-center gap-3">
@@ -194,6 +196,9 @@ export function InstructorCourseDetailPage() {
                         <AlertCircle className="w-5 h-5 text-rose-500" />
                     </div>
                     <p className="text-sm font-semibold text-gray-800">Course not found</p>
+                    <p className="text-xs text-gray-400 max-w-sm text-center">
+                        {error || "The course doesn't exist or you don't have permission to view it."}
+                    </p>
                     <Link
                         to="/dashboard/instructor/my-courses"
                         className="mt-2 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border border-violet-100 rounded-lg hover:bg-violet-100 transition-colors"
@@ -251,6 +256,13 @@ export function InstructorCourseDetailPage() {
                             <Users className="w-3.5 h-3.5" /> Enrolled Students
                         </Link>
 
+                        <Link
+                            to={`/dashboard/instructor/my-courses/${id}/coordinators`}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 transition-colors"
+                        >
+                            <UserCheck className="w-3.5 h-3.5" /> Coordinators ({course.coordinators?.length || 0})
+                        </Link>
+
                         <button
                             onClick={() => navigate(`/dashboard/instructor/my-courses/${id}/analytics`)}
                             className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border border-violet-100 rounded-lg hover:bg-violet-100 transition-colors cursor-pointer"
@@ -272,12 +284,14 @@ export function InstructorCourseDetailPage() {
                                 <CheckCircle className="w-3.5 h-3.5" /> Submit for Review
                             </button>
                         )}
-                        <button
-                            onClick={() => setShowDeleteModal(true)}
-                            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-lg hover:bg-rose-100 transition-colors cursor-pointer"
-                        >
-                            <Trash2 className="w-3.5 h-3.5" /> Delete
-                        </button>
+                        {course.instructor.id === user?.id && (
+                            <button
+                                onClick={() => setShowDeleteModal(true)}
+                                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-lg hover:bg-rose-100 transition-colors cursor-pointer"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" /> Delete
+                            </button>
+                        )}
                     </div>
                 </div>
 
@@ -369,85 +383,84 @@ export function InstructorCourseDetailPage() {
                 </div>
 
                 {/* ── Quick action cards ── */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3  xl:grid-cols-5 gap-3 ">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
                     <button
                         onClick={handleManageCurriculum}
-                        className={`group flex items-center gap-4 px-5 py-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-violet-200 hover:shadow-md transition-all duration-150 text-left cursor-pointer ${course.status === 'PENDING' ? 'opacity-60 cursor-not-allowed' : ''}`}
+                        className={`group flex items-center gap-3 px-4 py-3.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-violet-200 hover:shadow-md transition-all duration-150 text-left cursor-pointer ${course.status === 'PENDING' ? 'opacity-60 cursor-not-allowed' : ''}`}
                     >
-                        <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center shrink-0 group-hover:bg-violet-100 transition-colors">
-                            <BookOpen className="w-5 h-5 text-violet-600" />
+                        <div className="w-9 h-9 rounded-xl bg-violet-50 flex items-center justify-center shrink-0 group-hover:bg-violet-100 transition-colors">
+                            <BookOpen className="w-4 h-4 text-violet-600" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-900">Manage Curriculum</p>
-                            <p className="text-xs text-gray-400 mt-0.5">Update lessons & modules</p>
+                            <p className="text-xs font-semibold text-gray-900">Curriculum</p>
+                            <p className="text-[10px] text-gray-400 truncate mt-0.5">Lessons & modules</p>
                         </div>
-                        <div className="w-6 h-6 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:bg-violet-50 group-hover:border-violet-200 transition-colors">
-                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 group-hover:text-violet-500 -rotate-90 transition-colors" />
+                    </button>
+
+                    <button
+                        onClick={() => navigate(`/dashboard/instructor/my-courses/${id}/coordinators`)}
+                        className="group flex items-center gap-3 px-4 py-3.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-blue-200 hover:shadow-md transition-all duration-150 text-left cursor-pointer"
+                    >
+                        <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
+                            <UserCheck className="w-4 h-4 text-blue-600" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-gray-900">Coordinators</p>
+                            <p className="text-[10px] text-gray-400 truncate mt-0.5">{course.coordinators?.length || 0} assigned</p>
                         </div>
                     </button>
 
                     <button
                         onClick={() => navigate(`/dashboard/instructor/my-courses/${id}/quizzes`)}
-                        className="group flex items-center gap-4 px-5 py-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-amber-200 hover:shadow-md transition-all duration-150 text-left cursor-pointer"
+                        className="group flex items-center gap-3 px-4 py-3.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-amber-200 hover:shadow-md transition-all duration-150 text-left cursor-pointer"
                     >
-                        <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0 group-hover:bg-amber-100 transition-colors">
-                            <ClipboardList className="w-5 h-5 text-amber-600" />
+                        <div className="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center shrink-0 group-hover:bg-amber-100 transition-colors">
+                            <ClipboardList className="w-4 h-4 text-amber-600" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-900">Manage Quizzes</p>
-                            <p className="text-xs text-gray-400 mt-0.5">Create & track assessments</p>
-                        </div>
-                        <div className="w-6 h-6 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:bg-amber-50 group-hover:border-amber-200 transition-colors">
-                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 group-hover:text-amber-500 -rotate-90 transition-colors" />
+                            <p className="text-xs font-semibold text-gray-900">Quizzes</p>
+                            <p className="text-[10px] text-gray-400 truncate mt-0.5">Assessments</p>
                         </div>
                     </button>
 
                     <button
                         onClick={() => navigate(`/dashboard/instructor/my-courses/${id}/students`)}
-                        className="group flex items-center gap-4 px-5 py-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-emerald-200 hover:shadow-md transition-all duration-150 text-left cursor-pointer"
+                        className="group flex items-center gap-3 px-4 py-3.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-emerald-200 hover:shadow-md transition-all duration-150 text-left cursor-pointer"
                     >
-                        <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
-                            <Users className="w-5 h-5 text-emerald-600" />
+                        <div className="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 group-hover:bg-emerald-100 transition-colors">
+                            <Users className="w-4 h-4 text-emerald-600" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-900">View Students</p>
-                            <p className="text-xs text-gray-400 mt-0.5">
+                            <p className="text-xs font-semibold text-gray-900">Students</p>
+                            <p className="text-[10px] text-gray-400 truncate mt-0.5">
                                 <span className="font-semibold text-emerald-600">{course.enrollment_count || 0}</span> enrolled
                             </p>
-                        </div>
-                        <div className="w-6 h-6 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:bg-emerald-50 group-hover:border-emerald-200 transition-colors">
-                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 group-hover:text-emerald-500 -rotate-90 transition-colors" />
                         </div>
                     </button>
 
                     <button
                         onClick={() => navigate(`/dashboard/instructor/my-courses/${id}/materials`)}
-                        className="group flex items-center gap-4 px-5 py-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-blue-200 hover:shadow-md transition-all duration-150 text-left cursor-pointer"
+                        className="group flex items-center gap-3 px-4 py-3.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-blue-200 hover:shadow-md transition-all duration-150 text-left cursor-pointer"
                     >
-                        <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
-                            <FileText className="w-5 h-5 text-blue-600" />
+                        <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
+                            <FileText className="w-4 h-4 text-blue-600" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-900">Manage Materials</p>
-                            <p className="text-xs text-gray-400 mt-0.5">Upload course materials</p>
-                        </div>
-                        <div className="w-6 h-6 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:bg-blue-50 group-hover:border-blue-200 transition-colors">
-                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500 -rotate-90 transition-colors" />
+                            <p className="text-xs font-semibold text-gray-900">Materials</p>
+                            <p className="text-[10px] text-gray-400 truncate mt-0.5">Course files</p>
                         </div>
                     </button>
+
                     <button
                         onClick={() => navigate(`/dashboard/instructor/my-courses/${id}/announcements`)}
-                        className="group flex items-center gap-4 px-5 py-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-purple-200 hover:shadow-md transition-all duration-150 text-left cursor-pointer"
+                        className="group flex items-center gap-3 px-4 py-3.5 bg-white rounded-xl border border-gray-100 shadow-sm hover:border-purple-200 hover:shadow-md transition-all duration-150 text-left cursor-pointer"
                     >
-                        <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center shrink-0 group-hover:bg-purple-100 transition-colors">
-                            <Megaphone className="w-5 h-5 text-purple-600" />
+                        <div className="w-9 h-9 rounded-xl bg-purple-50 flex items-center justify-center shrink-0 group-hover:bg-purple-100 transition-colors">
+                            <Megaphone className="w-4 h-4 text-purple-600" />
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-900">Manage Announcements</p>
-                            <p className="text-xs text-gray-400 mt-0.5">Post course announcements</p>
-                        </div>
-                        <div className="w-6 h-6 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0 group-hover:bg-purple-50 group-hover:border-purple-200 transition-colors">
-                            <ChevronDown className="w-3.5 h-3.5 text-gray-400 group-hover:text-purple-500 -rotate-90 transition-colors" />
+                            <p className="text-xs font-semibold text-gray-900">Announcements</p>
+                            <p className="text-[10px] text-gray-400 truncate mt-0.5">Notices & updates</p>
                         </div>
                     </button>
                 </div>
@@ -481,6 +494,54 @@ export function InstructorCourseDetailPage() {
                         {/* ── Overview ── */}
                         {activeTab === 'overview' && (
                             <div className="space-y-5">
+                                {/* Course Coordinators Section */}
+                                <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <UserCheck className="w-4 h-4 text-blue-600" />
+                                            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">
+                                                Course Coordinators ({course.coordinators?.length || 0})
+                                            </h3>
+                                        </div>
+                                        <Link
+                                            to={`/dashboard/instructor/my-courses/${id}/coordinators`}
+                                            className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
+                                        >
+                                            Manage Coordinators →
+                                        </Link>
+                                    </div>
+
+                                    {course.coordinators && course.coordinators.length > 0 ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                            {course.coordinators.map((coordinator: any) => (
+                                                <div key={coordinator.id} className="flex items-center gap-2.5 p-2.5 bg-white rounded-lg border border-gray-100 shadow-2xs">
+                                                    {coordinator.profile_picture ? (
+                                                        <img
+                                                            src={coordinator.profile_picture}
+                                                            alt={coordinator.full_name || coordinator.email}
+                                                            className="w-8 h-8 rounded-lg object-cover border border-gray-100 shrink-0"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs shrink-0">
+                                                            {coordinator.full_name?.charAt(0) || 'C'}
+                                                        </div>
+                                                    )}
+                                                    <div className="min-w-0">
+                                                        <p className="text-xs font-bold text-gray-900 truncate">
+                                                            {coordinator.full_name || coordinator.email}
+                                                        </p>
+                                                        <p className="text-[10px] text-gray-400 truncate">{coordinator.email}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-xs text-gray-400 italic">
+                                            No additional coordinators assigned. You can appoint other instructors to help coordinate this course.
+                                        </p>
+                                    )}
+                                </div>
+
                                 {overviewSections.map(({ key, label, accent, bar }) => {
                                     const html = (course as any)[key]
                                     if (!html) return null

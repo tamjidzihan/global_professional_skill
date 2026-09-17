@@ -19,8 +19,10 @@ import {
     AlertCircle,
     RefreshCw,
     ArrowLeft,
+    UserCheck,
 } from 'lucide-react';
 import SEO from '../../../components/SEO';
+import { useAuth } from '../../../../hooks/useAuth';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 type FilterStatus = 'ALL' | 'DRAFT' | 'PENDING' | 'APPROVED' | 'PUBLISHED' | 'ARCHIVED';
@@ -72,9 +74,11 @@ function CourseThumbnail({ course }: { course: any }) {
 }
 
 // ── Action Dropdown ───────────────────────────────────────────────────────────
-function ActionDropdown({ course, onDelete }: { course: any; onDelete: (id: string) => void }) {
+function ActionDropdown({ course, onDelete, currentUserId }: { course: any; onDelete: (id: string) => void; currentUserId?: string }) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
+
+    const isLeadInstructor = !course.instructor || course.instructor.id === currentUserId;
 
     useEffect(() => {
         const handler = (e: MouseEvent) => {
@@ -127,15 +131,19 @@ function ActionDropdown({ course, onDelete }: { course: any; onDelete: (id: stri
                             {label}
                         </Link>
                     ))}
-                    {/* Divider */}
-                    <div className="my-1 border-t border-gray-100" />
-                    <button
-                        onClick={() => { onDelete(course.id); setOpen(false); }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                    >
-                        <Trash2 className="w-3.5 h-3.5 shrink-0" />
-                        Delete Course
-                    </button>
+                    {isLeadInstructor && (
+                        <>
+                            {/* Divider */}
+                            <div className="my-1 border-t border-gray-100" />
+                            <button
+                                onClick={() => { onDelete(course.id); setOpen(false); }}
+                                className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            >
+                                <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                                Delete Course
+                            </button>
+                        </>
+                    )}
                 </div>
             )}
         </div>
@@ -144,6 +152,7 @@ function ActionDropdown({ course, onDelete }: { course: any; onDelete: (id: stri
 
 // ── Main Component ────────────────────────────────────────────────────────────
 const MyCoursesPage = (): JSX.Element => {
+    const { user } = useAuth();
     const { courses, loading, error, fetchMyCourses, removeCourse } = useMyCourses();
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<FilterStatus>('ALL');
@@ -385,12 +394,19 @@ const MyCoursesPage = (): JSX.Element => {
                                             <div className="flex items-center gap-3">
                                                 <CourseThumbnail course={course} />
                                                 <div className="min-w-0">
-                                                    <Link
-                                                        to={`/dashboard/instructor/my-courses/${course.id}`}
-                                                        className="text-sm font-semibold text-gray-800 hover:text-violet-600 transition-colors truncate block"
-                                                    >
-                                                        {course.title}
-                                                    </Link>
+                                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                                        <Link
+                                                            to={`/dashboard/instructor/my-courses/${course.id}`}
+                                                            className="text-sm font-semibold text-gray-800 hover:text-violet-600 transition-colors truncate block"
+                                                        >
+                                                            {course.title}
+                                                        </Link>
+                                                        {user && course.instructor && course.instructor.id !== user.id && (
+                                                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 shrink-0">
+                                                                <UserCheck className="w-3 h-3" /> Coordinated
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <p className="text-xs text-gray-400 truncate font-mono">
                                                         {course.id.slice(0, 8)}…
                                                     </p>
@@ -430,7 +446,7 @@ const MyCoursesPage = (): JSX.Element => {
 
                                         {/* Actions */}
                                         <td className="px-5 py-3 whitespace-nowrap text-right">
-                                            <ActionDropdown course={course} onDelete={handleDelete} />
+                                            <ActionDropdown course={course} onDelete={handleDelete} currentUserId={user?.id} />
                                         </td>
                                     </tr>
                                 ))

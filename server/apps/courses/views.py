@@ -262,13 +262,14 @@ class CourseViewSet(viewsets.ModelViewSet):
         """Submit course for admin review."""
         course = self.get_object()
 
-        # Only instructor can submit
-        if course.instructor != request.user:
+        # Lead instructor, coordinator, or admin can submit
+        is_coord = course.coordinators.filter(id=request.user.id).exists()
+        if course.instructor != request.user and not is_coord and not request.user.is_admin_user:
             return Response(
                 {
                     "success": False,
                     "error": {
-                        "message": "Only the course instructor can submit for review."
+                        "message": "Only the course instructor or coordinator can submit for review."
                     },
                 },
                 status=status.HTTP_403_FORBIDDEN,
@@ -304,6 +305,253 @@ class CourseViewSet(viewsets.ModelViewSet):
             {"success": True, "message": "Course submitted for review successfully."}
         )
 
+    @action(detail=True, methods=["get", "post"], permission_classes=[IsAuthenticated])
+    def coordinators(self, request, pk=None):
+        """
+        GET: List coordinators for this course.
+        POST: Add a coordinator to this course.
+        """
+        course = self.get_object()
+
+        if request.method == "GET":
+            coordinators = course.coordinators.all()
+            from apps.accounts.serializers import UserSerializer
+
+            serializer = UserSerializer(
+                coordinators, many=True, context=self.get_serializer_context()
+            )
+            return Response({"success": True, "data": serializer.data})
+
+        # POST: Add coordinator
+        # Permission check: Caller must be admin or lead course instructor
+        if not (request.user.is_admin_user or course.instructor == request.user):
+            return Response(
+                {
+                    "success": False,
+                    "error": {
+                        "message": "Only the main course instructor or an admin can add coordinators."
+                    },
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        instructor_id = request.data.get("instructor_id") or request.data.get("user_id")
+        if not instructor_id:
+            return Response(
+                {
+                    "success": False,
+                    "error": {"message": "Instructor ID is required."},
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from apps.accounts.models import User, UserRole
+
+        try:
+            target_user = User.objects.get(id=instructor_id)
+        except (User.DoesNotExist, ValueError):
+            return Response(
+                {
+                    "success": False,
+                    "error": {"message": "Selected user does not exist."},
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Requirement: Only an instructor can be a course coordinator
+        if target_user.role != UserRole.INSTRUCTOR:
+            return Response(
+                {
+                    "success": False,
+                    "error": {
+                        "message": "Only verified instructors can be added as course coordinators."
+                    },
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not target_user.is_active:
+            return Response(
+                {
+                    "success": False,
+                    "error": {
+                        "message": "Cannot add an inactive instructor as coordinator."
+                    },
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if target_user.id == course.instructor_id:
+            return Response(
+                {
+                    "success": False,
+                    "error": {
+                        "message": "The lead instructor of the course cannot be added as a coordinator."
+                    },
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if course.coordinators.filter(id=target_user.id).exists():
+            return Response(
+                {
+                    "success": False,
+                    "error": {
+                        "message": "This instructor is already assigned as a coordinator for this course."
+                    },
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        course.coordinators.add(target_user)
+
+        from apps.accounts.serializers import UserSerializer
+
+        return Response(
+            {
+                "success": True,
+                "message": f"{target_user.get_full_name()} added as coordinator successfully.",
+                "data": UserSerializer(
+                    target_user, context=self.get_serializer_context()
+                ).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    @action(
+        detail=True,
+        methods=["post", "delete"],
+        url_path="coordinators/(?P<instructor_id>[^/.]+)",
+        permission_classes=[IsAuthenticated],
+    )
+    def remove_coordinator_by_param(self, request, pk=None, instructor_id=None):
+        """Remove a coordinator from this course via URL parameter."""
+        return self._do_remove_coordinator(request, instructor_id)
+
+    @action(
+        detail=True,
+        methods=["post", "delete"],
+        url_path="remove-coordinator",
+        permission_classes=[IsAuthenticated],
+    )
+    def remove_coordinator(self, request, pk=None):
+        """Remove a coordinator from this course via request body."""
+        instructor_id = (
+            request.data.get("instructor_id")
+            or request.data.get("user_id")
+            or request.query_params.get("instructor_id")
+        )
+        return self._do_remove_coordinator(request, instructor_id)
+
+    def _do_remove_coordinator(self, request, instructor_id):
+        course = self.get_object()
+
+        if not (request.user.is_admin_user or course.instructor == request.user):
+            return Response(
+                {
+                    "success": False,
+                    "error": {
+                        "message": "Only the main course instructor or an admin can remove coordinators."
+                    },
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if not instructor_id:
+            return Response(
+                {
+                    "success": False,
+                    "error": {"message": "Instructor ID is required."},
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from apps.accounts.models import User
+
+        try:
+            target_user = User.objects.get(id=instructor_id)
+        except (User.DoesNotExist, ValueError):
+            return Response(
+                {
+                    "success": False,
+                    "error": {"message": "Selected instructor does not exist."},
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if not course.coordinators.filter(id=target_user.id).exists():
+            return Response(
+                {
+                    "success": False,
+                    "error": {
+                        "message": "This instructor is not a coordinator for this course."
+                    },
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        course.coordinators.remove(target_user)
+
+        return Response(
+            {
+                "success": True,
+                "message": f"{target_user.get_full_name()} removed from coordinators.",
+            }
+        )
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="available-instructors",
+        permission_classes=[IsAuthenticated],
+    )
+    def available_instructors(self, request, pk=None):
+        """
+        List or search available instructors that can be assigned as coordinators.
+        Excludes the lead instructor and already assigned coordinators.
+        Supports search by name (first_name, last_name) or email.
+        """
+        course = self.get_object()
+
+        if not (request.user.is_admin_user or course.instructor == request.user):
+            return Response(
+                {
+                    "success": False,
+                    "error": {
+                        "message": "Only the main course instructor or an admin can view available instructors."
+                    },
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        from apps.accounts.models import User, UserRole
+        from apps.accounts.serializers import UserSerializer
+
+        query = request.query_params.get("search", "").strip()
+
+        # Exclude primary instructor and existing coordinators
+        assigned_coordinator_ids = list(
+            course.coordinators.values_list("id", flat=True)
+        )
+        exclude_ids = assigned_coordinator_ids + [course.instructor_id]
+
+        instructors_qs = User.objects.filter(
+            role=UserRole.INSTRUCTOR, is_active=True
+        ).exclude(id__in=exclude_ids)
+
+        if query:
+            instructors_qs = instructors_qs.filter(
+                Q(first_name__icontains=query)
+                | Q(last_name__icontains=query)
+                | Q(email__icontains=query)
+            )
+
+        instructors = instructors_qs.order_by("first_name", "last_name")[:50]
+        serializer = UserSerializer(
+            instructors, many=True, context=self.get_serializer_context()
+        )
+        return Response({"success": True, "data": serializer.data})
+
 
 class MyCoursesViewSet(viewsets.ModelViewSet):
     """
@@ -338,13 +586,16 @@ class MyCoursesViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):  # type: ignore
         """
-        This view should only return courses for the currently authenticated
-        instructor.
+        This view returns courses for the currently authenticated
+        instructor (authored or coordinated).
         """
         return (
-            Course.objects.filter(instructor=self.request.user)
+            Course.objects.filter(
+                Q(instructor=self.request.user) | Q(coordinators=self.request.user)
+            )
+            .distinct()
             .select_related("instructor", "category", "reviewed_by")
-            .prefetch_related("sections__lessons")
+            .prefetch_related("sections__lessons", "coordinators")
         )
 
     def get_serializer_class(self):  # type: ignore
@@ -389,8 +640,18 @@ class MyCoursesViewSet(viewsets.ModelViewSet):
 
     @transaction.atomic
     def destroy(self, request, *args, **kwargs):
-        """Delete course."""
+        """Delete course. Only main instructor or admin can delete."""
         instance = self.get_object()
+        if not (request.user.is_admin_user or instance.instructor == request.user):
+            return Response(
+                {
+                    "success": False,
+                    "error": {
+                        "message": "Only the main course instructor or an admin can delete this course."
+                    },
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
         self.perform_destroy(instance)
         return Response(
             {"success": True, "message": "Course deleted successfully."},
@@ -473,12 +734,13 @@ class LessonViewSet(viewsets.ModelViewSet):
         lesson = self.get_object()
         course = lesson.section.course
 
-        # Explicit check: Only course instructor or admin can update progress
-        if course.instructor != request.user and not request.user.is_admin_user:
+        # Explicit check: Only course instructor, coordinator, or admin can update progress
+        is_coord = course.coordinators.filter(id=request.user.id).exists()
+        if course.instructor != request.user and not is_coord and not request.user.is_admin_user:
             return Response(
                 {
                     "success": False,
-                    "message": "Only the course instructor can update class progress.",
+                    "message": "Only the course instructor or coordinator can update class progress.",
                 },
                 status=status.HTTP_403_FORBIDDEN,
             )
@@ -621,7 +883,9 @@ class CourseAnnouncementViewSet(viewsets.ModelViewSet):
             return queryset
 
         if user.is_instructor:  # type: ignore
-            return queryset.filter(course__instructor=user)
+            return queryset.filter(
+                Q(course__instructor=user) | Q(course__coordinators=user)
+            ).distinct()
 
         # Student access: only enrolled students see visible and active announcements
         from apps.enrollments.models import Enrollment
@@ -652,7 +916,8 @@ class CourseAnnouncementViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        if not request.user.is_admin_user and course.instructor != request.user:  # type: ignore
+        is_coord = course.coordinators.filter(id=request.user.id).exists()
+        if not request.user.is_admin_user and course.instructor != request.user and not is_coord:  # type: ignore
             return Response(
                 {
                     "success": False,
@@ -900,9 +1165,12 @@ class UndisqualifyStudentView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # Check if the requesting user is the instructor of this course or an admin
+        # Check if the requesting user is the instructor/coordinator of this course or an admin
         user = request.user
-        is_instructor = submission.quiz.course.instructor == user
+        is_instructor = (
+            submission.quiz.course.instructor == user
+            or submission.quiz.course.coordinators.filter(id=user.id).exists()
+        )
         is_admin = user.is_admin_user
 
         if not (is_instructor or is_admin):
@@ -952,7 +1220,10 @@ class DeleteQuizSubmissionView(APIView):
             )
 
         user = request.user
-        is_instructor = submission.quiz.course.instructor == user
+        is_instructor = (
+            submission.quiz.course.instructor == user
+            or submission.quiz.course.coordinators.filter(id=user.id).exists()
+        )
         is_admin = user.is_admin_user
 
         if not (is_instructor or is_admin):
@@ -1525,8 +1796,10 @@ class MyQuizSubmissionsViewSet(viewsets.ReadOnlyModelViewSet):
             )
         if user.is_instructor: # type: ignore
             return QuizSubmission.objects.filter(
-                Q(student=user) | Q(quiz__course__instructor=user)
-            ).select_related("quiz", "quiz__course", "student")
+                Q(student=user)
+                | Q(quiz__course__instructor=user)
+                | Q(quiz__course__coordinators=user)
+            ).distinct().select_related("quiz", "quiz__course", "student")
         return QuizSubmission.objects.filter(student=user).select_related(
             "quiz", "quiz__course"
         )
@@ -1573,7 +1846,7 @@ class CourseMaterialViewSet(viewsets.ModelViewSet):
         course = get_object_or_404(Course, id=course_id)
 
         is_enrolled = Enrollment.objects.filter(student=user, course=course).exists()
-        is_instructor = course.instructor == user
+        is_instructor = course.instructor == user or course.coordinators.filter(id=user.id).exists()
         is_admin = user.role == "ADMIN"  # type: ignore
 
         if not (is_enrolled or is_instructor or is_admin):
@@ -1601,7 +1874,8 @@ class CourseMaterialViewSet(viewsets.ModelViewSet):
         course = get_object_or_404(Course, id=course_id)
 
         # Verify permissions
-        if course.instructor != request.user and not request.user.is_admin_user:
+        is_coord = course.coordinators.filter(id=request.user.id).exists()
+        if course.instructor != request.user and not is_coord and not request.user.is_admin_user:
             raise PermissionDenied(
                 "You do not have permission to upload materials to this course."
             )
@@ -1708,7 +1982,8 @@ class CourseMaterialViewSet(viewsets.ModelViewSet):
         course = get_object_or_404(Course, id=course_id)
 
         # Manually verify permissions
-        if course.instructor != request.user and not request.user.is_admin_user:
+        is_coord = course.coordinators.filter(id=request.user.id).exists()
+        if course.instructor != request.user and not is_coord and not request.user.is_admin_user:
             raise PermissionDenied(
                 "You do not have permission to delete materials for this course."
             )
@@ -1758,7 +2033,10 @@ class AnswerSheetView(APIView):
 
         user = request.user
         is_student = submission.student == user
-        is_instructor = submission.quiz.course.instructor == user
+        is_instructor = (
+            submission.quiz.course.instructor == user
+            or submission.quiz.course.coordinators.filter(id=user.id).exists()
+        )
         is_admin = user.is_admin_user  # type: ignore
 
         if not (is_student or is_instructor or is_admin):
@@ -1855,7 +2133,10 @@ class QuestionSheetView(APIView):
             )
 
         user = request.user
-        is_instructor = quiz.course.instructor == user
+        is_instructor = (
+            quiz.course.instructor == user
+            or quiz.course.coordinators.filter(id=user.id).exists()
+        )
         is_admin = user.is_admin_user  # type: ignore
         is_privileged = is_instructor or is_admin
 

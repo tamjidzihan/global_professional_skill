@@ -113,7 +113,7 @@ const CourseEditDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { course, loading, error, fetchCourseDetail, editCourse } = useCourses();
+  const { course, loading, error, fetchCourseDetail, editCourse, courseDetailFetched } = useCourses();
   const { categories, fetchCategories } = useCategories();
   const [serverError, setServerError] = useState<string | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
@@ -137,7 +137,8 @@ const CourseEditDetailPage: React.FC = () => {
 
   useEffect(() => {
     if (course) {
-      if (user && user.id !== course.instructor.id) {
+      const isCoordinator = course.coordinators?.some(c => c.id === user?.id);
+      if (user && user.id !== course.instructor.id && !isCoordinator) {
         navigate('/dashboard/instructor/my-courses');
         return;
       }
@@ -220,7 +221,7 @@ const CourseEditDetailPage: React.FC = () => {
   };
 
   // ── Loading skeleton ──
-  if (loading && !course) {
+  if (loading || !courseDetailFetched || (!course && !serverError)) {
     return (
       <div className="py-6 px-4 md:px-6 space-y-4">
         <div className="h-6 w-48 bg-gray-100 rounded animate-pulse" />
