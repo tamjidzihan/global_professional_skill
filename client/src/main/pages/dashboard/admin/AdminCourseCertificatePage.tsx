@@ -28,6 +28,7 @@ import {
     getCourseCertificateCandidates,
     manualIssueCertificate,
     adminUpdateCertificate,
+    getMediaUrl,
 } from '../../../../lib/api';
 import { CertificatePreview } from '../../../components/certificate/CertificatePreview';
 import { CertificateTemplateSelector } from '../../../components/certificate/CertificateTemplateSelector';
@@ -114,15 +115,15 @@ export const AdminCourseCertificatePage: React.FC = () => {
                 setAuthorizerName(conf.authorizer_name || '');
                 setAuthorizerPosition(conf.authorizer_position || 'Director');
                 setIsActive(conf.is_active !== undefined ? conf.is_active : true);
-                if (conf.logo_url) setLogoPreview(conf.logo_url);
+                if (conf.logo_url) setLogoPreview(getMediaUrl(conf.logo_url));
                 if (conf.logo_size) setLogoSize(conf.logo_size);
-                if (conf.signature_url) setSignaturePreview(conf.signature_url);
+                if (conf.signature_url) setSignaturePreview(getMediaUrl(conf.signature_url));
                 if (conf.signature_size) setSignatureSize(conf.signature_size);
 
                 setEnableAdditionalAuthorizer(Boolean(conf.enable_additional_authorizer));
                 setAdditionalAuthorizerName(conf.additional_authorizer_name || '');
                 setAdditionalAuthorizerPosition(conf.additional_authorizer_position || 'Authorized Signatory');
-                if (conf.additional_signature_url) setAdditionalSignaturePreview(conf.additional_signature_url);
+                if (conf.additional_signature_url) setAdditionalSignaturePreview(getMediaUrl(conf.additional_signature_url));
                 if (conf.additional_signature_size) setAdditionalSignatureSize(conf.additional_signature_size);
             }
 
@@ -261,14 +262,14 @@ export const AdminCourseCertificatePage: React.FC = () => {
         templateId,
         authorizerName: authorizerName || 'Authorized Signatory',
         authorizerPosition: authorizerPosition || 'Director',
-        logoUrl: logoPreview || '/gpilogo_icon.png',
+        logoUrl: getMediaUrl(logoPreview) || '/gpilogo_icon.png',
         logoSize,
-        signatureUrl: signaturePreview,
+        signatureUrl: getMediaUrl(signaturePreview),
         signatureSize,
         enableAdditionalAuthorizer,
         additionalAuthorizerName: additionalAuthorizerName || 'Co-Authorizer / Dean',
         additionalAuthorizerPosition: additionalAuthorizerPosition || 'Director of Examinations',
-        additionalSignatureUrl: additionalSignaturePreview,
+        additionalSignatureUrl: getMediaUrl(additionalSignaturePreview),
         additionalSignatureSize,
         verificationUrl: `${window.location.origin}/certificate-verify/GPI-SJO-4484-487641`,
         website: GPI_CERTIFICATE_CONSTANTS.WEBSITE,

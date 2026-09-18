@@ -18,7 +18,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import SEO from '../../../components/SEO';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
-import { getMyCertificates } from '../../../../lib/api';
+import { getMyCertificates, getMediaUrl } from '../../../../lib/api';
 import { downloadCertificatePDF } from '../../../components/certificate/pdfExport';
 import { CertificatePreview } from '../../../components/certificate/CertificatePreview';
 import {
@@ -130,14 +130,14 @@ export const CertificatesPage: React.FC = () => {
             templateId: cert.template_id,
             authorizerName: cert.authorizer_name,
             authorizerPosition: cert.authorizer_position,
-            logoUrl: cert.logo_url || '/gpilogo_icon.png',
+            logoUrl: getMediaUrl(cert.logo_url) || '/gpilogo_icon.png',
             logoSize: cert.logo_size || 100,
-            signatureUrl: cert.signature_url,
+            signatureUrl: getMediaUrl(cert.signature_url),
             signatureSize: cert.signature_size || 100,
             enableAdditionalAuthorizer: Boolean(cert.enable_additional_authorizer),
             additionalAuthorizerName: cert.additional_authorizer_name || undefined,
             additionalAuthorizerPosition: cert.additional_authorizer_position || undefined,
-            additionalSignatureUrl: cert.additional_signature_url || null,
+            additionalSignatureUrl: getMediaUrl(cert.additional_signature_url) || null,
             additionalSignatureSize: cert.additional_signature_size || 100,
             verificationUrl: cert.verification_url,
             website: GPI_CERTIFICATE_CONSTANTS.WEBSITE,

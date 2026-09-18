@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import JsBarcode from 'jsbarcode';
 import { type CertificateData, GPI_CERTIFICATE_CONSTANTS } from '../types';
 import { CertificateQRCode } from '../CertificateQRCode';
+import { getMediaUrl } from '../../../../lib/api';
 
 interface TemplateProps {
     data: CertificateData;
@@ -194,7 +195,7 @@ const InstitutionalSeal: React.FC<{ size?: number }> = ({ size = 118 }) => (
 export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
     const barcodeRef = useRef<SVGSVGElement | null>(null);
 
-    const logoSrc = data.logoUrl || '/gpilogo_icon.png';
+    const logoSrc = getMediaUrl(data.logoUrl) || '/gpilogo_icon.png';
     const serial = data.certificateNumber || 'GPI-SJO-4484-487641';
     const orgName = data.organizationName || GPI_CERTIFICATE_CONSTANTS.ORGANIZATION_NAME;
     const website = GPI_CERTIFICATE_CONSTANTS.WEBSITE;
@@ -204,6 +205,7 @@ export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
 
     const logoScale = Math.max(0.4, Math.min(2.0, (data.logoSize || 100) / 100));
     const signatureScale = Math.max(0.4, Math.min(2.0, (data.signatureSize || 100) / 100));
+    const signatureSrc = getMediaUrl(data.signatureUrl);
 
     useEffect(() => {
         if (!barcodeRef.current || !serial) return;
@@ -278,7 +280,12 @@ export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
                     <img
                         src={logoSrc}
                         alt="Institution logo"
-                        crossOrigin="anonymous"
+                        onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            if (target.src !== window.location.origin + '/gpilogo_icon.png') {
+                                target.src = '/gpilogo_icon.png';
+                            }
+                        }}
                         className="max-w-full max-h-full object-contain"
                         style={{
                             transform: `scale(${logoScale})`,
@@ -370,11 +377,10 @@ export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
                 {/* Signature */}
                 <div className="flex flex-col items-end">
                     <div className="w-[248px] h-[48px] flex items-end justify-center relative">
-                        {data.signatureUrl ? (
+                        {signatureSrc ? (
                             <img
-                                src={data.signatureUrl}
+                                src={signatureSrc}
                                 alt="Authorised signature"
-                                crossOrigin="anonymous"
                                 className="object-contain max-h-[46px] max-w-[220px]"
                                 style={{
                                     transform: `scale(${signatureScale})`,

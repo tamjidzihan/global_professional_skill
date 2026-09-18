@@ -1,13 +1,14 @@
 import React from 'react';
 import { type CertificateData, GPI_CERTIFICATE_CONSTANTS } from '../types';
 import { CertificateQRCode } from '../CertificateQRCode';
+import { getMediaUrl } from '../../../../lib/api';
 
 interface TemplateProps {
     data: CertificateData;
 }
 
 export const ModernMinimalTemplate: React.FC<TemplateProps> = ({ data }) => {
-    const logoSrc = data.logoUrl || '/gpilogo_icon.png';
+    const logoSrc = getMediaUrl(data.logoUrl) || '/gpilogo_icon.png';
     const serial = data.certificateNumber || 'GPI-SJO-4484-487641';
     const orgName = data.organizationName || GPI_CERTIFICATE_CONSTANTS.ORGANIZATION_NAME;
     const website = GPI_CERTIFICATE_CONSTANTS.WEBSITE;
@@ -19,6 +20,8 @@ export const ModernMinimalTemplate: React.FC<TemplateProps> = ({ data }) => {
     const signatureScale = Math.max(0.4, Math.min(2.0, (data.signatureSize || 100) / 100));
     const isDualAuthorizer = Boolean(data.enableAdditionalAuthorizer);
     const additionalSignatureScale = Math.max(0.4, Math.min(2.0, (data.additionalSignatureSize || 100) / 100));
+    const additionalSignatureSrc = getMediaUrl(data.additionalSignatureUrl);
+    const signatureSrc = getMediaUrl(data.signatureUrl);
 
     const formatDateStr = (d?: string) => {
         if (!d) return 'September 16, 2026';
@@ -53,7 +56,17 @@ export const ModernMinimalTemplate: React.FC<TemplateProps> = ({ data }) => {
                             }}
                             className="rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center p-2 transition-all duration-200"
                         >
-                            <img src={logoSrc} alt="Logo" className="w-full h-full object-contain" crossOrigin="anonymous" />
+                            <img
+                                src={logoSrc}
+                                alt="Logo"
+                                onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    if (target.src !== window.location.origin + '/gpilogo_icon.png') {
+                                        target.src = '/gpilogo_icon.png';
+                                    }
+                                }}
+                                className="w-full h-full object-contain"
+                            />
                         </div>
                         <div>
                             <h1 className="text-[20px] font-extrabold tracking-tight text-slate-900 uppercase">
@@ -119,20 +132,19 @@ export const ModernMinimalTemplate: React.FC<TemplateProps> = ({ data }) => {
                     {/* Left: Additional Authorizer (Dual Mode) OR Metadata (Single Mode) */}
                     {isDualAuthorizer ? (
                         <div className="flex flex-col items-start">
-                            {data.additionalSignatureUrl ? (
+                            {additionalSignatureSrc ? (
                                 <div
                                     style={{ height: `${Math.round(42 * additionalSignatureScale)}px` }}
                                     className="w-[180px] flex items-end justify-center mb-1 transition-all duration-200"
                                 >
                                     <img
-                                        src={data.additionalSignatureUrl}
+                                        src={additionalSignatureSrc}
                                         alt="Additional Signature"
                                         style={{
                                             maxHeight: `${Math.round(40 * additionalSignatureScale)}px`,
                                             maxWidth: `${Math.round(170 * additionalSignatureScale)}px`,
                                         }}
                                         className="object-contain"
-                                        crossOrigin="anonymous"
                                     />
                                 </div>
                             ) : (
@@ -188,20 +200,19 @@ export const ModernMinimalTemplate: React.FC<TemplateProps> = ({ data }) => {
 
                     {/* Right: Signature */}
                     <div className="flex flex-col items-end">
-                        {data.signatureUrl ? (
+                        {signatureSrc ? (
                             <div
                                 style={{ height: `${Math.round(42 * signatureScale)}px` }}
                                 className="w-[180px] flex items-end justify-center mb-1 transition-all duration-200"
                             >
                                 <img
-                                    src={data.signatureUrl}
+                                    src={signatureSrc}
                                     alt="Signature"
                                     style={{
                                         maxHeight: `${Math.round(40 * signatureScale)}px`,
                                         maxWidth: `${Math.round(170 * signatureScale)}px`,
                                     }}
                                     className="object-contain"
-                                    crossOrigin="anonymous"
                                 />
                             </div>
                         ) : (

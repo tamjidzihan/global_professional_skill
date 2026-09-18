@@ -50,6 +50,7 @@ import { getLogoDataUrl, addWatermarkToPdf } from '../../../../lib/pdfUtilsInstr
 import {
     getCourseCertificateConfig,
     getCourseCertificateCandidates,
+    getMediaUrl,
 } from '../../../../lib/api';
 import { CertificatePreview } from '../../../components/certificate/CertificatePreview';
 import {
@@ -144,14 +145,14 @@ const AdminCourseDetailPage = () => {
         templateId: certConfig?.template_id || 'template_1',
         authorizerName: certConfig?.authorizer_name || 'Academic Director',
         authorizerPosition: certConfig?.authorizer_position || 'Director & Academic Head',
-        signatureUrl: certConfig?.signature_url || null,
+        signatureUrl: getMediaUrl(certConfig?.signature_url) || null,
         signatureSize: certConfig?.signature_size || 100,
         enableAdditionalAuthorizer: certConfig?.enable_additional_authorizer || false,
         additionalAuthorizerName: certConfig?.additional_authorizer_name || undefined,
         additionalAuthorizerPosition: certConfig?.additional_authorizer_position || undefined,
-        additionalSignatureUrl: certConfig?.additional_signature_url || null,
+        additionalSignatureUrl: getMediaUrl(certConfig?.additional_signature_url) || null,
         additionalSignatureSize: certConfig?.additional_signature_size || 100,
-        logoUrl: certConfig?.logo_url || null,
+        logoUrl: getMediaUrl(certConfig?.logo_url) || null,
         logoSize: certConfig?.logo_size || 100,
         verificationUrl: `${typeof window !== 'undefined' ? window.location.origin : ''}/certificate-verify/GPI-SJO-4484-487641`,
         website: GPI_CERTIFICATE_CONSTANTS.WEBSITE,

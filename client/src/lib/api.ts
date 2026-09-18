@@ -44,11 +44,19 @@ const API_URL = import.meta.env.PROD
 
 export const getMediaUrl = (path?: string | null): string => {
     if (!path) return '';
-    if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('blob:') || path.startsWith('data:')) {
+    if (path.startsWith('blob:') || path.startsWith('data:')) {
         return path;
     }
-    const backendOrigin = API_URL.replace(/\/api\/v1\/?$/, '');
-    return `${backendOrigin}${path.startsWith('/') ? '' : '/'}${path}`;
+    let url = path;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        const backendOrigin = API_URL.replace(/\/api\/v1\/?$/, '');
+        url = `${backendOrigin}${url.startsWith('/') ? '' : '/'}${url}`;
+    }
+    // Upgrade http to https in production or when running on https
+    if (typeof window !== 'undefined' && window.location.protocol === 'https:' && url.startsWith('http://')) {
+        url = url.replace(/^http:\/\//, 'https://');
+    }
+    return url;
 };
 
 export const api = axios.create({

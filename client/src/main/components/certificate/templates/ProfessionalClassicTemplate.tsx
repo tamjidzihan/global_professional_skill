@@ -1,13 +1,14 @@
 import React from 'react';
 import { type CertificateData, GPI_CERTIFICATE_CONSTANTS } from '../types';
 import { CertificateQRCode } from '../CertificateQRCode';
+import { getMediaUrl } from '../../../../lib/api';
 
 interface TemplateProps {
     data: CertificateData;
 }
 
 export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) => {
-    const logoSrc = data.logoUrl || '/gpilogo_icon.png';
+    const logoSrc = getMediaUrl(data.logoUrl) || '/gpilogo_icon.png';
     const serial = data.certificateNumber || 'GPI-SJO-4484-487641';
     const orgName =
         data.organizationName || GPI_CERTIFICATE_CONSTANTS.ORGANIZATION_NAME;
@@ -32,6 +33,8 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
         0.4,
         Math.min(2.0, (data.additionalSignatureSize || 100) / 100)
     );
+    const additionalSignatureSrc = getMediaUrl(data.additionalSignatureUrl);
+    const signatureSrc = getMediaUrl(data.signatureUrl);
 
     const formatDateStr = (d?: string) => {
         if (!d) return 'September 16, 2026';
@@ -103,7 +106,12 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                                     <img
                                         src={logoSrc}
                                         alt="Logo"
-                                        crossOrigin="anonymous"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            if (target.src !== window.location.origin + '/gpilogo_icon.png') {
+                                                target.src = '/gpilogo_icon.png';
+                                            }
+                                        }}
                                         className="object-contain absolute left-1/2 top-1/2"
                                         style={{
                                             width: `${Math.round(
@@ -198,7 +206,7 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                                 <div className="text-left flex flex-col items-start">
 
                                     {/* Additional Authorizer Signature */}
-                                    {data.additionalSignatureUrl ? (
+                                    {additionalSignatureSrc ? (
                                         <div
                                             style={{
                                                 height: `${Math.round(
@@ -210,7 +218,7 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                                         >
                                             <img
                                                 src={
-                                                    data.additionalSignatureUrl
+                                                    additionalSignatureSrc
                                                 }
                                                 alt="Additional Signature"
                                                 style={{
@@ -224,7 +232,6 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                                                     )}px`,
                                                 }}
                                                 className="object-contain"
-                                                crossOrigin="anonymous"
                                             />
                                         </div>
                                     ) : (
@@ -424,7 +431,7 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                                         className="w-50 mb-1 flex items-end justify-center transition-all duration-200"
                                     >
                                         <img
-                                            src={data.signatureUrl}
+                                            src={signatureSrc}
                                             alt="Signature"
                                             style={{
                                                 maxHeight: `${Math.round(
@@ -435,7 +442,6 @@ export const ProfessionalClassicTemplate: React.FC<TemplateProps> = ({ data }) =
                                                 )}px`,
                                             }}
                                             className="object-contain"
-                                            crossOrigin="anonymous"
                                         />
                                     </div>
                                 ) : (

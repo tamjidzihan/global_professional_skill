@@ -22,7 +22,7 @@ import { toast } from 'react-hot-toast';
 import SEO from '../components/SEO';
 import Breadcrumb from '../components/Breadcrumb';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { verifyCertificate } from '../../lib/api';
+import { verifyCertificate, getMediaUrl } from '../../lib/api';
 import { CertificatePreview } from '../components/certificate/CertificatePreview';
 import { downloadCertificatePDF } from '../components/certificate/pdfExport';
 import {
@@ -132,14 +132,14 @@ export const CertificateVerificationPage: React.FC = () => {
             templateId: result.template_id || 'template_1',
             authorizerName: result.authorizer_name || 'Authorized Signatory',
             authorizerPosition: result.authorizer_position || 'Academic Director',
-            signatureUrl: result.signature_url,
+            signatureUrl: getMediaUrl(result.signature_url),
             signatureSize: result.signature_size || 100,
             enableAdditionalAuthorizer: Boolean(result.enable_additional_authorizer),
             additionalAuthorizerName: result.additional_authorizer_name || undefined,
             additionalAuthorizerPosition: result.additional_authorizer_position || undefined,
-            additionalSignatureUrl: result.additional_signature_url || null,
+            additionalSignatureUrl: getMediaUrl(result.additional_signature_url) || null,
             additionalSignatureSize: result.additional_signature_size || 100,
-            logoUrl: result.logo_url || '/gpilogo_icon.png',
+            logoUrl: getMediaUrl(result.logo_url) || '/gpilogo_icon.png',
             logoSize: result.logo_size || 100,
             verificationUrl: result.verification_url || window.location.href,
             website: GPI_CERTIFICATE_CONSTANTS.WEBSITE,

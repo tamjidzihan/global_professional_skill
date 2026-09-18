@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import JsBarcode from 'jsbarcode';
 import { type CertificateData, GPI_CERTIFICATE_CONSTANTS } from '../types';
 import { CertificateQRCode } from '../CertificateQRCode';
+import { getMediaUrl } from '../../../../lib/api';
 
 interface TemplateProps {
     data: CertificateData;
@@ -9,7 +10,7 @@ interface TemplateProps {
 
 export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
     const barcodeRef = useRef<SVGSVGElement | null>(null);
-    const logoSrc = data.logoUrl || '/gpilogo_icon.png';
+    const logoSrc = getMediaUrl(data.logoUrl) || '/gpilogo_icon.png';
     const serial = data.certificateNumber || 'GPI-SJO-4484-487641';
     const orgName = data.organizationName || GPI_CERTIFICATE_CONSTANTS.ORGANIZATION_NAME;
     const website = GPI_CERTIFICATE_CONSTANTS.WEBSITE;
@@ -21,6 +22,8 @@ export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
     const signatureScale = Math.max(0.4, Math.min(2.0, (data.signatureSize || 100) / 100));
     const isDualAuthorizer = Boolean(data.enableAdditionalAuthorizer);
     const additionalSignatureScale = Math.max(0.4, Math.min(2.0, (data.additionalSignatureSize || 100) / 100));
+    const additionalSignatureSrc = getMediaUrl(data.additionalSignatureUrl);
+    const signatureSrc = getMediaUrl(data.signatureUrl);
 
     useEffect(() => {
         if (!barcodeRef.current || !serial) return;
@@ -130,7 +133,12 @@ export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
                                     src={logoSrc}
                                     alt="Logo"
                                     className="max-w-full max-h-full object-contain"
-                                    crossOrigin="anonymous"
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        if (target.src !== window.location.origin + '/gpilogo_icon.png') {
+                                            target.src = '/gpilogo_icon.png';
+                                        }
+                                    }}
                                     style={{
                                         transform: `scale(${logoScale})`,
                                         transformOrigin: 'center center',
@@ -201,12 +209,11 @@ export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
                             {isDualAuthorizer ? (
                                 <div className="self-end text-center pr-[20px] flex flex-col items-start">
                                     <div className="w-[220px] h-[46px] mb-1 flex items-end justify-center relative overflow-visible">
-                                        {data.additionalSignatureUrl ? (
+                                        {additionalSignatureSrc ? (
                                             <img
-                                                src={data.additionalSignatureUrl}
+                                                src={additionalSignatureSrc}
                                                 alt="Additional Signature"
                                                 className="max-h-[44px] max-w-[200px] object-contain"
-                                                crossOrigin="anonymous"
                                                 style={{
                                                     transform: `scale(${additionalSignatureScale})`,
                                                     transformOrigin: 'bottom center',
@@ -268,12 +275,11 @@ export const GpiAcademicTemplate: React.FC<TemplateProps> = ({ data }) => {
                             {/* RIGHT: PRIMARY AUTHORIZER SIGNATURE */}
                             <div className="self-end text-center pl-[20px] flex flex-col items-end">
                                 <div className="w-[220px] h-[46px] mb-1 flex items-end justify-center relative overflow-visible">
-                                    {data.signatureUrl ? (
+                                    {signatureSrc ? (
                                         <img
-                                            src={data.signatureUrl}
+                                            src={signatureSrc}
                                             alt="Signature"
                                             className="max-h-[44px] max-w-[200px] object-contain"
-                                            crossOrigin="anonymous"
                                             style={{
                                                 transform: `scale(${signatureScale})`,
                                                 transformOrigin: 'bottom center',
