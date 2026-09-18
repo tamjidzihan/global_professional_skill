@@ -238,11 +238,10 @@ export const CertificatesPage: React.FC = () => {
                         <button
                             key={f.key}
                             onClick={() => setFilter(f.key as any)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${
-                                filter === f.key
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors cursor-pointer shrink-0 ${filter === f.key
                                     ? 'bg-gray-900 text-white shadow-xs'
                                     : 'bg-gray-50 text-gray-500 hover:bg-gray-100'
-                            }`}
+                                }`}
                         >
                             {f.label}
                         </button>
@@ -288,11 +287,10 @@ export const CertificatesPage: React.FC = () => {
                         return (
                             <div
                                 key={item.enrollment_id}
-                                className={`bg-white rounded-xl border transition-all p-5 flex flex-col justify-between shadow-xs ${
-                                    isIssued
+                                className={`bg-white rounded-xl border transition-all p-5 flex flex-col justify-between shadow-xs ${isIssued
                                         ? 'border-emerald-200 bg-linear-to-b from-white to-emerald-50/10'
                                         : 'border-gray-100'
-                                }`}
+                                    }`}
                             >
                                 <div className="space-y-3">
                                     {/* Top status header */}
@@ -341,9 +339,8 @@ export const CertificatesPage: React.FC = () => {
                                         </div>
                                         <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
                                             <div
-                                                className={`h-full rounded-full transition-all ${
-                                                    item.progress_percentage >= 100 ? 'bg-emerald-500' : 'bg-blue-500'
-                                                }`}
+                                                className={`h-full rounded-full transition-all ${item.progress_percentage >= 100 ? 'bg-emerald-500' : 'bg-blue-500'
+                                                    }`}
                                                 style={{ width: `${Math.min(item.progress_percentage, 100)}%` }}
                                             />
                                         </div>
@@ -352,9 +349,8 @@ export const CertificatesPage: React.FC = () => {
                                             <div className="flex items-center justify-between text-[11px] pt-1 border-t border-gray-100">
                                                 <span className="text-gray-500 font-medium">Quiz Average:</span>
                                                 <span
-                                                    className={`font-bold ${
-                                                        item.quiz_passed ? 'text-emerald-600' : 'text-rose-600'
-                                                    }`}
+                                                    className={`font-bold ${item.quiz_passed ? 'text-emerald-600' : 'text-rose-600'
+                                                        }`}
                                                 >
                                                     {item.average_quiz_score}%{' '}
                                                     <span className="text-[10px] text-gray-400 font-normal">
@@ -405,7 +401,7 @@ export const CertificatesPage: React.FC = () => {
                                                     <Eye className="w-3.5 h-3.5 text-gray-500" /> Preview
                                                 </button>
                                                 <Link
-                                                    to={`/certificate/verify/${item.certificate.certificate_number}`}
+                                                    to={`/certificate-verify/${item.certificate.certificate_number}`}
                                                     target="_blank"
                                                     className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-lg transition-colors"
                                                 >

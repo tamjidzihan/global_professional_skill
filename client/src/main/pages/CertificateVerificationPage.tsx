@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
@@ -12,7 +13,6 @@ import {
     BookOpen,
     Building2,
     ExternalLink,
-    Printer,
     Copy,
     Check,
     ArrowRight,
@@ -121,35 +121,31 @@ export const CertificateVerificationPage: React.FC = () => {
         }
     };
 
-    const handlePrint = () => {
-        window.print();
-    };
-
     // Prepare certificate data for preview rendering
     const previewData: CertificateData | null = result
         ? {
-              studentName: result.student_name,
-              courseName: result.course_name,
-              organizationName: result.organization_name || GPI_CERTIFICATE_CONSTANTS.ORGANIZATION_NAME,
-              certificateNumber: result.certificate_number,
-              issueDate: result.issue_date,
-              templateId: result.template_id || 'template_1',
-              authorizerName: result.authorizer_name || 'Authorized Signatory',
-              authorizerPosition: result.authorizer_position || 'Academic Director',
-              signatureUrl: result.signature_url,
-              signatureSize: result.signature_size || 100,
-              enableAdditionalAuthorizer: Boolean(result.enable_additional_authorizer),
-              additionalAuthorizerName: result.additional_authorizer_name || undefined,
-              additionalAuthorizerPosition: result.additional_authorizer_position || undefined,
-              additionalSignatureUrl: result.additional_signature_url || null,
-              additionalSignatureSize: result.additional_signature_size || 100,
-              logoUrl: result.logo_url || '/gpilogo_icon.png',
-              logoSize: result.logo_size || 100,
-              verificationUrl: result.verification_url || window.location.href,
-              website: GPI_CERTIFICATE_CONSTANTS.WEBSITE,
-              email: GPI_CERTIFICATE_CONSTANTS.EMAIL,
-              mobile: GPI_CERTIFICATE_CONSTANTS.MOBILE,
-          }
+            studentName: result.student_name,
+            courseName: result.course_name,
+            organizationName: result.organization_name || GPI_CERTIFICATE_CONSTANTS.ORGANIZATION_NAME,
+            certificateNumber: result.certificate_number,
+            issueDate: result.issue_date,
+            templateId: result.template_id || 'template_1',
+            authorizerName: result.authorizer_name || 'Authorized Signatory',
+            authorizerPosition: result.authorizer_position || 'Academic Director',
+            signatureUrl: result.signature_url,
+            signatureSize: result.signature_size || 100,
+            enableAdditionalAuthorizer: Boolean(result.enable_additional_authorizer),
+            additionalAuthorizerName: result.additional_authorizer_name || undefined,
+            additionalAuthorizerPosition: result.additional_authorizer_position || undefined,
+            additionalSignatureUrl: result.additional_signature_url || null,
+            additionalSignatureSize: result.additional_signature_size || 100,
+            logoUrl: result.logo_url || '/gpilogo_icon.png',
+            logoSize: result.logo_size || 100,
+            verificationUrl: result.verification_url || window.location.href,
+            website: GPI_CERTIFICATE_CONSTANTS.WEBSITE,
+            email: GPI_CERTIFICATE_CONSTANTS.EMAIL,
+            mobile: GPI_CERTIFICATE_CONSTANTS.MOBILE,
+        }
         : null;
 
     return (
@@ -241,17 +237,15 @@ export const CertificateVerificationPage: React.FC = () => {
                     <div className="space-y-8 animate-fadeIn">
                         {/* Status Alert Banner */}
                         <div
-                            className={`p-6 rounded-2xl border shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4 ${
-                                isRevoked
-                                    ? 'bg-rose-50/90 border-rose-200 text-rose-900'
-                                    : 'bg-emerald-50/90 border-emerald-200 text-emerald-950'
-                            }`}
+                            className={`p-6 rounded-2xl border shadow-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4 ${isRevoked
+                                ? 'bg-rose-50/90 border-rose-200 text-rose-900'
+                                : 'bg-emerald-50/90 border-emerald-200 text-emerald-950'
+                                }`}
                         >
                             <div className="flex items-start gap-4">
                                 <div
-                                    className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-inner ${
-                                        isRevoked ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'
-                                    }`}
+                                    className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-inner ${isRevoked ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'
+                                        }`}
                                 >
                                     {isRevoked ? <XCircle className="w-7 h-7" /> : <ShieldCheck className="w-7 h-7" />}
                                 </div>
@@ -261,11 +255,10 @@ export const CertificateVerificationPage: React.FC = () => {
                                             {isRevoked ? 'Certificate Revoked' : 'Authentic & Officially Verified'}
                                         </h2>
                                         <span
-                                            className={`px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider ${
-                                                isRevoked
-                                                    ? 'bg-rose-200 text-rose-800'
-                                                    : 'bg-emerald-200 text-emerald-900'
-                                            }`}
+                                            className={`px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider ${isRevoked
+                                                ? 'bg-rose-200 text-rose-800'
+                                                : 'bg-emerald-200 text-emerald-900'
+                                                }`}
                                         >
                                             {result.status}
                                         </span>
@@ -289,16 +282,6 @@ export const CertificateVerificationPage: React.FC = () => {
                                         {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                                         <span>{copied ? 'Copied' : 'Share Link'}</span>
                                     </button>
-
-                                    <button
-                                        onClick={handlePrint}
-                                        className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-white text-slate-700 border border-slate-200 hover:bg-slate-50 transition-all cursor-pointer shadow-xs"
-                                        title="Print certificate"
-                                    >
-                                        <Printer className="w-3.5 h-3.5" />
-                                        <span>Print</span>
-                                    </button>
-
                                     <button
                                         onClick={handleDownloadPdf}
                                         disabled={downloading}
