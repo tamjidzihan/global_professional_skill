@@ -23,9 +23,10 @@ const Header = () => {
     }, [fetchCategories])
 
     const isActive = (path: string) => {
-        return location.pathname === path
-            ? 'text-white font-semibold border-b-2 border-white'
-            : 'text-white/90 hover:text-white transition-colors duration-300'
+        if (path === '/') {
+            return location.pathname === '/'
+        }
+        return location.pathname.startsWith(path)
     }
 
     const closeMobileMenu = () => {
@@ -65,6 +66,7 @@ const Header = () => {
         // { path: '#', label: 'PGD' },
         // { path: '#', label: 'RPL' },
         { path: '/careers', label: 'Careers' },
+        { path: '/certificate-verify', label: 'Verify Certificate' },
         { path: '/about', label: 'About Us' }
     ]
 
@@ -129,7 +131,7 @@ const Header = () => {
             {/* Main Navigation */}
             <div>
                 <div className="bg-[#FCF8F1]">
-                    <div className="container mx-auto px-4">
+                    <div className="container mx-auto">
                         <div className="flex items-center justify-between h-18">
                             {/* Logo - Updated with image */}
                             <Link to="/" className="flex items-center space-x-3">
@@ -153,7 +155,7 @@ const Header = () => {
                                             to={item.path}
                                             className={`
                     flex items-center space-x-1 px-4 py-2 rounded-lg transition-all duration-200 whitespace-nowrap
-                    ${isActive(item.path).includes('font-semibold')
+                    ${isActive(item.path)
                                                     ? 'text-[#0066CC] bg-blue-50 font-semibold'
                                                     : 'text-gray-700 hover:text-[#0066CC] hover:bg-blue-50'
                                                 }
@@ -279,7 +281,7 @@ const Header = () => {
                                     ) : (
                                         <Link
                                             to={item.path}
-                                            className={`block px-6 py-3 text-gray-800 hover:bg-blue-50 transition-all duration-200 border-b border-gray-100 last:border-b-0 ${location.pathname === item.path ? 'bg-blue-50 text-[#0066CC] font-semibold border-l-4 border-[#0066CC]' : ''}`}
+                                            className={`block px-6 py-3 text-gray-800 hover:bg-blue-50 transition-all duration-200 border-b border-gray-100 last:border-b-0 ${isActive(item.path) ? 'bg-blue-50 text-[#0066CC] font-semibold border-l-4 border-[#0066CC]' : ''}`}
                                             onClick={closeMobileMenu}
                                         >
                                             {item.label}
