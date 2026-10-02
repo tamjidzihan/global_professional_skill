@@ -251,6 +251,10 @@ export function Footer() {
                                         </p>
                                     </div>
                                 </div>
+
+                                <p className="pl-[52px] text-gray-600 text-sm">
+                                    Trade Licence: TRAD/DNCC/019302/
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -268,6 +272,9 @@ export function Footer() {
                             </p>
                             <p className="text-gray-600 text-xs mt-1">
                                 © {new Date().getFullYear()} Global Professional Institute - GPI. All rights reserved.
+                            </p>
+                            <p className="text-gray-600 text-xs mt-1">
+                                Trade Licence: TRAD/DNCC/019302/
                             </p>
                         </div>
 

@@ -2,6 +2,53 @@
 
 import axios from "axios";
 
+export const getApiErrorMessage = (
+    error: unknown,
+    fallback = 'Something went wrong. Please try again.',
+): string => {
+    if (!axios.isAxiosError(error)) {
+        return error instanceof Error ? error.message : fallback;
+    }
+
+    const data: unknown = error.response?.data;
+    if (typeof data === 'string' && data.trim()) return data;
+
+    if (data && typeof data === 'object') {
+        const payload = data as Record<string, unknown>;
+        const nestedError = payload.error;
+        const message =
+            payload.detail ??
+            (typeof nestedError === 'string'
+                ? nestedError
+                : nestedError && typeof nestedError === 'object'
+                    ? (nestedError as Record<string, unknown>).message
+                    : undefined) ??
+            payload.message;
+        if (typeof message === 'string' && message.trim()) return message;
+
+        for (const value of Object.values(payload)) {
+            const fieldError = Array.isArray(value)
+                ? value.find((item): item is string => typeof item === 'string')
+                : typeof value === 'string'
+                    ? value
+                    : undefined;
+            if (fieldError) return fieldError;
+        }
+    }
+
+    if (error.response?.status === 401) return 'Your session has expired. Please sign in again.';
+    if (error.response?.status === 403) return 'You do not have permission to perform this action.';
+    if (error.response?.status === 404) return 'The requested information could not be found.';
+    if (error.response?.status && error.response.status >= 500) {
+        return 'The server is unavailable right now. Please try again shortly.';
+    }
+    if (error.code === 'ECONNABORTED') {
+        return 'The request took too long. Please check your connection and try again.';
+    }
+    if (!error.response) return 'Unable to connect to the server. Please check your connection.';
+    return fallback;
+};
+
 
 export const extractErrorDetails = (error: any): Record<string, any> | null => {
     if (error.response?.data &&

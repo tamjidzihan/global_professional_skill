@@ -85,6 +85,8 @@ const CoursesPage = () => {
 
     // Update URL when search query changes (with debounce) - reset page to 1
     useEffect(() => {
+        if (searchQuery.trim() === urlSearchQuery) return;
+
         const timeoutId = setTimeout(() => {
             const newParams = new URLSearchParams();
 
@@ -107,7 +109,7 @@ const CoursesPage = () => {
         }, 500);
 
         return () => clearTimeout(timeoutId);
-    }, [searchQuery, urlCategoryId, urlDeliveryMode, navigate]);
+    }, [searchQuery, urlSearchQuery, urlCategoryId, urlDeliveryMode, navigate]);
 
     const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
@@ -178,7 +180,7 @@ const CoursesPage = () => {
         navigate(`/courses?${newParams.toString()}`);
     }
 
-    if (loading || !coursesFetched) {
+    if (!coursesFetched) {
         return <CoursesPageSkeleton />
     }
 
@@ -257,6 +259,7 @@ const CoursesPage = () => {
                         <CourseGrid
                             courses={courses}
                             error={error}
+                            isLoading={loading}
                             pagination={pagination}
                             appliedFilters={appliedFilters}
                             activeCategoryName={activeCategoryName}

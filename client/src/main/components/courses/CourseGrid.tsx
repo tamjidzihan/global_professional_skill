@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ChevronRight, ChevronLeft, Search, X, RotateCcw } from "lucide-react"
+import { ChevronRight, ChevronLeft, Search, X, RotateCcw, LoaderCircle } from "lucide-react"
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CourseCard } from "../CourseCard";
 import type { CoursesSummary } from "../../../types";
@@ -7,6 +7,7 @@ import type { CoursesSummary } from "../../../types";
 interface CourseGridProps {
     courses: CoursesSummary[];
     error: string | null;
+    isLoading: boolean;
     pagination: any;
     appliedFilters: Record<string, string | number>;
     activeCategoryName: string;
@@ -19,6 +20,7 @@ interface CourseGridProps {
 const CourseGrid = ({
     courses,
     error,
+    isLoading,
     pagination,
     appliedFilters,
     activeCategoryName,
@@ -35,7 +37,7 @@ const CourseGrid = ({
 
     // Handle page change with URL update
     const handlePageChange = (pageUrl: string | null, direction: 'next' | 'prev') => {
-        if (!pageUrl) return;
+        if (!pageUrl || isLoading) return;
 
         // Calculate new page number
         const newPage = direction === 'next' ? currentPage + 1 : currentPage - 1;
@@ -51,8 +53,7 @@ const CourseGrid = ({
         // Update URL without reloading the page
         navigate(`/courses?${newParams.toString()}`, { replace: true });
 
-        // Fetch data for the new page
-        onFetchCourses(appliedFilters, pageUrl);
+        // The URL change triggers the page's single course fetch.
     };
 
     return (
@@ -61,9 +62,17 @@ const CourseGrid = ({
             <div className="mb-4 md:mb-6 px-1">
                 {/* Top Row: Title and Header Pagination */}
                 <div className="flex flex-row items-center justify-between gap-3 mb-1">
-                    <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                        {activeCategoryName}
-                    </h2>
+                    <div className="flex items-center gap-2">
+                        <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+                            {activeCategoryName}
+                        </h2>
+                        {isLoading && (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500" role="status" aria-live="polite">
+                                <LoaderCircle className="w-4 h-4 animate-spin text-[#0066CC]" aria-hidden="true" />
+                                Updating
+                            </span>
+                        )}
+                    </div>
 
                     {/* Header Pagination - Visible on all screens */}
                     {(pagination.next || pagination.previous) && (
@@ -71,7 +80,7 @@ const CourseGrid = ({
                             {/* Previous Button */}
                             <button
                                 onClick={() => handlePageChange(pagination.previous, 'prev')}
-                                disabled={!pagination.previous}
+                                disabled={!pagination.previous || isLoading}
                                 className={`p-2 rounded-lg flex items-center justify-center transition-all
                                     ${pagination.previous
                                         ? 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 active:scale-95 shadow-sm cursor-pointer'
@@ -90,7 +99,7 @@ const CourseGrid = ({
                             {/* Next Button */}
                             <button
                                 onClick={() => handlePageChange(pagination.next, 'next')}
-                                disabled={!pagination.next}
+                                disabled={!pagination.next || isLoading}
                                 className={`p-2 rounded-lg flex items-center justify-center transition-all
                                     ${pagination.next
                                         ? 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 active:scale-95 shadow-sm cursor-pointer'

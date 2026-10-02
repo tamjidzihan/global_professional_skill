@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import {
     // Categories API Endpoints
     getCategories,
@@ -53,7 +53,7 @@ import type {
     CourseStatus,
     ReviewCreateUpdateData,
 } from '../types';
-import { extractErrorMessage } from '../lib/errorUtils';
+import { extractErrorMessage, getApiErrorMessage } from '../lib/errorUtils';
 import toast from 'react-hot-toast';
 
 export function useCourses() {
@@ -78,6 +78,7 @@ export function useCourses() {
         next: null as string | null,
         previous: null as string | null,
     });
+    const latestCourseRequest = useRef(0);
 
     const fetchData = useCallback(
         async <T,>(
@@ -127,18 +128,33 @@ export function useCourses() {
 
     const fetchCourses = useCallback(
         async (filters?: CourseFilters, pageUrl?: string | null) => {
-            setCoursesFetched(false);
-            await fetchData<CoursesSummary[]>(
-                getCourses,
-                setCourses,
-                setPagination,
-                ['results', 'data'],
-                filters,
-                pageUrl
-            );
-            setCoursesFetched(true);
+            const requestId = ++latestCourseRequest.current;
+            setLoading(true);
+            setError(null);
+
+            try {
+                const response = await getCourses(filters, pageUrl);
+                if (requestId !== latestCourseRequest.current) return;
+
+                setCourses(response.data.results.data);
+                setPagination({
+                    count: response.data.count,
+                    next: response.data.next,
+                    previous: response.data.previous,
+                });
+            } catch (err) {
+                if (requestId !== latestCourseRequest.current) return;
+                const errorMessage = extractErrorMessage(err);
+                setError(errorMessage);
+                console.error('Failed to fetch courses:', err);
+            } finally {
+                if (requestId === latestCourseRequest.current) {
+                    setLoading(false);
+                    setCoursesFetched(true);
+                }
+            }
         },
-        [fetchData],
+        [],
     );
 
     const fetchCourseDetail = useCallback(
@@ -175,7 +191,7 @@ export function useCourses() {
                 return newCourse;
 
             } catch (err: any) {
-                const errorMsg = extractErrorMessage(err);
+                const errorMsg = getApiErrorMessage(err);
                 setError(errorMsg);
                 toast.error(errorMsg);
                 return false
@@ -209,7 +225,7 @@ export function useCourses() {
                 toast.success('Course updated successfully');
                 return updatedCourse;
             } catch (err: any) {
-                const errorMsg = extractErrorMessage(err);
+                const errorMsg = getApiErrorMessage(err);
                 setError(errorMsg);
                 toast.error(errorMsg);
                 return false
@@ -230,9 +246,7 @@ export function useCourses() {
                 if (course?.id === id) setCourse(null);
                 toast.success('Course deleted successfully');
             } catch (err: any) {
-                const errorMsg = err.response?.data?.error?.message ||
-                    err.response?.data?.message ||
-                    'Failed to delete course';
+                const errorMsg = getApiErrorMessage(err, 'Failed to delete course');
                 setError(errorMsg);
                 toast.error(errorMsg);
 
@@ -710,7 +724,7 @@ export function useCourses() {
             toast.success(response.data.message || "Progress updated");
             return is_completed;
         } catch (err: any) {
-            const errorMsg = extractErrorMessage(err);
+            const errorMsg = getApiErrorMessage(err);
             setError(errorMsg);
             toast.error(errorMsg);
             return null;

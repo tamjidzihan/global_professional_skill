@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import axios, { type AxiosResponse } from 'axios';
+import axios, { type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 import type {
     CreateInstructorRequest,
     User,
@@ -35,11 +35,11 @@ import type {
     AdminUserFullDetail,
 } from '../types';
 
-const configuredApiUrl = import.meta.env.VITE_API_BASE_URL;
+const configuredApiUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, '');
 const API_URL = import.meta.env.PROD
-    ? (configuredApiUrl && !configuredApiUrl.includes('localhost')
+    ? configuredApiUrl && !configuredApiUrl.includes('localhost')
         ? configuredApiUrl
-        : 'https://api.gpibd.com/api/v1')
+        : '/api/v1'
     : configuredApiUrl || 'http://localhost:8000/api/v1';
 
 export const getMediaUrl = (path?: string | null): string => {
@@ -67,114 +67,78 @@ export const api = axios.create({
     timeout: 30000,
 });
 
-let isRefreshing = false;
-let failedQueue: Array<{
-    resolve: (token: string) => void;
-    reject: (error: any) => void;
-}> = [];
+type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean };
 
-const processQueue = (error: any | null, token: string | null = null) => {
-    failedQueue.forEach(prom => {
-        if (error) prom.reject(error);
-        else if (token) prom.resolve(token);
-    });
-    failedQueue = [];
+let refreshPromise: Promise<string> | null = null;
+
+const clearStoredSession = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
 };
 
-// Request interceptor — attach token only
+const refreshAccessToken = async (): Promise<string> => {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) throw new Error('No refresh token');
+
+    const response = await axios.post(`${API_URL}${endpoints.auth.refresh}`, {
+        refresh: refreshToken,
+    });
+    const access: unknown =
+        response.data?.data?.tokens?.access ??
+        response.data?.tokens?.access ??
+        response.data?.access ??
+        response.data?.data?.access;
+
+    if (typeof access !== 'string' || !access) {
+        throw new Error('The token refresh response did not include an access token.');
+    }
+
+    localStorage.setItem('access_token', access);
+    return access;
+};
+
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('access_token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
+        if (token) config.headers.Authorization = `Bearer ${token}`;
         return config;
     },
-    (error) => Promise.reject(error),
+    (error: unknown) => Promise.reject(error),
 );
 
-// Response interceptor — handle token refresh only
 api.interceptors.response.use(
     (response) => response,
-    async (error) => {
-        const originalRequest = error.config;
-
-        // cPanel may need a moment to wake the Python application after deployment.
-        // Retry safe read requests so the first page load does not depend on refreshes.
-        const isReadRequest = originalRequest?.method?.toLowerCase() === 'get';
-        const isTransientFailure = !error.response || error.response.status >= 500;
-        const retryCount = originalRequest?._retryCount || 0;
-
-        if (isReadRequest && isTransientFailure && retryCount < 2) {
-            originalRequest._retryCount = retryCount + 1;
-            await new Promise((resolve) => setTimeout(resolve, 500 * 2 ** retryCount));
-            return api(originalRequest);
+    async (error: unknown) => {
+        if (!axios.isAxiosError(error) || error.response?.status !== 401 || !error.config) {
+            return Promise.reject(error);
         }
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
-            if (isRefreshing) {
-                return new Promise((resolve, reject) => {
-                    failedQueue.push({ resolve, reject });
-                }).then(token => {
-                    originalRequest.headers.Authorization = `Bearer ${token}`;
-                    return api(originalRequest);
-                });
-            }
+        const originalRequest = error.config as RetryableRequestConfig;
+        if (originalRequest._retry) return Promise.reject(error);
+        originalRequest._retry = true;
 
-            originalRequest._retry = true;
-            isRefreshing = true;
-
-            return new Promise((resolve, reject) => {
-                const refreshToken = localStorage.getItem('refresh_token');
-
-                if (!refreshToken) {
-                    processQueue(new Error('No refresh token'));
-                    isRefreshing = false;
-                    localStorage.removeItem("access_token");
-                    localStorage.removeItem("refresh_token");
-                    window.location.href = '/login';
-                    return reject(new Error('No refresh token'));
-                }
-
-                api.post(endpoints.auth.refresh, { refresh: refreshToken })
-                    .then(response => {
-                        const access =
-                            response.data?.data?.tokens?.access ||
-                            response.data?.tokens?.access ||
-                            response.data?.access ||
-                            response.data?.data?.access;
-
-                        if (!access) throw new Error('No access token');
-
-                        localStorage.setItem('access_token', access);
-                        processQueue(null, access);
-                        originalRequest.headers.Authorization = `Bearer ${access}`;
-                        resolve(api(originalRequest));
-                    })
-                    .catch(err => {
-                        processQueue(err, null);
-                        localStorage.removeItem("access_token");
-                        localStorage.removeItem("refresh_token");
+        if (!refreshPromise) {
+            refreshPromise = refreshAccessToken()
+                .catch((refreshError: unknown) => {
+                    clearStoredSession();
+                    if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
                         window.location.href = '/login';
-                        reject(err);
-                    })
-                    .finally(() => {
-                        isRefreshing = false;
-                    });
-            });
+                    }
+                    throw refreshError;
+                })
+                .finally(() => {
+                    refreshPromise = null;
+                });
         }
 
-        if (error.response?.data) {
-            // Check if it matches your ErrorResponse structure
-            const errorData = error.response.data;
-            if (errorData.success === false && errorData.error?.message) {
-                // Already in correct format, just pass through
-                return Promise.reject(error);
-            }
+        try {
+            const accessToken = await refreshPromise;
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+            return api(originalRequest);
+        } catch (refreshError) {
+            return Promise.reject(refreshError);
         }
-
-
-        return Promise.reject(error);
     }
 );
 

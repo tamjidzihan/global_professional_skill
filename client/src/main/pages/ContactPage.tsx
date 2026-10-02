@@ -1,4 +1,4 @@
-import { MapPin, Phone, Mail, Clock, Send, Globe } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Send, Globe, Building2 } from 'lucide-react';
 import { FaWhatsapp, FaFacebook, FaLinkedin, FaYoutube, FaInstagram } from 'react-icons/fa';
 
 const ContactPage = () => {
@@ -97,6 +97,17 @@ const ContactPage = () => {
                                 <div className="flex justify-between">
                                     <span>Friday:</span>
                                     <span className="font-medium text-red-500">Closed</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Trade Licence */}
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                            <div className="flex items-center space-x-4">
+                                <Building2 className="w-6 h-6 text-blue-600" />
+                                <div>
+                                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Trade Licence</p>
+                                    <p className="text-gray-900 font-medium">TRAD/DNCC/019302/</p>
                                 </div>
                             </div>
                         </div>
