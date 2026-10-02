@@ -26,7 +26,7 @@ const Signatory: React.FC<SignatoryProps> = ({
     return (
         <div className="flex min-w-0 flex-col items-center text-center">
             <div
-                className="mb-1 flex h-[52px] w-[240px] max-w-full items-end justify-center"
+                className="mb-1 flex h-13 w-60 max-w-full items-end justify-center"
                 style={{ height: `${Math.round(52 * scale)}px` }}
             >
                 {signatureSrc && (
@@ -41,7 +41,7 @@ const Signatory: React.FC<SignatoryProps> = ({
                     />
                 )}
             </div>
-            <div className="w-[260px] max-w-full border-t border-slate-500 pt-1.5">
+            <div className="w-65 max-w-full border-t border-slate-500 pt-1.5">
                 <p className="text-[17px] font-bold leading-tight text-[#172d4b]">{name}</p>
                 <p className="mt-0.5 text-[13px] leading-tight text-slate-700">{position}</p>
             </div>
@@ -78,7 +78,7 @@ export const ParticipationTemplate: React.FC<TemplateProps> = ({ data }) => {
     return (
         <div
             id="certificate-render-canvas"
-            className="relative h-[792px] w-[1120px] select-none overflow-hidden bg-white font-sans text-slate-900"
+            className="relative h-198 w-280 select-none overflow-hidden bg-white font-sans text-slate-900"
             style={{ width: '1120px', height: '792px' }}
         >
             <svg
@@ -150,7 +150,7 @@ export const ParticipationTemplate: React.FC<TemplateProps> = ({ data }) => {
 
 
 
-            <header className="absolute right-[42px] top-[22px] z-[2] flex h-[102px] w-[310px] items-center justify-end">
+            <header className="absolute right-10.5 top-5.5 z-2 flex h-25.5 w-77.5 items-center justify-end">
                 <img
                     src={logoSrc}
                     alt={data.organizationName || GPI_CERTIFICATE_CONSTANTS.ORGANIZATION_NAME}
@@ -167,7 +167,7 @@ export const ParticipationTemplate: React.FC<TemplateProps> = ({ data }) => {
                     className="object-contain"
                 />
             </header>
-            <main className="absolute left-[90px] right-[90px] top-[180px] z-[2] text-center">
+            <main className="absolute left-22.5 right-22.5 top-45 z-2 text-center">
                 <h1 className="text-[65px] font-bold leading-tight tracking-[-1.5px] text-black">
                     Certificate of Participation
                 </h1>
@@ -181,7 +181,7 @@ export const ParticipationTemplate: React.FC<TemplateProps> = ({ data }) => {
                 <p className="mt-3 text-[19px] text-slate-800">
                     for participating in the training on
                 </p>
-                <p className="mx-auto mt-2 max-w-[940px] text-[20px] font-bold leading-snug text-black">
+                <p className="mx-auto mt-2 max-w-235 text-[20px] font-bold leading-snug text-black">
                     {data.courseName || 'Professional Training'}
                 </p>
                 {formattedDate && (
@@ -189,7 +189,7 @@ export const ParticipationTemplate: React.FC<TemplateProps> = ({ data }) => {
                 )}
             </main>
             <div
-                className={`absolute bottom-[126px] left-[120px] right-[120px] z-[2] grid items-end gap-10 ${signatories.length > 1 ? 'grid-cols-2' : 'grid-cols-1'
+                className={`absolute bottom-31.5 left-30 right-30 z-2 grid items-end gap-10 ${signatories.length > 1 ? 'grid-cols-2' : 'grid-cols-1'
                     }`}
             >
                 {signatories.map((signatory, index) => (

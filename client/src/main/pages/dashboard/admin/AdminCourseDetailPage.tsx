@@ -1043,7 +1043,7 @@ const AdminCourseDetailPage = () => {
                                                     <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                                                     Certificate Preview
                                                 </span>
-                                                <span className="text-[10px] text-gray-300 font-mono truncate max-w-[140px]">
+                                                <span className="text-[10px] text-gray-300 font-mono truncate max-w-35">
                                                     {getTemplateLabel(certConfig.template_id)}
                                                 </span>
                                             </div>
@@ -1088,13 +1088,13 @@ const AdminCourseDetailPage = () => {
                                         <div className="space-y-1.5 text-xs text-gray-600 bg-gray-50/80 p-3 rounded-lg border border-gray-100">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-gray-400">Organization:</span>
-                                                <span className="font-semibold text-gray-800 truncate max-w-[170px]">
+                                                <span className="font-semibold text-gray-800 truncate max-w-42.5">
                                                     {certConfig.organization_name || 'GPI'}
                                                 </span>
                                             </div>
                                             <div className="flex items-center justify-between">
                                                 <span className="text-gray-400">Signatory:</span>
-                                                <span className="font-medium text-gray-800 truncate max-w-[170px]">
+                                                <span className="font-medium text-gray-800 truncate max-w-42.5">
                                                     {certConfig.authorizer_name || 'Academic Head'} ({certConfig.authorizer_position || 'Director'})
                                                 </span>
                                             </div>
@@ -1148,7 +1148,7 @@ const AdminCourseDetailPage = () => {
                                         </div>
                                         <div>
                                             <p className="text-xs font-bold text-gray-900">Certificate Not Yet Configured</p>
-                                            <p className="text-[11px] text-gray-500 mt-1 max-w-[240px] mx-auto leading-relaxed">
+                                            <p className="text-[11px] text-gray-500 mt-1 max-w-60 mx-auto leading-relaxed">
                                                 Configure template design, institutional branding & signatory details to enable certificate issuance for eligible students.
                                             </p>
                                         </div>
