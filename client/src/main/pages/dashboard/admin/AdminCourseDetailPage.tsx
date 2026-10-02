@@ -131,6 +131,8 @@ const AdminCourseDetailPage = () => {
                 return 'Modern Minimal (Clean)';
             case 'template_4':
                 return 'Premium Corporate (Dark Navy)';
+            case 'template_5':
+                return 'Participation (Corporate Training)';
             default:
                 return 'Academic Standard';
         }
@@ -138,6 +140,7 @@ const AdminCourseDetailPage = () => {
 
     const sampleCertData: CertificateData = {
         studentName: 'Candidate Name (Sample)',
+        employeeId: 'E_ID',
         courseName: selectedCourse?.title || certConfig?.course_title || 'Course Title',
         organizationName: certConfig?.organization_name || GPI_CERTIFICATE_CONSTANTS.ORGANIZATION_NAME,
         certificateNumber: 'GPI-SJO-4484-487641',

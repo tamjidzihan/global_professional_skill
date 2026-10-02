@@ -1,6 +1,6 @@
 import React from 'react';
 import type { CertificateTemplateId } from './types';
-import { Check, Sparkles, Award, Compass, ShieldCheck } from 'lucide-react';
+import { Check, Sparkles, Award, Compass, ShieldCheck, Ribbon } from 'lucide-react';
 
 interface TemplateOption {
     id: CertificateTemplateId;
@@ -49,6 +49,15 @@ const TEMPLATES: TemplateOption[] = [
         borderColor: 'border-[#0c1e38]',
         icon: ShieldCheck,
     },
+    {
+        id: 'template_5',
+        title: 'Participation',
+        subtitle: 'Corporate Training Certificate',
+        description: 'Clean participation certificate with navy and gold flowing corner accents, employee ID, course details, and dual signatories.',
+        accentColor: 'from-[#172d4b] to-[#f1b637]',
+        borderColor: 'border-[#172d4b]',
+        icon: Ribbon,
+    },
 ];
 
 interface Props {
@@ -61,7 +70,7 @@ export const CertificateTemplateSelector: React.FC<Props> = ({
     onSelect,
 }) => {
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-3">
             {TEMPLATES.map((tmpl) => {
                 const isSelected = selectedTemplate === tmpl.id;
                 const Icon = tmpl.icon;

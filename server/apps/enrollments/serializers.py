@@ -131,6 +131,7 @@ class CertificateSerializer(serializers.ModelSerializer):
             'status',
             'student_id',
             'student_email',
+            'employee_id',
             'student_name',
             'course_id',
             'course_name',
@@ -212,5 +213,3 @@ class PublicCertificateVerificationSerializer(serializers.Serializer):
     logo_size = serializers.IntegerField(default=100)
     issued_at = serializers.DateTimeField()
     verification_url = serializers.CharField()
-
-

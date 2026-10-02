@@ -4,6 +4,7 @@ import { GpiAcademicTemplate } from './templates/GpiAcademicTemplate';
 import { ProfessionalClassicTemplate } from './templates/ProfessionalClassicTemplate';
 import { ModernMinimalTemplate } from './templates/ModernMinimalTemplate';
 import { PremiumCorporateTemplate } from './templates/PremiumCorporateTemplate';
+import { ParticipationTemplate } from './templates/ParticipationTemplate';
 
 interface CertificatePreviewProps {
     data: CertificateData;
@@ -43,6 +44,8 @@ export const CertificatePreview: React.FC<CertificatePreviewProps> = ({
                 return <ModernMinimalTemplate data={data} />;
             case 'template_4':
                 return <PremiumCorporateTemplate data={data} />;
+            case 'template_5':
+                return <ParticipationTemplate data={data} />;
             case 'template_1':
             default:
                 return <GpiAcademicTemplate data={data} />;

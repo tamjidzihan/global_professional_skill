@@ -144,6 +144,7 @@ class CertificateTemplate(models.TextChoices):
     TEMPLATE_2 = "template_2", "Professional Classic"
     TEMPLATE_3 = "template_3", "Modern Minimal"
     TEMPLATE_4 = "template_4", "Premium Corporate"
+    TEMPLATE_5 = "template_5", "Participation"
 
 
 class CourseCertificateConfig(models.Model):
@@ -303,6 +304,12 @@ class Certificate(models.Model):
         default="",
         blank=True,
         help_text="Student display name on certificate (snapshot)."
+    )
+    employee_id = models.CharField(
+        max_length=100,
+        default="",
+        blank=True,
+        help_text="Student employee ID on certificate (snapshot)."
     )
     course_name = models.CharField(
         max_length=255,
@@ -538,6 +545,7 @@ def check_and_issue_certificate(enrollment, issued_by=None, custom_student_name=
         enrollment=enrollment,
         status=CertificateStatus.ISSUED,
         student_name=student_display_name,
+        employee_id=student.employee_id or "",
         course_name=course.title,
         organization_name=config.organization_name or "Global Professional Institute",
         template_id=config.template_id,
@@ -573,4 +581,3 @@ def check_and_issue_certificate(enrollment, issued_by=None, custom_student_name=
         logging.getLogger(__name__).error(f"Failed to dispatch certificate completion notification: {str(e)}")
 
     return cert, True, "Certificate issued successfully"
-

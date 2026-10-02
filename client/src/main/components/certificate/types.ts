@@ -1,4 +1,4 @@
-export type CertificateTemplateId = 'template_1' | 'template_2' | 'template_3' | 'template_4';
+export type CertificateTemplateId = 'template_1' | 'template_2' | 'template_3' | 'template_4' | 'template_5';
 
 export type EligibilityStatus = 'NOT_COMPLETED' | 'QUIZ_NOT_PASSED' | 'ELIGIBLE' | 'ISSUED';
 
@@ -12,6 +12,7 @@ export const GPI_CERTIFICATE_CONSTANTS = {
 
 export interface CertificateData {
     studentName: string;
+    employeeId?: string;
     courseName: string;
     organizationName?: string;
     certificateNumber?: string;
@@ -66,8 +67,8 @@ export interface CertificateCandidate {
     student_name: string;
     student_email: string;
     student_phone?: string;
-    organization_name?: string;
     employee_id?: string;
+    organization_name?: string;
     progress_percentage: number;
     course_completed: boolean;
     total_quizzes: number;
@@ -87,6 +88,7 @@ export interface CertificateRecord {
     status: 'ISSUED' | 'REVOKED';
     student_id?: string;
     student_email?: string;
+    employee_id?: string | null;
     student_name: string;
     course_id?: string;
     course_name: string;
@@ -157,4 +159,3 @@ export interface StudentCertificateEnrollment {
     status_message: string;
     certificate?: CertificateRecord | null;
 }
-

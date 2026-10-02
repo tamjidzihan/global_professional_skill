@@ -123,6 +123,7 @@ export const CertificatesPage: React.FC = () => {
         }
         return {
             studentName: cert.student_name,
+            employeeId: cert.employee_id || undefined,
             courseName: cert.course_name,
             organizationName: cert.organization_name || GPI_CERTIFICATE_CONSTANTS.ORGANIZATION_NAME,
             certificateNumber: cert.certificate_number,
@@ -442,7 +443,7 @@ export const CertificatesPage: React.FC = () => {
                                 <Award className="w-5 h-5 text-violet-600" />
                                 <div>
                                     <h3 className="text-base font-bold text-gray-900">
-                                        Certificate of Achievement
+                                        Certificate Preview
                                     </h3>
                                     <p className="text-xs text-gray-400">
                                         {previewingCertificate.course.title}

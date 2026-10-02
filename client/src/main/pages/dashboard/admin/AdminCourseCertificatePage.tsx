@@ -255,6 +255,7 @@ export const AdminCourseCertificatePage: React.FC = () => {
     // Live preview data
     const previewData: CertificateData = {
         studentName: 'Md. Tamzid Islam',
+        employeeId: 'E_ID',
         courseName: courseTitle || 'Professional Python Development',
         organizationName: organizationName || GPI_CERTIFICATE_CONSTANTS.ORGANIZATION_NAME,
         certificateNumber: 'GPI-SJO-4484-487641',
@@ -411,7 +412,7 @@ export const AdminCourseCertificatePage: React.FC = () => {
                         <div className="flex items-center justify-between border-b border-gray-100 pb-3">
                             <div>
                                 <h2 className="text-sm font-bold text-gray-900">1. Select Certificate Design</h2>
-                                <p className="text-xs text-gray-400">Choose from 4 institutional templates</p>
+                                <p className="text-xs text-gray-400">                                Choose from 5 institutional templates</p>
                             </div>
                             <span className="text-xs font-semibold px-2.5 py-1 bg-violet-50 text-violet-700 rounded-md">
                                 Selected: {templateId.replace('_', ' ').toUpperCase()}
