@@ -4,6 +4,52 @@ import { getCategories, getCategoryDetail, createCategory, updateCategory, delet
 import type { Category, CategoryDetailResponse } from '../types'
 import toast from 'react-hot-toast'
 
+const getCategoryResponse = (payload: unknown): {
+    categories: Category[] | null
+    pagination: { count: number; next: string | null; previous: string | null }
+} => {
+    if (Array.isArray(payload)) {
+        return {
+            categories: payload as Category[],
+            pagination: { count: payload.length, next: null, previous: null },
+        }
+    }
+
+    if (!payload || typeof payload !== 'object') {
+        return {
+            categories: null,
+            pagination: { count: 0, next: null, previous: null },
+        }
+    }
+
+    const response = payload as Record<string, unknown>
+    const nestedData = response.data
+    const results = Array.isArray(response.results)
+        ? response.results
+        : Array.isArray(nestedData)
+            ? nestedData
+            : nestedData && typeof nestedData === 'object' &&
+                Array.isArray((nestedData as Record<string, unknown>).results)
+                ? (nestedData as { results: unknown[] }).results
+                : null
+    const paginationSource = nestedData && typeof nestedData === 'object'
+        ? nestedData as Record<string, unknown>
+        : response
+
+    return {
+        categories: results as Category[] | null,
+        pagination: {
+            count: typeof paginationSource.count === 'number'
+                ? paginationSource.count
+                : results?.length ?? 0,
+            next: typeof paginationSource.next === 'string' ? paginationSource.next : null,
+            previous: typeof paginationSource.previous === 'string'
+                ? paginationSource.previous
+                : null,
+        },
+    }
+}
+
 export const useCategories = () => {
     const [categories, setCategories] = useState<Category[]>([])
     const [category, setCategory] = useState<Category | null>(null);
@@ -62,16 +108,31 @@ export const useCategories = () => {
 
     // Category Actions
     const fetchCategories = useCallback(
-        async (filters?: Record<string, any>, pageUrl?: string | null) =>
-            fetchData<Category[]>(
-                getCategories,
-                setCategories,
-                setPagination,
-                ['results'],
-                filters,
-                pageUrl
-            ),
-        [fetchData],
+        async (filters?: Record<string, any>, pageUrl?: string | null) => {
+            setLoading(true)
+            setError(null)
+            try {
+                const response = await getCategories(filters, pageUrl)
+                const result = getCategoryResponse(response.data)
+                if (!result.categories) {
+                    const error = new Error('The categories API returned an unsupported response format.')
+                    setCategories([])
+                    setPagination({ count: 0, next: null, previous: null })
+                    setError(error.message)
+                    console.error(error, response.data)
+                    return
+                }
+
+                setCategories(result.categories)
+                setPagination(result.pagination)
+            } catch (err: any) {
+                setError(err.response?.data?.message || 'An error occurred')
+                console.error('API call failed:', err)
+            } finally {
+                setLoading(false)
+            }
+        },
+        [],
     );
 
     const fetchCategoryDetail = useCallback(

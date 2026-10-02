@@ -61,7 +61,7 @@ export function Footer() {
     ]
 
     return (
-        <footer className="bg-[#FCF8F1] text-gray-800">
+        <footer className="mt-auto shrink-0 bg-[#FCF8F1] text-gray-800">
             {/* Main Footer Content */}
             <div className="py-16 bg-[#F5EFE6]">
                 <div className="container mx-auto px-4">
@@ -252,7 +252,7 @@ export function Footer() {
                                     </div>
                                 </div>
 
-                                <p className="pl-[52px] text-gray-600 text-sm">
+                                <p className="pl-13 text-gray-600 text-sm">
                                     Trade Licence: TRAD/DNCC/019302/
                                 </p>
                             </div>

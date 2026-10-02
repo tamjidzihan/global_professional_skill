@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { Menu } from 'lucide-react'
 import { Outlet, Navigate } from 'react-router-dom'
 import { DashboardSidebar } from '../components/dashboard/DashboardSidebar'
+import RouteLoadingFallback from '../components/RouteLoadingFallback'
 import { useAuth } from '../../hooks/useAuth'
 
 export function DashboardLayout() {
@@ -61,7 +62,9 @@ export function DashboardLayout() {
 
                 {/* Main Content */}
                 <main className="flex-1 p-4 sm:p-4 lg:p-6">
-                    <Outlet />
+                    <Suspense fallback={<RouteLoadingFallback />}>
+                        <Outlet />
+                    </Suspense>
                 </main>
             </div>
         </div>

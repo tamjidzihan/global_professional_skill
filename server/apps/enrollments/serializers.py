@@ -25,11 +25,23 @@ class EnrollmentSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'student', 'progress_percentage', 'enrolled_at', 'last_accessed', 'completed_at')
 
     def get_quiz_submissions(self, obj):
-        from apps.courses.models import QuizSubmission
         from apps.courses.serializers import QuizSubmissionSerializer
-        submissions = QuizSubmission.objects.filter(
-            student=obj.student, quiz__course=obj.course
-        ).order_by("-completed_at", "-started_at")
+
+        prefetched_submissions = getattr(
+            obj.student, "enrollment_quiz_submissions", None
+        )
+        if prefetched_submissions is not None:
+            submissions = [
+                submission
+                for submission in prefetched_submissions
+                if submission.quiz.course_id == obj.course_id
+            ]
+        else:
+            from apps.courses.models import QuizSubmission
+
+            submissions = QuizSubmission.objects.filter(
+                student=obj.student, quiz__course=obj.course
+            ).order_by("-completed_at", "-started_at")
         return QuizSubmissionSerializer(submissions, many=True).data
 
     def get_certificate(self, obj):
@@ -39,6 +51,11 @@ class EnrollmentSerializer(serializers.ModelSerializer):
         return None
 
     def get_eligibility(self, obj):
+        eligibility_by_enrollment = self.context.get(
+            "certificate_eligibility_by_enrollment"
+        )
+        if eligibility_by_enrollment is not None:
+            return eligibility_by_enrollment[obj.id]
         return calculate_student_certificate_eligibility(obj)
 
 

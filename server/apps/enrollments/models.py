@@ -444,67 +444,131 @@ def calculate_student_certificate_eligibility(enrollment):
     from apps.core.models import SiteSettings
     from apps.courses.models import Quiz, QuizSubmission
 
-    course = enrollment.course
-    student = enrollment.student
-    has_certificate = hasattr(enrollment, "certificate") and enrollment.certificate is not None
+    quizzes = list(
+        Quiz.objects.filter(course=enrollment.course)
+        .annotate(question_count=models.Count("questions"))
+        .values("id", "question_count")
+    )
+    question_counts = {quiz["id"]: quiz["question_count"] for quiz in quizzes}
+    quiz_scores = {}
+    if question_counts:
+        submissions = QuizSubmission.objects.filter(
+            student=enrollment.student,
+            quiz_id__in=question_counts,
+            completed_at__isnull=False,
+            is_disqualified=False,
+        ).values("quiz_id", "score", "total_questions")
+        for submission in submissions:
+            total_questions = submission["total_questions"] or question_counts[submission["quiz_id"]]
+            if total_questions:
+                percentage = (submission["score"] / total_questions) * 100.0
+                quiz_id = submission["quiz_id"]
+                if quiz_id not in quiz_scores or percentage > quiz_scores[quiz_id]:
+                    quiz_scores[quiz_id] = percentage
+
+    threshold = float(SiteSettings.get_settings().quiz_pass_percentage or 50.0)
+    return _build_certificate_eligibility(enrollment, quiz_scores, len(quizzes), threshold)
+
+
+def calculate_certificate_eligibility_for_enrollments(enrollments, pass_threshold=None):
+    """Calculate certificate eligibility for enrollments using a bounded query set."""
+    from apps.core.models import SiteSettings
+    from apps.courses.models import Quiz, QuizSubmission
+
+    enrollments = list(enrollments)
+    if not enrollments:
+        return {}
+
+    if pass_threshold is None:
+        pass_threshold = float(SiteSettings.get_settings().quiz_pass_percentage or 50.0)
+
+    course_ids = {enrollment.course_id for enrollment in enrollments}
+    student_ids = {enrollment.student_id for enrollment in enrollments}
+    quizzes = list(
+        Quiz.objects.filter(course_id__in=course_ids)
+        .annotate(question_count=models.Count("questions"))
+        .values("id", "course_id", "question_count")
+    )
+    quiz_course_ids = {quiz["id"]: quiz["course_id"] for quiz in quizzes}
+    question_counts = {quiz["id"]: quiz["question_count"] for quiz in quizzes}
+    scores_by_student_and_quiz = {}
+
+    if quizzes:
+        submissions = QuizSubmission.objects.filter(
+            student_id__in=student_ids,
+            quiz_id__in=quiz_course_ids,
+            completed_at__isnull=False,
+            is_disqualified=False,
+        ).values("student_id", "quiz_id", "score", "total_questions")
+        for submission in submissions:
+            quiz_id = submission["quiz_id"]
+            total_questions = submission["total_questions"] or question_counts[quiz_id]
+            if total_questions:
+                key = (submission["student_id"], quiz_id)
+                percentage = (submission["score"] / total_questions) * 100.0
+                if key not in scores_by_student_and_quiz or percentage > scores_by_student_and_quiz[key]:
+                    scores_by_student_and_quiz[key] = percentage
+
+    quiz_ids_by_course = {}
+    for quiz_id, course_id in quiz_course_ids.items():
+        quiz_ids_by_course.setdefault(course_id, []).append(quiz_id)
+
+    results = {}
+    for enrollment in enrollments:
+        quiz_scores = {
+            quiz_id: scores_by_student_and_quiz[(enrollment.student_id, quiz_id)]
+            for quiz_id in quiz_ids_by_course.get(enrollment.course_id, ())
+            if (enrollment.student_id, quiz_id) in scores_by_student_and_quiz
+        }
+        has_certificate = getattr(enrollment, "certificate", None) is not None
+        results[enrollment.id] = _build_certificate_eligibility(
+            enrollment,
+            quiz_scores,
+            len(quiz_ids_by_course.get(enrollment.course_id, ())),
+            pass_threshold,
+            has_certificate=has_certificate,
+        )
+    return results
+
+
+def _build_certificate_eligibility(
+    enrollment, quiz_scores, total_quizzes, pass_threshold, has_certificate=None
+):
+    if has_certificate is None:
+        has_certificate = getattr(enrollment, "certificate", None) is not None
     is_course_completed = bool(enrollment.progress_percentage >= 100 or enrollment.completed_at)
-    
-    pass_threshold = float(SiteSettings.get_settings().quiz_pass_percentage or 50.0)
-    quizzes = Quiz.objects.filter(course=course)
-    total_quizzes = quizzes.count()
-    
+    completed_quizzes = len(quiz_scores)
+
     if total_quizzes == 0:
-        completed_quizzes = 0
         avg_score = 100.0
         quiz_passed = True
     else:
-        # Get submissions
-        submissions = QuizSubmission.objects.filter(
-            student=student,
-            quiz__in=quizzes,
-            completed_at__isnull=False,
-            is_disqualified=False
-        )
-        quiz_scores = {}
-        for sub in submissions:
-            total_q = sub.total_questions or (sub.quiz.questions.count() if sub.quiz else 0)
-            if total_q > 0:
-                pct = (sub.score / total_q) * 100.0
-                if sub.quiz_id not in quiz_scores or pct > quiz_scores[sub.quiz_id]:
-                    quiz_scores[sub.quiz_id] = pct
-                    
-        completed_quizzes = len(quiz_scores)
-        if completed_quizzes > 0:
-            avg_score = round(sum(quiz_scores.values()) / total_quizzes, 1)
-        else:
-            avg_score = 0.0
-            
-        quiz_passed = (completed_quizzes == total_quizzes) and (avg_score >= pass_threshold)
+        avg_score = round(sum(quiz_scores.values()) / total_quizzes, 1) if completed_quizzes else 0.0
+        quiz_passed = completed_quizzes == total_quizzes and avg_score >= pass_threshold
 
-    # Determine status
     if has_certificate:
-        status = "ISSUED"
+        eligibility_status = "ISSUED"
         reason = "Certificate has been issued"
         is_eligible = True
     elif not is_course_completed:
-        status = "NOT_COMPLETED"
+        eligibility_status = "NOT_COMPLETED"
         reason = "Course is not 100% complete"
         is_eligible = False
     elif not quiz_passed:
-        status = "QUIZ_NOT_PASSED"
+        eligibility_status = "QUIZ_NOT_PASSED"
         if completed_quizzes < total_quizzes:
             reason = f"Completed {completed_quizzes} of {total_quizzes} quizzes"
         else:
             reason = f"Average quiz score ({avg_score}%) is below required threshold ({pass_threshold}%)"
         is_eligible = False
     else:
-        status = "ELIGIBLE"
+        eligibility_status = "ELIGIBLE"
         reason = "All certificate requirements satisfied"
         is_eligible = True
 
     return {
         "is_eligible": is_eligible,
-        "eligibility_status": status,
+        "eligibility_status": eligibility_status,
         "course_completed": is_course_completed,
         "progress_percentage": float(enrollment.progress_percentage),
         "total_quizzes": total_quizzes,

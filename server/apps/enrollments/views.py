@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db import transaction, models
+from django.db.models import Prefetch, prefetch_related_objects
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -12,7 +13,7 @@ from .models import (
     Certificate,
     CourseCertificateConfig,
     CertificateStatus,
-    calculate_student_certificate_eligibility,
+    calculate_certificate_eligibility_for_enrollments,
     check_and_issue_certificate,
 )
 from .serializers import (
@@ -22,7 +23,7 @@ from .serializers import (
     CourseCertificateConfigSerializer,
     PublicCertificateVerificationSerializer,
 )
-from apps.courses.models import Course
+from apps.courses.models import Course, QuizSubmission
 from apps.core.models import SiteSettings
 import logging
 
@@ -53,6 +54,30 @@ class EnrollmentViewSet(viewsets.ModelViewSet):
         return Enrollment.objects.filter(student=user).select_related(
             "course", "student", "certificate"
         )
+
+    def list(self, request, *args, **kwargs):
+        enrollments = list(self.filter_queryset(self.get_queryset()))
+        course_ids = {enrollment.course_id for enrollment in enrollments}
+        if course_ids:
+            prefetch_related_objects(
+                enrollments,
+                Prefetch(
+                    "student__quiz_submissions",
+                    queryset=QuizSubmission.objects.filter(
+                        quiz__course_id__in=course_ids
+                    ).select_related("quiz__course", "student").order_by(
+                        "-completed_at", "-started_at"
+                    ),
+                    to_attr="enrollment_quiz_submissions",
+                ),
+            )
+
+        context = self.get_serializer_context()
+        context["certificate_eligibility_by_enrollment"] = (
+            calculate_certificate_eligibility_for_enrollments(enrollments)
+        )
+        serializer = self.get_serializer(enrollments, many=True, context=context)
+        return Response(serializer.data)
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
@@ -245,10 +270,11 @@ class CertificateViewSet(viewsets.ModelViewSet):
         enrollments = Enrollment.objects.filter(
             student=user
         ).select_related("course", "course__instructor", "certificate").order_by("-enrolled_at")
+        eligibility_by_enrollment = calculate_certificate_eligibility_for_enrollments(enrollments)
 
         results = []
         for e in enrollments:
-            eligibility = calculate_student_certificate_eligibility(e)
+            eligibility = eligibility_by_enrollment[e.id]
             cert_data = (
                 CertificateSerializer(e.certificate, context={"request": request}).data
                 if hasattr(e, "certificate") and e.certificate
@@ -316,10 +342,13 @@ class CertificateViewSet(viewsets.ModelViewSet):
         enrollments = Enrollment.objects.filter(
             course=course
         ).select_related("student", "certificate").order_by("-enrolled_at")
+        eligibility_by_enrollment = calculate_certificate_eligibility_for_enrollments(
+            enrollments, pass_threshold=pass_threshold
+        )
 
         candidates = []
         for e in enrollments:
-            eligibility = calculate_student_certificate_eligibility(e)
+            eligibility = eligibility_by_enrollment[e.id]
             cert_data = (
                 CertificateSerializer(e.certificate, context={"request": request}).data
                 if hasattr(e, "certificate") and e.certificate
@@ -484,5 +513,3 @@ class CertificateViewSet(viewsets.ModelViewSet):
             "valid": is_valid,
             "data": serializer.data
         })
-
-
