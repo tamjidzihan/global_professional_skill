@@ -36,8 +36,12 @@ import type {
 } from '../types';
 
 const configuredApiUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, '');
+const isLocalPreview =
+    typeof window !== 'undefined' &&
+    ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
 const API_URL = import.meta.env.PROD
-    ? configuredApiUrl && !configuredApiUrl.includes('localhost')
+    ? configuredApiUrl &&
+        (!configuredApiUrl.includes('localhost') || isLocalPreview)
         ? configuredApiUrl
         : '/api/v1'
     : configuredApiUrl || 'http://localhost:8000/api/v1';
