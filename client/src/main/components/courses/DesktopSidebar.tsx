@@ -8,7 +8,6 @@ interface DesktopSidebarProps {
     categoryLoading: boolean;
     categoryError: string | null;
     urlCategoryId: string | null;
-    urlDeliveryMode: string | null;
     urlSearchQuery: string;
     activeCategoryName: string;
     pagination: any;
@@ -21,7 +20,6 @@ const DesktopSidebar = ({
     categoryLoading,
     categoryError,
     urlCategoryId,
-    urlDeliveryMode,
     urlSearchQuery,
     activeCategoryName,
     pagination,
@@ -31,11 +29,6 @@ const DesktopSidebar = ({
     return (
         <div className="hidden lg:block w-full lg:w-1/4">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6 sticky top-4 transition-all hover:shadow-md">
-                <DeliveryModeSection
-                    urlDeliveryMode={urlDeliveryMode}
-                    urlCategoryId={urlCategoryId}
-                    urlSearchQuery={urlSearchQuery}
-                />
                 <CategoriesSection
                     categories={categories}
                     categoryLoading={categoryLoading}
@@ -48,7 +41,6 @@ const DesktopSidebar = ({
                     pagination={pagination}
                     categories={categories}
                     urlCategoryId={urlCategoryId}
-                    urlDeliveryMode={urlDeliveryMode}
                     urlSearchQuery={urlSearchQuery}
                     activeCategoryName={activeCategoryName}
                     onClearAll={onClearAll}
@@ -57,69 +49,6 @@ const DesktopSidebar = ({
         </div>
     )
 }
-
-interface DeliveryModeSectionProps {
-    urlDeliveryMode: string | null;
-    urlCategoryId: string | null;
-    urlSearchQuery: string;
-}
-
-const DeliveryModeSection = ({
-    urlDeliveryMode,
-    urlCategoryId,
-    urlSearchQuery
-}: DeliveryModeSectionProps) => {
-    const navigate = useNavigate();
-    const modes = [
-        { label: 'All', value: null },
-        { label: 'Online', value: 'ONLINE' },
-        { label: 'Offline', value: 'OFFLINE' },
-        { label: 'Both', value: 'BOTH' }
-    ];
-
-    const handleModeChange = (value: string | null) => {
-        const params = new URLSearchParams();
-        if (urlCategoryId) params.set('category', urlCategoryId);
-        if (urlSearchQuery) params.set('search', urlSearchQuery);
-        if (value) params.set('delivery_mode', value);
-
-        navigate(`/courses?${params.toString()}`);
-    };
-
-    return (
-        <div className="mb-4">
-            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4 flex items-center">
-                <div className="w-1 h-5 bg-[#0066CC] rounded-full mr-3"></div>
-                <span>Delivery Mode</span>
-            </h3>
-            <div className="flex flex-wrap gap-3">
-                {modes.map((mode) => (
-                    <label
-                        key={mode.label}
-                        className="flex items-center group cursor-pointer"
-                    >
-                        <div className="relative flex items-center">
-                            <input
-                                type="radio"
-                                name="delivery_mode"
-                                checked={(urlDeliveryMode || null) === mode.value}
-                                onChange={() => handleModeChange(mode.value)}
-                                className="peer h-4 w-4 cursor-pointer appearance-none rounded-full border border-gray-300 checked:border-[#0066CC] transition-all"
-                            />
-                            <span className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0066CC] opacity-0 peer-checked:opacity-100 transition-opacity"></span>
-                        </div>
-                        <span className={`ml-2 text-sm transition-colors ${(urlDeliveryMode || null) === mode.value
-                            ? 'text-[#0066CC] font-medium'
-                            : 'text-gray-600 group-hover:text-[#0066CC]'
-                            }`}>
-                            {mode.label}
-                        </span>
-                    </label>
-                ))}
-            </div>
-        </div>
-    );
-};
 
 interface CategoriesSectionProps {
     categories: any[];
@@ -288,7 +217,6 @@ interface QuickStatsProps {
     pagination: any;
     categories: any[];
     urlCategoryId: string | null;
-    urlDeliveryMode: string | null;
     urlSearchQuery: string;
     activeCategoryName: string;
     onClearAll: () => void;
@@ -298,7 +226,6 @@ const QuickStats = ({
     pagination,
     categories,
     urlCategoryId,
-    urlDeliveryMode,
     urlSearchQuery,
     activeCategoryName,
     onClearAll
@@ -328,10 +255,9 @@ const QuickStats = ({
                 </div>
             </div>
 
-            {(urlCategoryId || urlDeliveryMode || urlSearchQuery) && (
+            {(urlCategoryId || urlSearchQuery) && (
                 <ActiveFiltersSummary
                     urlCategoryId={urlCategoryId}
-                    urlDeliveryMode={urlDeliveryMode}
                     urlSearchQuery={urlSearchQuery}
                     activeCategoryName={activeCategoryName}
                     onClearAll={onClearAll}
@@ -343,7 +269,6 @@ const QuickStats = ({
 
 interface ActiveFiltersSummaryProps {
     urlCategoryId: string | null;
-    urlDeliveryMode: string | null;
     urlSearchQuery: string;
     activeCategoryName: string;
     onClearAll: () => void;
@@ -351,7 +276,6 @@ interface ActiveFiltersSummaryProps {
 
 const ActiveFiltersSummary = ({
     urlCategoryId,
-    urlDeliveryMode,
     urlSearchQuery,
     activeCategoryName,
     onClearAll
@@ -371,12 +295,6 @@ const ActiveFiltersSummary = ({
                 <div className="flex items-center justify-between bg-blue-50/50 px-2 py-1.5 rounded-md">
                     <span className="text-xs text-gray-700">Category</span>
                     <span className="text-xs font-medium text-[#0066CC]">{activeCategoryName}</span>
-                </div>
-            )}
-            {urlDeliveryMode && (
-                <div className="flex items-center justify-between bg-purple-50/50 px-2 py-1.5 rounded-md">
-                    <span className="text-xs text-gray-700">Mode</span>
-                    <span className="text-xs font-medium text-purple-700 capitalize">{urlDeliveryMode.toLowerCase()}</span>
                 </div>
             )}
             {urlSearchQuery && (

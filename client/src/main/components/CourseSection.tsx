@@ -15,7 +15,6 @@ const CourseSection = () => {
     const [scrollLeft, setScrollLeft] = useState(0)
     const [activeCategory, setActiveCategory] = useState("Our Courses")
     const [categoryLoading, setCategoryLoading] = useState(false)
-    const [activeDeliveryMode, setActiveDeliveryMode] = useState<string | null>(null)
 
     useEffect(() => {
         fetchCategories()
@@ -30,14 +29,6 @@ const CourseSection = () => {
             ...categories
         ]
     }, [categories])
-
-    // Delivery mode options
-    const deliveryModes = useMemo(() => [
-        { value: null, label: "All" },
-        { value: "ONLINE", label: "Online" },
-        { value: "OFFLINE", label: "Offline" },
-        { value: "BOTH", label: "Both" }
-    ], [])
 
     // Handle category change - fetch from database
     const handleCategoryChange = useCallback(async (categoryName: string) => {
@@ -55,47 +46,13 @@ const CourseSection = () => {
                 }
             }
 
-            // Add delivery mode filter if active
-            if (activeDeliveryMode) {
-                filters.delivery_mode = activeDeliveryMode
-            }
-
             await fetchCourses(filters)
         } catch (error) {
             console.error('Error fetching courses for category:', error)
         } finally {
             setCategoryLoading(false)
         }
-    }, [categories, fetchCourses, activeDeliveryMode])
-
-    // Handle delivery mode change
-    const handleDeliveryModeChange = useCallback(async (modeValue: string | null) => {
-        setActiveDeliveryMode(modeValue)
-        setCategoryLoading(true)
-
-        try {
-            const filters: any = {}
-
-            // Add category filter if not "Our Courses"
-            if (activeCategory !== "Our Courses") {
-                const selectedCategory = categories.find(cat => cat.name === activeCategory)
-                if (selectedCategory) {
-                    filters.category = selectedCategory.id
-                }
-            }
-
-            // Add delivery mode filter
-            if (modeValue) {
-                filters.delivery_mode = modeValue
-            }
-
-            await fetchCourses(filters)
-        } catch (error) {
-            console.error('Error fetching courses for delivery mode:', error)
-        } finally {
-            setCategoryLoading(false)
-        }
-    }, [activeCategory, categories, fetchCourses])
+    }, [categories, fetchCourses])
 
     // Get only the last 12 courses
     const displayedCourses = useMemo(() => {
@@ -209,7 +166,7 @@ const CourseSection = () => {
                     </div>
                 )}
 
-                {/* Active Category Display and Delivery Mode Radio Buttons */}
+                {/* Active Category Display */}
                 {!error && (
                     <div className="mb-8">
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -222,62 +179,23 @@ const CourseSection = () => {
                                     <h3 className="text-xl font-bold text-gray-900">
                                         {activeCategory}
                                     </h3>
-                                    {activeDeliveryMode && (
-                                        <p className="text-sm text-gray-500">
-                                            Filtered by: {deliveryModes.find(m => m.value === activeDeliveryMode)?.label}
-                                        </p>
-                                    )}
                                 </div>
                             </div>
 
-                            {/* Right side - Delivery Mode Radio Buttons */}
-                            <div className="flex flex-wrap items-center gap-4">
-                                {deliveryModes.map((mode) => {
-                                    const isActive = activeDeliveryMode === mode.value
-                                    return (
-                                        <label
-                                            key={mode.label}
-                                            className="flex items-center gap-2 cursor-pointer group"
-                                        >
-                                            <div className="relative flex items-center">
-                                                <input
-                                                    type="radio"
-                                                    name="delivery_mode"
-                                                    checked={isActive}
-                                                    onChange={() => handleDeliveryModeChange(mode.value)}
-                                                    disabled={categoryLoading}
-                                                    className="peer h-4 w-4 cursor-pointer appearance-none rounded-full border-2 border-gray-300 checked:border-[#0066CC] transition-all"
-                                                />
-                                                <span className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#0066CC] opacity-0 peer-checked:opacity-100 transition-opacity"></span>
-                                            </div>
-
-                                            <span className={`text-sm transition-colors ${isActive
-                                                ? 'text-[#0066CC] font-medium'
-                                                : 'text-gray-600 group-hover:text-[#0066CC]'
-                                                }`}>
-                                                {mode.label}
-                                            </span>
-                                        </label>
-                                    )
-                                })}
-
-                                {/* Clear Filters Button - Shows when filters are active */}
-                                {(activeCategory !== "Our Courses" || activeDeliveryMode) && (
-                                    <button
-                                        onClick={async () => {
-                                            setActiveCategory("Our Courses")
-                                            setActiveDeliveryMode(null)
-                                            setCategoryLoading(true)
-                                            await fetchCourses()
-                                            setCategoryLoading(false)
-                                        }}
-                                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-all text-sm"
-                                    >
-                                        <RefreshCw className="w-3.5 h-3.5" />
-                                        Clear
-                                    </button>
-                                )}
-                            </div>
+                            {activeCategory !== "Our Courses" && (
+                                <button
+                                    onClick={async () => {
+                                        setActiveCategory("Our Courses")
+                                        setCategoryLoading(true)
+                                        await fetchCourses()
+                                        setCategoryLoading(false)
+                                    }}
+                                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-all text-sm"
+                                >
+                                    <RefreshCw className="w-3.5 h-3.5" />
+                                    Clear
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}
@@ -317,7 +235,6 @@ const CourseSection = () => {
                                 <button
                                     onClick={async () => {
                                         setActiveCategory("Our Courses")
-                                        setActiveDeliveryMode(null)
                                         setCategoryLoading(true)
                                         await fetchCourses()
                                         setCategoryLoading(false)
