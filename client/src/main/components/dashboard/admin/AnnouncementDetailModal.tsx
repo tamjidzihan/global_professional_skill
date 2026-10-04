@@ -95,7 +95,7 @@ const AnnouncementDetailModal: React.FC<AnnouncementDetailModalProps> = ({
                             <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Created By</p>
                             <div className="flex items-center gap-1.5 text-xs text-gray-600">
                                 <User className="w-3 h-3 text-gray-400" />
-                                <span>{announcement.created_by_detail?.full_name || announcement.created_by_detail?.email || 'System Admin'}</span>
+                                <span>{announcement.created_by_detail?.full_name || 'System Admin'}</span>
                             </div>
                         </div>
                         <div className="space-y-0.5">

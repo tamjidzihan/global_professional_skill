@@ -10,6 +10,11 @@ import { useAuthContext } from '../../../../context/AuthContext';
 const AnnouncementDetailPage: React.FC = () => {
     const { user } = useAuthContext();
     const { id } = useParams<{ id: string }>();
+    const announcementsPath = user?.role === 'ADMIN'
+        ? '/dashboard/admin/announcements'
+        : user
+            ? '/dashboard/announcements'
+            : '/announcements';
     const [announcement, setAnnouncement] = useState<Announcement | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -72,11 +77,11 @@ const AnnouncementDetailPage: React.FC = () => {
                     <p className="text-sm font-semibold text-gray-800">{error || 'Announcement not found'}</p>
                     <p className="text-xs text-gray-400 mt-0.5">The announcement you're looking for doesn't exist or has been removed.</p>
                     <Link
-                        to="/dashboard/announcements"
+                        to={announcementsPath}
                         className="mt-3 inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border border-violet-100 rounded-lg hover:bg-violet-100 transition-colors"
                     >
                         <ArrowLeft className="w-3.5 h-3.5" />
-                        Back to {user?.role === 'ADMIN' ? ' Announcements Management' : 'Announcements'}
+                        Back to {user?.role === 'ADMIN' ? 'Announcements Management' : 'Announcements'}
                     </Link>
                 </div>
             </div>
@@ -90,11 +95,11 @@ const AnnouncementDetailPage: React.FC = () => {
             {/* Back Button */}
             <div className="mb-4">
                 <Link
-                    to={user?.role === 'ADMIN' ? '/dashboard/admin/announcements' : '/dashboard/announcements'}
+                    to={announcementsPath}
                     className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-400 hover:text-violet-600 transition-colors"
                 >
                     <ArrowLeft className="w-3.5 h-3.5" />
-                    {user?.role === 'ADMIN' ? 'Back to Announcements Management' : 'Back to Announcements'}
+                    Back to {user?.role === 'ADMIN' ? 'Announcements Management' : 'Announcements'}
                 </Link>
             </div>
 
@@ -123,7 +128,7 @@ const AnnouncementDetailPage: React.FC = () => {
                         {announcement.created_by_detail && (
                             <div className="flex items-center gap-1.5">
                                 <User className="w-3.5 h-3.5" />
-                                <span>By {announcement.created_by_detail.full_name || announcement.created_by_detail.email}</span>
+                                <span>By {announcement.created_by_detail.full_name}</span>
                             </div>
                         )}
                         {announcement.start_date && (

@@ -3,14 +3,14 @@ import { Menu } from 'lucide-react'
 import { Outlet, Navigate } from 'react-router-dom'
 import { DashboardSidebar } from '../components/dashboard/DashboardSidebar'
 import RouteLoadingFallback from '../components/RouteLoadingFallback'
-import { useAuth } from '../../hooks/useAuth'
+import { useAuthContext } from '../../context/AuthContext'
 
 export function DashboardLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false)
-    const { user, loading } = useAuth()
+    const { user, isLoading } = useAuthContext()
 
     // Show loading state while checking authentication
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-gray-600">Loading...</div>

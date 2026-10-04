@@ -26,9 +26,21 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
             'updated_at'
         ]
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request = self.context.get('request')
+        user = getattr(request, 'user', None)
+        if not (
+            user
+            and user.is_authenticated
+            and getattr(user, 'is_admin_user', False)
+        ):
+            representation.pop('greenweb_sms_token', None)
+        return representation
+
 
 class AlbumPhotoSerializer(serializers.ModelSerializer):
-    created_by_detail = UserSerializer(source='created_by', read_only=True)
+    created_by_detail = serializers.SerializerMethodField()
 
     class Meta:
         model = AlbumPhoto
@@ -46,9 +58,12 @@ class AlbumPhotoSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['created_by']
 
+    def get_created_by_detail(self, obj):
+        return serialize_public_author(obj.created_by)
+
 
 class AnnouncementSerializer(serializers.ModelSerializer):
-    created_by_detail = UserSerializer(source='created_by', read_only=True)
+    created_by_detail = serializers.SerializerMethodField()
 
     class Meta:
         model = Announcement
@@ -59,9 +74,12 @@ class AnnouncementSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['created_by']
 
+    def get_created_by_detail(self, obj):
+        return serialize_public_author(obj.created_by)
+
 
 class NewsTickerItemSerializer(serializers.ModelSerializer):
-    created_by_detail = UserSerializer(source='created_by', read_only=True)
+    created_by_detail = serializers.SerializerMethodField()
 
     class Meta:
         model = NewsTickerItem
@@ -71,6 +89,16 @@ class NewsTickerItemSerializer(serializers.ModelSerializer):
             'created_by', 'created_by_detail'
         ]
         read_only_fields = ['created_by']
+
+    def get_created_by_detail(self, obj):
+        return serialize_public_author(obj.created_by)
+
+
+def serialize_public_author(user):
+    if user is None:
+        return None
+    full_name = f'{user.first_name} {user.last_name}'.strip()
+    return {'full_name': full_name or 'GPI Team'}
 
 
 class NotificationTemplateSerializer(serializers.ModelSerializer):
@@ -85,4 +113,3 @@ class NotificationLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotificationLog
         fields = '__all__'
-

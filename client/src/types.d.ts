@@ -453,7 +453,7 @@ export interface AlbumPhoto {
     created_at: string;
     updated_at: string;
     created_by?: string;
-    created_by_detail?: User;
+    created_by_detail?: { full_name: string } | null;
 }
 
 
@@ -535,7 +535,7 @@ export interface Announcement {
     created_at: string;
     updated_at: string;
     created_by: string;
-    created_by_detail?: User;
+    created_by_detail?: { full_name: string } | null;
 }
 
 export interface AnnouncementCreateUpdateData {
@@ -558,7 +558,7 @@ export interface NewsTickerItem {
     created_at: string;
     updated_at: string;
     created_by: string;
-    created_by_detail?: User;
+    created_by_detail?: { full_name: string } | null;
 }
 
 export interface NewsTickerItemCreateUpdateData {
@@ -737,5 +737,3 @@ export interface AdminUserFullDetail {
     quiz_submissions: UserDetailQuizSubmission[];
     payments: UserDetailPayment[];
 }
-
-

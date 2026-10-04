@@ -5,9 +5,11 @@ import { format, parseISO } from 'date-fns';
 import { getAnnouncements } from '../../../../lib/api';
 import type { Announcement } from '../../../../types';
 import SEO from '../../../components/SEO';
+import { useAuthContext } from '../../../../context/AuthContext';
 
 const AnnouncementListPage: React.FC = () => {
     const navigate = useNavigate();
+    const { user } = useAuthContext();
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -58,7 +60,7 @@ const AnnouncementListPage: React.FC = () => {
             {/* Header */}
             <div className="mb-6">
                 <button
-                    onClick={() => navigate('/dashboard')}
+                    onClick={() => navigate(user ? '/dashboard' : '/')}
                     className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors mb-2 cursor-pointer"
                 >
                     <ArrowLeft className="w-3.5 h-3.5" /> Back to Dashboard

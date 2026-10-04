@@ -217,16 +217,19 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
-            return [permissions.IsAuthenticated()]
+            return [permissions.AllowAny()]
         return [IsAdmin()]
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        if not self.request.user.role == "ADMIN":
+        if not (
+            self.request.user.is_authenticated
+            and self.request.user.role == "ADMIN"
+        ):
             now = timezone.now()
-            # Show visible announcements that haven't ended yet
             queryset = queryset.filter(is_visible=True).filter(
-                models.Q(end_date__isnull=True) | models.Q(end_date__gte=now)
+                models.Q(start_date__isnull=True) | models.Q(start_date__lte=now),
+                models.Q(end_date__isnull=True) | models.Q(end_date__gte=now),
             )
         return queryset
 
@@ -378,4 +381,3 @@ class NotificationLogViewSet(viewsets.ReadOnlyModelViewSet):
             return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(queryset, many=True)
         return Response({"success": True, "data": serializer.data})
-
