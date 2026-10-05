@@ -429,11 +429,12 @@ export const getUserDetail = (userId: string) =>
 export const getCategories = <T = CategoryListResponse>(
     params?: Record<string, any>,
     pageUrl?: string | null,
+    signal?: AbortSignal,
 ): Promise<AxiosResponse<T>> => {
     if (pageUrl) {
-        return api.get<T>(pageUrl);
+        return api.get<T>(pageUrl, { signal });
     }
-    return api.get<T>(endpoints.categories.list, { params });
+    return api.get<T>(endpoints.categories.list, { params, signal });
 };
 
 export const getCategoryDetail = (id: string): Promise<AxiosResponse<CategoryDetailResponse>> =>
@@ -453,11 +454,12 @@ export const deleteCategory = (id: string): Promise<AxiosResponse<void>> =>
 export const getCourses = <T = CourseListResponse>(
     params?: Record<string, any>,
     pageUrl?: string | null,
+    signal?: AbortSignal,
 ): Promise<AxiosResponse<T>> => {
     if (pageUrl) {
-        return api.get<T>(pageUrl);
+        return api.get<T>(pageUrl, { signal });
     }
-    return api.get<T>(endpoints.courses.list, { params });
+    return api.get<T>(endpoints.courses.list, { params, signal });
 };
 
 export const getCourseDetail = (id: string): Promise<AxiosResponse<CourseDetailResponse>> =>

@@ -1,26 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useRef, useState, useMemo, useCallback } from "react"
+import { useRef, useState, useMemo, useCallback } from "react"
 import { Link } from "react-router-dom"
 import { ChevronLeft, ChevronRight, BookOpen, Sparkles, ArrowRight, AlertCircle, RefreshCw } from "lucide-react"
 import { CourseCard } from "./CourseCard"
-import { useCourses } from "../../hooks/useCourses"
+import { useCourseCategory } from "../../hooks/useCourseCategory"
 import CourseCardSkeleton from "./ui/loadingSkeleton/CourseCardSkeleton"
 
 const CourseSection = () => {
     const scrollRef = useRef<HTMLDivElement>(null)
-    const { fetchCourses, courses, fetchCategories, categories, loading, error } = useCourses()
 
     const [isDragging, setIsDragging] = useState(false)
     const [startX, setStartX] = useState(0)
     const [scrollLeft, setScrollLeft] = useState(0)
     const [activeCategory, setActiveCategory] = useState("Our Courses")
-    const [categoryLoading, setCategoryLoading] = useState(false)
-
-    useEffect(() => {
-        fetchCategories()
-        // Initial fetch for Our courses
-        fetchCourses()
-    }, [fetchCourses, fetchCategories])
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
+    const { courses, categories, loading, error, refresh } = useCourseCategory(selectedCategoryId)
 
     // Add "All Courses" to categories
     const allCategories = useMemo(() => {
@@ -30,29 +23,11 @@ const CourseSection = () => {
         ]
     }, [categories])
 
-    // Handle category change - fetch from database
-    const handleCategoryChange = useCallback(async (categoryName: string) => {
+    const handleCategoryChange = useCallback((categoryName: string) => {
         setActiveCategory(categoryName)
-        setCategoryLoading(true)
-
-        try {
-            const filters: any = {}
-
-            if (categoryName !== "Our Courses") {
-                // Find the category ID from the categories list
-                const selectedCategory = categories.find(cat => cat.name === categoryName)
-                if (selectedCategory) {
-                    filters.category = selectedCategory.id
-                }
-            }
-
-            await fetchCourses(filters)
-        } catch (error) {
-            console.error('Error fetching courses for category:', error)
-        } finally {
-            setCategoryLoading(false)
-        }
-    }, [categories, fetchCourses])
+        const selectedCategory = categories.find(category => category.name === categoryName)
+        setSelectedCategoryId(selectedCategory?.id ?? null)
+    }, [categories])
 
     // Get only the last 12 courses
     const displayedCourses = useMemo(() => {
@@ -84,12 +59,13 @@ const CourseSection = () => {
     const stopDragging = () => setIsDragging(false)
 
     const handleRetry = () => {
-        fetchCategories()
-        handleCategoryChange(activeCategory)
+        refresh()
     }
 
-    // Combine loading states
-    const isLoading = loading || categoryLoading
+    const clearCategory = () => {
+        setActiveCategory("Our Courses")
+        setSelectedCategoryId(null)
+    }
 
     return (
         <section className="py-10 sm:py-14 bg-linear-to-b from-white to-[#FCF8F1] overflow-hidden">
@@ -134,16 +110,16 @@ const CourseSection = () => {
                                     <button
                                         key={category.name}
                                         onClick={() => handleCategoryChange(category.name)}
-                                        disabled={categoryLoading}
+                                        disabled={loading}
                                         className={`group relative px-3 py-2 rounded-2xl text-sm font-semibold whitespace-nowrap transition-all duration-300 cursor-pointer ${activeCategory === category.name
                                             ? 'bg-linear-to-r from-[#0066CC] to-blue-600 text-white shadow-lg scale-105'
                                             : 'bg-white border-2 border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
-                                            } ${categoryLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                            } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
                                         <span className="flex items-center gap-2">
                                             <span className="text-lg">{category.icon}</span>
                                             {category.name}
-                                            {categoryLoading && activeCategory === category.name && (
+                                            {loading && activeCategory === category.name && (
                                                 <RefreshCw className="w-3 h-3 animate-spin" />
                                             )}
                                         </span>
@@ -184,12 +160,7 @@ const CourseSection = () => {
 
                             {activeCategory !== "Our Courses" && (
                                 <button
-                                    onClick={async () => {
-                                        setActiveCategory("Our Courses")
-                                        setCategoryLoading(true)
-                                        await fetchCourses()
-                                        setCategoryLoading(false)
-                                    }}
+                                    onClick={clearCategory}
                                     className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-all text-sm"
                                 >
                                     <RefreshCw className="w-3.5 h-3.5" />
@@ -222,23 +193,18 @@ const CourseSection = () => {
 
                 {/* Course Grid with Error Handling */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-                    {isLoading && [1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                    {loading && [1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
                         <CourseCardSkeleton key={i} />
                     ))}
 
-                    {!isLoading && !error && courses.length === 0 && (
+                    {!loading && !error && courses.length === 0 && (
                         <div className="col-span-full py-12">
                             <div className="bg-gray-50 border-2 border-gray-200 rounded-2xl p-8 text-center max-w-md mx-auto">
                                 <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                                 <h3 className="text-lg font-bold text-gray-700 mb-2">No Courses Found</h3>
                                 <p className="text-gray-500 mb-4">There are no courses available matching your criteria.</p>
                                 <button
-                                    onClick={async () => {
-                                        setActiveCategory("Our Courses")
-                                        setCategoryLoading(true)
-                                        await fetchCourses()
-                                        setCategoryLoading(false)
-                                    }}
+                                    onClick={clearCategory}
                                     className="text-blue-600 font-semibold hover:text-blue-700"
                                 >
                                     Clear all filters
@@ -247,7 +213,7 @@ const CourseSection = () => {
                         </div>
                     )}
 
-                    {!isLoading && !error && displayedCourses.length > 0 && displayedCourses.map((course) => (
+                    {!loading && !error && displayedCourses.length > 0 && displayedCourses.map((course) => (
                         <CourseCard
                             key={course.id}
                             id={course.id}
