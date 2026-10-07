@@ -113,7 +113,6 @@ if DEBUG:
     DATABASES = {
         "default": dj_database_url.config(
             default=str(config("MYSQL_DATABASE")),
-            conn_max_age=600,
             conn_health_checks=True,
         )
     }
@@ -121,7 +120,6 @@ else:
     DATABASES = {
         "default": dj_database_url.config(
             default=str(config("MYSQL_DATABASE_URL")),
-            conn_max_age=600,
             conn_health_checks=True,
         )
     }
