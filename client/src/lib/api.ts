@@ -68,7 +68,7 @@ export const api = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    timeout: 30000,
+    timeout: 3000,
 });
 
 type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean };
@@ -106,6 +106,13 @@ api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem('access_token');
         if (token) config.headers.Authorization = `Bearer ${token}`;
+        if (config.data instanceof FormData) {
+            if (typeof (config.headers as any)?.delete === 'function') {
+                (config.headers as any).delete('Content-Type');
+            } else if (config.headers) {
+                delete (config.headers as any)['Content-Type'];
+            }
+        }
         return config;
     },
     (error: unknown) => Promise.reject(error),
