@@ -18,6 +18,7 @@ import {
 import { useAdminCourses } from '../../../../hooks/useAdminCourses';
 import type { CoursesSummary } from '../../../../types';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 type FilterStatus = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'PUBLISHED' | 'DRAFT';
 
@@ -61,7 +62,15 @@ function CourseThumbnail({ course }: { course: CoursesSummary }) {
 }
 
 // ── Action Dropdown ──────────────────────────────────────────────────────────
-function ActionDropdown({ course }: { course: CoursesSummary }) {
+function ActionDropdown({
+    course,
+    onTogglePublish,
+    actionLoading,
+}: {
+    course: CoursesSummary;
+    onTogglePublish: (course: CoursesSummary) => void;
+    actionLoading?: boolean;
+}) {
     const [open, setOpen] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
 
@@ -73,48 +82,75 @@ function ActionDropdown({ course }: { course: CoursesSummary }) {
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
-    const items = [
-        { label: 'View Details', icon: ExternalLink, to: `/dashboard/admin/courses/${course.id}`, cls: 'text-gray-700 hover:bg-gray-50' },
-        { label: 'Certificate Settings', icon: Award, to: `/dashboard/admin/courses/${course.id}/certificate`, cls: 'text-amber-800 hover:bg-amber-50' },
-        { label: 'Preview Course', icon: Eye, to: `/courses/${course.id}`, cls: 'text-gray-700 hover:bg-gray-50' },
-        ...(course.status === 'PUBLISHED'
-            ? [{ label: 'Unpublish', icon: EyeOff, cls: 'text-amber-700 hover:bg-amber-50' }]
-            : []),
-    ];
+    const isPublished = course.status === 'PUBLISHED';
 
     return (
         <div className="relative" ref={ref}>
             <button
                 onClick={() => setOpen(o => !o)}
-                className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors cursor-pointer"
+                disabled={actionLoading}
+                className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors cursor-pointer disabled:opacity-50"
             >
-                <MoreVertical className="w-4 h-4" />
+                {actionLoading ? (
+                    <div className="w-3.5 h-3.5 border-2 border-violet-600 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                    <MoreVertical className="w-4 h-4" />
+                )}
             </button>
 
             {open && (
-                <div className="absolute right-0 mt-1 w-44 bg-white rounded-xl border border-gray-100 shadow-xl z-30 overflow-hidden py-1">
-                    {items.map(({ label, icon: Icon, to, cls }) =>
-                        to ? (
-                            <Link
-                                key={label}
-                                to={to}
-                                onClick={() => setOpen(false)}
-                                className={`flex items-center gap-2.5 px-3 py-2 text-xs font-semibold transition-colors ${cls}`}
-                            >
-                                <Icon className="w-3.5 h-3.5 shrink-0" />
-                                {label}
-                            </Link>
+                <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl border border-gray-100 shadow-xl z-30 overflow-hidden py-1">
+                    <Link
+                        to={`/dashboard/admin/courses/${course.id}`}
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                        <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                        View Details
+                    </Link>
+
+                    <Link
+                        to={`/dashboard/admin/courses/${course.id}/certificate`}
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-amber-800 hover:bg-amber-50 transition-colors"
+                    >
+                        <Award className="w-3.5 h-3.5 shrink-0" />
+                        Certificate Settings
+                    </Link>
+
+                    <Link
+                        to={`/courses/${course.id}`}
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                        <Eye className="w-3.5 h-3.5 shrink-0" />
+                        Preview Course
+                    </Link>
+
+                    <button
+                        onClick={() => {
+                            setOpen(false);
+                            onTogglePublish(course);
+                        }}
+                        disabled={actionLoading}
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold transition-colors cursor-pointer border-t border-gray-100/80 ${
+                            isPublished
+                                ? 'text-amber-700 hover:bg-amber-50'
+                                : 'text-emerald-700 hover:bg-emerald-50'
+                        }`}
+                    >
+                        {isPublished ? (
+                            <>
+                                <EyeOff className="w-3.5 h-3.5 shrink-0 text-amber-600" />
+                                Unpublish Course
+                            </>
                         ) : (
-                            <button
-                                key={label}
-                                onClick={() => setOpen(false)}
-                                className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold transition-colors cursor-pointer ${cls}`}
-                            >
-                                <Icon className="w-3.5 h-3.5 shrink-0" />
-                                {label}
-                            </button>
-                        )
-                    )}
+                            <>
+                                <Eye className="w-3.5 h-3.5 shrink-0 text-emerald-600" />
+                                Publish Course
+                            </>
+                        )}
+                    </button>
                 </div>
             )}
         </div>
@@ -126,6 +162,7 @@ export function AdminCourseCatalog(): JSX.Element {
     const {
         courses,
         fetchCourses,
+        reviewCourseAction,
         loading,
         totalCount,
         currentPage,
@@ -137,6 +174,29 @@ export function AdminCourseCatalog(): JSX.Element {
         loadPrevPage,
         goToPage,
     } = useAdminCourses();
+
+    const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+
+    const handleTogglePublish = async (course: CoursesSummary) => {
+        const isPublished = course.status === 'PUBLISHED';
+        const targetStatus = isPublished ? 'DRAFT' : 'PUBLISHED';
+        setActionLoadingId(course.id);
+        try {
+            await reviewCourseAction(course.id, { status: targetStatus });
+            toast.success(
+                isPublished
+                    ? `Course "${course.title}" unpublished successfully.`
+                    : `Course "${course.title}" published successfully.`
+            );
+        } catch (err: any) {
+            toast.error(
+                err?.response?.data?.error?.message ||
+                `Failed to ${isPublished ? 'unpublish' : 'publish'} course.`
+            );
+        } finally {
+            setActionLoadingId(null);
+        }
+    };
 
     const [filterStatus, setFilterStatus] = useState<FilterStatus>('ALL');
     const [searchQuery, setSearchQuery] = useState<string>('');
@@ -346,7 +406,11 @@ export function AdminCourseCatalog(): JSX.Element {
 
                                     {/* Actions */}
                                     <td className="px-5 py-3.5 whitespace-nowrap text-right">
-                                        <ActionDropdown course={course} />
+                                        <ActionDropdown
+                                            course={course}
+                                            onTogglePublish={handleTogglePublish}
+                                            actionLoading={actionLoadingId === course.id}
+                                        />
                                     </td>
                                 </tr>
                             ))

@@ -91,12 +91,12 @@ export function PromoCodeManagementPage() {
             const courseArray = Array.isArray(data.results?.data)
                 ? data.results.data
                 : Array.isArray(data.results)
-                ? data.results
-                : Array.isArray(data.data)
-                ? data.data
-                : Array.isArray(data)
-                ? data
-                : [];
+                    ? data.results
+                    : Array.isArray(data.data)
+                        ? data.data
+                        : Array.isArray(data)
+                            ? data
+                            : [];
             setCourses(courseArray.map((c: any) => ({ id: c.id, title: c.title })));
         } catch (error) {
             console.error('Failed to fetch courses list:', error);
@@ -346,17 +346,16 @@ export function PromoCodeManagementPage() {
                             <button
                                 key={value}
                                 onClick={() => setStatusFilter(value)}
-                                className={`inline-flex items-center px-3 py-1.5 text-[11px] font-semibold rounded-lg whitespace-nowrap transition-all duration-150 cursor-pointer ${
-                                    active
-                                        ? value === 'ALL'
-                                            ? 'bg-gray-900 text-white shadow-sm'
-                                            : value === 'ACTIVE'
+                                className={`inline-flex items-center px-3 py-1.5 text-[11px] font-semibold rounded-lg whitespace-nowrap transition-all duration-150 cursor-pointer ${active
+                                    ? value === 'ALL'
+                                        ? 'bg-gray-900 text-white shadow-sm'
+                                        : value === 'ACTIVE'
                                             ? 'bg-emerald-50 text-emerald-700 ring-2 ring-emerald-200 shadow-sm'
                                             : value === 'INACTIVE'
-                                            ? 'bg-gray-100 text-gray-700 ring-2 ring-gray-200 shadow-sm'
-                                            : 'bg-rose-50 text-rose-700 ring-2 ring-rose-200 shadow-sm'
-                                        : 'bg-gray-50 text-gray-500 hover:bg-gray-100 border border-gray-100'
-                                }`}
+                                                ? 'bg-gray-100 text-gray-700 ring-2 ring-gray-200 shadow-sm'
+                                                : 'bg-rose-50 text-rose-700 ring-2 ring-rose-200 shadow-sm'
+                                    : 'bg-gray-50 text-gray-500 hover:bg-gray-100 border border-gray-100'
+                                    }`}
                             >
                                 {label}
                             </button>
@@ -414,9 +413,8 @@ export function PromoCodeManagementPage() {
                                                     {promo.max_uses !== null && (
                                                         <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
                                                             <div
-                                                                className={`h-full rounded-full transition-all duration-500 ${
-                                                                    isLimitReached ? 'bg-amber-500' : 'bg-blue-500'
-                                                                }`}
+                                                                className={`h-full rounded-full transition-all duration-500 ${isLimitReached ? 'bg-amber-500' : 'bg-blue-500'
+                                                                    }`}
                                                                 style={{ width: `${usagePercent}%` }}
                                                             />
                                                         </div>
@@ -649,7 +647,7 @@ export function PromoCodeManagementPage() {
                             <div>
                                 <div className="flex items-center justify-between mb-1">
                                     <label className="text-xs font-semibold uppercase tracking-wider text-gray-500">
-                                        Restrict to Specific Courses
+                                        Select course(s) to apply the promo code
                                     </label>
                                     <div className="flex items-center gap-2">
                                         <button
@@ -691,9 +689,8 @@ export function PromoCodeManagementPage() {
                                             return (
                                                 <label
                                                     key={c.id}
-                                                    className={`flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer transition-colors ${
-                                                        isSelected ? 'bg-violet-50/80 text-violet-900 font-semibold' : 'text-gray-700 hover:bg-gray-100/60'
-                                                    }`}
+                                                    className={`flex items-center gap-2 text-xs py-1.5 px-2 rounded-md cursor-pointer transition-colors ${isSelected ? 'bg-violet-50/80 text-violet-900 font-semibold' : 'text-gray-700 hover:bg-gray-100/60'
+                                                        }`}
                                                 >
                                                     <input
                                                         type="checkbox"

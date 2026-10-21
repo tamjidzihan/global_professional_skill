@@ -187,6 +187,8 @@ export const endpoints = {
         delete: (id: string) => `/courses/courses/${id}/`,
         submit: (id: string) => `/courses/courses/${id}/submit_for_review/`,
         review: (id: string) => `/courses/courses/${id}/review/`,
+        publish: (id: string) => `/courses/courses/${id}/publish/`,
+        unpublish: (id: string) => `/courses/courses/${id}/unpublish/`,
         announcements: (courseId: string) => `/courses/courses/${courseId}/announcements/`,
         announcementDetail: (id: string) => `/courses/course-announcements/${id}/`,
         listAnnouncements: '/courses/course-announcements/',
@@ -486,8 +488,14 @@ export const deleteCourse = (id: string): Promise<AxiosResponse<void>> =>
 export const submitCourseForReview = (id: string): Promise<AxiosResponse<void>> =>
     api.post<void>(endpoints.courses.submit(id));
 
-export const reviewCourse = (id: string, data: { status: 'APPROVED' | 'REJECTED' | 'PUBLISHED'; feedback?: string }): Promise<AxiosResponse<ApiResponse<CourseDetail>>> =>
+export const reviewCourse = (id: string, data: { status: 'APPROVED' | 'REJECTED' | 'PUBLISHED' | 'DRAFT'; feedback?: string }): Promise<AxiosResponse<ApiResponse<CourseDetail>>> =>
     api.post<ApiResponse<CourseDetail>>(endpoints.courses.review(id), data);
+
+export const publishCourse = (id: string): Promise<AxiosResponse<ApiResponse<CourseDetail>>> =>
+    api.post<ApiResponse<CourseDetail>>(endpoints.courses.publish(id));
+
+export const unpublishCourse = (id: string): Promise<AxiosResponse<ApiResponse<CourseDetail>>> =>
+    api.post<ApiResponse<CourseDetail>>(endpoints.courses.unpublish(id));
 
 
 export const getMyCourses = <T = CourseListResponse>(

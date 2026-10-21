@@ -618,9 +618,10 @@ class CourseReviewSerializer(serializers.ModelSerializer):
             CourseStatus.APPROVED,
             CourseStatus.PUBLISHED,
             CourseStatus.REJECTED,
+            CourseStatus.DRAFT,
         ]:
             raise serializers.ValidationError(
-                "Status must be APPROVED, PUBLISHED, or REJECTED."
+                "Status must be APPROVED, PUBLISHED, REJECTED, or DRAFT."
             )
         return value
 

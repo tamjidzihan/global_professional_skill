@@ -132,7 +132,7 @@ export const useAdminCourses = () => {
 
     const reviewCourseAction = useCallback(async (
         id: string,
-        data: { status: 'APPROVED' | 'REJECTED' | 'PUBLISHED'; feedback?: string }
+        data: { status: 'APPROVED' | 'REJECTED' | 'PUBLISHED' | 'DRAFT'; feedback?: string }
     ) => {
         setLoading(true);
         setError(null);
@@ -141,14 +141,27 @@ export const useAdminCourses = () => {
             if (selectedCourse?.id === id) {
                 await fetchCourseDetail(id);
             }
-            fetchCourses('PENDING', null, { all: true });
+            setCourses(prev => prev.map(c => c.id === id ? { ...c, status: data.status } : c));
+            await fetchCourses(currentStatusRef.current, null, {
+                page: currentPage,
+                search: currentSearchRef.current,
+                pageSize,
+            });
         } catch (err: any) {
             setError(err.response?.data?.error?.message || 'Failed to review course');
             throw err;
         } finally {
             setLoading(false);
         }
-    }, [fetchCourses, fetchCourseDetail, selectedCourse]);
+    }, [fetchCourses, fetchCourseDetail, selectedCourse, currentPage, pageSize]);
+
+    const publishCourseAction = useCallback(async (id: string) => {
+        return reviewCourseAction(id, { status: 'PUBLISHED' });
+    }, [reviewCourseAction]);
+
+    const unpublishCourseAction = useCallback(async (id: string) => {
+        return reviewCourseAction(id, { status: 'DRAFT' });
+    }, [reviewCourseAction]);
 
     const loadNextPage = useCallback(() => {
         if (nextPage) {
@@ -192,6 +205,8 @@ export const useAdminCourses = () => {
         // Actions
         fetchCourses,
         reviewCourseAction,
+        publishCourseAction,
+        unpublishCourseAction,
         loadNextPage,
         loadPrevPage,
         goToPage,

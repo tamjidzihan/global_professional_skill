@@ -12,6 +12,7 @@ import {
     XCircle,
     Clock,
     Eye,
+    EyeOff,
     BookOpen,
     Users,
     Tag,
@@ -47,6 +48,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import SEO from '../../../components/SEO';
 import { getLogoDataUrl, addWatermarkToPdf } from '../../../../lib/pdfUtilsInstructor';
+import { toast } from 'react-hot-toast';
 import {
     getCourseCertificateConfig,
     getCourseCertificateCandidates,
@@ -71,7 +73,7 @@ const AdminCourseDetailPage = () => {
         clearSelectedCourse
     } = useAdminCourses();
 
-    const [statusAction, setStatusAction] = useState<'APPROVED' | 'REJECTED' | 'PUBLISHED' | null>(null);
+    const [statusAction, setStatusAction] = useState<'APPROVED' | 'REJECTED' | 'PUBLISHED' | 'DRAFT' | null>(null);
     const [feedback, setFeedback] = useState('');
     const [showStatusModal, setShowStatusModal] = useState(false);
     const [actionLoading, setActionLoading] = useState(false);
@@ -185,11 +187,20 @@ const AdminCourseDetailPage = () => {
         setActionError(null);
         try {
             await reviewCourseAction(id, { status: statusAction, feedback: feedback.trim() || undefined });
+            toast.success(
+                statusAction === 'PUBLISHED'
+                    ? 'Course published successfully'
+                    : statusAction === 'DRAFT'
+                    ? 'Course unpublished successfully'
+                    : `Course status updated to ${statusAction.toLowerCase()}`
+            );
             setShowStatusModal(false);
             setStatusAction(null);
             setFeedback('');
         } catch (err: any) {
-            setActionError(err.response?.data?.error?.message || 'Failed to update course status');
+            const errorMsg = err.response?.data?.error?.message || err.message || 'Failed to update course status';
+            setActionError(errorMsg);
+            toast.error(errorMsg);
         } finally {
             setActionLoading(false);
         }
@@ -363,10 +374,11 @@ const AdminCourseDetailPage = () => {
     const totalVideoDuration = selectedCourse.sections?.reduce((acc, s) =>
         acc + (s.lessons?.reduce((sum, l) => sum + (l.video_duration || 0), 0) || 0), 0) || 0;
 
-    const statusModalConfig = {
+    const statusModalConfig: Record<string, { title: string; desc: string }> = {
         APPROVED: { title: 'Approve Course', desc: 'This course will be marked as approved and ready for publishing.' },
         REJECTED: { title: 'Reject Course', desc: 'Please provide feedback explaining why this course is being rejected.' },
-        PUBLISHED: { title: 'Publish Course', desc: 'This course will be published and made available to students.' },
+        PUBLISHED: { title: 'Publish Course', desc: 'This course will be published and made available to students immediately.' },
+        DRAFT: { title: 'Unpublish Course', desc: 'This course will be unpublished and reverted to draft status. Students will no longer see it.' },
     };
 
     return (
@@ -815,6 +827,24 @@ const AdminCourseDetailPage = () => {
                             </div>
                             <div className={cardBody}>
                                 <div className="space-y-2.5">
+                                    {/* Primary Publish / Unpublish Action */}
+                                    {selectedCourse.status === 'PUBLISHED' ? (
+                                        <button
+                                            onClick={() => { setStatusAction('DRAFT'); setShowStatusModal(true); }}
+                                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-amber-50 text-amber-700 border border-amber-200 text-sm font-semibold rounded-lg hover:bg-amber-100 transition-colors cursor-pointer"
+                                        >
+                                            <EyeOff className="w-4 h-4" /> Unpublish Course
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => { setStatusAction('PUBLISHED'); setShowStatusModal(true); }}
+                                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-violet-600 text-white text-sm font-semibold rounded-lg hover:bg-violet-700 transition-colors cursor-pointer"
+                                        >
+                                            <Eye className="w-4 h-4" /> Publish Course
+                                        </button>
+                                    )}
+
+                                    {/* Workflow actions for PENDING */}
                                     {selectedCourse.status === 'PENDING' && (
                                         <>
                                             <button
@@ -831,21 +861,14 @@ const AdminCourseDetailPage = () => {
                                             </button>
                                         </>
                                     )}
+
+                                    {/* Reject option for APPROVED */}
                                     {selectedCourse.status === 'APPROVED' && (
                                         <button
-                                            onClick={() => { setStatusAction('PUBLISHED'); setShowStatusModal(true); }}
-                                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-violet-600 text-white text-sm font-semibold rounded-lg hover:bg-violet-700 transition-colors cursor-pointer"
-                                        >
-                                            <Eye className="w-4 h-4" /> Publish Course
-                                        </button>
-                                    )}
-                                    {(selectedCourse.status === 'PUBLISHED' || selectedCourse.status === 'APPROVED') && (
-                                        <button
                                             onClick={() => { setStatusAction('REJECTED'); setShowStatusModal(true); }}
-                                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors cursor-pointer"
+                                            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-50 text-rose-700 border border-rose-100 text-sm font-semibold rounded-lg hover:bg-rose-100 transition-colors cursor-pointer"
                                         >
-                                            <XCircle className="w-4 h-4" />
-                                            {selectedCourse.status === 'PUBLISHED' ? 'Unpublish' : 'Reject'} Course
+                                            <XCircle className="w-4 h-4" /> Reject Course
                                         </button>
                                     )}
                                 </div>

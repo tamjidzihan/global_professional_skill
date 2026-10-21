@@ -103,7 +103,7 @@ class CourseViewSet(viewsets.ModelViewSet):
             return CourseListSerializer
         elif self.action in ["create", "update", "partial_update"]:
             return CourseCreateUpdateSerializer
-        elif self.action == "review":
+        elif self.action in ["review", "publish", "unpublish"]:
             return CourseReviewSerializer
         return CourseDetailSerializer
 
@@ -152,7 +152,7 @@ class CourseViewSet(viewsets.ModelViewSet):
             return [IsInstructor()]
         elif self.action in ["update", "partial_update", "destroy"]:
             return [IsCourseInstructorOrAdmin()]
-        elif self.action == "review":
+        elif self.action in ["review", "publish", "unpublish"]:
             return [IsAdmin()]
         elif self.action in ["retrieve", "list"]:
             return [AllowAny()]
@@ -228,31 +228,57 @@ class CourseViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], permission_classes=[IsAdmin])
     @transaction.atomic
     def review(self, request, pk=None):
-        """Admin review course (approve/reject/publish)."""
+        """Admin review course (approve/reject/publish/unpublish)."""
         course = self.get_object()
-
-        if course.status not in [CourseStatus.PENDING, CourseStatus.APPROVED]:
-            return Response(
-                {
-                    "success": False,
-                    "error": {
-                        "message": "Only PENDING or APPROVED courses can be reviewed."
-                    },
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
 
         serializer = self.get_serializer(course, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
+        status_label = serializer.validated_data.get("status", course.status).lower()
         return Response(
             {
                 "success": True,
-                "message": f'Course {serializer.validated_data["status"].lower()} successfully.',
+                "message": f"Course {status_label} successfully.",
                 "data": CourseDetailSerializer(
                     course, context={"request": request}
                 ).data,
+            }
+        )
+
+    @action(detail=True, methods=["post"], permission_classes=[IsAdmin])
+    @transaction.atomic
+    def publish(self, request, pk=None):
+        """Admin directly publish a course at any time."""
+        course = self.get_object()
+        course.status = CourseStatus.PUBLISHED
+        if not course.published_at:
+            course.published_at = timezone.now()
+        course.reviewed_by = request.user
+        course.reviewed_at = timezone.now()
+        course.save(update_fields=["status", "published_at", "reviewed_by", "reviewed_at"])
+        return Response(
+            {
+                "success": True,
+                "message": "Course published successfully.",
+                "data": CourseDetailSerializer(course, context={"request": request}).data,
+            }
+        )
+
+    @action(detail=True, methods=["post"], permission_classes=[IsAdmin])
+    @transaction.atomic
+    def unpublish(self, request, pk=None):
+        """Admin directly unpublish a course at any time (reverts to DRAFT)."""
+        course = self.get_object()
+        course.status = CourseStatus.DRAFT
+        course.reviewed_by = request.user
+        course.reviewed_at = timezone.now()
+        course.save(update_fields=["status", "reviewed_by", "reviewed_at"])
+        return Response(
+            {
+                "success": True,
+                "message": "Course unpublished successfully.",
+                "data": CourseDetailSerializer(course, context={"request": request}).data,
             }
         )
 
