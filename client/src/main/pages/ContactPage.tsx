@@ -5,11 +5,19 @@ const ContactPage = () => {
     const contactInfo = [
         {
             title: "Head Office",
-            content: "House-5, Kolotan School Road, Notunbazar, Vatara, Dhaka-1212, Bangladesh",
+            content: "House -5, Kolotan school Road, Badda, Dhaka-1212",
             icon: MapPin,
             color: "text-blue-600",
             bg: "bg-blue-50",
             link: "https://maps.app.goo.gl/b7jfULcxSAWiVtiA6"
+        },
+        {
+            title: "Hotline",
+            content: "096 11225248",
+            icon: Phone,
+            color: "text-blue-600",
+            bg: "bg-blue-50",
+            link: "tel:09611225248"
         },
         {
             title: "Call Us",

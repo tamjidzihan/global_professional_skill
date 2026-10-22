@@ -6,6 +6,8 @@ export const GPI_CERTIFICATE_CONSTANTS = {
     WEBSITE: 'www.gpibd.com',
     EMAIL: 'info@gpibd.com',
     MOBILE: '+88 01978-100105',
+    PHONE: '096 11225248',
+    ADDRESS: 'House -5, Kolotan school Road, Badda, Dhaka-1212',
     POWERED_BY: 'Powered by : Global Professional Institute',
     ORGANIZATION_NAME: 'Global Professional Institute',
 } as const;

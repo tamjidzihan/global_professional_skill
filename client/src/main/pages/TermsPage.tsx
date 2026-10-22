@@ -6,6 +6,8 @@ import {
     CheckCircle2,
     Briefcase,
     Mail,
+    Phone,
+    MapPin,
 } from 'lucide-react';
 import { LegalLayout, type TocItem } from '../components/LegalLayout';
 
@@ -257,6 +259,14 @@ export const TermsPage: React.FC = () => {
                     <p className="flex items-center gap-2 text-gray-600">
                         <Mail className="w-4 h-4 text-[#0066CC]" />
                         <span>Email: <a href="mailto:legal@gpibd.com" className="text-[#0066CC] font-semibold hover:underline">legal@gpibd.com</a></span>
+                    </p>
+                    <p className="flex items-center gap-2 text-gray-600">
+                        <Phone className="w-4 h-4 text-[#0066CC]" />
+                        <span>Hotline: <a href="tel:09611225248" className="text-[#0066CC] font-semibold hover:underline">096 11225248</a></span>
+                    </p>
+                    <p className="flex items-center gap-2 text-gray-600">
+                        <MapPin className="w-4 h-4 text-[#0066CC]" />
+                        <span>Address: House -5, Kolotan school Road, Badda, Dhaka-1212</span>
                     </p>
                     <p className="flex items-center gap-2 text-gray-600">
                         <Briefcase className="w-4 h-4 text-[#0066CC]" />

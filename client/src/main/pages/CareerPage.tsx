@@ -119,37 +119,6 @@ const CareerPage = () => {
                 keywords="careers, jobs, GPI careers, professional training jobs, join our team"
             />
             <Breadcrumb name="Careers" />
-
-            {/* Hero Section */}
-            <section className="relative py-9 sm:pt-16 sm:pb-10 overflow-hidden">
-                {/* Background Decorations */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl"></div>
-                    <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl"></div>
-                </div>
-
-                <div className="container mx-auto px-4 relative">
-                    <div className="max-w-4xl mx-auto text-center mb-16">
-                        <div className="inline-flex items-center gap-2 px-5 py-2 bg-linear-to-r from-blue-500 to-purple-500 text-white rounded-full text-sm font-bold mb-6 shadow-lg">
-                            <Sparkles className="w-4 h-4" />
-                            Join Our Growing Team
-                        </div>
-                        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-black mb-6 leading-tight">
-                            Build Your Career
-                            <span className="block mt-2 bg-linear-to-r from-[#0066CC] via-blue-600 to-purple-600 bg-clip-text text-transparent">
-                                With GPI
-                            </span>
-                        </h1>
-                        <div className="h-1 w-24 bg-linear-to-r from-[#0066CC] to-[#76C043] mx-auto rounded-full mb-8"></div>
-                        <p className="text-lg sm:text-xl text-gray-700 leading-relaxed">
-                            Join a team of passionate professionals dedicated to transforming education
-                            and empowering the next generation of industry leaders. At GPI, we believe
-                            in fostering innovation, creativity, and continuous growth.
-                        </p>
-                    </div>
-                </div>
-            </section>
-
             {/* Current Openings Section */}
             <section className="py-16 bg-linear-to-b from-[#F5EFE6] to-[#FCF8F1]">
                 <div className="container mx-auto px-4">
@@ -166,8 +135,6 @@ const CareerPage = () => {
                                 Find your perfect role and join our mission to transform education
                             </p>
                         </div>
-
-                        {/* Search and Filters */}
                         <div className="bg-white p-6 rounded-2xl shadow-lg mb-8 flex flex-col md:flex-row gap-4 items-center justify-between border-2 border-gray-200">
                             <div className="relative flex-1 w-full">
                                 <Search className="absolute left-3 top-1/2 -transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -196,8 +163,6 @@ const CareerPage = () => {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Job Listings */}
                         {loading ? (
                             <div className="flex justify-center items-center h-64">
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>

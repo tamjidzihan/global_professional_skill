@@ -179,32 +179,37 @@ export function Footer() {
                             <div className="space-y-4">
                                 {/* Address - Updated */}
                                 <div className="flex items-start space-x-3 group">
-                                    <a href='https://maps.app.goo.gl/b7jfULcxSAWiVtiA6' target='_blank'  >
+                                    <a href='https://maps.app.goo.gl/b7jfULcxSAWiVtiA6' target='_blank' rel="noopener noreferrer">
                                         <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-blue-600 transition-colors">
                                             <MapPin className="w-5 h-5 text-blue-600 group-hover:text-white transition-colors" />
                                         </div>
                                     </a>
                                     <div>
                                         <p className="text-sm font-semibold text-gray-900 mb-1">Head Office</p>
-                                        <a href='https://maps.app.goo.gl/b7jfULcxSAWiVtiA6' target='_blank' className="text-gray-600 text-sm leading-relaxed">
-                                            House-5, Kolotan School Road, Notunbazar <br />
-                                            Vatara, Dhaka-1212, Bangladesh
+                                        <a href='https://maps.app.goo.gl/b7jfULcxSAWiVtiA6' target='_blank' rel="noopener noreferrer" className="text-gray-600 text-sm leading-relaxed">
+                                            House -5, Kolotan school Road, <br />
+                                            Badda, Dhaka-1212
                                         </a>
                                     </div>
                                 </div>
 
                                 {/* Phone - Updated */}
                                 <div className="flex items-start space-x-3 group">
-                                    <a href="tel:+8801978100105">
+                                    <a href="tel:09611225248">
                                         <div className="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-cyan-600 transition-colors">
                                             <Phone className="w-5 h-5 text-cyan-600 group-hover:text-white transition-colors" />
                                         </div>
                                     </a>
                                     <div>
                                         <p className="text-sm font-semibold text-gray-900 mb-1">Call Us</p>
-                                        <a href="tel:+8801978100105" className="text-gray-700 hover:text-[#0066CC] font-medium text-sm transition-colors">
-                                            +88 01978-100105
-                                        </a>
+                                        <div className="flex flex-col gap-0.5">
+                                            <a href="tel:09611225248" className="text-gray-700 hover:text-[#0066CC] font-semibold text-sm transition-colors">
+                                                096 11225248
+                                            </a>
+                                            <a href="tel:+8801978100105" className="text-gray-600 hover:text-[#0066CC] text-xs transition-colors">
+                                                +88 01978-100105
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
 

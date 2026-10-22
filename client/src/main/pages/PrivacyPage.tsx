@@ -339,11 +339,11 @@ export const PrivacyPage: React.FC = () => {
                     </p>
                     <p className="flex items-center gap-2 text-gray-600">
                         <Phone className="w-4 h-4 text-[#0066CC]" />
-                        <span>Support Line: +880 1712-345678</span>
+                        <span>Support Line: <a href="tel:09611225248" className="hover:underline font-semibold text-gray-800">096 11225248</a>, <a href="tel:+8801978100105" className="hover:underline text-gray-700">+88 01978-100105</a></span>
                     </p>
                     <p className="flex items-center gap-2 text-gray-600">
                         <MapPin className="w-4 h-4 text-[#0066CC]" />
-                        <span>Location: Dhaka, Bangladesh</span>
+                        <span>Location: House -5, Kolotan school Road, Badda, Dhaka-1212</span>
                     </p>
                 </div>
             </section>

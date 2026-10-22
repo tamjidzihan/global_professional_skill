@@ -76,9 +76,11 @@ const Header = () => {
             <div className="py-2 text-sm bg-white/70 backdrop-blur border-b border-gray-200">
                 <div className="container mx-auto px-4 flex justify-between items-center">
                     <div className="hidden lg:flex items-center space-x-6 text-gray-600">
-                        <div className="flex items-center">
-                            <Phone className="w-4 h-4 text-[#76C043] mr-2" />
-                            <span>+88 01978100105</span>
+                        <div className="flex items-center space-x-2">
+                            <Phone className="w-4 h-4 text-[#76C043] shrink-0" />
+                            <a href="tel:09611225248" className="hover:text-[#0066CC] font-semibold transition">096 11225248</a>
+                            <span className="text-gray-300">|</span>
+                            <a href="tel:+8801978100105" className="hover:text-[#0066CC] transition">+88 01978100105</a>
                         </div>
                         <div className="flex items-center">
                             <Mail className="w-4 h-4 text-[#76C043] mr-2" />
@@ -339,7 +341,10 @@ const Header = () => {
                             <div className="text-sm text-gray-600 space-y-3">
                                 <div className="flex items-center">
                                     <Phone className="w-4 h-4 text-[#76C043] mr-2 shrink-0" />
-                                    <span className="font-medium">+88 01978100105</span>
+                                    <div className="flex flex-col text-sm">
+                                        <a href="tel:09611225248" className="font-semibold text-gray-800 hover:text-[#0066CC] transition">096 11225248</a>
+                                        <a href="tel:+8801978100105" className="text-xs text-gray-500 hover:text-[#0066CC] transition">+88 01978100105</a>
+                                    </div>
                                 </div>
                                 <div className="flex items-center">
                                     <Mail className="w-4 h-4 text-[#76C043] mr-2 shrink-0" />
