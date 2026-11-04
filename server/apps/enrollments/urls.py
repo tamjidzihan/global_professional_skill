@@ -5,6 +5,7 @@ from .views import (
     LessonProgressViewSet,
     CertificateViewSet,
     CourseCertificateConfigViewSet,
+    certificate_share_card,
 )
 
 router = DefaultRouter()
@@ -14,6 +15,10 @@ router.register(r'certificates', CertificateViewSet, basename='certificate')
 router.register(r'certificate-configs', CourseCertificateConfigViewSet, basename='course-certificate-config')
 
 urlpatterns = [
+    path(
+        'certificates/share-card/<str:certificate_number>.jpg',
+        certificate_share_card,
+        name='certificate-share-card',
+    ),
     path('', include(router.urls)),
 ]
-

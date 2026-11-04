@@ -16,6 +16,8 @@ import {
     TrendingUp,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FaFacebookF, FaLinkedinIn, FaWhatsapp } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
 import SEO from '../../../components/SEO';
 import LoadingSpinner from '../../../components/ui/LoadingSpinner';
 import { getMyCertificates, getMediaUrl } from '../../../../lib/api';
@@ -26,6 +28,47 @@ import {
     type CertificateData,
     GPI_CERTIFICATE_CONSTANTS,
 } from '../../../components/certificate/types';
+
+const getCertificateSocialLinks = (item: StudentCertificateEnrollment) => {
+    const certificate = item.certificate;
+    if (!certificate) return [];
+
+    const verificationUrl = new URL(
+        certificate.verification_url ||
+            `/certificate-verify/${encodeURIComponent(certificate.certificate_number)}`,
+        window.location.origin
+    ).toString();
+    const shareText = `I completed ${item.course.title} at Global Professional Institute.`;
+    const encodedUrl = encodeURIComponent(verificationUrl);
+    const encodedText = encodeURIComponent(shareText);
+
+    return [
+        {
+            label: 'Facebook',
+            icon: FaFacebookF,
+            url: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
+            className: 'text-[#1877F2] hover:bg-blue-50',
+        },
+        {
+            label: 'X',
+            icon: FaXTwitter,
+            url: `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`,
+            className: 'text-gray-900 hover:bg-gray-100',
+        },
+        {
+            label: 'LinkedIn',
+            icon: FaLinkedinIn,
+            url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`,
+            className: 'text-[#0A66C2] hover:bg-blue-50',
+        },
+        {
+            label: 'WhatsApp',
+            icon: FaWhatsapp,
+            url: `https://wa.me/?text=${encodeURIComponent(`${shareText} Verify it: ${verificationUrl}`)}`,
+            className: 'text-[#25D366] hover:bg-green-50',
+        },
+    ];
+};
 
 export const CertificatesPage: React.FC = () => {
     const navigate = useNavigate();
@@ -284,6 +327,7 @@ export const CertificatesPage: React.FC = () => {
                         const isIssued = item.eligibility_status === 'ISSUED';
                         const isEligible = item.eligibility_status === 'ELIGIBLE';
                         const isQuizFailed = item.eligibility_status === 'QUIZ_NOT_PASSED';
+                        const socialLinks = getCertificateSocialLinks(item);
 
                         return (
                             <div
@@ -410,14 +454,31 @@ export const CertificatesPage: React.FC = () => {
                                                 </Link>
                                             </div>
 
-                                            <button
-                                                onClick={() => handleDownload(item)}
-                                                disabled={downloadingId === item.enrollment_id}
-                                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors shadow-xs cursor-pointer disabled:opacity-50"
-                                            >
-                                                <Download className="w-3.5 h-3.5" />
-                                                {downloadingId === item.enrollment_id ? 'Generating...' : 'Download PDF'}
-                                            </button>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-[11px] font-semibold text-gray-500 mr-0.5">Share</span>
+                                                {socialLinks.map(({ label, icon: Icon, url, className }) => (
+                                                    <a
+                                                        key={label}
+                                                        href={url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        aria-label={`Share certificate on ${label}`}
+                                                        title={`Share on ${label}`}
+                                                        className={`w-8 h-8 inline-flex items-center justify-center rounded-lg border border-gray-100 transition-colors ${className}`}
+                                                    >
+                                                        <Icon aria-hidden="true" className="w-4 h-4" />
+                                                    </a>
+                                                ))}
+                                                <button
+                                                    onClick={() => handleDownload(item)}
+                                                    disabled={downloadingId === item.enrollment_id}
+                                                    aria-label="Download certificate PDF"
+                                                    title="Download certificate PDF"
+                                                    className="w-8 h-8 inline-flex items-center justify-center rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-xs cursor-pointer disabled:opacity-50"
+                                                >
+                                                    <Download className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </>
                                     ) : (
                                         <Link
@@ -467,12 +528,28 @@ export const CertificatesPage: React.FC = () => {
                         </div>
 
                         {/* Modal Action Footer */}
-                        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2 border-t border-gray-100">
                             <div className="text-xs font-mono text-gray-500">
                                 ID: {previewingCertificate.certificate?.certificate_number}
                             </div>
 
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap items-center justify-end gap-2">
+                                <div className="flex items-center gap-1.5 mr-1">
+                                    <span className="text-[11px] font-semibold text-gray-500 mr-0.5">Share</span>
+                                    {getCertificateSocialLinks(previewingCertificate).map(({ label, icon: Icon, url, className }) => (
+                                        <a
+                                            key={label}
+                                            href={url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-label={`Share certificate on ${label}`}
+                                            title={`Share on ${label}`}
+                                            className={`w-8 h-8 inline-flex items-center justify-center rounded-lg border border-gray-100 transition-colors ${className}`}
+                                        >
+                                            <Icon aria-hidden="true" className="w-4 h-4" />
+                                        </a>
+                                    ))}
+                                </div>
                                 <button
                                     onClick={() => handleDownload(previewingCertificate)}
                                     disabled={downloadingId === previewingCertificate.enrollment_id}

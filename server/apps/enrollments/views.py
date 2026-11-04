@@ -5,8 +5,12 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.db import transaction, models
 from django.db.models import Prefetch, prefetch_related_objects
 from django.conf import settings
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.views.decorators.http import require_GET
+from io import BytesIO
+from PIL import Image, ImageDraw, ImageFont
 from .models import (
     Enrollment,
     LessonProgress,
@@ -28,6 +32,100 @@ from apps.core.models import SiteSettings
 import logging
 
 logger = logging.getLogger(__name__)
+
+SHARE_CARD_SIZE = (1200, 630)
+
+
+def _share_card_font(size, bold=False):
+    font_paths = (
+        ("C:/Windows/Fonts/arialbd.ttf", "C:/Windows/Fonts/arial.ttf")
+        if bold
+        else ("C:/Windows/Fonts/arial.ttf",)
+    ) + (
+        ("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",)
+        if bold
+        else ("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",)
+    )
+    for font_path in font_paths:
+        try:
+            return ImageFont.truetype(font_path, size)
+        except OSError:
+            continue
+    return ImageFont.load_default(size=size)
+
+
+def _draw_wrapped_centered_text(draw, text, font, center_x, top, max_width, fill, max_lines=2):
+    words = text.split()
+    lines = []
+    current_line = ""
+    for word in words:
+        candidate = f"{current_line} {word}".strip()
+        if current_line and draw.textlength(candidate, font=font) > max_width:
+            lines.append(current_line)
+            current_line = word
+        else:
+            current_line = candidate
+    if current_line:
+        lines.append(current_line)
+
+    if len(lines) > max_lines:
+        lines = lines[:max_lines]
+        last_line = lines[-1]
+        while last_line and draw.textlength(f"{last_line}...", font=font) > max_width:
+            last_line = last_line[:-1]
+        lines[-1] = f"{last_line.rstrip()}..."
+
+    line_height = draw.textbbox((0, 0), "Ag", font=font)[3] + 8
+    for index, line in enumerate(lines):
+        draw.text(
+            (center_x, top + index * line_height),
+            line,
+            font=font,
+            fill=fill,
+            anchor="mt",
+        )
+    return top + len(lines) * line_height
+
+
+def _render_certificate_share_card(certificate):
+    image = Image.new("RGB", SHARE_CARD_SIZE, "#102f52")
+    draw = ImageDraw.Draw(image)
+    draw.rounded_rectangle((24, 24, 1176, 606), radius=24, fill="#fffdf8", outline="#c99b3d", width=5)
+    draw.rounded_rectangle((38, 38, 1162, 145), radius=18, fill="#102f52")
+    draw.rectangle((38, 110, 1162, 145), fill="#102f52")
+    draw.text((600, 73), "GLOBAL PROFESSIONAL INSTITUTE", font=_share_card_font(27, True), fill="#ffffff", anchor="mm")
+    draw.text((600, 111), "CERTIFICATE OF COMPLETION", font=_share_card_font(18, True), fill="#e7c779", anchor="mm")
+
+    draw.text((600, 185), "PROUDLY PRESENTED TO", font=_share_card_font(17, True), fill="#8d713c", anchor="mm")
+    _draw_wrapped_centered_text(
+        draw, certificate.student_name, _share_card_font(42, True), 600, 220, 1000, "#102f52", max_lines=1
+    )
+    draw.text((600, 294), "for successfully completing", font=_share_card_font(20), fill="#596273", anchor="mm")
+    _draw_wrapped_centered_text(
+        draw, certificate.course_name, _share_card_font(29, True), 600, 326, 1000, "#263c58", max_lines=2
+    )
+
+    issue_date = certificate.issue_date.strftime("%B %d, %Y")
+    draw.line((90, 465, 1110, 465), fill="#dfd5c1", width=2)
+    draw.text((105, 492), f"Issued: {issue_date}", font=_share_card_font(17), fill="#48556a", anchor="lt")
+    draw.text((1095, 492), f"Certificate No. {certificate.certificate_number}", font=_share_card_font(17, True), fill="#48556a", anchor="rt")
+    draw.text((600, 558), "Verify this credential at gpibd.com", font=_share_card_font(17, True), fill="#102f52", anchor="mm")
+
+    output = BytesIO()
+    image.save(output, format="JPEG", quality=92, optimize=True)
+    return output.getvalue()
+
+
+@require_GET
+def certificate_share_card(request, certificate_number):
+    certificate = get_object_or_404(
+        Certificate,
+        certificate_number__iexact=certificate_number.strip(),
+        status=CertificateStatus.ISSUED,
+    )
+    response = HttpResponse(_render_certificate_share_card(certificate), content_type="image/jpeg")
+    response["Cache-Control"] = "public, max-age=300"
+    return response
 
 
 class EnrollmentViewSet(viewsets.ModelViewSet):
@@ -464,7 +562,7 @@ class CertificateViewSet(viewsets.ModelViewSet):
             )
 
         frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000').rstrip('/')
-        verification_url = f"{frontend_url}/certificate/verify/{cert.certificate_number}"
+        verification_url = f"{frontend_url}/certificate-verify/{cert.certificate_number}"
 
         logo_url = None
         if cert.logo_image:
