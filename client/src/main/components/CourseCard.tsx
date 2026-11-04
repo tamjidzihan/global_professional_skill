@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { Star} from 'lucide-react'
 
 interface CourseCardProps {
-    id: string
+    slug: string
     title: string
     price: string
     originalPrice?: string
@@ -21,7 +21,7 @@ interface CourseCardProps {
 }
 
 export function CourseCard({
-    id,
+    slug,
     title,
     price,
     originalPrice,
@@ -117,7 +117,7 @@ export function CourseCard({
             <div className="p-4 flex flex-col grow gap-2">
                 {/* Title */}
                 <Link
-                    to={`/courses/${id}`}
+                    to={`/courses/${slug}`}
                     className="font-semibold text-gray-900 text-[17px] leading-snug line-clamp-2 hover:text-violet-700 transition-colors"
                 >
                     {title}
@@ -168,7 +168,7 @@ export function CourseCard({
 
                 {/* View Details CTA */}
                 <Link
-                    to={`/courses/${id}`}
+                    to={`/courses/${slug}`}
                     className="
                         mt-1 w-full text-center text-sm font-semibold py-2.5 rounded-xl
                         bg-violet-600 text-white

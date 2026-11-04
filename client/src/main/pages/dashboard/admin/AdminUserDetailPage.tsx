@@ -963,7 +963,7 @@ export const AdminUserDetailPage: React.FC = () => {
                                                 <td className="px-5 py-3.5 text-right whitespace-nowrap">
                                                     <div className="flex items-center justify-end gap-1.5">
                                                         <button
-                                                            onClick={() => navigate(`/courses/${e.course_id}`)}
+                                                            onClick={() => navigate(`/courses/${e.course_slug || e.course_id}`)}
                                                             className="w-7 h-7 flex items-center justify-center rounded-lg bg-gray-50 border border-gray-100 text-gray-500 hover:bg-violet-50 hover:border-violet-200 hover:text-violet-600 transition-colors cursor-pointer"
                                                             title="View Course"
                                                         >

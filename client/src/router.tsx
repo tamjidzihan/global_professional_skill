@@ -80,7 +80,7 @@ export const router = createBrowserRouter([
         children: [
             { index: true, element: <HomePage /> },
             { path: '/courses', element: <CoursesPage /> },
-            { path: '/courses/:id', element: <CourseDetailPage /> },
+            { path: '/courses/:slug', element: <CourseDetailPage /> },
             { path: '/checkout/:id', element: <ProtectedRoute allowedRoles={['STUDENT']}><CheckoutPage /></ProtectedRoute> },
             { path: '/about', element: <AboutPage /> },
             { path: '/notifications', element: <NotificationsPage /> },

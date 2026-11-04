@@ -123,7 +123,7 @@ const CourseGrid = ({
                         {courses.map((course) => (
                             <CourseCard
                                 key={course.id}
-                                id={course.id}
+                                slug={course.slug}
                                 title={course.title}
                                 price={course.price}
                                 level={course.difficulty_level}

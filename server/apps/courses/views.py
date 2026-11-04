@@ -10,7 +10,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db import transaction
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from uuid import UUID
 
 from .models import (
     Category,
@@ -145,6 +147,21 @@ class CourseViewSet(viewsets.ModelViewSet):
             .select_related("instructor", "category")
             .prefetch_related("sections__lessons")
         )
+
+    def get_object(self):
+        """Resolve course detail routes by slug while retaining UUID compatibility."""
+        lookup_value = self.kwargs.get(self.lookup_url_kwarg or self.lookup_field)
+        queryset = self.filter_queryset(self.get_queryset())
+
+        try:
+            UUID(str(lookup_value))
+        except (ValueError, TypeError, AttributeError):
+            instance = get_object_or_404(queryset, slug=lookup_value)
+        else:
+            instance = get_object_or_404(queryset, pk=lookup_value)
+
+        self.check_object_permissions(self.request, instance)
+        return instance
 
     def get_permissions(self):
         """Set permissions based on action."""

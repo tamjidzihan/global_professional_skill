@@ -177,7 +177,7 @@ const CoursesPage = () => {
         "itemListElement": courses.map((course, index) => ({
             "@type": "ListItem",
             "position": index + 1,
-            "url": `${window.location.origin}/courses/${course.id}`,
+            "url": `${window.location.origin}/courses/${course.slug}`,
             "name": course.title
         }))
     };

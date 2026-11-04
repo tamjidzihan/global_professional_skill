@@ -216,7 +216,7 @@ const CourseSection = () => {
                     {!loading && !error && displayedCourses.length > 0 && displayedCourses.map((course) => (
                         <CourseCard
                             key={course.id}
-                            id={course.id}
+                            slug={course.slug}
                             title={course.title}
                             price={course.price}
                             level={course.difficulty_level}

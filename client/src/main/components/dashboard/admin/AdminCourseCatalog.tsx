@@ -119,7 +119,7 @@ function ActionDropdown({
                     </Link>
 
                     <Link
-                        to={`/courses/${course.id}`}
+                        to={`/courses/${course.slug}`}
                         onClick={() => setOpen(false)}
                         className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                     >

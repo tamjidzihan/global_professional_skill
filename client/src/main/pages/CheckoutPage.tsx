@@ -69,10 +69,10 @@ const CheckoutPage: React.FC = () => {
 
     // If already enrolled, redirect to course detail
     useEffect(() => {
-        if (course?.is_enrolled) {
-            navigate(`/courses/${id}`);
+        if (course?.is_enrolled && course.slug) {
+            navigate(`/courses/${course.slug}`);
         }
-    }, [course, id, navigate]);
+    }, [course, navigate]);
 
     const handleApplyPromoCode = async () => {
         if (!promoInput.trim() || !course) return;

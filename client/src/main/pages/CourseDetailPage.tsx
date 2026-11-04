@@ -28,7 +28,7 @@ import CourseDetailSkeleton from '../components/ui/loadingSkeleton/CourseDetailS
 import SEO from '../components/SEO'
 
 export function CourseDetailPage() {
-    const { id } = useParams<{ id: string }>()
+    const { slug } = useParams<{ slug: string }>()
     const navigate = useNavigate()
     const { user } = useAuth()
     const {
@@ -57,14 +57,25 @@ export function CourseDetailPage() {
     const [enrollLoading, setEnrollLoading] = useState(false)
 
     useEffect(() => {
-        if (id) {
-            fetchCourseDetail(id)
-            fetchReviews(id)
+        if (slug) {
+            fetchCourseDetail(slug)
         }
         return () => {
             clearStates()
         }
-    }, [id, fetchCourseDetail, fetchReviews, clearStates])
+    }, [slug, fetchCourseDetail, clearStates])
+
+    useEffect(() => {
+        if (course?.id) {
+            fetchReviews(course.id)
+        }
+    }, [course?.id, fetchReviews])
+
+    useEffect(() => {
+        if (course?.slug && slug && course.slug !== slug) {
+            navigate(`/courses/${course.slug}`, { replace: true })
+        }
+    }, [course?.slug, slug, navigate])
 
     useEffect(() => {
         if (course?.sections) {
@@ -85,7 +96,7 @@ export function CourseDetailPage() {
 
     const handleEnrollNow = async () => {
         if (!user) {
-            navigate('/login', { state: { from: `/courses/${id}` } })
+            navigate('/login', { state: { from: `/courses/${course?.slug || slug}` } })
             return
         }
 
@@ -126,9 +137,9 @@ export function CourseDetailPage() {
     }
 
     const handleSubmitForReview = async () => {
-        if (!id) return
+        if (!course) return
         try {
-            await submitForReview(id)
+            await submitForReview(course.id)
             toast.success('Course submitted for review successfully!')
         } catch (error) {
             console.error('Failed to submit for review:', error)
@@ -152,10 +163,10 @@ export function CourseDetailPage() {
     // }
 
     const handleAddReview = async () => {
-        if (!id || !user) return
+        if (!course || !user) return
         try {
-            await addReview(id, {
-                course: id,
+            await addReview(course.id, {
+                course: course.id,
                 rating: reviewRating,
                 review_text: reviewText,
             })
