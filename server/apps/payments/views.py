@@ -1,6 +1,7 @@
 from decimal import Decimal
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -69,6 +70,38 @@ class PaymentViewSet(viewsets.ModelViewSet):
             return [IsAdmin()]
         return [permissions.IsAuthenticated()]
 
+    def complete_payment_and_enroll(self, payment):
+        payment.status = PaymentStatus.COMPLETED
+        payment.completed_at = timezone.now()
+        payment.save(update_fields=["status", "completed_at"])
+
+        enrollment, created = Enrollment.objects.get_or_create(
+            student=payment.user,
+            course=payment.course,
+        )
+
+        if created:
+            course = payment.course
+            course.enrollment_count += 1
+            course.decrease_available_seats()
+            course.save(update_fields=["enrollment_count"])
+
+            try:
+                from apps.core.notification_service import dispatch_notification
+                context = {
+                    "course_name": course.title,
+                    "student_name": payment.user.get_full_name() or payment.user.email,
+                }
+                dispatch_notification("SMS_COURSE_APPROVAL", user=payment.user, context=context)
+                dispatch_notification("EMAIL_COURSE_APPROVAL", user=payment.user, context=context)
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(
+                    f"Failed to send enrollment notifications for {payment.user.email}: {str(e)}"
+                )
+
+        return enrollment, created
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         """Create a new payment order."""
@@ -81,12 +114,13 @@ class PaymentViewSet(viewsets.ModelViewSet):
             or request.data.get("promo_code", "")
         ).strip()
 
-        amount_to_charge = serializer.validated_data.get("amount") or course.price
+        amount_to_charge = course.price
         metadata = serializer.validated_data.get("metadata", {}) or {}
+        promo = None
 
         if promo_code_str:
             try:
-                promo = PromoCode.objects.get(code__iexact=promo_code_str)
+                promo = PromoCode.objects.select_for_update().get(code__iexact=promo_code_str)
                 is_valid, reason = promo.is_valid_now(course=course)
                 if not is_valid:
                     return Response(
@@ -116,31 +150,52 @@ class PaymentViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-        payment = serializer.save(
-            user=request.user,
-            amount=amount_to_charge,
-            status=PaymentStatus.PENDING,
-            metadata=metadata,
-        )
+        is_promo_enrollment = bool(promo and amount_to_charge == Decimal("0.00"))
+        if not is_promo_enrollment and (
+            not serializer.validated_data.get("transaction_id")
+            or not serializer.validated_data.get("sender_number")
+        ):
+            raise ValidationError({
+                "payment_details": "Transaction ID and sender number are required when an amount is due."
+            })
 
-        # Trigger Course Purchase Confirmation Email to Student and Notification to Admission
-        try:
-            from apps.core.notification_service import dispatch_notification, send_admission_enrollment_notification
-            dispatch_notification(
-                "EMAIL_COURSE_PURCHASE",
-                user=request.user,
-                context={"course_name": payment.course.title}
-            )
-            # Send notification email to admission@gpibd.com
-            send_admission_enrollment_notification(payment)
-        except Exception as e:
-            import logging
-            logging.getLogger(__name__).error(f"Failed to send course purchase/admission notification emails: {str(e)}")
+        payment_data = {
+            "user": request.user,
+            "amount": amount_to_charge,
+            "metadata": metadata,
+        }
+        if is_promo_enrollment:
+            payment_data.update({
+                "payment_method": "PROMO",
+                "transaction_id": None,
+                "sender_number": None,
+            })
+        else:
+            payment_data["status"] = PaymentStatus.PENDING
+
+        payment = serializer.save(**payment_data)
+
+        if is_promo_enrollment:
+            self.complete_payment_and_enroll(payment)
+            message = "100% promo code applied. You are enrolled in the course."
+        else:
+            try:
+                from apps.core.notification_service import dispatch_notification, send_admission_enrollment_notification
+                dispatch_notification(
+                    "EMAIL_COURSE_PURCHASE",
+                    user=request.user,
+                    context={"course_name": payment.course.title}
+                )
+                send_admission_enrollment_notification(payment)
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Failed to send course purchase/admission notification emails: {str(e)}")
+            message = "Payment order created successfully."
 
         return Response(
             {
                 "success": True,
-                "message": "Payment order created successfully.",
+                "message": message,
                 "data": PaymentSerializer(payment).data,
             },
             status=status.HTTP_201_CREATED,
@@ -157,33 +212,7 @@ class PaymentViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         
-        # Update payment
-        payment.status = PaymentStatus.COMPLETED
-        payment.completed_at = timezone.now()
-        payment.save()
-        
-        # Create enrollment
-        enrollment, created = Enrollment.objects.get_or_create(
-            student=payment.user,
-            course=payment.course
-        )
-        
-        if created:
-            # Update course stats
-            course = payment.course
-            course.enrollment_count += 1
-            course.decrease_available_seats()
-            course.save(update_fields=["enrollment_count"])
-            
-            # Send SMS & Email Notifications for Course Approval
-            try:
-                from apps.core.notification_service import dispatch_notification
-                ctx = {"course_name": course.title, "student_name": payment.user.get_full_name() or payment.user.email}
-                dispatch_notification("SMS_COURSE_APPROVAL", user=payment.user, context=ctx)
-                dispatch_notification("EMAIL_COURSE_APPROVAL", user=payment.user, context=ctx)
-            except Exception as e:
-                import logging
-                logging.getLogger(__name__).error(f"Failed to send course approval notifications to {payment.user.email}: {str(e)}")
+        self.complete_payment_and_enroll(payment)
 
         return Response({
             "success": True, 
@@ -296,4 +325,3 @@ class PromoCodeViewSet(viewsets.ModelViewSet):
                 "final_price": float(final_price),
             }
         })
-

@@ -78,6 +78,9 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
         """Additional checks for course before creating an order."""
         if not value.is_published:
             raise serializers.ValidationError("Course is not available for purchase.")
+
+        if value.is_free:
+            raise serializers.ValidationError("Free courses do not require payment.")
         
         if value.is_full:
             raise serializers.ValidationError("Course is full.")
@@ -85,10 +88,10 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate_transaction_id(self, value):
-        """Ensure transaction ID is provided for manual payment methods."""
+        """Check any supplied transaction ID against existing payments."""
         if not value:
-            raise serializers.ValidationError("Transaction ID is required for verification.")
-        
+            return value
+
         # Check if transaction ID already exists
         if Payment.objects.filter(transaction_id=value).exists():
             raise serializers.ValidationError("This Transaction ID has already been submitted.")
@@ -135,4 +138,3 @@ class PromoCodeValidateSerializer(serializers.Serializer):
     """Serializer for validating promo code at checkout."""
     code = serializers.CharField(required=True)
     course_id = serializers.UUIDField(required=True)
-

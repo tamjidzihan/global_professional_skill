@@ -57,7 +57,11 @@ export function usePayments() {
         try {
             const response = await createPaymentOrder(data);
             if (response.data.success) {
-                toast.success('Payment details submitted successfully');
+                toast.success(
+                    response.data.data.status === 'COMPLETED'
+                        ? 'Enrolled successfully with your promo code!'
+                        : 'Payment details submitted successfully',
+                );
                 return response.data.data;
             }
             throw new Error('Failed to submit payment details');

@@ -19,7 +19,8 @@ import { useAuth } from '../../hooks/useAuth';
 import Breadcrumb from '../components/Breadcrumb';
 import { toast } from 'react-hot-toast';
 import { getSiteSettings, validatePromoCode } from '../../lib/api';
-import type { SiteSettings } from '../../types';
+import { getApiErrorMessage } from '../../lib/errorUtils';
+import type { PaymentCreateData, SiteSettings } from '../../types';
 
 const CheckoutPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -32,6 +33,7 @@ const CheckoutPage: React.FC = () => {
     const [transactionId, setTransactionId] = useState('');
     const [senderNumber, setSenderNumber] = useState('');
     const [isSuccess, setIsSuccess] = useState(false);
+    const [isPromoEnrollment, setIsPromoEnrollment] = useState(false);
     const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
 
     // Promo Code state
@@ -81,9 +83,8 @@ const CheckoutPage: React.FC = () => {
                 setAppliedPromo(res.data.data);
                 toast.success(res.data.message || 'Promo code applied successfully!');
             }
-        } catch (err: any) {
-            const msg = err.response?.data?.error?.message || 'Invalid or expired promo code.';
-            toast.error(msg);
+        } catch (error: unknown) {
+            toast.error(getApiErrorMessage(error, 'Invalid or expired promo code.'));
             setAppliedPromo(null);
         } finally {
             setValidatingPromo(false);
@@ -101,20 +102,19 @@ const CheckoutPage: React.FC = () => {
 
         if (!course || !user) return;
 
-        if (!transactionId || !senderNumber) {
+        const isFullyDiscounted = Boolean(appliedPromo && appliedPromo.final_price <= 0);
+        if (!isFullyDiscounted && (!transactionId || !senderNumber)) {
             toast.error("Please provide both Transaction ID and Sender Number");
             return;
         }
 
         const finalAmount = appliedPromo ? appliedPromo.final_price : course.price;
 
-        const paymentData: any = {
+        const paymentData: PaymentCreateData = {
             course: course.id,
             amount: finalAmount,
             currency: 'BDT',
             payment_method: paymentMethod,
-            transaction_id: transactionId,
-            sender_number: senderNumber,
             promo_code: appliedPromo ? appliedPromo.code : undefined,
             metadata: {
                 student_name: user.full_name || user.email,
@@ -127,9 +127,14 @@ const CheckoutPage: React.FC = () => {
                 } : {})
             }
         };
+        if (!isFullyDiscounted) {
+            paymentData.transaction_id = transactionId;
+            paymentData.sender_number = senderNumber;
+        }
 
         const result = await initiatePayment(paymentData);
         if (result) {
+            setIsPromoEnrollment(result.status === 'COMPLETED');
             setIsSuccess(true);
         }
     };
@@ -164,10 +169,14 @@ const CheckoutPage: React.FC = () => {
                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <CheckCircle2 className="w-12 h-12 text-green-600" />
                     </div>
-                    <h2 className="text-3xl font-bold text-gray-800 mb-2">Details Submitted!</h2>
+                    <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                        {isPromoEnrollment ? "You're Enrolled!" : 'Details Submitted!'}
+                    </h2>
                     <p className="text-gray-600 mb-8">
-                        Your payment details for <strong>{course.title}</strong> have been submitted for verification.
-                        Our team will verify the payment and enroll you within 24 hours.
+                        {isPromoEnrollment
+                            ? <>Your 100% promo code was applied and you’re enrolled in <strong>{course.title}</strong>. You can start learning now.</>
+                            : <>Your payment details for <strong>{course.title}</strong> have been submitted for verification.
+                                Our team will verify the payment and enroll you within 24 hours.</>}
                     </p>
                     <div className="space-y-3">
                         <button
@@ -189,6 +198,7 @@ const CheckoutPage: React.FC = () => {
     }
 
     const currentPriceToPay = appliedPromo ? appliedPromo.final_price : parseFloat(course.price);
+    const isFullyDiscounted = Boolean(appliedPromo && currentPriceToPay <= 0);
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
@@ -210,6 +220,20 @@ const CheckoutPage: React.FC = () => {
                 <div className="flex flex-col lg:flex-row gap-8">
                     {/* Left Side: Payment Instructions and Form */}
                     <div className="flex-1 space-y-6">
+                        {isFullyDiscounted ? (
+                            <div className="bg-emerald-50 rounded-xl border border-emerald-200 p-6">
+                                <div className="flex items-start gap-3">
+                                    <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
+                                    <div>
+                                        <h2 className="text-lg font-bold text-emerald-800">Your course is free</h2>
+                                        <p className="text-sm text-emerald-700 mt-1">
+                                            Your 100% promo code covers the full price. No bKash payment or transaction details are needed.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                        <>
                         {/* Step 1: Instructions */}
                         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                             <div className="bg-pink-50 px-6 py-4 border-b border-pink-100 flex items-center">
@@ -307,6 +331,8 @@ const CheckoutPage: React.FC = () => {
                                 </div>
                             </form>
                         </div>
+                        </>
+                        )}
                     </div>
 
                     {/* Right Side: Order Summary */}
@@ -407,7 +433,7 @@ const CheckoutPage: React.FC = () => {
                             <div className="p-6 bg-gray-50 rounded-b-xl">
                                 <button
                                     onClick={handlePayment}
-                                    disabled={paymentLoading || !transactionId || !senderNumber}
+                                    disabled={paymentLoading || (!isFullyDiscounted && (!transactionId || !senderNumber))}
                                     className="w-full bg-[#D12053] hover:bg-[#b01a45] text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-pink-200 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                                 >
                                     {paymentLoading ? (
@@ -417,7 +443,7 @@ const CheckoutPage: React.FC = () => {
                                         </>
                                     ) : (
                                         <>
-                                            Submit for Verification
+                                            {isFullyDiscounted ? 'Claim Your Free Enrollment' : 'Submit for Verification'}
                                         </>
                                     )}
                                 </button>
@@ -434,4 +460,3 @@ const CheckoutPage: React.FC = () => {
 };
 
 export default CheckoutPage;
-

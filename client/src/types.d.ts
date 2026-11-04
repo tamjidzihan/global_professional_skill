@@ -393,8 +393,8 @@ export interface PaymentCreateData {
     amount: string | number;
     currency: string;
     payment_method: string;
-    transaction_id: string;
-    sender_number: string;
+    transaction_id?: string;
+    sender_number?: string;
     promo_code?: string;
     metadata?: any;
 }
