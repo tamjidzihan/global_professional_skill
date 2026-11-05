@@ -2,11 +2,17 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import {
     ArrowLeft,
+    CalendarDays,
+    CheckCircle2,
     Eye,
+    EyeOff,
+    Filter,
     ImagePlus,
     Loader2,
+    Megaphone,
     Pencil,
     Plus,
+    Search,
     Sparkles,
     ToggleLeft,
     ToggleRight,
@@ -39,6 +45,15 @@ interface OfferForm {
     is_published: boolean
     is_active: boolean
 }
+
+type OfferFilter = "ALL" | "PUBLISHED" | "DRAFT" | "INACTIVE"
+
+const OFFER_FILTERS: { value: OfferFilter; label: string }[] = [
+    { value: "ALL", label: "All offers" },
+    { value: "PUBLISHED", label: "Published" },
+    { value: "DRAFT", label: "Draft" },
+    { value: "INACTIVE", label: "Inactive" },
+]
 
 const EMPTY_FORM: OfferForm = {
     title: "",
@@ -107,6 +122,8 @@ const SpecialOffersManagementPage = () => {
     const [offers, setOffers] = useState<SpecialOffer[]>([])
     const [loading, setLoading] = useState(true)
     const [loadError, setLoadError] = useState("")
+    const [searchTerm, setSearchTerm] = useState("")
+    const [statusFilter, setStatusFilter] = useState<OfferFilter>("ALL")
     const [saving, setSaving] = useState(false)
     const [isOptimizingImage, setIsOptimizingImage] = useState(false)
     const [isFormOpen, setIsFormOpen] = useState(false)
@@ -265,44 +282,64 @@ const SpecialOffersManagementPage = () => {
         }
     }
 
-    const card = "overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm"
+    const filteredOffers = offers.filter((offer) => {
+        const query = searchTerm.trim().toLowerCase()
+        const matchesSearch = !query || [offer.title, offer.subtitle, offer.description]
+            .some((value) => value.toLowerCase().includes(query))
+        const matchesStatus = statusFilter === "ALL"
+            || (statusFilter === "PUBLISHED" && offer.is_published && offer.is_active)
+            || (statusFilter === "DRAFT" && !offer.is_published)
+            || (statusFilter === "INACTIVE" && !offer.is_active)
+        return matchesSearch && matchesStatus
+    })
+    const activeCount = offers.filter((offer) => offer.is_active).length
+    const publishedCount = offers.filter((offer) => offer.is_published).length
+    const scheduledCount = offers.filter((offer) => offer.start_date || offer.end_date).length
+
+    const card = "bg-white rounded-xl border border-gray-100 shadow-sm"
+    const cardHeader = "flex items-center justify-between px-5 py-4 border-b border-gray-100"
     const previewImage = localImagePreview || savedImagePreview
 
     return (
         <div className="space-y-5 px-4 py-6 md:px-6">
             <SEO title="Special Offers Management" noindex />
 
-            <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
+            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                <div className="min-w-0">
                     <button
                         type="button"
                         onClick={() => navigate("/dashboard")}
-                        className="mb-2 flex items-center gap-1.5 text-xs text-gray-400 transition-colors hover:text-violet-600"
+                        className="mb-2 flex cursor-pointer items-center gap-1.5 text-xs text-gray-400 transition-colors hover:text-violet-600"
                     >
                         <ArrowLeft className="h-3.5 w-3.5" /> Back to Dashboard
                     </button>
                     <h1 className="text-xl font-semibold tracking-tight text-gray-900">Special Offers</h1>
-                    <p className="mt-0.5 text-sm text-gray-400">Create and schedule homepage promotions.</p>
+                    <p className="mt-0.5 text-sm text-gray-400">Manage the promotions featured on your homepage.</p>
                 </div>
                 <button
                     type="button"
                     onClick={() => openForm()}
-                    className="inline-flex items-center gap-2 rounded-lg bg-violet-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-violet-700"
+                    className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg bg-violet-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-violet-700"
                 >
-                    <Plus className="h-4 w-4" /> Create Offer
+                    <Plus className="h-3.5 w-3.5" /> Create Offer
                 </button>
             </div>
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {[
-                    ["All offers", offers.length],
-                    ["Published", offers.filter((offer) => offer.is_published).length],
-                    ["Active", offers.filter((offer) => offer.is_active).length],
-                    ["Scheduled", offers.filter((offer) => offer.start_date || offer.end_date).length],
-                ].map(([label, value]) => (
-                    <div key={label} className={`${card} p-4`}>
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{label}</p>
-                        <p className="mt-1 text-2xl font-bold text-gray-900">{value}</p>
+                    { label: "Total Offers", value: offers.length, icon: Megaphone, iconBg: "bg-violet-50", iconText: "text-violet-600" },
+                    { label: "Published", value: publishedCount, icon: CheckCircle2, iconBg: "bg-emerald-50", iconText: "text-emerald-600" },
+                    { label: "Active", value: activeCount, icon: Eye, iconBg: "bg-blue-50", iconText: "text-blue-600" },
+                    { label: "Scheduled", value: scheduledCount, icon: CalendarDays, iconBg: "bg-amber-50", iconText: "text-amber-600" },
+                ].map(({ label, value, icon: Icon, iconBg, iconText }) => (
+                    <div key={label} className={`${card} flex items-center gap-3 p-4`}>
+                        <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${iconBg}`}>
+                            <Icon className={`h-4 w-4 ${iconText}`} />
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">{label}</p>
+                            <p className="mt-0.5 text-xl font-bold leading-none text-gray-900">{value}</p>
+                        </div>
                     </div>
                 ))}
             </div>
@@ -314,79 +351,186 @@ const SpecialOffersManagementPage = () => {
                 </div>
             )}
 
-            {loading ? (
-                <div className={`${card} grid gap-4 p-5 sm:grid-cols-2 xl:grid-cols-3`}>
-                    {[0, 1, 2].map((item) => <div key={item} className="h-64 animate-pulse rounded-lg bg-gray-100" />)}
+            <div className={card}>
+                <div className={`${cardHeader} flex-col gap-3 sm:flex-row`}>
+                    <div>
+                        <p className="text-sm font-semibold text-gray-900">Offer List</p>
+                        <p className="mt-0.5 text-xs text-gray-400">{filteredOffers.length} of {offers.length} offers</p>
+                    </div>
+                    <div className="flex w-full flex-col gap-2 sm:ml-auto sm:w-auto sm:flex-row sm:items-center">
+                        <div className="relative">
+                            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+                            <input
+                                type="search"
+                                placeholder="Search offers..."
+                                aria-label="Search special offers"
+                                value={searchTerm}
+                                onChange={(event) => setSearchTerm(event.target.value)}
+                                className="w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-8 pr-3 text-sm text-gray-700 outline-none transition-all placeholder:text-gray-400 focus:border-violet-300 focus:ring-2 focus:ring-violet-50 sm:w-52"
+                            />
+                        </div>
+                        <div className="relative">
+                            <select
+                                aria-label="Filter offers by status"
+                                value={statusFilter}
+                                onChange={(event) => setStatusFilter(event.target.value as OfferFilter)}
+                                className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-gray-50 py-2 pl-3 pr-8 text-sm text-gray-700 outline-none transition-all focus:border-violet-300 focus:ring-2 focus:ring-violet-50 sm:w-auto"
+                            >
+                                {OFFER_FILTERS.map((filter) => (
+                                    <option key={filter.value} value={filter.value}>{filter.label}</option>
+                                ))}
+                            </select>
+                            <Filter className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400" />
+                        </div>
+                    </div>
                 </div>
-            ) : offers.length === 0 && !loadError ? (
-                <div className={`${card} flex flex-col items-center px-6 py-16 text-center`}>
-                    <Sparkles className="h-9 w-9 text-violet-400" />
-                    <h2 className="mt-3 text-base font-semibold text-gray-900">No special offers yet</h2>
-                    <p className="mt-1 text-sm text-gray-400">Create an offer to feature it in the homepage hero.</p>
-                    <button type="button" onClick={() => openForm()} className="mt-5 rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700">
-                        Create your first offer
-                    </button>
+
+                <div className="flex items-center gap-1.5 overflow-x-auto border-b border-gray-100 px-5 py-3">
+                    {OFFER_FILTERS.map(({ value, label }) => {
+                        const active = statusFilter === value
+                        const activeStyle = value === "ALL"
+                            ? "bg-gray-900 text-white shadow-sm"
+                            : value === "PUBLISHED"
+                                ? "bg-emerald-50 text-emerald-700 ring-2 ring-emerald-200 shadow-sm"
+                                : value === "DRAFT"
+                                    ? "bg-amber-50 text-amber-700 ring-2 ring-amber-200 shadow-sm"
+                                    : "bg-gray-100 text-gray-700 ring-2 ring-gray-200 shadow-sm"
+                        return (
+                            <button
+                                key={value}
+                                type="button"
+                                onClick={() => setStatusFilter(value)}
+                                className={`inline-flex cursor-pointer items-center whitespace-nowrap rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all duration-150 ${
+                                    active ? activeStyle : "border border-gray-100 bg-gray-50 text-gray-500 hover:bg-gray-100"
+                                }`}
+                            >
+                                {label}
+                            </button>
+                        )
+                    })}
                 </div>
-            ) : (
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {offers.map((offer) => (
-                        <article key={offer.id} className={card}>
-                            <div className="relative h-48 bg-gray-100">
-                                <img src={getMediaUrl(offer.image)} alt="" className="h-full w-full object-cover" />
-                                <span className={`absolute left-3 top-3 rounded-full px-2.5 py-1 text-xs font-semibold ${
-                                    !offer.is_active ? "bg-gray-900 text-white"
-                                        : offer.is_published ? "bg-emerald-100 text-emerald-800"
-                                            : "bg-amber-100 text-amber-800"
-                                }`}>
-                                    {!offer.is_active ? "Inactive" : offer.is_published ? "Published" : "Draft"}
-                                </span>
-                                {offer.badge_text && (
-                                    <span className="absolute right-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold text-gray-700">
-                                        {offer.badge_text}
-                                    </span>
-                                )}
-                            </div>
-                            <div className="space-y-3 p-4">
-                                <div>
-                                    <h2 className="font-semibold text-gray-900">{offer.title}</h2>
-                                    {offer.subtitle && <p className="mt-1 line-clamp-2 text-sm text-gray-500">{offer.subtitle}</p>}
-                                </div>
-                                <p className="text-xs text-gray-400">
-                                    Order {offer.display_order}
-                                    {offer.start_date && ` · Starts ${offer.start_date}`}
-                                    {offer.end_date && ` · Ends ${offer.end_date}`}
-                                </p>
-                                <div className="flex flex-wrap items-center gap-2 border-t border-gray-100 pt-3">
-                                    <button type="button" onClick={() => setPreviewingOffer(offer)} title="Preview offer" className="rounded-lg border border-gray-200 p-2 text-gray-500 hover:border-violet-200 hover:text-violet-700">
-                                        <Eye className="h-4 w-4" />
-                                    </button>
-                                    <button type="button" onClick={() => openForm(offer)} title="Edit offer" className="rounded-lg border border-gray-200 p-2 text-gray-500 hover:border-violet-200 hover:text-violet-700">
-                                        <Pencil className="h-4 w-4" />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => void handleStatusChange(offer, offer.is_published ? "unpublish" : "publish")}
-                                        className="rounded-lg border border-gray-200 px-3 py-2 text-xs font-semibold text-gray-600 hover:border-violet-200 hover:text-violet-700"
-                                    >
-                                        {offer.is_published ? "Unpublish" : "Publish"}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => void handleStatusChange(offer, offer.is_active ? "deactivate" : "activate")}
-                                        title={offer.is_active ? "Deactivate offer" : "Activate offer"}
-                                        className="rounded-lg border border-gray-200 p-2 text-gray-500 hover:border-violet-200 hover:text-violet-700"
-                                    >
-                                        {offer.is_active ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
-                                    </button>
-                                    <button type="button" onClick={() => void handleDelete(offer)} title="Delete offer" className="ml-auto rounded-lg border border-gray-200 p-2 text-gray-500 hover:border-rose-200 hover:text-rose-700">
-                                        <Trash2 className="h-4 w-4" />
-                                    </button>
-                                </div>
-                            </div>
-                        </article>
-                    ))}
+
+                <div className="overflow-x-auto">
+                    <table className="min-w-full">
+                        <thead>
+                            <tr className="border-b border-gray-100">
+                                {["Offer", "Display Order", "Schedule", "Status", "Actions"].map((heading) => (
+                                    <th key={heading} className="px-5 py-3 text-left text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+                                        {heading}
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                            {loading ? (
+                                [...Array(4)].map((_, index) => (
+                                    <tr key={index}>
+                                        <td colSpan={5} className="px-5 py-3">
+                                            <div className="h-12 animate-pulse rounded-lg bg-gray-50" />
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : filteredOffers.length > 0 ? (
+                                filteredOffers.map((offer) => (
+                                    <tr key={offer.id} className="group transition-colors duration-100 hover:bg-gray-50/60">
+                                        <td className="max-w-md px-5 py-3">
+                                            <div className="flex min-w-56 items-center gap-3">
+                                                <div className="h-12 w-16 shrink-0 overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
+                                                    <img src={getMediaUrl(offer.image)} alt="" className="h-full w-full object-contain" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-sm font-semibold text-gray-800">{offer.title}</p>
+                                                    {offer.subtitle && <p className="mt-0.5 truncate text-xs text-gray-400">{offer.subtitle}</p>}
+                                                    {offer.badge_text && <span className="mt-1 inline-flex rounded-md bg-violet-50 px-1.5 py-0.5 text-[10px] font-semibold text-violet-700">{offer.badge_text}</span>}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="whitespace-nowrap px-5 py-3">
+                                            <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-lg bg-gray-50 px-2 text-xs font-semibold text-gray-600">
+                                                {offer.display_order}
+                                            </span>
+                                        </td>
+                                        <td className="whitespace-nowrap px-5 py-3">
+                                            <div className="text-xs text-gray-500">
+                                                {offer.start_date || offer.end_date ? (
+                                                    <>
+                                                        {offer.start_date && <p>From {offer.start_date}</p>}
+                                                        {offer.end_date && <p className="mt-0.5">Until {offer.end_date}</p>}
+                                                    </>
+                                                ) : <span className="text-gray-400">No schedule</span>}
+                                            </div>
+                                        </td>
+                                        <td className="whitespace-nowrap px-5 py-3">
+                                            <span className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[11px] font-bold ${
+                                                !offer.is_active
+                                                    ? "bg-gray-100 text-gray-600"
+                                                    : offer.is_published
+                                                        ? "bg-emerald-50 text-emerald-700"
+                                                        : "bg-amber-50 text-amber-700"
+                                            }`}>
+                                                <span className={`h-1.5 w-1.5 rounded-full ${
+                                                    !offer.is_active ? "bg-gray-400" : offer.is_published ? "bg-emerald-500" : "bg-amber-500"
+                                                }`} />
+                                                {!offer.is_active ? "Inactive" : offer.is_published ? "Published" : "Draft"}
+                                            </span>
+                                        </td>
+                                        <td className="whitespace-nowrap px-5 py-3">
+                                            <div className="flex items-center justify-end gap-1.5 opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+                                                <button type="button" onClick={() => setPreviewingOffer(offer)} title="Preview offer" aria-label={`Preview ${offer.title}`} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-100 bg-gray-50 text-gray-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-600">
+                                                    <Eye className="h-4 w-4" />
+                                                </button>
+                                                <button type="button" onClick={() => openForm(offer)} title="Edit offer" aria-label={`Edit ${offer.title}`} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-100 bg-gray-50 text-gray-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-600">
+                                                    <Pencil className="h-4 w-4" />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => void handleStatusChange(offer, offer.is_published ? "unpublish" : "publish")}
+                                                    title={offer.is_published ? "Unpublish offer" : "Publish offer"}
+                                                    aria-label={`${offer.is_published ? "Unpublish" : "Publish"} ${offer.title}`}
+                                                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-100 bg-gray-50 text-gray-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-600"
+                                                >
+                                                    {offer.is_published ? <ToggleRight className="h-4 w-4" /> : <ToggleLeft className="h-4 w-4" />}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => void handleStatusChange(offer, offer.is_active ? "deactivate" : "activate")}
+                                                    title={offer.is_active ? "Deactivate offer" : "Activate offer"}
+                                                    aria-label={`${offer.is_active ? "Deactivate" : "Activate"} ${offer.title}`}
+                                                    className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-100 bg-gray-50 text-gray-500 transition-colors hover:border-violet-200 hover:bg-violet-50 hover:text-violet-600"
+                                                >
+                                                    {offer.is_active ? <Eye className="h-4 w-4 text-violet-500" /> : <EyeOff className="h-4 w-4" />}
+                                                </button>
+                                                <button type="button" onClick={() => void handleDelete(offer)} title="Delete offer" aria-label={`Delete ${offer.title}`} className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg border border-gray-100 bg-gray-50 text-gray-500 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={5} className="px-5 py-16 text-center">
+                                        <Sparkles className="mx-auto h-8 w-8 text-gray-300" />
+                                        <p className="mt-3 text-sm font-semibold text-gray-700">
+                                            {offers.length === 0 ? "No special offers yet" : "No offers match your filters"}
+                                        </p>
+                                        <p className="mt-1 text-xs text-gray-400">
+                                            {offers.length === 0
+                                                ? "Create your first offer to feature a promotion on the homepage."
+                                                : "Try another search or status filter."}
+                                        </p>
+                                        {offers.length === 0 && (
+                                            <button type="button" onClick={() => openForm()} className="mt-4 inline-flex cursor-pointer items-center gap-1.5 rounded-lg bg-violet-600 px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-violet-700">
+                                                <Plus className="h-3.5 w-3.5" /> Create your first offer
+                                            </button>
+                                        )}
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
-            )}
+            </div>
 
             {isFormOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-gray-950/50 p-3 sm:p-6">

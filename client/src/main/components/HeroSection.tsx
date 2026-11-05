@@ -1,5 +1,6 @@
 import { useState } from "react"
-import { Search } from "lucide-react"
+import { ArrowRight, Search } from "lucide-react"
+import { motion, useReducedMotion } from "framer-motion"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../../hooks/useAuth"
 import SpecialOffersSlider from "./SpecialOffersSlider"
@@ -7,10 +8,11 @@ import SpecialOffersSlider from "./SpecialOffersSlider"
 const HeroSection = () => {
     const { user } = useAuth()
     const [searchQuery, setSearchQuery] = useState("")
-    const [hasOffers, setHasOffers] = useState(false)
     const navigate = useNavigate()
+    const shouldReduceMotion = useReducedMotion()
 
-    const handleSearch = () => {
+    const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault()
         if (searchQuery.trim()) {
             navigate(`/courses?search=${encodeURIComponent(searchQuery.trim())}`)
         } else {
@@ -18,86 +20,153 @@ const HeroSection = () => {
         }
     }
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Enter') {
-            handleSearch()
-        }
-    }
-
     return (
         <div className="bg-white">
-            <section className="bg-[#FCF8F1] bg-opacity-30 pb-8 lg:pb-10 pt-6 lg:pt-8 relative overflow-hidden">
-                <div className={`mx-auto max-w-7xl px-4 ${hasOffers ? "grid items-center gap-8 lg:grid-cols-[1fr_0.9fr] lg:gap-12" : ""}`}>
-                    <div className={hasOffers ? "py-4 text-left lg:py-10" : "mx-auto max-w-4xl text-center"}>
-                        <div>
-                            <span className={`inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-violet-700 ${hasOffers ? "mt-2" : "mt-4"}`}>
-                                <span className="h-1.5 w-1.5 rounded-full bg-violet-600" />
-                                Learn. Grow. Lead.
+            <section className="relative isolate overflow-hidden bg-[#FCF8F1]">
+                <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+                    <motion.div
+                        animate={shouldReduceMotion ? undefined : { y: [0, -12, 0] }}
+                        transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute -left-32 -top-40 h-96 w-96 rounded-full bg-amber-200/20 blur-3xl"
+                    />
+                    <div className="absolute -bottom-48 right-[20%] h-96 w-96 rounded-full bg-violet-200/20 blur-3xl" />
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(71,85,105,0.07)_1px,transparent_0)] [background-size:28px_28px] opacity-40" />
+                </div>
+
+                <div className="relative mx-auto grid max-w-7xl items-center gap-8 px-4 py-6 sm:px-6 sm:py-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-10 lg:px-8 lg:py-10 xl:grid-cols-[0.88fr_1.12fr]">
+                    <motion.div
+                        className="w-full text-left"
+                    >
+                        <motion.div
+                            initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: shouldReduceMotion ? 0 : 0.45, delay: 0 }}
+                            className="inline-flex items-center gap-2 rounded-full border border-violet-200/80 bg-white/70 px-3.5 py-2 text-xs font-bold uppercase tracking-[0.16em] text-violet-800 shadow-sm backdrop-blur"
+                        >
+                            <span className="relative flex h-2 w-2">
+                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-violet-400 opacity-50 motion-reduce:animate-none" />
+                                <span className="relative inline-flex h-2 w-2 rounded-full bg-violet-600" />
                             </span>
-                            <h1 className={`mt-4 text-4xl font-bold leading-tight text-black sm:text-6xl ${hasOffers ? "lg:text-5xl xl:text-6xl" : "lg:mt-8 xl:text-7xl"}`}>
-                                Connect & learn from the experts
-                            </h1>
+                            Learn. Grow. Lead.
+                        </motion.div>
 
-                            <p className={`mt-4 text-base text-gray-700 sm:text-xl ${hasOffers ? "max-w-xl lg:mt-5" : "lg:mt-6"}`}>
-                                Grow your career fast with right mentor.
-                            </p>
-
-                            {/* Search Bar */}
-                            <div className={`relative mt-8 max-w-xl ${hasOffers ? "" : "mx-auto"}`}>
-                                <input
-                                    type="text"
-                                    placeholder="Search courses, skills, mentors..."
-                                    aria-label="Search courses, skills, and mentors"
-                                    className="h-14 w-full rounded-full border border-gray-200 bg-white px-6 pr-14 shadow-lg transition focus:outline-none focus:ring-2 focus:ring-blue-300"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                />
-                                <button
-                                    onClick={handleSearch}
-                                    aria-label="Search"
-                                    className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-blue-600 text-white transition hover:scale-105"
+                        <motion.h1
+                            initial={shouldReduceMotion ? false : "hidden"}
+                            animate="visible"
+                            variants={{
+                                hidden: {},
+                                visible: {
+                                    transition: {
+                                        delayChildren: shouldReduceMotion ? 0 : 0.18,
+                                        staggerChildren: shouldReduceMotion ? 0 : 0.28,
+                                    },
+                                },
+                            }}
+                            className="mt-5 text-[clamp(2.55rem,5.6vw,4.5rem)] font-bold leading-[1.02] tracking-[-0.045em] text-gray-950 sm:mt-6"
+                        >
+                            <span className="block overflow-hidden pb-[0.08em]">
+                                <motion.span
+                                    variants={{
+                                        hidden: { y: shouldReduceMotion ? 0 : "110%" },
+                                        visible: {
+                                            y: "0%",
+                                            transition: {
+                                                duration: shouldReduceMotion ? 0 : 0.72,
+                                                ease: [0.22, 1, 0.36, 1],
+                                            },
+                                        },
+                                    }}
+                                    className="block"
                                 >
-                                    <Search className="w-5 h-5" />
-                                </button>
-                            </div>
+                                    Connect & learn
+                                </motion.span>
+                            </span>
+                            <span className="block overflow-hidden pb-[0.08em]">
+                                <motion.span
+                                    variants={{
+                                        hidden: { y: shouldReduceMotion ? 0 : "110%" },
+                                        visible: {
+                                            y: "0%",
+                                            transition: {
+                                                duration: shouldReduceMotion ? 0 : 0.78,
+                                                ease: [0.22, 1, 0.36, 1],
+                                            },
+                                        },
+                                    }}
+                                    className="block font-serif font-medium italic tracking-[-0.055em] text-gray-950"
+                                >
+                                    from the experts
+                                </motion.span>
+                            </span>
+                        </motion.h1>
 
-                            {!user && (
-                                <div className={`flex flex-col ${hasOffers ? "items-start" : "items-center"}`}>
-                                    <Link
-                                        to={'/register'}
-                                        className="mt-8 inline-flex items-center rounded-full bg-yellow-300 px-6 py-4 font-semibold text-black transition-all duration-200 hover:bg-yellow-400 focus:bg-yellow-400 lg:mt-10"
-                                    >
-                                        Join for free
-                                        <svg
-                                            className="w-6 h-6 ml-8 -mr-2"
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            stroke="currentColor"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                strokeWidth="1.5"
-                                                d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"
-                                            />
-                                        </svg>
+                        <motion.p
+                            initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: shouldReduceMotion ? 0 : 0.45, delay: shouldReduceMotion ? 0 : 1.15 }}
+                            className="mt-3 max-w-lg text-base leading-7 text-gray-600 sm:mt-4 sm:text-lg sm:leading-8"
+                        >
+                            Grow your career fast with the right mentor.
+                        </motion.p>
+
+                        <motion.form
+                            initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: shouldReduceMotion ? 0 : 0.45, delay: shouldReduceMotion ? 0 : 1.28 }}
+                            onSubmit={handleSearch}
+                            role="search"
+                            className="group relative mt-8 flex h-[62px] max-w-xl items-center rounded-2xl border border-gray-200/90 bg-white p-1.5 shadow-[0_12px_35px_-20px_rgba(15,23,42,0.35)] transition duration-200 hover:border-violet-200 hover:shadow-[0_16px_40px_-20px_rgba(109,40,217,0.3)] focus-within:border-violet-400 focus-within:ring-4 focus-within:ring-violet-100"
+                        >
+                            <Search aria-hidden="true" className="ml-3.5 h-5 w-5 shrink-0 text-gray-400 transition-colors group-focus-within:text-violet-600" />
+                            <input
+                                type="search"
+                                placeholder="Search courses, skills, mentors..."
+                                aria-label="Search courses, skills, and mentors"
+                                className="h-full min-w-0 flex-1 border-0 bg-transparent px-3 text-sm text-gray-800 outline-none placeholder:text-gray-400 focus:ring-0 sm:text-base"
+                                value={searchQuery}
+                                onChange={(event) => setSearchQuery(event.target.value)}
+                            />
+                            <button
+                                type="submit"
+                                aria-label="Search"
+                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-700 text-white transition duration-200 hover:bg-violet-800 active:scale-95 sm:w-12"
+                            >
+                                <Search className="h-5 w-5" />
+                            </button>
+                        </motion.form>
+
+                        {!user && (
+                            <motion.div
+                                initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: shouldReduceMotion ? 0 : 0.45, delay: shouldReduceMotion ? 0 : 1.4 }}
+                                className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3"
+                            >
+                                <Link
+                                    to="/register"
+                                    className="group inline-flex min-h-12 items-center gap-3 rounded-full bg-yellow-300 px-6 py-3 font-semibold text-gray-950 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-yellow-400 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-600 motion-reduce:transform-none"
+                                >
+                                    Join for free
+                                    <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transform-none" />
+                                </Link>
+                                <p className="text-sm text-gray-500">
+                                    Already joined us?{" "}
+                                    <Link to="/login" className="font-semibold text-gray-800 underline decoration-gray-300 underline-offset-4 transition hover:text-violet-700 hover:decoration-violet-400">
+                                        Log in
                                     </Link>
-                                    <p className="mt-5 text-gray-600">
-                                        Already joined us?{" "}
-                                        <Link
-                                            to={'/login'}
-                                            className="text-black transition-all duration-200 hover:underline"
-                                        >
-                                            Log in
-                                        </Link>
-                                    </p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    <SpecialOffersSlider onOffersLoaded={setHasOffers} />
+                                </p>
+                            </motion.div>
+                        )}
+                    </motion.div>
+
+                    <motion.div
+                        initial={shouldReduceMotion ? false : { opacity: 0, x: 24 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: shouldReduceMotion ? 0 : 0.6, delay: shouldReduceMotion ? 0 : 0.12 }}
+                        className="min-w-0"
+                    >
+                        <SpecialOffersSlider />
+                    </motion.div>
                 </div>
             </section>
         </div>

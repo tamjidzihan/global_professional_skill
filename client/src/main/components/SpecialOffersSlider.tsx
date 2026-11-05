@@ -1,21 +1,20 @@
 import { useEffect, useRef, useState } from "react"
-import { AnimatePresence, motion } from "framer-motion"
-import { ArrowLeft, ArrowRight, Sparkles } from "lucide-react"
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
+import { ArrowLeft, ArrowRight, CalendarDays, Sparkles } from "lucide-react"
 import { Link } from "react-router-dom"
 import { getMediaUrl, getSpecialOffers } from "../../lib/api"
 import type { SpecialOffer } from "../../types"
 
 const AUTOPLAY_INTERVAL = 6000
+type OfferLoadState = "loading" | "ready" | "error"
 
-interface SpecialOffersSliderProps {
-    onOffersLoaded: (hasOffers: boolean) => void
-}
-
-const SpecialOffersSlider = ({ onOffersLoaded }: SpecialOffersSliderProps) => {
+const SpecialOffersSlider = () => {
     const [offers, setOffers] = useState<SpecialOffer[]>([])
     const [activeIndex, setActiveIndex] = useState(0)
     const [isPaused, setIsPaused] = useState(false)
+    const [loadState, setLoadState] = useState<OfferLoadState>("loading")
     const touchStartX = useRef<number | null>(null)
+    const shouldReduceMotion = useReducedMotion()
 
     useEffect(() => {
         let isMounted = true
@@ -23,22 +22,23 @@ const SpecialOffersSlider = ({ onOffersLoaded }: SpecialOffersSliderProps) => {
             .then(({ data }) => {
                 if (!isMounted) return
                 setOffers(data.data)
-                onOffersLoaded(data.data.length > 0)
+                setLoadState("ready")
             })
             .catch((error: unknown) => {
                 console.error("Failed to load homepage special offers.", error)
-                if (isMounted) onOffersLoaded(false)
+                if (isMounted) setLoadState("error")
             })
 
         return () => {
             isMounted = false
         }
-    }, [onOffersLoaded])
+    }, [])
 
     useEffect(() => {
         if (
             offers.length < 2 ||
             isPaused ||
+            shouldReduceMotion ||
             window.matchMedia("(prefers-reduced-motion: reduce)").matches
         ) {
             return
@@ -47,11 +47,80 @@ const SpecialOffersSlider = ({ onOffersLoaded }: SpecialOffersSliderProps) => {
             setActiveIndex((index) => (index + 1) % offers.length)
         }, AUTOPLAY_INTERVAL)
         return () => window.clearInterval(timer)
-    }, [isPaused, offers.length])
+    }, [isPaused, offers.length, shouldReduceMotion])
 
-    if (offers.length === 0) return null
+    if (loadState !== "ready" || offers.length === 0) {
+        return (
+            <section
+                aria-label={loadState === "loading" ? "Loading special offers" : "Special offers"}
+                aria-busy={loadState === "loading"}
+                aria-live="polite"
+                className="mx-auto w-full max-w-[620px] lg:mx-0 lg:ml-auto"
+            >
+                <div className="mb-3 flex items-center justify-between px-1">
+                    <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.17em] text-gray-500 sm:text-xs">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-amber-500 shadow-sm ring-1 ring-gray-200/70">
+                            <Sparkles className="h-3.5 w-3.5" />
+                        </span>
+                        Featured for you
+                    </div>
+                </div>
+
+                {loadState === "loading" ? (
+                    <div className="overflow-hidden rounded-[1.6rem] border border-white bg-white/80 p-2 shadow-[0_24px_70px_-35px_rgba(54,44,35,0.45)] ring-1 ring-gray-900/[0.04] backdrop-blur-sm motion-reduce:animate-none sm:p-2.5">
+                        <div className="aspect-[4/3] animate-pulse rounded-[1.15rem] bg-gradient-to-br from-violet-100 via-stone-100 to-amber-100 motion-reduce:animate-none sm:aspect-[16/10]">
+                            <div className="flex h-full flex-col justify-between p-4 sm:p-5">
+                                <span className="h-7 w-32 rounded-full bg-white/80" />
+                                <div className="space-y-3">
+                                    <span className="block h-5 w-3/4 rounded-md bg-white/80" />
+                                    <span className="block h-4 w-1/2 rounded-md bg-white/70" />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="space-y-3 px-3 pb-3 pt-4 sm:px-4">
+                            <div className="h-3 w-1/3 animate-pulse rounded bg-violet-100 motion-reduce:animate-none" />
+                            <div className="h-5 w-2/3 animate-pulse rounded bg-gray-200 motion-reduce:animate-none" />
+                            <div className="flex items-center justify-between gap-4">
+                                <div className="h-3 w-1/2 animate-pulse rounded bg-gray-100 motion-reduce:animate-none" />
+                                <div className="h-11 w-36 animate-pulse rounded-full bg-gray-200 motion-reduce:animate-none" />
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="relative isolate overflow-hidden rounded-[1.6rem] border border-white/90 bg-white/75 px-6 py-8 shadow-[0_24px_70px_-35px_rgba(54,44,35,0.35)] ring-1 ring-gray-900/[0.04] backdrop-blur-sm sm:px-8 sm:py-10">
+                        <div aria-hidden="true" className="absolute -right-12 -top-14 h-40 w-40 rounded-full bg-amber-100/70 blur-2xl" />
+                        <div aria-hidden="true" className="absolute -bottom-16 -left-12 h-40 w-40 rounded-full bg-violet-100/70 blur-2xl" />
+                        <div className="relative">
+                            <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-violet-50 text-violet-700 ring-1 ring-violet-100">
+                                <CalendarDays className="h-5 w-5" />
+                            </span>
+                            <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em] text-violet-700">
+                                {loadState === "error" ? "A little pause" : "Good things are growing"}
+                            </p>
+                            <h2 className="mt-2 max-w-md text-2xl font-bold leading-tight tracking-tight text-gray-950 sm:text-3xl">
+                                {loadState === "error" ? "Our featured offers will be back soon." : "A new opportunity could be just around the corner."}
+                            </h2>
+                            <p className="mt-3 max-w-md text-sm leading-6 text-gray-600 sm:text-base">
+                                {loadState === "error"
+                                    ? "We couldn’t load the latest offers right now. Explore our courses while we get things ready."
+                                    : "We’re preparing fresh ways to help you learn, grow, and take your next career step. In the meantime, discover a course that inspires you."}
+                            </p>
+                            <Link
+                                to="/courses"
+                                className="group mt-6 inline-flex min-h-11 items-center gap-2 rounded-full bg-violet-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700"
+                            >
+                                Explore courses
+                                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                            </Link>
+                        </div>
+                    </div>
+                )}
+            </section>
+        )
+    }
 
     const activeOffer = offers[activeIndex]
+    const imageUrl = getMediaUrl(activeOffer.image)
     const moveBy = (offset: number) => {
         setActiveIndex((index) => (index + offset + offers.length) % offers.length)
     }
@@ -70,130 +139,141 @@ const SpecialOffersSlider = ({ onOffersLoaded }: SpecialOffersSliderProps) => {
         moveBy(startX > endX ? 1 : -1)
     }
 
-    const callToAction = (
-        <span className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-gray-950 shadow-lg transition duration-200 group-hover:bg-yellow-300">
-            {activeOffer.cta_text}
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-        </span>
-    )
+    const ctaClassName =
+        "group inline-flex min-h-11 items-center gap-2 rounded-full bg-violet-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-violet-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700"
 
     return (
         <section
             aria-label="Special offers"
             aria-roledescription="carousel"
-            className="mx-auto w-full max-w-xl lg:mx-0 lg:ml-auto"
+            className="mx-auto w-full max-w-[620px] lg:mx-0 lg:ml-auto"
             onMouseEnter={() => setIsPaused(true)}
             onMouseLeave={() => setIsPaused(false)}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
         >
             <div className="mb-3 flex items-center justify-between px-1">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-gray-500">
-                    <Sparkles className="h-4 w-4 text-amber-500" />
+                <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.17em] text-gray-500 sm:text-xs">
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-amber-500 shadow-sm ring-1 ring-gray-200/70">
+                        <Sparkles className="h-3.5 w-3.5" />
+                    </span>
                     Featured for you
                 </div>
                 {offers.length > 1 && (
                     <span className="text-xs font-medium tabular-nums text-gray-400">
-                        {String(activeIndex + 1).padStart(2, "0")}{" "}
-                        <span className="px-1 text-gray-300">/</span>{" "}
+                        {String(activeIndex + 1).padStart(2, "0")}
+                        <span className="px-1 text-gray-300">/</span>
                         {String(offers.length).padStart(2, "0")}
                     </span>
                 )}
             </div>
 
-            <div className="relative isolate min-h-[390px] overflow-hidden rounded-[1.75rem] bg-gray-900 shadow-[0_24px_70px_-24px_rgba(30,27,75,0.55)] sm:min-h-[450px] lg:min-h-[500px]">
-                <AnimatePresence mode="wait">
-                    <motion.article
-                        key={activeOffer.id}
-                        aria-label={`Offer ${activeIndex + 1} of ${offers.length}`}
-                        initial={{ opacity: 0, scale: 1.025 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.99 }}
-                        transition={{ duration: 0.4, ease: "easeOut" }}
-                        className="absolute inset-0"
-                    >
-                        <img
-                            src={getMediaUrl(activeOffer.image)}
-                            alt=""
-                            className="absolute inset-0 h-full w-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-gray-950/95 via-gray-950/45 to-gray-950/5" />
-                        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-5 sm:p-7">
-                            {activeOffer.badge_text ? (
-                                <span className="inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white shadow-sm backdrop-blur-md">
-                                    <Sparkles className="h-3.5 w-3.5 text-amber-300" />
-                                    {activeOffer.badge_text}
-                                </span>
-                            ) : <span />}
-                            <span className="rounded-full border border-white/25 bg-black/15 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-white/90 backdrop-blur-md">
-                                GPI Special
-                            </span>
-                        </div>
-
-                        <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-8 lg:p-9">
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={`${activeOffer.id}-copy`}
-                                    initial={{ opacity: 0, y: 12 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -8 }}
-                                    transition={{ duration: 0.28, delay: 0.08 }}
-                                >
-                                    {activeOffer.subtitle && (
-                                        <p className="mb-2 text-sm font-medium text-white/75 sm:text-base">
-                                            {activeOffer.subtitle}
-                                        </p>
-                                    )}
-                                    <h2 className="max-w-lg text-3xl font-bold leading-tight tracking-tight sm:text-4xl">
-                                        {activeOffer.title}
-                                    </h2>
-                                    {activeOffer.description && (
-                                        <p className="mt-3 line-clamp-2 max-w-lg text-sm leading-6 text-white/80 sm:text-base">
-                                            {activeOffer.description}
-                                        </p>
-                                    )}
-                                    <div className="mt-6">
-                                        {activeOffer.target_url.startsWith("/") ? (
-                                            <Link to={activeOffer.target_url} className="group inline-flex focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white">
-                                                {callToAction}
-                                            </Link>
-                                        ) : (
-                                            <a
-                                                href={activeOffer.target_url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="group inline-flex focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
-                                            >
-                                                {callToAction}
-                                            </a>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            </AnimatePresence>
-                        </div>
-                    </motion.article>
-                </AnimatePresence>
-
-                {offers.length > 1 && (
-                    <div className="absolute bottom-6 right-5 z-10 flex items-center gap-2 sm:bottom-8 sm:right-7">
-                        <button
-                            type="button"
-                            aria-label="Previous offer"
-                            onClick={() => moveBy(-1)}
-                            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-black/20 text-white backdrop-blur-md transition hover:bg-white hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            <div className="overflow-hidden rounded-[1.6rem] border border-white bg-white/80 p-2 shadow-[0_24px_70px_-35px_rgba(54,44,35,0.45)] ring-1 ring-gray-900/[0.04] backdrop-blur-sm sm:p-2.5">
+                <div
+                    className="relative isolate aspect-[4/3] overflow-hidden rounded-[1.15rem] bg-[#e8e4de] sm:aspect-[16/10] lg:aspect-[16/10]"
+                    onKeyDown={(event) => {
+                        if (event.key === "ArrowLeft") moveBy(-1)
+                        if (event.key === "ArrowRight") moveBy(1)
+                    }}
+                >
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={activeOffer.id}
+                            initial={shouldReduceMotion ? false : { opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={shouldReduceMotion ? undefined : { opacity: 0 }}
+                            transition={{ duration: shouldReduceMotion ? 0 : 0.4, ease: "easeOut" }}
+                            className="absolute inset-0"
                         >
-                            <ArrowLeft className="h-4 w-4" />
-                        </button>
-                        <button
-                            type="button"
-                            aria-label="Next offer"
-                            onClick={() => moveBy(1)}
-                            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-black/20 text-white backdrop-blur-md transition hover:bg-white hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                            <div
+                                aria-hidden="true"
+                                className="absolute inset-0 scale-110 bg-cover bg-center opacity-30 blur-2xl"
+                                style={{ backgroundImage: `url("${imageUrl}")` }}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-gray-900/10" />
+                            <motion.img
+                                src={imageUrl}
+                                alt={`${activeOffer.title} promotional artwork`}
+                                className="absolute inset-0 h-full w-full object-contain p-2 sm:p-3"
+                                initial={shouldReduceMotion ? false : { scale: 0.985 }}
+                                animate={{ scale: 1 }}
+                                transition={{ duration: shouldReduceMotion ? 0 : 0.65, ease: "easeOut" }}
+                                draggable={false}
+                            />
+                        </motion.div>
+                    </AnimatePresence>
+
+                    {activeOffer.badge_text && (
+                        <div className="absolute left-3 top-3 z-10 inline-flex max-w-[70%] items-center gap-1.5 truncate rounded-full border border-white/60 bg-white/90 px-3 py-1.5 text-xs font-semibold text-gray-800 shadow-sm backdrop-blur-md sm:left-4 sm:top-4">
+                            <Sparkles className="h-3.5 w-3.5 shrink-0 text-amber-500" />
+                            <span className="truncate">{activeOffer.badge_text}</span>
+                        </div>
+                    )}
+
+                    {offers.length > 1 && (
+                        <div className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5 sm:bottom-4 sm:right-4">
+                            <button
+                                type="button"
+                                aria-label="Previous offer"
+                                onClick={() => moveBy(-1)}
+                                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/60 bg-white/90 text-gray-800 shadow-md backdrop-blur transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700 sm:h-10 sm:w-10"
+                            >
+                                <ArrowLeft className="h-4 w-4" />
+                            </button>
+                            <button
+                                type="button"
+                                aria-label="Next offer"
+                                onClick={() => moveBy(1)}
+                                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/60 bg-white/90 text-gray-800 shadow-md backdrop-blur transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-700 sm:h-10 sm:w-10"
+                            >
+                                <ArrowRight className="h-4 w-4" />
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex flex-col gap-3 px-3 pb-2 pt-3 sm:flex-row sm:items-end sm:justify-between sm:px-4 sm:pb-2 sm:pt-4">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={`${activeOffer.id}-details`}
+                            initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={shouldReduceMotion ? undefined : { opacity: 0, y: -5 }}
+                            transition={{ duration: shouldReduceMotion ? 0 : 0.25 }}
+                            className="min-w-0 flex-1"
                         >
-                            <ArrowRight className="h-4 w-4" />
-                        </button>
-                    </div>
-                )}
+                            {activeOffer.subtitle && (
+                                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-violet-700 sm:text-sm">
+                                    {activeOffer.subtitle}
+                                </p>
+                            )}
+                            <h2 className="text-lg font-bold leading-snug tracking-tight text-gray-950 sm:text-xl">
+                                {activeOffer.title}
+                            </h2>
+                            {activeOffer.description && (
+                                <p className="mt-1.5 line-clamp-2 max-w-lg text-sm leading-5 text-gray-500">
+                                    {activeOffer.description}
+                                </p>
+                            )}
+                        </motion.div>
+                    </AnimatePresence>
+                    {activeOffer.target_url.startsWith("/") ? (
+                        <Link to={activeOffer.target_url} className={`${ctaClassName} shrink-0 self-start sm:self-auto`}>
+                            {activeOffer.cta_text}
+                            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                        </Link>
+                    ) : (
+                        <a
+                            href={activeOffer.target_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`${ctaClassName} shrink-0 self-start sm:self-auto`}
+                        >
+                            {activeOffer.cta_text}
+                            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                        </a>
+                    )}
+                </div>
             </div>
 
             {offers.length > 1 && (
