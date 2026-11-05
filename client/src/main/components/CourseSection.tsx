@@ -1,6 +1,6 @@
 import { useRef, useState, useMemo, useCallback } from "react"
 import { Link } from "react-router-dom"
-import { ChevronLeft, ChevronRight, BookOpen, Sparkles, ArrowRight, AlertCircle, RefreshCw } from "lucide-react"
+import { ChevronLeft, ChevronRight, BookOpen, ArrowRight, AlertCircle, RefreshCw } from "lucide-react"
 import { CourseCard } from "./CourseCard"
 import { useCourseCategory } from "../../hooks/useCourseCategory"
 import CourseCardSkeleton from "./ui/loadingSkeleton/CourseCardSkeleton"
@@ -70,19 +70,6 @@ const CourseSection = () => {
     return (
         <section className="py-10 sm:py-14 bg-linear-to-b from-white to-[#FCF8F1] overflow-hidden">
             <div className="container mx-auto px-4">
-                {/* Header */}
-                <div className="mb-6 text-center max-w-3xl mx-auto">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 border border-green-200 text-green-700 rounded-full text-sm font-semibold mb-4">
-                        <Sparkles className="w-4 h-4" />
-                        Popular Courses
-                    </div>
-                    <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
-                        Explore Our <span className="bg-linear-to-r from-[#0066CC] to-purple-600 bg-clip-text text-transparent">Premium Courses</span>
-                    </h2>
-                    <p className="text-gray-600">
-                        Choose from a wide range of industry-ready professional courses designed to boost your career
-                    </p>
-                </div>
 
                 {/* Category Scroll - Only show if no error */}
                 {!error && (

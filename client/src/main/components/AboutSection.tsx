@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect, useRef } from "react"
 import {
-    Target,
     Sparkles,
     Rocket,
-    Shield,
     X,
     Images,
     ChevronLeft,
@@ -18,6 +16,7 @@ import {
 } from "lucide-react"
 import { getSiteSettings, getAlbumPhotos, getMediaUrl } from "../../lib/api"
 import type { SiteSettings, AlbumPhoto } from "../../types"
+import CampusTourVideo from "./CampusTourVideo"
 
 const AboutSection: React.FC = () => {
     const [settings, setSettings] = useState<SiteSettings | null>(null)
@@ -229,43 +228,14 @@ const AboutSection: React.FC = () => {
                 </div>
 
                 {/* Main Content Grid */}
-                <div className="grid lg:grid-cols-5 gap-8 mb-16">
-                    {/* Left Column - 3/5 width */}
-                    <div className="lg:col-span-3 space-y-6">
-                        {/* Story Card with Diagonal Design */}
-                        <div className="relative group">
-                            <div className="absolute inset-0 bg-linear-to-br from-blue-600 to-purple-600 rounded-3xl transform rotate-1 group-hover:rotate-2 transition-transform duration-300"></div>
-                            <div className="relative bg-white rounded-3xl p-8 sm:p-10 shadow-2xl border-4 border-white">
-                                <div className="flex items-start gap-4 mb-6">
-                                    <div className="bg-linear-to-br from-blue-500 to-purple-500 p-4 rounded-2xl shadow-lg">
-                                        <Target className="w-8 h-8 text-white" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-2xl font-bold text-black mb-2">Our Mission</h3>
-                                        <div className="h-1 w-20 bg-linear-to-r from-blue-500 to-purple-500 rounded-full"></div>
-                                    </div>
-                                </div>
-
-                                <p className="text-gray-700 leading-relaxed mb-6 text-lg">
-                                    To provide <strong className="text-blue-600">high-quality, industry-focused training</strong> that equips
-                                    students and professionals with practical skills and professional competencies for today's competitive world.
-                                </p>
-
-                                <div className="bg-linear-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border-2 border-blue-200">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <Shield className="w-6 h-6 text-blue-600" />
-                                        <h4 className="font-bold text-gray-900">Our Vision</h4>
-                                    </div>
-                                    <p className="text-gray-700 leading-relaxed">
-                                        To become a <strong>leading skill development institute</strong> recognized for excellence in education and workforce development.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
+                <div className="grid lg:grid-cols-2 gap-8 mb-16">
+                    {/* Campus Tour Video */}
+                    <div>
+                        <CampusTourVideo settings={settings} />
                     </div>
 
-                    {/* Right Column - 2/5 width: Photo Album Section */}
-                    <div className="lg:col-span-2 space-y-6">
+                    {/* Photo Album Section */}
+                    <div>
                         <div className="relative group">
                             {/* Tilted colorful accent backdrop (preserves identical design) */}
                             <div className="absolute inset-0 bg-linear-to-br from-green-400 to-blue-500 rounded-3xl transform -rotate-2 group-hover:-rotate-3 transition-transform duration-300"></div>
@@ -297,17 +267,6 @@ const AboutSection: React.FC = () => {
 
                                 {/* Top & Bottom Gradient Overlays for high readability */}
                                 <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/25 to-black/60 pointer-events-none"></div>
-
-                                {/* Diagonal pattern overlay for depth */}
-                                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                                    <div
-                                        className="absolute inset-0"
-                                        style={{
-                                            backgroundImage: `repeating-linear-gradient(45deg, white 0px, white 2px, transparent 2px, transparent 10px)`,
-                                        }}
-                                    />
-                                </div>
-
                                 {/* Top Toolbar inside card */}
                                 <div className="relative p-4 z-20 flex items-center justify-between">
                                     <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-black/60 backdrop-blur-md text-white rounded-full text-xs font-bold border border-white/20 shadow-lg">
@@ -393,11 +352,10 @@ const AboutSection: React.FC = () => {
                                                         e.stopPropagation()
                                                         setCurrentIndex(idx)
                                                     }}
-                                                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                                                        idx === currentIndex
-                                                            ? "w-6 bg-green-400"
-                                                            : "w-1.5 bg-white/40 hover:bg-white/70"
-                                                    }`}
+                                                    className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${idx === currentIndex
+                                                        ? "w-6 bg-green-400"
+                                                        : "w-1.5 bg-white/40 hover:bg-white/70"
+                                                        }`}
                                                     title={`Go to photo ${idx + 1}`}
                                                 />
                                             ))}
@@ -569,11 +527,10 @@ const AboutSection: React.FC = () => {
                                             setCurrentIndex(idx)
                                             setZoomScale(1)
                                         }}
-                                        className={`relative w-12 h-9 sm:w-14 sm:h-10 rounded-lg overflow-hidden border-2 transition-all cursor-pointer shrink-0 ${
-                                            idx === currentIndex
-                                                ? "border-green-400 scale-105 shadow-md shadow-green-500/30 ring-2 ring-green-400/40"
-                                                : "border-white/20 opacity-60 hover:opacity-100 hover:border-white/60"
-                                        }`}
+                                        className={`relative w-12 h-9 sm:w-14 sm:h-10 rounded-lg overflow-hidden border-2 transition-all cursor-pointer shrink-0 ${idx === currentIndex
+                                            ? "border-green-400 scale-105 shadow-md shadow-green-500/30 ring-2 ring-green-400/40"
+                                            : "border-white/20 opacity-60 hover:opacity-100 hover:border-white/60"
+                                            }`}
                                     >
                                         <img
                                             src={getMediaUrl(photo.image)}
