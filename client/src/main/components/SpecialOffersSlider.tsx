@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion"
-import { ArrowLeft, ArrowRight, CalendarDays, Sparkles } from "lucide-react"
+import { ArrowLeft, ArrowRight, CalendarDays } from "lucide-react"
 import { Link } from "react-router-dom"
 import { getMediaUrl, getSpecialOffers } from "../../lib/api"
 import type { SpecialOffer } from "../../types"
@@ -55,20 +55,17 @@ const SpecialOffersSlider = () => {
                 aria-label={loadState === "loading" ? "Loading special offers" : "Special offers"}
                 aria-busy={loadState === "loading"}
                 aria-live="polite"
-                className="mx-auto w-full max-w-[620px] lg:mx-0 lg:ml-auto"
+                className="mx-auto w-full max-w-155 lg:mx-0 lg:ml-auto"
             >
                 <div className="mb-3 flex items-center justify-between px-1">
                     <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.17em] text-gray-500 sm:text-xs">
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-amber-500 shadow-sm ring-1 ring-gray-200/70">
-                            <Sparkles className="h-3.5 w-3.5" />
-                        </span>
                         Featured for you
                     </div>
                 </div>
 
                 {loadState === "loading" ? (
-                    <div className="overflow-hidden rounded-[1.6rem] border border-white bg-white/80 p-2 shadow-[0_24px_70px_-35px_rgba(54,44,35,0.45)] ring-1 ring-gray-900/[0.04] backdrop-blur-sm motion-reduce:animate-none sm:p-2.5">
-                        <div className="aspect-[4/3] animate-pulse rounded-[1.15rem] bg-gradient-to-br from-violet-100 via-stone-100 to-amber-100 motion-reduce:animate-none sm:aspect-[16/10]">
+                    <div className="overflow-hidden rounded-[1.6rem] border border-white bg-white/80 p-2 shadow-[0_24px_70px_-35px_rgba(54,44,35,0.45)] ring-1 ring-gray-900/4 backdrop-blur-sm motion-reduce:animate-none sm:p-2.5">
+                        <div className="aspect-4/3 animate-pulse rounded-[1.15rem] bg-linear-to-br from-violet-100 via-stone-100 to-amber-100 motion-reduce:animate-none sm:aspect-16/10">
                             <div className="flex h-full flex-col justify-between p-4 sm:p-5">
                                 <span className="h-7 w-32 rounded-full bg-white/80" />
                                 <div className="space-y-3">
@@ -154,9 +151,6 @@ const SpecialOffersSlider = () => {
         >
             <div className="mb-3 flex items-center justify-between px-1">
                 <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.17em] text-gray-500 sm:text-xs">
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-amber-500 shadow-sm ring-1 ring-gray-200/70">
-                        <Sparkles className="h-3.5 w-3.5" />
-                    </span>
                     Featured for you
                 </div>
                 {offers.length > 1 && (
@@ -168,9 +162,9 @@ const SpecialOffersSlider = () => {
                 )}
             </div>
 
-            <div className="overflow-hidden rounded-[1.6rem] border border-white bg-white/80 p-2 shadow-[0_24px_70px_-35px_rgba(54,44,35,0.45)] ring-1 ring-gray-900/[0.04] backdrop-blur-sm sm:p-2.5">
+            <div className="overflow-hidden rounded-[1.6rem] border border-white bg-white/80 p-2 shadow-[0_24px_70px_-35px_rgba(54,44,35,0.45)] ring-1 ring-gray-900/4 backdrop-blur-sm sm:p-2.5">
                 <div
-                    className="relative isolate aspect-[4/3] overflow-hidden rounded-[1.15rem] bg-[#e8e4de] sm:aspect-[16/10] lg:aspect-[16/10]"
+                    className="relative isolate aspect-4/3 overflow-hidden rounded-[1.15rem] bg-[#e8e4de] sm:aspect-16/10 lg:aspect-16/10"
                     onKeyDown={(event) => {
                         if (event.key === "ArrowLeft") moveBy(-1)
                         if (event.key === "ArrowRight") moveBy(1)
@@ -190,11 +184,11 @@ const SpecialOffersSlider = () => {
                                 className="absolute inset-0 scale-110 bg-cover bg-center opacity-30 blur-2xl"
                                 style={{ backgroundImage: `url("${imageUrl}")` }}
                             />
-                            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-gray-900/10" />
+                            <div className="absolute inset-0 bg-linear-to-br from-white/20 via-transparent to-gray-900/10" />
                             <motion.img
                                 src={imageUrl}
                                 alt={`${activeOffer.title} promotional artwork`}
-                                className="absolute inset-0 h-full w-full object-contain p-2 sm:p-3"
+                                className="absolute inset-0 h-full w-full object-cover object-center"
                                 initial={shouldReduceMotion ? false : { scale: 0.985 }}
                                 animate={{ scale: 1 }}
                                 transition={{ duration: shouldReduceMotion ? 0 : 0.65, ease: "easeOut" }}
@@ -205,7 +199,6 @@ const SpecialOffersSlider = () => {
 
                     {activeOffer.badge_text && (
                         <div className="absolute left-3 top-3 z-10 inline-flex max-w-[70%] items-center gap-1.5 truncate rounded-full border border-white/60 bg-white/90 px-3 py-1.5 text-xs font-semibold text-gray-800 shadow-sm backdrop-blur-md sm:left-4 sm:top-4">
-                            <Sparkles className="h-3.5 w-3.5 shrink-0 text-amber-500" />
                             <span className="truncate">{activeOffer.badge_text}</span>
                         </div>
                     )}
@@ -285,11 +278,10 @@ const SpecialOffersSlider = () => {
                             aria-label={`Show offer ${index + 1}`}
                             aria-current={index === activeIndex}
                             onClick={() => setActiveIndex(index)}
-                            className={`h-2 rounded-full transition-all ${
-                                index === activeIndex
-                                    ? "w-7 bg-violet-700"
-                                    : "w-2 bg-gray-300 hover:bg-gray-400"
-                            }`}
+                            className={`h-2 rounded-full transition-all ${index === activeIndex
+                                ? "w-7 bg-violet-700"
+                                : "w-2 bg-gray-300 hover:bg-gray-400"
+                                }`}
                         />
                     ))}
                 </div>

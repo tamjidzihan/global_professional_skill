@@ -30,7 +30,7 @@ const HeroSection = () => {
                         className="absolute -left-32 -top-40 h-96 w-96 rounded-full bg-amber-200/20 blur-3xl"
                     />
                     <div className="absolute -bottom-48 right-[20%] h-96 w-96 rounded-full bg-violet-200/20 blur-3xl" />
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(71,85,105,0.07)_1px,transparent_0)] [background-size:28px_28px] opacity-40" />
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(71,85,105,0.07)_1px,transparent_0)] bg-size-[28px_28px] opacity-40" />
                 </div>
 
                 <div className="relative mx-auto grid max-w-7xl items-center gap-8 px-4 py-6 sm:px-6 sm:py-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-10 lg:px-8 lg:py-10 xl:grid-cols-[0.88fr_1.12fr]">
@@ -115,7 +115,7 @@ const HeroSection = () => {
                             transition={{ duration: shouldReduceMotion ? 0 : 0.45, delay: shouldReduceMotion ? 0 : 1.28 }}
                             onSubmit={handleSearch}
                             role="search"
-                            className="group relative mt-8 flex h-[62px] max-w-xl items-center rounded-2xl border border-gray-200/90 bg-white p-1.5 shadow-[0_12px_35px_-20px_rgba(15,23,42,0.35)] transition duration-200 hover:border-violet-200 hover:shadow-[0_16px_40px_-20px_rgba(109,40,217,0.3)] focus-within:border-violet-400 focus-within:ring-4 focus-within:ring-violet-100"
+                            className="group relative mt-8 flex h-15.5 max-w-xl items-center rounded-2xl border border-gray-200/90 bg-white p-1.5 shadow-[0_12px_35px_-20px_rgba(15,23,42,0.35)] transition duration-200 hover:border-violet-200 hover:shadow-[0_16px_40px_-20px_rgba(109,40,217,0.3)] focus-within:border-violet-400 focus-within:ring-4 focus-within:ring-violet-100"
                         >
                             <Search aria-hidden="true" className="ml-3.5 h-5 w-5 shrink-0 text-gray-400 transition-colors group-focus-within:text-violet-600" />
                             <input
@@ -144,7 +144,7 @@ const HeroSection = () => {
                             >
                                 <Link
                                     to="/register"
-                                    className="group inline-flex min-h-12 items-center gap-3 rounded-full bg-yellow-300 px-6 py-3 font-semibold text-gray-950 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-yellow-400 hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-600 motion-reduce:transform-none"
+                                    className="group inline-flex min-h-12 items-center gap-3 rounded-full bg-yellow-300 px-6 py-3 font-semibold text-gray-950 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-yellow-400 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-yellow-600 motion-reduce:transform-none"
                                 >
                                     Join for free
                                     <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1 motion-reduce:transform-none" />

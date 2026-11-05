@@ -592,7 +592,9 @@ const SpecialOffersManagementPage = () => {
                                     <ImagePlus className="mt-0.5 h-5 w-5 shrink-0 text-violet-600" />
                                     <span className="min-w-0 flex-1">
                                         <span className="block font-semibold text-gray-800">Offer image {!editingOffer && <span className="text-rose-500">*</span>}</span>
-                                        <span className="mt-1 block text-xs text-gray-400">JPG, PNG, GIF or WebP; maximum 5 MB. Large images are resized to 2400 × 1600 for faster loading.</span>
+                                        <span className="mt-1 block text-xs leading-5 text-gray-400">
+                                            Recommended: <strong className="font-semibold text-gray-600">1200 × 750 px (16:10 landscape)</strong> for the homepage slider. Other sizes work too; the full image is shown without cropping. JPG, PNG, GIF, or WebP, up to 5 MB. Large images are resized to 2400 × 1600 for faster loading.
+                                        </span>
                                         <input type="file" accept=".jpg,.jpeg,.png,.gif,.webp" onChange={(event) => void handleImageChange(event.target.files?.[0])} className="mt-2 block w-full text-xs text-gray-500 file:mr-3 file:rounded-md file:border-0 file:bg-violet-50 file:px-3 file:py-2 file:font-semibold file:text-violet-700 hover:file:bg-violet-100" />
                                     </span>
                                 </label>
