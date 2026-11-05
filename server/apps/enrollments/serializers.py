@@ -42,7 +42,11 @@ class EnrollmentSerializer(serializers.ModelSerializer):
             submissions = QuizSubmission.objects.filter(
                 student=obj.student, quiz__course=obj.course
             ).order_by("-completed_at", "-started_at")
-        return QuizSubmissionSerializer(submissions, many=True).data
+        return QuizSubmissionSerializer(
+            submissions,
+            many=True,
+            context={"request": self.context.get("request")},
+        ).data
 
     def get_certificate(self, obj):
         cert = getattr(obj, 'certificate', None)

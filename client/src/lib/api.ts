@@ -34,6 +34,7 @@ import type {
     AlbumPhoto,
     SpecialOffer,
     AdminUserFullDetail,
+    Quiz,
 } from '../types';
 
 const configuredApiUrl = import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, '');
@@ -730,8 +731,8 @@ export const confirmPasswordReset = (data: PasswordResetConfirmData): Promise<Ax
 
 
 // Quiz API Calls
-export const getQuizzes = (courseId: string): Promise<AxiosResponse<ApiResponse<any[]>>> =>
-    api.get<ApiResponse<any[]>>(endpoints.quizzes.list(courseId));
+export const getQuizzes = (courseId: string): Promise<AxiosResponse<ApiResponse<Quiz[]>>> =>
+    api.get<ApiResponse<Quiz[]>>(endpoints.quizzes.list(courseId));
 
 export const getQuizDetail = (courseId: string, quizId: string): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.get<ApiResponse<any>>(endpoints.quizzes.detail(courseId, quizId));
@@ -742,8 +743,8 @@ export const getQuizSubmissionsForInstructor = (courseId: string, quizId: string
 export const createQuiz = (courseId: string, data: { title: string; duration_minutes: number; pin_code: string }): Promise<AxiosResponse<ApiResponse<any>>> =>
     api.post<ApiResponse<any>>(endpoints.quizzes.list(courseId), data);
 
-export const updateQuiz = (courseId: string, quizId: string, data: any): Promise<AxiosResponse<ApiResponse<any>>> =>
-    api.put<ApiResponse<any>>(endpoints.quizzes.detail(courseId, quizId), data);
+export const updateQuiz = (courseId: string, quizId: string, data: Partial<Quiz>): Promise<AxiosResponse<ApiResponse<Quiz>>> =>
+    api.patch<ApiResponse<Quiz>>(endpoints.quizzes.detail(courseId, quizId), data);
 
 export const deleteQuiz = (courseId: string, quizId: string): Promise<AxiosResponse<ApiResponse<void>>> =>
     api.delete<ApiResponse<void>>(endpoints.quizzes.detail(courseId, quizId));

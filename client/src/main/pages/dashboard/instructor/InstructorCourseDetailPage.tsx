@@ -33,6 +33,7 @@ import CourseDetailSkeleton from '../../../components/ui/loadingSkeleton/CourseD
 import { toast } from 'react-hot-toast'
 import { extractErrorMessage } from '../../../../lib/errorUtils'
 import SEO from '../../../components/SEO'
+import QuizBreakdownSettings from '../../../components/dashboard/QuizBreakdownSettings'
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const statusConfig: Record<string, { badge: string; iconColor: string; icon: typeof BookOpen }> = {
@@ -464,6 +465,8 @@ export function InstructorCourseDetailPage() {
                         </div>
                     </button>
                 </div>
+
+                {id && <QuizBreakdownSettings courseId={id} />}
 
                 {/* ── Tabs ── */}
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm">

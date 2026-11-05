@@ -55,6 +55,7 @@ import {
     getMediaUrl,
 } from '../../../../lib/api';
 import { CertificatePreview } from '../../../components/certificate/CertificatePreview';
+import QuizBreakdownSettings from '../../../components/dashboard/QuizBreakdownSettings';
 import {
     type CourseCertificateConfig,
     type CertificateData,
@@ -659,6 +660,8 @@ const AdminCourseDetailPage = () => {
                                 </div>
                             </div>
                         )}
+
+                        <QuizBreakdownSettings courseId={selectedCourse.id} />
 
                         {/* Curriculum */}
                         <div className={card}>

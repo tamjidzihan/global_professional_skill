@@ -313,7 +313,7 @@ export const QuizResultDetailPage: React.FC = () => {
             </div>
 
             {/* ── Detailed Question Breakdown Section ── */}
-            {submission.questions && submission.questions.length > 0 && (
+            {submission.can_view_question_breakdown !== false && submission.questions && submission.questions.length > 0 && (
                 <div className={card}>
                     <div className={cardHeader}>
                         <div>
@@ -421,6 +421,11 @@ export const QuizResultDetailPage: React.FC = () => {
                             )
                         })}
                     </div>
+                </div>
+            )}
+            {!isInstructorOrAdmin && submission.can_view_question_breakdown === false && (
+                <div className={`${card} p-4 text-sm text-gray-500`}>
+                    Your score is available above. The instructor has hidden the detailed question breakdown for this quiz.
                 </div>
             )}
         </div>

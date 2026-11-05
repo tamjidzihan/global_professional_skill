@@ -736,6 +736,7 @@ class QuizSerializer(serializers.ModelSerializer):
             "pin_code",
             "duration_minutes",
             "expires_at",
+            "show_question_breakdown",
             "is_expired",
             "question_count",
             "created_at",
@@ -760,6 +761,7 @@ class QuizSubmissionSerializer(serializers.ModelSerializer):
     quiz_title = serializers.CharField(source="quiz.title", read_only=True)
     course_title = serializers.CharField(source="quiz.course.title", read_only=True)
     course = serializers.CharField(source="quiz.course.id", read_only=True)
+    can_view_question_breakdown = serializers.SerializerMethodField()
     questions = serializers.SerializerMethodField()
 
     class Meta:
@@ -783,6 +785,7 @@ class QuizSubmissionSerializer(serializers.ModelSerializer):
             "is_disqualified",
             "disqualification_reason",
             "disqualified_at",
+            "can_view_question_breakdown",
             "shuffled_question_ids",
             "student_answers",
             "questions",
@@ -809,3 +812,28 @@ class QuizSubmissionSerializer(serializers.ModelSerializer):
             questions = obj.quiz.questions.all()
             return QuizQuestionSerializer(questions, many=True).data
         return None
+
+    def get_can_view_question_breakdown(self, obj):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user and user.is_authenticated and (
+            user.is_instructor or user.is_admin_user
+        ):
+            return True
+        return obj.quiz.show_question_breakdown
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if (
+            user
+            and user.is_authenticated
+            and not user.is_instructor
+            and not user.is_admin_user
+            and not instance.quiz.show_question_breakdown
+        ):
+            representation["questions"] = None
+            representation["student_answers"] = []
+            representation["shuffled_question_ids"] = []
+        return representation

@@ -508,6 +508,10 @@ class Quiz(models.Model):
         blank=True,
         help_text="If set, the quiz link becomes inaccessible after this datetime.",
     )
+    show_question_breakdown = models.BooleanField(
+        default=True,
+        help_text="Whether students can view question-by-question results after submission.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

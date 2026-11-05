@@ -27,6 +27,8 @@ export interface StudentAnswer {
 export interface QuizSubmissionDetail {
   shuffled_question_ids?: string[];
   student_answers?: StudentAnswer[];
+  questions?: QuizQuestion[] | null;
+  can_view_question_breakdown?: boolean;
   [key: string]: unknown;
 }
 
@@ -104,11 +106,13 @@ export const downloadResultPDF = async ({ submission, course, api }: DownloadPDF
     const percentage = totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
 
     // 3. Setup Shuffled/Standard Question IDs
-    const questionsList: QuizQuestion[] = submission.questions || [];
+    const questionsList: QuizQuestion[] = submissionDetail.questions || [];
     const questionIds: string[] =
       submissionDetail.shuffled_question_ids && submissionDetail.shuffled_question_ids.length > 0
         ? submissionDetail.shuffled_question_ids
         : questionsList.map((q) => q.id);
+    const showDetailedAnswers =
+      submissionDetail.can_view_question_breakdown !== false && questionsList.length > 0;
 
     // 4. Create Off-Screen DOM Container
     container = document.createElement('div');
@@ -132,7 +136,7 @@ export const downloadResultPDF = async ({ submission, course, api }: DownloadPDF
       day: 'numeric',
     });
 
-    const detailedAnswersHtml = questionIds.length > 0
+    const detailedAnswersHtml = showDetailedAnswers
       ? questionIds.map((questionId, index) => {
         const question = questionsList.find((q) => q.id === questionId);
         if (!question) return '';
@@ -273,13 +277,15 @@ export const downloadResultPDF = async ({ submission, course, api }: DownloadPDF
           : ''
       }
 
-    <!-- Detailed Breakdown -->
-    <div style="margin-top: 24px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
-      <h3 style="font-size: 17px; font-weight: bold; color: #1e293b; margin: 0 0 16px; display: flex; align-items: center; gap: 8px;">
-        <span>📝</span> DETAILED ANSWERS
-      </h3>
-      ${detailedAnswersHtml}
-    </div>
+    ${showDetailedAnswers ? `
+      <!-- Detailed Breakdown -->
+      <div style="margin-top: 24px; border-top: 2px solid #e2e8f0; padding-top: 20px;">
+        <h3 style="font-size: 17px; font-weight: bold; color: #1e293b; margin: 0 0 16px; display: flex; align-items: center; gap: 8px;">
+          <span>📝</span> DETAILED ANSWERS
+        </h3>
+        ${detailedAnswersHtml}
+      </div>
+    ` : ''}
 
     <!-- Footer -->
     <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 10px; color: #94a3b8;">

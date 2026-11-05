@@ -5,7 +5,7 @@ import { useCourses } from '../../../../hooks/useCourses';
 import { LoaderButton } from '../../../components/ui/LoaderButton';
 import {
     Plus, Edit, Trash2, ArrowLeft, Key, Clock, HelpCircle,
-    Copy, Check, ExternalLink, RefreshCw, AlertCircle
+    Copy, Check, ExternalLink, RefreshCw, AlertCircle, Eye, EyeOff
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import {
@@ -40,6 +40,7 @@ const QuizListPage: React.FC = () => {
 
     // Shared Link state
     const [copiedId, setCopiedId] = useState<string | null>(null);
+    const [updatingBreakdownId, setUpdatingBreakdownId] = useState<string | null>(null);
 
     const loadQuizzes = async () => {
         if (!courseId) return;
@@ -156,6 +157,32 @@ const QuizListPage: React.FC = () => {
         });
     };
 
+    const handleToggleBreakdown = async (quiz: Quiz) => {
+        if (!courseId) return;
+        setUpdatingBreakdownId(quiz.id);
+        try {
+            const response = await updateQuiz(courseId, quiz.id, {
+                show_question_breakdown: !quiz.show_question_breakdown,
+            });
+            if (!response.data.success) {
+                throw new Error(response.data.message || 'Failed to update question breakdown setting');
+            }
+            const updatedQuiz = response.data.data;
+            setQuizzes(current => current.map(item => (
+                item.id === quiz.id
+                    ? { ...item, show_question_breakdown: updatedQuiz.show_question_breakdown }
+                    : item
+            )));
+            toast.success(updatedQuiz.show_question_breakdown
+                ? 'Question breakdown is now visible to students'
+                : 'Question breakdown is now hidden from students');
+        } catch (error) {
+            toast.error(extractErrorMessage(error) || 'Failed to update question breakdown setting');
+        } finally {
+            setUpdatingBreakdownId(null);
+        }
+    };
+
     if (courseLoading || !courseDetailFetched || loadingQuizzes) {
         return (
             <div className="flex items-center justify-center min-h-100">
@@ -258,6 +285,35 @@ const QuizListPage: React.FC = () => {
                                                 <div className="font-semibold text-gray-800 mt-0.5 tracking-wider">{quiz.pin_code}</div>
                                             </div>
                                         </div>
+                                    </div>
+
+                                    <div className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2.5">
+                                        <div className="min-w-0">
+                                            <p className="text-xs font-semibold text-gray-800">Question breakdown</p>
+                                            <p className="text-[10px] text-gray-400 mt-0.5">
+                                                {quiz.show_question_breakdown ? 'Shown to students after submission' : 'Hidden from students'}
+                                            </p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => void handleToggleBreakdown(quiz)}
+                                            disabled={updatingBreakdownId === quiz.id}
+                                            aria-pressed={quiz.show_question_breakdown}
+                                            className={`inline-flex items-center gap-1 px-2.5 py-1.5 text-[10px] font-semibold rounded-lg border transition-colors cursor-pointer shrink-0 disabled:opacity-60 disabled:cursor-wait ${
+                                                quiz.show_question_breakdown
+                                                    ? 'text-rose-700 bg-rose-50 border-rose-100 hover:bg-rose-100'
+                                                    : 'text-emerald-700 bg-emerald-50 border-emerald-100 hover:bg-emerald-100'
+                                            }`}
+                                        >
+                                            {updatingBreakdownId === quiz.id ? (
+                                                <RefreshCw className="w-3 h-3 animate-spin" />
+                                            ) : quiz.show_question_breakdown ? (
+                                                <EyeOff className="w-3 h-3" />
+                                            ) : (
+                                                <Eye className="w-3 h-3" />
+                                            )}
+                                            {quiz.show_question_breakdown ? 'Hide' : 'Show'}
+                                        </button>
                                     </div>
 
                                     {/* Share Link Input / Button */}

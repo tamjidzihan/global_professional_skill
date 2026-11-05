@@ -1240,7 +1240,9 @@ class UndisqualifyStudentView(APIView):
             {
                 "success": True,
                 "message": "Student has been successfully un-disqualified and warnings reset.",
-                "data": QuizSubmissionSerializer(submission).data,
+                "data": QuizSubmissionSerializer(
+                    submission, context=self.get_serializer_context()
+                ).data,
             }
         )
 
@@ -1410,7 +1412,9 @@ class QuizViewSet(viewsets.ModelViewSet):
                             "error": {
                                 "message": "You have been disqualified from this quiz."
                             },
-                            "data": QuizSubmissionSerializer(submission).data,
+                            "data": QuizSubmissionSerializer(
+                                submission, context=self.get_serializer_context()
+                            ).data,
                         },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
@@ -1421,7 +1425,9 @@ class QuizViewSet(viewsets.ModelViewSet):
                             "error": {
                                 "message": "You have already completed this quiz."
                             },
-                            "data": QuizSubmissionSerializer(submission).data,
+                            "data": QuizSubmissionSerializer(
+                                submission, context=self.get_serializer_context()
+                            ).data,
                         },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
@@ -1443,7 +1449,9 @@ class QuizViewSet(viewsets.ModelViewSet):
                             "error": {
                                 "message": "Time has expired for this quiz attempt."
                             },
-                            "data": QuizSubmissionSerializer(submission).data,
+                            "data": QuizSubmissionSerializer(
+                                submission, context=self.get_serializer_context()
+                            ).data,
                         },
                         status=status.HTTP_400_BAD_REQUEST,
                     )
@@ -1518,7 +1526,9 @@ class QuizViewSet(viewsets.ModelViewSet):
         """List all submissions for a specific quiz (Instructor/Admin only)"""
         quiz = self.get_object()
         submissions = QuizSubmission.objects.filter(quiz=quiz).select_related("student", "quiz")
-        serializer = QuizSubmissionSerializer(submissions, many=True)
+        serializer = QuizSubmissionSerializer(
+            submissions, many=True, context=self.get_serializer_context()
+        )
         return Response({"success": True, "data": serializer.data})
 
 
@@ -1548,7 +1558,9 @@ class QuizViewSet(viewsets.ModelViewSet):
                     "error": {
                         "message": "You are disqualified and cannot submit this quiz."
                     },
-                    "data": QuizSubmissionSerializer(submission).data,
+                    "data": QuizSubmissionSerializer(
+                        submission, context=self.get_serializer_context()
+                    ).data,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -1558,7 +1570,9 @@ class QuizViewSet(viewsets.ModelViewSet):
                 {
                     "success": False,
                     "error": {"message": "You have already submitted this quiz."},
-                    "data": QuizSubmissionSerializer(submission).data,
+                    "data": QuizSubmissionSerializer(
+                        submission, context=self.get_serializer_context()
+                    ).data,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -1654,7 +1668,9 @@ class QuizViewSet(viewsets.ModelViewSet):
             logger.error(f"Error checking certificate on quiz submission: {str(e)}")
 
         # Prepare and send response with required fields
-        data = QuizSubmissionSerializer(submission).data
+        data = QuizSubmissionSerializer(
+            submission, context=self.get_serializer_context()
+        ).data
         data.update(
             {
                 "score": submission.score,
@@ -2115,26 +2131,27 @@ class AnswerSheetView(APIView):
         ).order_by("created_at")
 
         answer_sheet = []
-        for idx, q in enumerate(questions, start=1):
-            q_id_str = str(q.id)
-            selected = answer_map.get(q_id_str, None)
-            is_correct = selected == q.correct_option if selected else False
-            answer_sheet.append(
-                {
-                    "index": idx,
-                    "question_id": q_id_str,
-                    "question_type": q.question_type,
-                    "question_text": q.question_text,
-                    "option_a": q.option_a,
-                    "option_b": q.option_b,
-                    "option_c": q.option_c,
-                    "option_d": q.option_d,
-                    "correct_option": q.correct_option,
-                    "selected_option": selected,
-                    "is_correct": is_correct,
-                    "is_skipped": selected is None,
-                }
-            )
+        if not is_student or submission.quiz.show_question_breakdown:
+            for idx, q in enumerate(questions, start=1):
+                q_id_str = str(q.id)
+                selected = answer_map.get(q_id_str, None)
+                is_correct = selected == q.correct_option if selected else False
+                answer_sheet.append(
+                    {
+                        "index": idx,
+                        "question_id": q_id_str,
+                        "question_type": q.question_type,
+                        "question_text": q.question_text,
+                        "option_a": q.option_a,
+                        "option_b": q.option_b,
+                        "option_c": q.option_c,
+                        "option_d": q.option_d,
+                        "correct_option": q.correct_option,
+                        "selected_option": selected,
+                        "is_correct": is_correct,
+                        "is_skipped": selected is None,
+                    }
+                )
 
         return Response(
             {
@@ -2151,6 +2168,9 @@ class AnswerSheetView(APIView):
                     "is_disqualified": submission.is_disqualified,
                     "started_at": submission.started_at,
                     "completed_at": submission.completed_at,
+                    "can_view_question_breakdown": (
+                        not is_student or submission.quiz.show_question_breakdown
+                    ),
                     "answer_sheet": answer_sheet,
                 },
             }
