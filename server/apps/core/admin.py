@@ -1,5 +1,12 @@
 from django.contrib import admin
-from .models import SiteSettings, Announcement, NewsTickerItem, NotificationTemplate, NotificationLog
+from .models import (
+    SiteSettings,
+    SpecialOffer,
+    Announcement,
+    NewsTickerItem,
+    NotificationTemplate,
+    NotificationLog,
+)
 
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
@@ -13,6 +20,30 @@ class SiteSettingsAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@admin.register(SpecialOffer)
+class SpecialOfferAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "display_order",
+        "is_published",
+        "is_active",
+        "start_date",
+        "end_date",
+        "updated_at",
+    )
+    list_filter = ("is_published", "is_active", "start_date", "end_date")
+    search_fields = ("title", "subtitle", "description")
+    list_editable = ("display_order", "is_published", "is_active")
+    ordering = ("display_order", "-created_at")
+    readonly_fields = ("created_at", "updated_at")
+
+    def save_model(self, request, obj, form, change):
+        if not obj.created_by:
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
+
 
 @admin.register(Announcement)
 class AnnouncementAdmin(admin.ModelAdmin):
@@ -59,4 +90,3 @@ class NotificationLogAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
-

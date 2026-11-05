@@ -53,6 +53,7 @@ const CategoryManagementPage = lazy(() => import("./main/pages/dashboard/admin/C
 const PaymentManagementPage = lazy(() => import("./main/pages/dashboard/admin/PaymentManagementPage"));
 const SiteSettingsPage = lazy(() => import("./main/pages/dashboard/admin/SiteSettingsPage"));
 const PromoCodeManagementPage = lazy(() => import("./main/pages/dashboard/admin/PromoCodeManagementPage").then((module) => ({ default: module.PromoCodeManagementPage })));
+const SpecialOffersManagementPage = lazy(() => import("./main/pages/dashboard/admin/SpecialOffersManagementPage"));
 const AdminCourseDetailPage = lazy(() => import("./main/pages/dashboard/admin/AdminCourseDetailPage"));
 const AdminCourseCertificatePage = lazy(() => import("./main/pages/dashboard/admin/AdminCourseCertificatePage").then((module) => ({ default: module.AdminCourseCertificatePage })));
 const CourseCoordinatorsPage = lazy(() => import("./main/pages/dashboard/CourseCoordinatorsPage").then((module) => ({ default: module.CourseCoordinatorsPage })));
@@ -469,6 +470,14 @@ export const router = createBrowserRouter([
                         element: (
                             <ProtectedRoute allowedRoles={['ADMIN']}>
                                 <PromoCodeManagementPage />
+                            </ProtectedRoute>
+                        )
+                    },
+                    {
+                        path: 'admin/special-offers',
+                        element: (
+                            <ProtectedRoute allowedRoles={['ADMIN']}>
+                                <SpecialOffersManagementPage />
                             </ProtectedRoute>
                         )
                     },

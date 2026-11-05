@@ -121,6 +121,39 @@ class AlbumPhoto(models.Model):
         return self.title or f"Album Photo {self.id}"
 
 
+class SpecialOffer(models.Model):
+    """Homepage promotion managed by administrators."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=255)
+    subtitle = models.CharField(max_length=500, blank=True)
+    description = models.TextField(blank=True)
+    image = models.ImageField(upload_to="special_offers/")
+    cta_text = models.CharField(max_length=80, default="Explore Now")
+    target_url = models.CharField(max_length=500)
+    badge_text = models.CharField(max_length=80, blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    display_order = models.PositiveIntegerField(default=0)
+    is_published = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        "accounts.User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="special_offers",
+    )
+
+    class Meta:
+        ordering = ["display_order", "-created_at"]
+
+    def __str__(self):
+        return self.title
+
+
 class Announcement(models.Model):
     """Model for site-wide announcements."""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -242,4 +275,3 @@ class NotificationLog(models.Model):
 
     def __str__(self):
         return f"{self.channel} to {self.recipient_email or self.recipient_phone} ({self.status})"
-

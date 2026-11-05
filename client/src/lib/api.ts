@@ -32,6 +32,7 @@ import type {
     PromoCode,
     PromoCodeValidateResponse,
     AlbumPhoto,
+    SpecialOffer,
     AdminUserFullDetail,
 } from '../types';
 
@@ -268,6 +269,10 @@ export const endpoints = {
         albumPhotoDetail: (id: string) => `/core/album-photos/${id}/`,
         albumBatchUpload: '/core/album-photos/batch-upload/',
         albumReorder: '/core/album-photos/reorder/',
+        specialOffers: '/core/special-offers/',
+        specialOfferDetail: (id: string) => `/core/special-offers/${id}/`,
+        specialOfferAction: (id: string, action: 'publish' | 'unpublish' | 'activate' | 'deactivate') =>
+            `/core/special-offers/${id}/${action}/`,
     },
     careers: {
         jobs: '/careers/jobs/',
@@ -376,6 +381,27 @@ export const deleteAlbumPhoto = (id: string): Promise<AxiosResponse<ApiResponse<
 export const reorderAlbumPhotos = (orders: { id: string; order: number }[]): Promise<AxiosResponse<ApiResponse<void>>> =>
     api.post<ApiResponse<void>>(endpoints.core.albumReorder, { orders });
 
+
+// Special Offers API Calls
+export const getSpecialOffers = (includeAll = false): Promise<AxiosResponse<ApiResponse<SpecialOffer[]>>> =>
+    api.get<ApiResponse<SpecialOffer[]>>(endpoints.core.specialOffers, {
+        params: includeAll ? { include_all: "true" } : undefined,
+    });
+
+export const createSpecialOffer = (data: FormData): Promise<AxiosResponse<ApiResponse<SpecialOffer>>> =>
+    api.post<ApiResponse<SpecialOffer>>(endpoints.core.specialOffers, data);
+
+export const updateSpecialOffer = (id: string, data: FormData): Promise<AxiosResponse<ApiResponse<SpecialOffer>>> =>
+    api.patch<ApiResponse<SpecialOffer>>(endpoints.core.specialOfferDetail(id), data);
+
+export const deleteSpecialOffer = (id: string): Promise<AxiosResponse<ApiResponse<void>>> =>
+    api.delete<ApiResponse<void>>(endpoints.core.specialOfferDetail(id));
+
+export const updateSpecialOfferStatus = (
+    id: string,
+    action: 'publish' | 'unpublish' | 'activate' | 'deactivate',
+): Promise<AxiosResponse<ApiResponse<SpecialOffer>>> =>
+    api.post<ApiResponse<SpecialOffer>>(endpoints.core.specialOfferAction(id, action));
 
 // Payment API Calls
 export const getPayments = <T = ApiResponse<Payment[]>>(

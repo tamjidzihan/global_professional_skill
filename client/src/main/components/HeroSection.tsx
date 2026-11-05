@@ -2,10 +2,12 @@ import { useState } from "react"
 import { Search } from "lucide-react"
 import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "../../hooks/useAuth"
+import SpecialOffersSlider from "./SpecialOffersSlider"
 
 const HeroSection = () => {
     const { user } = useAuth()
     const [searchQuery, setSearchQuery] = useState("")
+    const [hasOffers, setHasOffers] = useState(false)
     const navigate = useNavigate()
 
     const handleSearch = () => {
@@ -25,44 +27,46 @@ const HeroSection = () => {
     return (
         <div className="bg-white">
             <section className="bg-[#FCF8F1] bg-opacity-30 pb-8 lg:pb-10 pt-6 lg:pt-8 relative overflow-hidden">
-                <div className="mx-auto max-w-7xl px-4">
-                    <div className="mx-auto max-w-4xl text-center">
-
-                        {/* Left Content */}
+                <div className={`mx-auto max-w-7xl px-4 ${hasOffers ? "grid items-center gap-8 lg:grid-cols-[1fr_0.9fr] lg:gap-12" : ""}`}>
+                    <div className={hasOffers ? "py-4 text-left lg:py-10" : "mx-auto max-w-4xl text-center"}>
                         <div>
-                            <h1 className="mt-4 text-4xl font-bold text-black lg:mt-8 sm:text-6xl xl:text-7xl leading-tight">
+                            <span className={`inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-violet-700 ${hasOffers ? "mt-2" : "mt-4"}`}>
+                                <span className="h-1.5 w-1.5 rounded-full bg-violet-600" />
+                                Learn. Grow. Lead.
+                            </span>
+                            <h1 className={`mt-4 text-4xl font-bold leading-tight text-black sm:text-6xl ${hasOffers ? "lg:text-5xl xl:text-6xl" : "lg:mt-8 xl:text-7xl"}`}>
                                 Connect & learn from the experts
                             </h1>
 
-                            <p className="mt-4 text-base text-black lg:mt-6 sm:text-xl">
+                            <p className={`mt-4 text-base text-gray-700 sm:text-xl ${hasOffers ? "max-w-xl lg:mt-5" : "lg:mt-6"}`}>
                                 Grow your career fast with right mentor.
                             </p>
 
                             {/* Search Bar */}
-                            <div className="relative max-w-xl mt-8 mx-auto">
+                            <div className={`relative mt-8 max-w-xl ${hasOffers ? "" : "mx-auto"}`}>
                                 <input
                                     type="text"
                                     placeholder="Search courses, skills, mentors..."
-                                    className="w-full h-14 px-6 pr-14 rounded-full bg-white shadow-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-300 transition"
+                                    aria-label="Search courses, skills, and mentors"
+                                    className="h-14 w-full rounded-full border border-gray-200 bg-white px-6 pr-14 shadow-lg transition focus:outline-none focus:ring-2 focus:ring-blue-300"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     onKeyDown={handleKeyDown}
                                 />
                                 <button
                                     onClick={handleSearch}
-                                    className="absolute top-1/2 right-2 -translate-y-1/2 h-10 w-10 rounded-full bg-blue-600 text-white flex items-center justify-center hover:scale-105 transition cursor-pointer"
+                                    aria-label="Search"
+                                    className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-blue-600 text-white transition hover:scale-105"
                                 >
                                     <Search className="w-5 h-5" />
                                 </button>
                             </div>
 
                             {!user && (
-                                <div className="flex flex-col items-center">
+                                <div className={`flex flex-col ${hasOffers ? "items-start" : "items-center"}`}>
                                     <Link
                                         to={'/register'}
-                                        title=""
-                                        className="inline-flex items-center px-6 py-4 mt-8 font-semibold text-black transition-all duration-200 bg-yellow-300 rounded-full lg:mt-12 hover:bg-yellow-400 focus:bg-yellow-400"
-                                        role="button"
+                                        className="mt-8 inline-flex items-center rounded-full bg-yellow-300 px-6 py-4 font-semibold text-black transition-all duration-200 hover:bg-yellow-400 focus:bg-yellow-400 lg:mt-10"
                                     >
                                         Join for free
                                         <svg
@@ -84,7 +88,6 @@ const HeroSection = () => {
                                         Already joined us?{" "}
                                         <Link
                                             to={'/login'}
-                                            title=""
                                             className="text-black transition-all duration-200 hover:underline"
                                         >
                                             Log in
@@ -94,6 +97,7 @@ const HeroSection = () => {
                             )}
                         </div>
                     </div>
+                    <SpecialOffersSlider onOffersLoaded={setHasOffers} />
                 </div>
             </section>
         </div>

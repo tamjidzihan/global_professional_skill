@@ -456,6 +456,25 @@ export interface AlbumPhoto {
     created_by_detail?: { full_name: string } | null;
 }
 
+export interface SpecialOffer {
+    id: string;
+    title: string;
+    subtitle: string;
+    description: string;
+    image: string;
+    cta_text: string;
+    target_url: string;
+    badge_text: string;
+    start_date: string | null;
+    end_date: string | null;
+    display_order: number;
+    is_published: boolean;
+    is_active: boolean;
+    created_at: string;
+    updated_at: string;
+    created_by: string | null;
+}
+
 
 // Career Management Types
 export type JobType = 'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERNSHIP';

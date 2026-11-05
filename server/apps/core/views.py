@@ -6,6 +6,7 @@ from django.db import models
 from .models import (
     SiteSettings,
     AlbumPhoto,
+    SpecialOffer,
     Announcement,
     NewsTickerItem,
     NotificationTemplate,
@@ -14,6 +15,7 @@ from .models import (
 from .serializers import (
     SiteSettingsSerializer,
     AlbumPhotoSerializer,
+    SpecialOfferSerializer,
     AnnouncementSerializer,
     NewsTickerItemSerializer,
     NotificationTemplateSerializer,
@@ -286,6 +288,111 @@ class AnnouncementViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         return Response({"success": True, "data": serializer.data})
+
+
+class SpecialOfferViewSet(viewsets.ModelViewSet):
+    """Publicly list eligible offers; administrators have full CRUD access."""
+
+    queryset = SpecialOffer.objects.all()
+    serializer_class = SpecialOfferSerializer
+    parser_classes = [parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser]
+    pagination_class = None
+
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            return [permissions.AllowAny()]
+        return [IsAdmin()]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        is_admin = (
+            self.request.user.is_authenticated
+            and getattr(self.request.user, "is_admin_user", False)
+        )
+        if is_admin and (
+            self.action != "list"
+            or self.request.query_params.get("include_all") == "true"
+        ):
+            return queryset
+
+        today = timezone.localdate()
+        queryset = queryset.filter(is_published=True, is_active=True).filter(
+            models.Q(start_date__isnull=True) | models.Q(start_date__lte=today),
+            models.Q(end_date__isnull=True) | models.Q(end_date__gte=today),
+        )
+        return queryset
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    def list(self, request, *args, **kwargs):
+        serializer = self.get_serializer(self.get_queryset(), many=True)
+        return Response({"success": True, "data": serializer.data})
+
+    def retrieve(self, request, *args, **kwargs):
+        serializer = self.get_serializer(self.get_object())
+        return Response({"success": True, "data": serializer.data})
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(
+            {
+                "success": True,
+                "message": "Special offer created successfully.",
+                "data": serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(
+            {
+                "success": True,
+                "message": "Special offer updated successfully.",
+                "data": serializer.data,
+            }
+        )
+
+    def destroy(self, request, *args, **kwargs):
+        self.perform_destroy(self.get_object())
+        return Response(
+            {"success": True, "message": "Special offer deleted successfully."}
+        )
+
+    @action(detail=True, methods=["post"])
+    def publish(self, request, *args, **kwargs):
+        offer = self.get_object()
+        offer.is_published = True
+        offer.save(update_fields=["is_published", "updated_at"])
+        return Response({"success": True, "data": self.get_serializer(offer).data})
+
+    @action(detail=True, methods=["post"])
+    def unpublish(self, request, *args, **kwargs):
+        offer = self.get_object()
+        offer.is_published = False
+        offer.save(update_fields=["is_published", "updated_at"])
+        return Response({"success": True, "data": self.get_serializer(offer).data})
+
+    @action(detail=True, methods=["post"])
+    def activate(self, request, *args, **kwargs):
+        offer = self.get_object()
+        offer.is_active = True
+        offer.save(update_fields=["is_active", "updated_at"])
+        return Response({"success": True, "data": self.get_serializer(offer).data})
+
+    @action(detail=True, methods=["post"])
+    def deactivate(self, request, *args, **kwargs):
+        offer = self.get_object()
+        offer.is_active = False
+        offer.save(update_fields=["is_active", "updated_at"])
+        return Response({"success": True, "data": self.get_serializer(offer).data})
 
 
 class NewsTickerItemViewSet(viewsets.ModelViewSet):

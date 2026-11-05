@@ -18,6 +18,7 @@ import {
     Tag,
     Video,
     Images,
+    Sparkles,
 } from 'lucide-react'
 import { useAuthContext } from '../../../context/AuthContext'
 import { useMyProfile } from '../../../hooks/useMyProfile'
@@ -142,6 +143,7 @@ export function DashboardSidebar({ isOpen, onClose }: SidebarProps) {
 
         { name: 'Payment Management', path: '/dashboard/admin/payments', icon: CreditCard, badge: 'Review' },
         { name: 'Promo Codes', path: '/dashboard/admin/promo-codes', icon: Tag, badge: 'New' },
+        { name: 'Special Offers', path: '/dashboard/admin/special-offers', icon: Sparkles },
 
         // ── Platform Settings group ──
         {
