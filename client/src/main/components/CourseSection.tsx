@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, BookOpen, ArrowRight, AlertCircle, RefreshCw
 import { CourseCard } from "./CourseCard"
 import { useCourseCategory } from "../../hooks/useCourseCategory"
 import CourseCardSkeleton from "./ui/loadingSkeleton/CourseCardSkeleton"
+import type { DeliveryMode } from "../../types"
 
 const CourseSection = () => {
     const scrollRef = useRef<HTMLDivElement>(null)
@@ -13,7 +14,11 @@ const CourseSection = () => {
     const [scrollLeft, setScrollLeft] = useState(0)
     const [activeCategory, setActiveCategory] = useState("Our Courses")
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
-    const { courses, categories, loading, error, refresh } = useCourseCategory(selectedCategoryId)
+    const [selectedDeliveryMode, setSelectedDeliveryMode] = useState<DeliveryMode | "">("")
+    const { courses, categories, loading, error, refresh } = useCourseCategory(
+        selectedCategoryId,
+        selectedDeliveryMode || null,
+    )
 
     // Add "All Courses" to categories
     const allCategories = useMemo(() => {
@@ -65,6 +70,7 @@ const CourseSection = () => {
     const clearCategory = () => {
         setActiveCategory("Our Courses")
         setSelectedCategoryId(null)
+        setSelectedDeliveryMode("")
     }
 
     return (
@@ -145,15 +151,31 @@ const CourseSection = () => {
                                 </div>
                             </div>
 
-                            {activeCategory !== "Our Courses" && (
-                                <button
-                                    onClick={clearCategory}
-                                    className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-all text-sm"
-                                >
-                                    <RefreshCw className="w-3.5 h-3.5" />
-                                    Clear
-                                </button>
-                            )}
+                            <div className="flex flex-wrap items-center gap-3">
+                                <label className="flex items-center gap-2 text-sm font-medium text-gray-600">
+                                    <span>Course mode</span>
+                                    <select
+                                        value={selectedDeliveryMode}
+                                        onChange={event => setSelectedDeliveryMode(event.target.value as DeliveryMode | "")}
+                                        disabled={loading}
+                                        className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100 disabled:opacity-50"
+                                    >
+                                        <option value="">All modes</option>
+                                        <option value="ONLINE">Online</option>
+                                        <option value="OFFLINE">Offline</option>
+                                        <option value="BOTH">Online &amp; Offline</option>
+                                    </select>
+                                </label>
+                                {(activeCategory !== "Our Courses" || selectedDeliveryMode) && (
+                                    <button
+                                        onClick={clearCategory}
+                                        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-all text-sm"
+                                    >
+                                        <RefreshCw className="w-3.5 h-3.5" />
+                                        Clear
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 )}

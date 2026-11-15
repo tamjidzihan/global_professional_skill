@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useNavigate } from 'react-router-dom';
 import LoadingSpinner from "../ui/LoadingSpinner";
-import type { Category } from '../../../types';
+import type { Category, DeliveryMode } from '../../../types';
 
 interface DesktopSidebarProps {
     categories: Category[];
@@ -9,8 +9,10 @@ interface DesktopSidebarProps {
     categoryError: string | null;
     urlCategoryId: string | null;
     urlSearchQuery: string;
+    urlDeliveryMode: DeliveryMode | null;
     activeCategoryName: string;
     pagination: any;
+    onDeliveryModeChange: (mode: DeliveryMode | '') => void;
     onFetchCategories: () => void;
     onClearAll: () => void;
 }
@@ -21,20 +23,27 @@ const DesktopSidebar = ({
     categoryError,
     urlCategoryId,
     urlSearchQuery,
+    urlDeliveryMode,
     activeCategoryName,
     pagination,
+    onDeliveryModeChange,
     onFetchCategories,
     onClearAll
 }: DesktopSidebarProps) => {
     return (
         <div className="hidden lg:block w-full lg:w-1/4">
             <div className="bg-white rounded-xl shadow-sm border border-gray-200/80 p-6 sticky top-4 transition-all hover:shadow-md">
+                <DeliveryModeSection
+                    selectedMode={urlDeliveryMode}
+                    onChange={onDeliveryModeChange}
+                />
                 <CategoriesSection
                     categories={categories}
                     categoryLoading={categoryLoading}
                     categoryError={categoryError}
                     urlCategoryId={urlCategoryId}
                     urlSearchQuery={urlSearchQuery}
+                    urlDeliveryMode={urlDeliveryMode}
                     onFetchCategories={onFetchCategories}
                 />
                 <QuickStats
@@ -42,6 +51,7 @@ const DesktopSidebar = ({
                     categories={categories}
                     urlCategoryId={urlCategoryId}
                     urlSearchQuery={urlSearchQuery}
+                    urlDeliveryMode={urlDeliveryMode}
                     activeCategoryName={activeCategoryName}
                     onClearAll={onClearAll}
                 />
@@ -50,12 +60,38 @@ const DesktopSidebar = ({
     )
 }
 
+interface DeliveryModeSectionProps {
+    selectedMode: DeliveryMode | null;
+    onChange: (mode: DeliveryMode | '') => void;
+}
+
+const DeliveryModeSection = ({ selectedMode, onChange }: DeliveryModeSectionProps) => (
+    <div className="mb-4">
+        <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4 flex items-center">
+            <div className="w-1 h-5 bg-[#0066CC] rounded-full mr-3"></div>
+            <span>Course Mode</span>
+        </h3>
+        <select
+            value={selectedMode ?? ''}
+            onChange={event => onChange(event.target.value as DeliveryMode | '')}
+            aria-label="Filter courses by mode"
+            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 transition hover:border-gray-300 focus:border-[#0066CC] focus:outline-none focus:ring-2 focus:ring-[#0066CC]/15"
+        >
+            <option value="">All modes</option>
+            <option value="ONLINE">Online</option>
+            <option value="OFFLINE">Offline</option>
+            <option value="BOTH">Online &amp; Offline</option>
+        </select>
+    </div>
+);
+
 interface CategoriesSectionProps {
     categories: any[];
     categoryLoading: boolean;
     categoryError: string | null;
     urlCategoryId: string | null;
     urlSearchQuery: string;
+    urlDeliveryMode: DeliveryMode | null;
     onFetchCategories: () => void;
 }
 
@@ -65,6 +101,7 @@ const CategoriesSection = ({
     categoryError,
     urlCategoryId,
     urlSearchQuery,
+    urlDeliveryMode,
     onFetchCategories
 }: CategoriesSectionProps) => (
     <div className="mb-8 pt-4 border-t border-gray-100">
@@ -103,6 +140,7 @@ const CategoriesSection = ({
                 <AllCoursesLink
                     urlCategoryId={urlCategoryId}
                     urlSearchQuery={urlSearchQuery}
+                    urlDeliveryMode={urlDeliveryMode}
                 />
                 {categories.map((category) => (
                     <CategoryLink
@@ -110,6 +148,7 @@ const CategoriesSection = ({
                         category={category}
                         urlCategoryId={urlCategoryId}
                         urlSearchQuery={urlSearchQuery}
+                        urlDeliveryMode={urlDeliveryMode}
                     />
                 ))}
             </div>
@@ -120,11 +159,12 @@ const CategoriesSection = ({
 interface AllCoursesLinkProps {
     urlCategoryId: string | null;
     urlSearchQuery: string;
+    urlDeliveryMode: DeliveryMode | null;
 }
 
-const AllCoursesLink = ({ urlCategoryId, urlSearchQuery }: AllCoursesLinkProps) => {
+const AllCoursesLink = ({ urlCategoryId, urlSearchQuery, urlDeliveryMode }: AllCoursesLinkProps) => {
     const navigate = useNavigate();
-    const isActive = !urlCategoryId && !urlSearchQuery;
+    const isActive = !urlCategoryId && !urlSearchQuery && !urlDeliveryMode;
 
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
@@ -132,6 +172,9 @@ const AllCoursesLink = ({ urlCategoryId, urlSearchQuery }: AllCoursesLinkProps) 
         const params = new URLSearchParams();
         if (urlSearchQuery) {
             params.set('search', urlSearchQuery);
+        }
+        if (urlDeliveryMode) {
+            params.set('delivery_mode', urlDeliveryMode);
         }
         // Don't include page parameter - this resets to page 1
         navigate(`/courses${params.toString() ? `?${params.toString()}` : ''}`);
@@ -167,9 +210,10 @@ interface CategoryLinkProps {
     category: any;
     urlCategoryId: string | null;
     urlSearchQuery: string;
+    urlDeliveryMode: DeliveryMode | null;
 }
 
-const CategoryLink = ({ category, urlCategoryId, urlSearchQuery }: CategoryLinkProps) => {
+const CategoryLink = ({ category, urlCategoryId, urlSearchQuery, urlDeliveryMode }: CategoryLinkProps) => {
     const navigate = useNavigate();
     const isActive = urlCategoryId === category.id.toString();
 
@@ -182,6 +226,9 @@ const CategoryLink = ({ category, urlCategoryId, urlSearchQuery }: CategoryLinkP
         if (urlSearchQuery) {
             params.set('search', urlSearchQuery);
         }
+        if (urlDeliveryMode) {
+            params.set('delivery_mode', urlDeliveryMode);
+        }
 
         // Don't include page parameter - this resets to page 1
         navigate(`/courses?${params.toString()}`);
@@ -189,7 +236,7 @@ const CategoryLink = ({ category, urlCategoryId, urlSearchQuery }: CategoryLinkP
 
     return (
         <a
-            href={`/courses?category=${category.id}${urlSearchQuery ? `&search=${encodeURIComponent(urlSearchQuery)}` : ''}`}
+            href={`/courses?category=${category.id}${urlSearchQuery ? `&search=${encodeURIComponent(urlSearchQuery)}` : ''}${urlDeliveryMode ? `&delivery_mode=${urlDeliveryMode}` : ''}`}
             onClick={handleClick}
             className={`group relative w-full flex items-center justify-between px-3 py-2.5 rounded-lg 
                 text-sm transition-all duration-200 ease-in-out cursor-pointer ${isActive
@@ -218,6 +265,7 @@ interface QuickStatsProps {
     categories: any[];
     urlCategoryId: string | null;
     urlSearchQuery: string;
+    urlDeliveryMode: DeliveryMode | null;
     activeCategoryName: string;
     onClearAll: () => void;
 }
@@ -227,6 +275,7 @@ const QuickStats = ({
     categories,
     urlCategoryId,
     urlSearchQuery,
+    urlDeliveryMode,
     activeCategoryName,
     onClearAll
 }: QuickStatsProps) => (
@@ -255,10 +304,11 @@ const QuickStats = ({
                 </div>
             </div>
 
-            {(urlCategoryId || urlSearchQuery) && (
+            {(urlCategoryId || urlSearchQuery || urlDeliveryMode) && (
                 <ActiveFiltersSummary
                     urlCategoryId={urlCategoryId}
                     urlSearchQuery={urlSearchQuery}
+                    urlDeliveryMode={urlDeliveryMode}
                     activeCategoryName={activeCategoryName}
                     onClearAll={onClearAll}
                 />
@@ -270,6 +320,7 @@ const QuickStats = ({
 interface ActiveFiltersSummaryProps {
     urlCategoryId: string | null;
     urlSearchQuery: string;
+    urlDeliveryMode: DeliveryMode | null;
     activeCategoryName: string;
     onClearAll: () => void;
 }
@@ -277,6 +328,7 @@ interface ActiveFiltersSummaryProps {
 const ActiveFiltersSummary = ({
     urlCategoryId,
     urlSearchQuery,
+    urlDeliveryMode,
     activeCategoryName,
     onClearAll
 }: ActiveFiltersSummaryProps) => (
@@ -301,6 +353,14 @@ const ActiveFiltersSummary = ({
                 <div className="flex items-center justify-between bg-green-50/50 px-2 py-1.5 rounded-md">
                     <span className="text-xs text-gray-700">Search</span>
                     <span className="text-xs font-medium text-green-700">"{urlSearchQuery}"</span>
+                </div>
+            )}
+            {urlDeliveryMode && (
+                <div className="flex items-center justify-between bg-violet-50/50 px-2 py-1.5 rounded-md">
+                    <span className="text-xs text-gray-700">Course mode</span>
+                    <span className="text-xs font-medium text-violet-700">
+                        {urlDeliveryMode === 'BOTH' ? 'Online & Offline' : urlDeliveryMode}
+                    </span>
                 </div>
             )}
         </div>

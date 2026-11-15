@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import { Filter, X, ChevronRight, RotateCcw, BookOpen } from "lucide-react";
 import LoadingSpinner from "../ui/LoadingSpinner";
-import type { Category } from '../../../types';
+import type { Category, DeliveryMode } from '../../../types';
 
 interface MobileFilterDrawerProps {
     showFilters: boolean;
@@ -12,7 +12,9 @@ interface MobileFilterDrawerProps {
     categoryError: string | null;
     urlCategoryId: string | null;
     urlSearchQuery: string;
+    urlDeliveryMode: DeliveryMode | null;
     activeCategoryName: string;
+    onDeliveryModeChange: (mode: DeliveryMode | '') => void;
     onClose: () => void;
     onClearAll: () => void;
     onFetchCategories: () => void;
@@ -26,12 +28,23 @@ const MobileFilterDrawer = ({
     categoryError,
     urlCategoryId,
     urlSearchQuery,
+    urlDeliveryMode,
     activeCategoryName,
+    onDeliveryModeChange,
     onClose,
     onClearAll,
     onFetchCategories
 }: MobileFilterDrawerProps) => {
     if (!showFilters && !isClosing) return null;
+
+    const allCoursesParams = new URLSearchParams();
+    if (urlSearchQuery) {
+        allCoursesParams.set('search', urlSearchQuery);
+    }
+    if (urlDeliveryMode) {
+        allCoursesParams.set('delivery_mode', urlDeliveryMode);
+    }
+    const allCoursesUrl = `/courses${allCoursesParams.toString() ? `?${allCoursesParams.toString()}` : ''}`;
 
     return (
         <div className="lg:hidden fixed inset-0 z-50 overflow-hidden">
@@ -86,15 +99,15 @@ const MobileFilterDrawer = ({
                         {!categoryLoading && !categoryError && (
                             <div className="space-y-1">
                                 <MobileFilterLink
-                                    to="/courses"
+                                    to={allCoursesUrl}
                                     label="All Courses"
-                                    isActive={!urlCategoryId && !urlSearchQuery}
+                                    isActive={!urlCategoryId && !urlSearchQuery && !urlDeliveryMode}
                                     onClose={onClose}
                                 />
                                 {categories.map((category) => (
                                     <MobileFilterLink
                                         key={category.id}
-                                        to={`/courses?category=${category.id}${urlSearchQuery ? `&search=${encodeURIComponent(urlSearchQuery)}` : ''}`}
+                                        to={`/courses?category=${category.id}${urlSearchQuery ? `&search=${encodeURIComponent(urlSearchQuery)}` : ''}${urlDeliveryMode ? `&delivery_mode=${urlDeliveryMode}` : ''}`}
                                         label={category.name}
                                         isActive={urlCategoryId === category.id.toString()}
                                         onClose={onClose}
@@ -104,8 +117,29 @@ const MobileFilterDrawer = ({
                         )}
                     </div>
 
+                    {/* Course Mode Section */}
+                    <div className="px-6 mb-6">
+                        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-4">
+                            Course Mode
+                        </h3>
+                        <select
+                            value={urlDeliveryMode ?? ''}
+                            onChange={event => {
+                                onDeliveryModeChange(event.target.value as DeliveryMode | '');
+                                onClose();
+                            }}
+                            aria-label="Filter courses by mode"
+                            className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-700 focus:border-[#0066CC] focus:outline-none focus:ring-2 focus:ring-[#0066CC]/15"
+                        >
+                            <option value="">All modes</option>
+                            <option value="ONLINE">Online</option>
+                            <option value="OFFLINE">Offline</option>
+                            <option value="BOTH">Online &amp; Offline</option>
+                        </select>
+                    </div>
+
                     {/* Active Filters Section */}
-                    {(urlCategoryId || urlSearchQuery) && (
+                    {(urlCategoryId || urlSearchQuery || urlDeliveryMode) && (
                         <div className="px-6 pt-6 border-t border-gray-100 pb-6">
                             <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Active Filters</h4>
                             <div className="space-y-2">
@@ -119,6 +153,14 @@ const MobileFilterDrawer = ({
                                     <div className="flex items-center justify-between bg-green-50 px-3 py-2 rounded-lg border border-green-100">
                                         <span className="text-xs text-gray-600">Search</span>
                                         <span className="text-xs font-bold text-green-700">"{urlSearchQuery}"</span>
+                                    </div>
+                                )}
+                                {urlDeliveryMode && (
+                                    <div className="flex items-center justify-between bg-violet-50 px-3 py-2 rounded-lg border border-violet-100">
+                                        <span className="text-xs text-gray-600">Course mode</span>
+                                        <span className="text-xs font-bold text-violet-700">
+                                            {urlDeliveryMode === 'BOTH' ? 'Online & Offline' : urlDeliveryMode}
+                                        </span>
                                     </div>
                                 )}
                             </div>

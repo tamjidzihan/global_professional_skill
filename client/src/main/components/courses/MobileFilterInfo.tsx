@@ -1,18 +1,21 @@
 import { Filter } from "lucide-react"
+import type { DeliveryMode } from '../../../types';
 
 interface MobileFilterInfoProps {
     urlCategoryId: string | null;
+    urlDeliveryMode: DeliveryMode | null;
     activeCategoryName: string;
     onOpenFilters: () => void;
 }
 
-const MobileFilterInfo = ({ urlCategoryId, activeCategoryName, onOpenFilters }: MobileFilterInfoProps) => (
+const MobileFilterInfo = ({ urlCategoryId, urlDeliveryMode, activeCategoryName, onOpenFilters }: MobileFilterInfoProps) => (
     <div className="lg:hidden mb-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
         <div className="flex items-center justify-between">
             <div className="flex items-center">
                 <Filter className="w-4 h-4 mr-2 text-[#0066CC]" />
                 <span className="text-sm text-gray-700">
                     {urlCategoryId ? `Category: ${activeCategoryName}` : 'All Categories'}
+                    {urlDeliveryMode && ` · ${urlDeliveryMode === 'BOTH' ? 'Online & Offline' : urlDeliveryMode}`}
                 </span>
             </div>
             <button

@@ -11,6 +11,9 @@ import MobileFilterDrawer from '../components/courses/MobileFilterDrawer';
 import MobileFilterInfo from '../components/courses/MobileFilterInfo';
 import CourseGrid from '../components/courses/CourseGrid';
 import SEO from '../components/SEO';
+import type { DeliveryMode } from '../../types';
+
+const DELIVERY_MODES: DeliveryMode[] = ['ONLINE', 'OFFLINE', 'BOTH'];
 
 const CoursesPage = () => {
     const location = useLocation();
@@ -18,6 +21,7 @@ const CoursesPage = () => {
     const queryParams = new URLSearchParams(location.search);
     const urlCategoryId = queryParams.get('category');
     const urlSearchQuery = queryParams.get('search') || '';
+    const urlDeliveryMode = DELIVERY_MODES.find(mode => mode === queryParams.get('delivery_mode')) ?? null;
     const urlPage = queryParams.get('page');
 
     const {
@@ -70,13 +74,17 @@ const CoursesPage = () => {
             filters.search = urlSearchQuery;
         }
 
+        if (urlDeliveryMode) {
+            filters.delivery_mode = urlDeliveryMode;
+        }
+
         if (urlPage) {
             filters.page = parseInt(urlPage);
         }
 
         setAppliedFilters(filters);
         fetchCourses(filters);
-    }, [urlCategoryId, urlSearchQuery, urlPage, fetchCourses])
+    }, [urlCategoryId, urlSearchQuery, urlDeliveryMode, urlPage, fetchCourses])
 
     // Update URL when search query changes (with debounce) - reset page to 1
     useEffect(() => {
@@ -93,6 +101,10 @@ const CoursesPage = () => {
                 newParams.set('search', searchQuery.trim());
             }
 
+            if (urlDeliveryMode) {
+                newParams.set('delivery_mode', urlDeliveryMode);
+            }
+
             // Reset to page 1 when search changes
             // Don't include page parameter for page 1
 
@@ -100,7 +112,7 @@ const CoursesPage = () => {
         }, 500);
 
         return () => clearTimeout(timeoutId);
-    }, [searchQuery, urlSearchQuery, urlCategoryId, navigate]);
+    }, [searchQuery, urlSearchQuery, urlCategoryId, urlDeliveryMode, navigate]);
 
     const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
@@ -112,6 +124,10 @@ const CoursesPage = () => {
 
             if (searchQuery.trim()) {
                 newParams.set('search', searchQuery.trim());
+            }
+
+            if (urlDeliveryMode) {
+                newParams.set('delivery_mode', urlDeliveryMode);
             }
 
             // Reset to page 1 on new search
@@ -151,6 +167,9 @@ const CoursesPage = () => {
         if (urlSearchQuery) {
             newParams.set('search', urlSearchQuery);
         }
+        if (urlDeliveryMode) {
+            newParams.set('delivery_mode', urlDeliveryMode);
+        }
         // Reset to page 1 when removing category
         // Don't include page parameter for page 1
         navigate(`/courses?${newParams.toString()}`);
@@ -162,8 +181,25 @@ const CoursesPage = () => {
         if (urlCategoryId) {
             newParams.set('category', urlCategoryId);
         }
+        if (urlDeliveryMode) {
+            newParams.set('delivery_mode', urlDeliveryMode);
+        }
         // Reset to page 1 when removing search
         // Don't include page parameter for page 1
+        navigate(`/courses?${newParams.toString()}`);
+    }
+
+    const handleDeliveryModeChange = (mode: DeliveryMode | '') => {
+        const newParams = new URLSearchParams();
+        if (urlCategoryId) {
+            newParams.set('category', urlCategoryId);
+        }
+        if (urlSearchQuery) {
+            newParams.set('search', urlSearchQuery);
+        }
+        if (mode) {
+            newParams.set('delivery_mode', mode);
+        }
         navigate(`/courses?${newParams.toString()}`);
     }
 
@@ -214,8 +250,10 @@ const CoursesPage = () => {
                         categoryError={categoryError}
                         urlCategoryId={urlCategoryId}
                         urlSearchQuery={urlSearchQuery}
+                        urlDeliveryMode={urlDeliveryMode}
                         activeCategoryName={activeCategoryName}
                         pagination={pagination}
+                        onDeliveryModeChange={handleDeliveryModeChange}
                         onFetchCategories={fetchCategories}
                         onClearAll={clearAllFilters}
                     />
@@ -228,7 +266,9 @@ const CoursesPage = () => {
                         categoryError={categoryError}
                         urlCategoryId={urlCategoryId}
                         urlSearchQuery={urlSearchQuery}
+                        urlDeliveryMode={urlDeliveryMode}
                         activeCategoryName={activeCategoryName}
+                        onDeliveryModeChange={handleDeliveryModeChange}
                         onClose={closeMobileFilters}
                         onClearAll={clearAllFilters}
                         onFetchCategories={fetchCategories}
@@ -237,6 +277,7 @@ const CoursesPage = () => {
                     <div className="w-full lg:w-3/4">
                         <MobileFilterInfo
                             urlCategoryId={urlCategoryId}
+                            urlDeliveryMode={urlDeliveryMode}
                             activeCategoryName={activeCategoryName}
                             onOpenFilters={() => setShowFilters(true)}
                         />

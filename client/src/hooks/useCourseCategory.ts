@@ -2,9 +2,12 @@ import { useCallback, useEffect, useState } from 'react'
 import { CanceledError } from 'axios'
 import { getCategories, getCourses } from '../lib/api'
 import { extractErrorMessage } from '../lib/errorUtils'
-import type { Category, CoursesSummary } from '../types'
+import type { Category, CoursesSummary, DeliveryMode } from '../types'
 
-export function useCourseCategory(selectedCategoryId: string | null = null) {
+export function useCourseCategory(
+    selectedCategoryId: string | null = null,
+    selectedDeliveryMode: DeliveryMode | null = null,
+) {
     const [categories, setCategories] = useState<Category[]>([])
     const [courses, setCourses] = useState<CoursesSummary[]>([])
     const [categoriesLoading, setCategoriesLoading] = useState(true)
@@ -41,8 +44,12 @@ export function useCourseCategory(selectedCategoryId: string | null = null) {
             setCoursesLoading(true)
             setCoursesError(null)
             try {
+                const filters = {
+                    ...(selectedCategoryId ? { category: selectedCategoryId } : {}),
+                    ...(selectedDeliveryMode ? { delivery_mode: selectedDeliveryMode } : {}),
+                }
                 const response = await getCourses(
-                    selectedCategoryId ? { category: selectedCategoryId } : undefined,
+                    Object.keys(filters).length ? filters : undefined,
                     undefined,
                     controller.signal,
                 )
@@ -57,7 +64,7 @@ export function useCourseCategory(selectedCategoryId: string | null = null) {
 
         void fetchCourses()
         return () => controller.abort()
-    }, [refreshCount, selectedCategoryId])
+    }, [refreshCount, selectedCategoryId, selectedDeliveryMode])
 
     const refresh = useCallback(() => {
         setRefreshCount(count => count + 1)
