@@ -235,6 +235,8 @@ class CourseListSerializer(serializers.ModelSerializer):
             "total_seats",
             "is_admission_open",
             "is_full",
+            "is_featured",
+            "featured_order",
             "class_starts",
             "admission_deadline",
             "schedule",
@@ -242,12 +244,15 @@ class CourseListSerializer(serializers.ModelSerializer):
             "created_at",
             "published_at",
         )
+        read_only_fields = ("is_featured", "featured_order")
 
     def get_coordinator_count(self, obj):
-        return obj.coordinators.count()
+        annotated_count = getattr(obj, "annotated_coordinator_count", None)
+        return annotated_count if annotated_count is not None else obj.coordinators.count()
 
     def get_total_sections(self, obj):
-        return obj.total_sections
+        annotated_count = getattr(obj, "annotated_total_sections", None)
+        return annotated_count if annotated_count is not None else obj.total_sections
 
     def get_is_admission_open(self, obj):
         return obj.is_admission_open
@@ -405,6 +410,8 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "is_free",
             "thumbnail",
             "preview_video",
+            "is_featured",
+            "featured_order",
             "duration_hours",
             "total_classes",
             "requirements",
@@ -433,6 +440,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
             "updated_at",
             "published_at",
         )
+        read_only_fields = ("is_featured", "featured_order")
 
     def get_is_enrolled(self, obj):
         """Check if current user is enrolled."""
@@ -603,6 +611,21 @@ class CourseCreateUpdateSerializer(serializers.ModelSerializer):
         if "title" in validated_data and validated_data["title"] != instance.title:
             validated_data["slug"] = slugify(validated_data["title"])
         return super().update(instance, validated_data)
+
+
+class FeaturedCourseStatusSerializer(serializers.Serializer):
+    is_featured = serializers.BooleanField()
+
+
+class FeaturedCourseOrderSerializer(serializers.Serializer):
+    course_ids = serializers.ListField(
+        child=serializers.UUIDField(), allow_empty=True
+    )
+
+    def validate_course_ids(self, value):
+        if len(value) != len(set(value)):
+            raise serializers.ValidationError("Course IDs must not contain duplicates.")
+        return value
 
 
 class CourseReviewSerializer(serializers.ModelSerializer):

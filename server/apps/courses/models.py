@@ -165,6 +165,8 @@ class Course(models.Model):
         default=CourseStatus.DRAFT,
         db_index=True,
     )
+    is_featured = models.BooleanField(default=False)
+    featured_order = models.PositiveIntegerField(null=True, blank=True)
 
     # Admin Review
     reviewed_by = models.ForeignKey(
@@ -206,6 +208,7 @@ class Course(models.Model):
             models.Index(fields=["-average_rating"]),
             models.Index(fields=["class_starts"]),
             models.Index(fields=["admission_deadline"]),
+            models.Index(fields=["is_featured", "featured_order"]),
         ]
 
     def __str__(self):
@@ -214,6 +217,15 @@ class Course(models.Model):
     def save(self, *args, **kwargs):
         """Auto-set is_free based on price and ensure available_seats doesn't exceed total_seats."""
         self.is_free = self.price == 0
+
+        if self.status != CourseStatus.PUBLISHED and self.is_featured:
+            self.is_featured = False
+            self.featured_order = None
+            if kwargs.get("update_fields") is not None:
+                kwargs["update_fields"] = set(kwargs["update_fields"]) | {
+                    "is_featured",
+                    "featured_order",
+                }
 
         # Ensure available_seats doesn't exceed total_seats
         if self.available_seats > self.total_seats:

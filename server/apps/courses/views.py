@@ -2,14 +2,14 @@
 Views for courses app.
 """
 
-from rest_framework import viewsets, status, generics
+from rest_framework import serializers, viewsets, status, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from uuid import UUID
@@ -43,6 +43,8 @@ from .serializers import (
     QuizSubmissionSerializer,
     CourseMaterialSerializer,
     CourseAnnouncementSerializer,
+    FeaturedCourseOrderSerializer,
+    FeaturedCourseStatusSerializer,
 )
 from apps.accounts.permissions import IsInstructor, IsAdmin, IsInstructorOrAdmin
 from .permissions import IsCourseInstructorOrAdmin, IsEnrolledOrInstructor
@@ -50,6 +52,14 @@ from .quiz_import_parser import parse_and_validate_quiz_file
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+class FeaturedCourseOrderingFilter(OrderingFilter):
+    """Keep featured courses first while preserving the requested regular ordering."""
+
+    def filter_queryset(self, request, queryset, view):
+        ordering = self.get_ordering(request, queryset, view) or []
+        return queryset.order_by("-is_featured", "featured_order", *ordering, "pk")
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -72,7 +82,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class CourseViewSet(viewsets.ModelViewSet):
     """ViewSet for courses with approval workflow."""
 
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_backends = [DjangoFilterBackend, SearchFilter, FeaturedCourseOrderingFilter]
     filterset_fields = [
         "category",
         "difficulty_level",
@@ -120,15 +130,14 @@ class CourseViewSet(viewsets.ModelViewSet):
         user = self.request.user
 
         if not user.is_authenticated or user.is_student:  # type: ignore
-            return (
+            queryset = (
                 Course.objects.filter(status=CourseStatus.PUBLISHED)
                 .select_related("instructor", "category")
                 .prefetch_related("sections__lessons")
             )
-
-        if user.is_instructor:  # type: ignore
+        elif user.is_instructor:  # type: ignore
             # Allow instructors to see their own courses AND all published courses
-            return (
+            queryset = (
                 Course.objects.filter(
                     Q(instructor=user) | Q(status=CourseStatus.PUBLISHED)
                 )
@@ -136,17 +145,23 @@ class CourseViewSet(viewsets.ModelViewSet):
                 .prefetch_related("sections__lessons")
                 .distinct()
             )
-
-        if user.is_admin_user:  # type: ignore
-            return Course.objects.select_related(
+        elif user.is_admin_user:  # type: ignore
+            queryset = Course.objects.select_related(
                 "instructor", "category", "reviewed_by"
             ).prefetch_related("sections__lessons")
+        else:
+            queryset = (
+                Course.objects.filter(status=CourseStatus.PUBLISHED)
+                .select_related("instructor", "category")
+                .prefetch_related("sections__lessons")
+            )
 
-        return (
-            Course.objects.filter(status=CourseStatus.PUBLISHED)
-            .select_related("instructor", "category")
-            .prefetch_related("sections__lessons")
-        )
+        if self.action == "list":
+            queryset = queryset.annotate(
+                annotated_total_sections=Count("sections", distinct=True),
+                annotated_coordinator_count=Count("coordinators", distinct=True),
+            )
+        return queryset
 
     def get_object(self):
         """Resolve course detail routes by slug while retaining UUID compatibility."""
@@ -169,7 +184,13 @@ class CourseViewSet(viewsets.ModelViewSet):
             return [IsInstructor()]
         elif self.action in ["update", "partial_update", "destroy"]:
             return [IsCourseInstructorOrAdmin()]
-        elif self.action in ["review", "publish", "unpublish"]:
+        elif self.action in [
+            "review",
+            "publish",
+            "unpublish",
+            "featured",
+            "featured_status",
+        ]:
             return [IsAdmin()]
         elif self.action in ["retrieve", "list"]:
             return [AllowAny()]
@@ -197,6 +218,120 @@ class CourseViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response({"success": True, "data": serializer.data})
+
+    @action(detail=False, methods=["get", "put"], permission_classes=[IsAdmin])
+    def featured(self, request):
+        """List or reorder featured courses for administrators."""
+        if request.method == "GET":
+            queryset = (
+                Course.objects.filter(is_featured=True)
+                .select_related("instructor", "category")
+                .prefetch_related("sections__lessons")
+                .annotate(
+                    annotated_total_sections=Count("sections", distinct=True),
+                    annotated_coordinator_count=Count("coordinators", distinct=True),
+                )
+                .order_by("featured_order", "pk")
+            )
+            data = CourseListSerializer(
+                queryset, many=True, context=self.get_serializer_context()
+            ).data
+            return Response({"success": True, "data": data})
+
+        serializer = FeaturedCourseOrderSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        course_ids = serializer.validated_data["course_ids"]
+
+        with transaction.atomic():
+            locked_courses = list(Course.objects.select_for_update().order_by("pk"))
+            featured_by_id = {
+                course.id: course for course in locked_courses if course.is_featured
+            }
+            if set(course_ids) != set(featured_by_id):
+                raise serializers.ValidationError(
+                    {
+                        "course_ids": (
+                            "Include each currently featured course exactly once."
+                        )
+                    }
+                )
+
+            ordered_courses = [featured_by_id[course_id] for course_id in course_ids]
+            for order, course in enumerate(ordered_courses):
+                course.featured_order = order
+            if ordered_courses:
+                Course.objects.bulk_update(ordered_courses, ["featured_order"])
+
+        queryset = (
+            Course.objects.filter(is_featured=True)
+            .select_related("instructor", "category")
+            .prefetch_related("sections__lessons")
+            .annotate(
+                annotated_total_sections=Count("sections", distinct=True),
+                annotated_coordinator_count=Count("coordinators", distinct=True),
+            )
+            .order_by("featured_order", "pk")
+        )
+        data = CourseListSerializer(
+            queryset, many=True, context=self.get_serializer_context()
+        ).data
+        return Response({"success": True, "data": data})
+
+    @action(
+        detail=True,
+        methods=["post"],
+        permission_classes=[IsAdmin],
+        url_path="featured-status",
+    )
+    def featured_status(self, request, pk=None):
+        """Enable or disable a course's featured status for administrators."""
+        serializer = FeaturedCourseStatusSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        should_feature = serializer.validated_data["is_featured"]
+
+        with transaction.atomic():
+            course = self.get_object()
+            locked_courses = list(Course.objects.select_for_update().order_by("pk"))
+            locked_by_id = {locked_course.id: locked_course for locked_course in locked_courses}
+            course = locked_by_id[course.id]
+            featured_courses = sorted(
+                (item for item in locked_courses if item.is_featured),
+                key=lambda item: (
+                    item.featured_order is None,
+                    item.featured_order if item.featured_order is not None else 0,
+                    str(item.id),
+                ),
+            )
+
+            if should_feature and not course.is_featured:
+                if course.status != CourseStatus.PUBLISHED:
+                    raise serializers.ValidationError(
+                        {"is_featured": "Only published courses can be featured."}
+                    )
+                course.is_featured = True
+                course.featured_order = len(featured_courses)
+                featured_courses.append(course)
+            elif not should_feature and course.is_featured:
+                course.is_featured = False
+                course.featured_order = None
+                featured_courses = [
+                    item for item in featured_courses if item.id != course.id
+                ]
+
+            for order, featured_course in enumerate(featured_courses):
+                featured_course.featured_order = order
+            changed_courses = list(
+                {item.id: item for item in [course, *featured_courses]}.values()
+            )
+            Course.objects.bulk_update(
+                changed_courses, ["is_featured", "featured_order"]
+            )
+
+        course.refresh_from_db()
+        data = CourseListSerializer(
+            course, context=self.get_serializer_context()
+        ).data
+        return Response({"success": True, "data": data})
 
     def retrieve(self, request, *args, **kwargs):
         """Retrieve course details."""

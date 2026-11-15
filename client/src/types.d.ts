@@ -100,6 +100,8 @@ export interface CoursesSummary {
     duration_hours: number;
     total_classes: number;
     status: CourseStatus;
+    is_featured: boolean;
+    featured_order: number | null;
     enrollment_count: number;
     average_rating: string;
     total_reviews: number;
@@ -177,6 +179,8 @@ export interface CourseDetail {
     target_audience: string;
     who_can_join: string;
     status: CourseStatus;
+    is_featured: boolean;
+    featured_order: number | null;
     sections: Section[];
     materials?: CourseMaterial[];
     enrollment_count: number;

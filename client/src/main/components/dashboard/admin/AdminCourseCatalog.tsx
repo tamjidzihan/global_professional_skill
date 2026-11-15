@@ -14,11 +14,15 @@ import {
     ExternalLink,
     Award,
     X,
+    Star,
 } from 'lucide-react';
 import { useAdminCourses } from '../../../../hooks/useAdminCourses';
 import type { CoursesSummary } from '../../../../types';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
+import { setCourseFeatured } from '../../../../lib/api';
+import { getApiErrorMessage } from '../../../../lib/errorUtils';
+import { FeaturedCoursesManager } from './FeaturedCoursesManager';
 
 type FilterStatus = 'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'PUBLISHED' | 'DRAFT';
 
@@ -65,10 +69,14 @@ function CourseThumbnail({ course }: { course: CoursesSummary }) {
 function ActionDropdown({
     course,
     onTogglePublish,
+    onToggleFeatured,
+    featureToggleDisabled,
     actionLoading,
 }: {
     course: CoursesSummary;
     onTogglePublish: (course: CoursesSummary) => void;
+    onToggleFeatured: (course: CoursesSummary) => void;
+    featureToggleDisabled: boolean;
     actionLoading?: boolean;
 }) {
     const [open, setOpen] = useState(false);
@@ -128,6 +136,31 @@ function ActionDropdown({
                     </Link>
 
                     <button
+                        type="button"
+                        onClick={() => {
+                            setOpen(false);
+                            onToggleFeatured(course);
+                        }}
+                        disabled={actionLoading || featureToggleDisabled}
+                        title={
+                            featureToggleDisabled
+                                ? 'Save the featured order before changing featured status.'
+                                : !course.is_featured && !isPublished
+                                  ? 'Only published courses can be featured.'
+                                  : undefined
+                        }
+                        className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold transition-colors cursor-pointer border-t border-gray-100/80 ${
+                            course.is_featured
+                                ? 'text-amber-700 hover:bg-amber-50'
+                                : 'text-violet-700 hover:bg-violet-50'
+                        }`}
+                    >
+                        <Star className={`w-3.5 h-3.5 shrink-0 ${course.is_featured ? 'fill-amber-400 text-amber-500' : ''}`} />
+                        {course.is_featured ? 'Remove from Featured' : 'Feature Course'}
+                    </button>
+
+                    <button
+                        type="button"
                         onClick={() => {
                             setOpen(false);
                             onTogglePublish(course);
@@ -176,6 +209,8 @@ export function AdminCourseCatalog(): JSX.Element {
     } = useAdminCourses();
 
     const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+    const [featuredRefreshKey, setFeaturedRefreshKey] = useState(0);
+    const [featuredOrderDirty, setFeaturedOrderDirty] = useState(false);
 
     const handleTogglePublish = async (course: CoursesSummary) => {
         const isPublished = course.status === 'PUBLISHED';
@@ -188,11 +223,11 @@ export function AdminCourseCatalog(): JSX.Element {
                     ? `Course "${course.title}" unpublished successfully.`
                     : `Course "${course.title}" published successfully.`
             );
-        } catch (err: any) {
-            toast.error(
-                err?.response?.data?.error?.message ||
-                `Failed to ${isPublished ? 'unpublish' : 'publish'} course.`
-            );
+        } catch (err: unknown) {
+            toast.error(getApiErrorMessage(
+                err,
+                `Failed to ${isPublished ? 'unpublish' : 'publish'} course.`,
+            ));
         } finally {
             setActionLoadingId(null);
         }
@@ -209,6 +244,33 @@ export function AdminCourseCatalog(): JSX.Element {
             pageSize,
         });
     }, [fetchCourses, pageSize]);
+
+    const handleToggleFeatured = async (course: CoursesSummary) => {
+        if (!course.is_featured && course.status !== 'PUBLISHED') {
+            toast.error('Only published courses can be featured.');
+            return;
+        }
+        if (featuredOrderDirty) {
+            toast.error('Save the featured display order before changing featured status.');
+            return;
+        }
+        const shouldFeature = !course.is_featured;
+        setActionLoadingId(course.id);
+        try {
+            await setCourseFeatured(course.id, shouldFeature);
+            toast.success(
+                shouldFeature
+                    ? `"${course.title}" added to featured courses.`
+                    : `"${course.title}" removed from featured courses.`
+            );
+            setFeaturedRefreshKey(key => key + 1);
+            triggerFetch(filterStatus, searchQuery.trim(), currentPage);
+        } catch (err: unknown) {
+            toast.error(getApiErrorMessage(err, 'Failed to update featured status.'));
+        } finally {
+            setActionLoadingId(null);
+        }
+    };
 
     useEffect(() => {
         triggerFetch('ALL', '', 1);
@@ -302,6 +364,13 @@ export function AdminCourseCatalog(): JSX.Element {
                 </div>
             </div>
 
+            <FeaturedCoursesManager
+                refreshKey={featuredRefreshKey}
+                actionLoadingId={actionLoadingId}
+                onDirtyChange={setFeaturedOrderDirty}
+                onRemove={handleToggleFeatured}
+            />
+
             {/* ── Status tab pills (Desktop/Tablet) ── */}
             <div className="hidden sm:flex items-center gap-1.5 px-5 py-3 border-b border-gray-100 overflow-x-auto bg-gray-50/30">
                 {STATUS_TABS.map(status => {
@@ -362,7 +431,15 @@ export function AdminCourseCatalog(): JSX.Element {
                                                 >
                                                     {course.title}
                                                 </Link>
-                                                <p className="text-[11px] text-gray-400 truncate mt-0.5">{course.category_name || 'Uncategorized'}</p>
+                                                <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                                                    <p className="text-[11px] text-gray-400 truncate">{course.category_name || 'Uncategorized'}</p>
+                                                    {course.is_featured && (
+                                                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700">
+                                                            <Star className="h-3 w-3 fill-amber-400 text-amber-500" />
+                                                            Featured
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
@@ -409,6 +486,8 @@ export function AdminCourseCatalog(): JSX.Element {
                                         <ActionDropdown
                                             course={course}
                                             onTogglePublish={handleTogglePublish}
+                                            onToggleFeatured={handleToggleFeatured}
+                                            featureToggleDisabled={featuredOrderDirty}
                                             actionLoading={actionLoadingId === course.id}
                                         />
                                     </td>

@@ -9,6 +9,7 @@ import type {
     CourseDetail,
     CourseListResponse,
     CourseDetailResponse,
+    CoursesSummary,
     Section,
     Lesson,
     Review,
@@ -191,6 +192,8 @@ export const endpoints = {
         review: (id: string) => `/courses/courses/${id}/review/`,
         publish: (id: string) => `/courses/courses/${id}/publish/`,
         unpublish: (id: string) => `/courses/courses/${id}/unpublish/`,
+        featured: '/courses/courses/featured/',
+        featuredStatus: (id: string) => `/courses/courses/${id}/featured-status/`,
         announcements: (courseId: string) => `/courses/courses/${courseId}/announcements/`,
         announcementDetail: (id: string) => `/courses/course-announcements/${id}/`,
         listAnnouncements: '/courses/course-announcements/',
@@ -523,6 +526,24 @@ export const publishCourse = (id: string): Promise<AxiosResponse<ApiResponse<Cou
 
 export const unpublishCourse = (id: string): Promise<AxiosResponse<ApiResponse<CourseDetail>>> =>
     api.post<ApiResponse<CourseDetail>>(endpoints.courses.unpublish(id));
+
+export const getFeaturedCourses = (): Promise<AxiosResponse<ApiResponse<CoursesSummary[]>>> =>
+    api.get<ApiResponse<CoursesSummary[]>>(endpoints.courses.featured);
+
+export const setCourseFeatured = (
+    id: string,
+    isFeatured: boolean,
+): Promise<AxiosResponse<ApiResponse<CoursesSummary>>> =>
+    api.post<ApiResponse<CoursesSummary>>(endpoints.courses.featuredStatus(id), {
+        is_featured: isFeatured,
+    });
+
+export const updateFeaturedCourseOrder = (
+    courseIds: string[],
+): Promise<AxiosResponse<ApiResponse<CoursesSummary[]>>> =>
+    api.put<ApiResponse<CoursesSummary[]>>(endpoints.courses.featured, {
+        course_ids: courseIds,
+    });
 
 
 export const getMyCourses = <T = CourseListResponse>(
