@@ -44,6 +44,8 @@ The existing implementation is the source of truth.
 
 Before writing code, inspect the repository.
 
+Do not start edding code rightaway. discuess first
+
 ---
 
 # Required Workflow
