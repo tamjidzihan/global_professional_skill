@@ -5,11 +5,11 @@ const ContactPage = () => {
     const contactInfo = [
         {
             title: "Head Office",
-            content: "House -5, Kolotan school Road, Badda, Dhaka-1212",
+            content: "House -90, Ekota Society, Azampur, Uttara-1230, Dhaka, Bangladesh",
             icon: MapPin,
             color: "text-blue-600",
             bg: "bg-blue-50",
-            link: "https://maps.app.goo.gl/b7jfULcxSAWiVtiA6"
+            link: "https://www.google.com/maps/search/?api=1&query=House%20-90%2C%20Ekota%20Society%2C%20Azampur%2C%20Uttara-1230%2C%20Dhaka%2C%20Bangladesh"
         },
         {
             title: "Hotline",
@@ -218,7 +218,7 @@ const ContactPage = () => {
             <div className="container mx-auto px-4 mb-20">
                 <div className="h-112.5 bg-gray-200 rounded-3xl overflow-hidden relative shadow-inner">
                     <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3650.62725063065!2d90.42144797589574!3d23.79627708770732!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755c700346087b3%3A0xc6c42a22026850c9!2sGlobal%20Professional%20Institute!5e0!3m2!1sen!2sbd!4v1711000000000!5m2!1sen!2sbd"
+                        src="https://www.google.com/maps?q=House%20-90%2C%20Ekota%20Society%2C%20Azampur%2C%20Uttara-1230%2C%20Dhaka%2C%20Bangladesh&output=embed"
                         width="100%"
                         height="100%"
                         style={{ border: 0 }}

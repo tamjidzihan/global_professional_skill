@@ -343,7 +343,7 @@ export const PrivacyPage: React.FC = () => {
                     </p>
                     <p className="flex items-center gap-2 text-gray-600">
                         <MapPin className="w-4 h-4 text-[#0066CC]" />
-                        <span>Location: House -5, Kolotan school Road, Badda, Dhaka-1212</span>
+                        <span>Location: House -90, Ekota Society, Azampur, Uttara-1230, Dhaka, Bangladesh</span>
                     </p>
                 </div>
             </section>

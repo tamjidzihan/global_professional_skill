@@ -179,16 +179,16 @@ export function Footer() {
                             <div className="space-y-4">
                                 {/* Address - Updated */}
                                 <div className="flex items-start space-x-3 group">
-                                    <a href='https://maps.app.goo.gl/b7jfULcxSAWiVtiA6' target='_blank' rel="noopener noreferrer">
+                                    <a href='https://www.google.com/maps/search/?api=1&query=House%20-90%2C%20Ekota%20Society%2C%20Azampur%2C%20Uttara-1230%2C%20Dhaka%2C%20Bangladesh' target='_blank' rel="noopener noreferrer">
                                         <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-blue-600 transition-colors">
                                             <MapPin className="w-5 h-5 text-blue-600 group-hover:text-white transition-colors" />
                                         </div>
                                     </a>
                                     <div>
                                         <p className="text-sm font-semibold text-gray-900 mb-1">Head Office</p>
-                                        <a href='https://maps.app.goo.gl/b7jfULcxSAWiVtiA6' target='_blank' rel="noopener noreferrer" className="text-gray-600 text-sm leading-relaxed">
-                                            House -5, Kolotan school Road, <br />
-                                            Badda, Dhaka-1212
+                                        <a href='https://www.google.com/maps/search/?api=1&query=House%20-90%2C%20Ekota%20Society%2C%20Azampur%2C%20Uttara-1230%2C%20Dhaka%2C%20Bangladesh' target='_blank' rel="noopener noreferrer" className="text-gray-600 text-sm leading-relaxed">
+                                            House -90, Ekota Society, <br />
+                                            Azampur, Uttara-1230, Dhaka, Bangladesh
                                         </a>
                                     </div>
                                 </div>
